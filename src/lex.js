@@ -11,6 +11,7 @@ import type {TokenType} from './Token';
 import {
   ANNOTATION,
   BLOCK_QUOTE,
+  CODE,
   COMMENT_START,
   DOC_BLOCK_START,
   HEADING,
@@ -110,6 +111,7 @@ export default function lex(input: string): Array<Token> {
       () => check(ANNOTATION, /@[a-z]+[ \t]*/, onlyAfterCommentStart),
       () => check(LINK, /\|[^| \t\n]\|/),
       () => check(LINK_TARGET, /\*[^* \t\n]\*/),
+      () => check(CODE, /`[^`\n]+`/),
       () => check(BLOCK_QUOTE, />[ \t]*/, onlyAfterCommentStart),
       () => check(PRE_FENCE, /```[ \t]*/, onlyAfterCommentStart),
       () => check(WORD, /\S+[ \t]*/),

@@ -86,6 +86,13 @@ describe('lex()', () => {
     ]);
   });
 
+  it('recognizes CODE tokens', () => {
+    expect(lex('" `this`')).toEqual([
+      {content: '" ', position: 0, type: 'COMMENT_START'},
+      {content: '`this`', position: 2, type: 'CODE'},
+    ]);
+  });
+
   it('recognizes simple combinations of tokens', () => {
     expect(lex('""\n' + '"\n' + 'something')).toEqual([
       {content: '""\n', position: 0, type: 'DOC_BLOCK_START' },
