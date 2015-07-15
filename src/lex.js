@@ -103,7 +103,7 @@ export default function lex(input: string): Array<Token> {
   while (remaining.length) {
     const rules = [
       // TODO: use/abuse sweet.js to make a DSL?
-      () => check(NON_COMMENT_LINE, /^[ \t]*([^"\n].*?)?($|\n)/, () => null),
+      () => check(NON_COMMENT_LINE, /^[ \t]*([^" \t\n].*?)?($|\n)/, () => null),
       () => check(DOC_BLOCK_START, /^[ \t]*""[ \t]*($|\n)/),
       () => check(COMMENT_START, /^[ \t]*"[ \t]*/),
       () => check(HEADING, /#[ \t]*/, onlyAfterCommentStart),
