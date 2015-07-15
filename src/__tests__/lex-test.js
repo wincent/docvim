@@ -230,9 +230,18 @@ describe('lex()', () => {
     ]);
   });
 
-  it('identifies a NON_COMMENT_LINE containing double quotes', () => {
-    expect(
-      () => lex('execute "normal \<C-W>\<C-P>"')
-    ).not.toThrow();
+  describe('regression tests', () => {
+    it('identifies a NON_COMMENT_LINE containing double quotes', () => {
+      // Used to throw, but we want it to be swallowed.
+      expect(lex('execute "normal \<C-W>\<C-P>"')).toEqual([]);
+    });
+
+    it('slurps up whitespace after CODE tokens', () => {
+      expect(lex('" `dd` mapping')).toEqual([
+        {content: '" ', position: 0, type: 'COMMENT_START'},
+        {content: '`dd` ', position: 2, type: 'CODE'},
+        {content: 'mapping', position: 7, type: 'WORD'},
+      ]);
+    });
   });
 });

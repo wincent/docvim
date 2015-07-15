@@ -112,7 +112,7 @@ export default function lex(input: string): Array<Token> {
       () => check(ANNOTATION, /@[a-z]+[ \t]*/, onlyAfterCommentStart),
       () => check(LINK, /\|[^| \t\n]\|/),
       () => check(LINK_TARGET, /\*[^* \t\n]\*/),
-      () => check(CODE, /`[^`\n]+`/),
+      () => check(CODE, /`[^`\n]+`[ \t]*/),
       () => check(BLOCK_QUOTE, />[ \t]*/, onlyAfterCommentStart),
       () => check(PRE_FENCE, /```[ \t]*/, onlyAfterCommentStart),
       () => check(SEPARATOR, /---[ \t]*($|\n)/, onlyAfterCommentStart),
