@@ -209,4 +209,10 @@ describe('lex()', () => {
       {content: '\n', position: 351, type: 'NEW_LINE'}
     ]);
   });
+
+  it('identifies a NON_COMMENT_LINE containing double quotes', () => {
+    expect(
+      () => lex('execute "normal \<C-W>\<C-P>"')
+    ).not.toThrow();
+  });
 });

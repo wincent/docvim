@@ -7,6 +7,7 @@
 
 'use strict';
 
+import type {TokenType} from './Token';
 import {
   ANNOTATION,
   BLOCK_QUOTE,
@@ -22,11 +23,10 @@ import {
   WORD
 } from './Token';
 
-type Token = {
+export type Token = {
   content: string;
   position: number;
-  // TODO: make this a proper $Enum reference to Token
-  type: string;
+  type: TokenType;
 };
 
 /**
@@ -40,7 +40,7 @@ export default function lex(input: string): Array<Token> {
   let remaining = input;
   const tokens = [];
 
-  function lastToken(type: ?string) {
+  function lastToken(type: ?TokenType) {
     if (tokens.length) {
       const token = tokens[tokens.length - 1];
       if (type) {
@@ -59,7 +59,7 @@ export default function lex(input: string): Array<Token> {
    * token (by mutating it), or suppress it (by returning `null`)
    */
   function check(
-    type: string,
+    type: TokenType,
     regexp: RegExp,
     success: (match: Object, token: Token) => ?Token
   ): boolean {
@@ -102,7 +102,7 @@ export default function lex(input: string): Array<Token> {
   while (remaining.length) {
     const rules = [
       // TODO: use/abuse sweet.js to make a DSL?
-      () => check(NON_COMMENT_LINE, /^[ \t]*[^"\n]*?($|\n)/, () => null),
+      () => check(NON_COMMENT_LINE, /^[ \t]*([^"\n].*?)?($|\n)/, () => null),
       () => check(DOC_BLOCK_START, /^[ \t]*""[ \t]*($|\n)/),
       () => check(COMMENT_START, /^[ \t]*"[ \t]*/),
       () => check(HEADING, /#[ \t]*/, onlyAfterCommentStart),

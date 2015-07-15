@@ -23,4 +23,5 @@ const Token = {
   // TODO: images, markdown links?
 };
 
+export type TokenType = $Enum<typeof Token>;
 export default Token;
