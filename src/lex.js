@@ -20,6 +20,7 @@ import {
   NEW_LINE,
   NON_COMMENT_LINE,
   PRE_FENCE,
+  SEPARATOR,
   SUB_HEADING,
   WORD
 } from './Token';
@@ -114,6 +115,7 @@ export default function lex(input: string): Array<Token> {
       () => check(CODE, /`[^`\n]+`/),
       () => check(BLOCK_QUOTE, />[ \t]*/, onlyAfterCommentStart),
       () => check(PRE_FENCE, /```[ \t]*/, onlyAfterCommentStart),
+      () => check(SEPARATOR, /---[ \t]*($|\n)/, onlyAfterCommentStart),
       () => check(WORD, /\S+[ \t]*/),
       () => check(NEW_LINE, /\n/),
     ];

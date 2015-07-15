@@ -93,6 +93,19 @@ describe('lex()', () => {
     ]);
   });
 
+  it('recognizes SEPARATOR tokens', () => {
+    expect(lex('" ---')).toEqual([
+      {content: '" ', position: 0, type: 'COMMENT_START'},
+      {content: '---', position: 2, type: 'SEPARATOR'},
+    ]);
+
+    // Now with some extra whitespace, just for fun.
+    expect(lex('" \t---  ')).toEqual([
+      {content: '" \t', position: 0, type: 'COMMENT_START'},
+      {content: '---  ', position: 3, type: 'SEPARATOR'},
+    ]);
+  });
+
   it('recognizes simple combinations of tokens', () => {
     expect(lex('""\n' + '"\n' + 'something')).toEqual([
       {content: '""\n', position: 0, type: 'DOC_BLOCK_START' },

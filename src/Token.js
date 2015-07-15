@@ -19,6 +19,7 @@ const Token = {
   NEW_LINE: 'NEW_LINE',
   NON_COMMENT_LINE: 'NON_COMMENT_LINE',
   PRE_FENCE: 'PRE_FENCE',
+  SEPARATOR: 'SEPARATOR',
   SUB_HEADING: 'SUB_HEADING',
   WORD: 'WORD',
   // TODO: images, markdown links?
