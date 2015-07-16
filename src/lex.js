@@ -101,26 +101,26 @@ export default function lex(input: string): Array<Token> {
     }
   };
 
-  while (remaining.length) {
-    const rules = [
-      // TODO: use/abuse sweet.js to make a DSL?
-      () => check(NON_COMMENT_LINE, /^[ \t]*([^" \t\n].*?)?($|\n)/, () => null),
-      () => check(DOC_BLOCK_START, /^[ \t]*""[ \t]*($|\n)/),
-      () => check(COMMENT_START, /^[ \t]*"[ \t]*/),
-      () => check(HEADING, /#[ \t]*/, onlyAfterCommentStart),
-      () => check(SUB_HEADING, /##[ \t]*/, onlyAfterCommentStart),
-      () => check(ANNOTATION, /@[a-z]+[ \t]*/, onlyAfterCommentStart),
-      () => check(LINK, /\|[^| \t\n]\|/),
-      () => check(LINK_TARGET, /\*[^* \t\n]\*/),
-      () => check(CODE, /`[^`\n]+`[ \t]*/),
-      () => check(BLOCK_QUOTE, />[ \t]*/, onlyAfterCommentStart),
-      () => check(PRE_FENCE, /```[ \t]*/, onlyAfterCommentStart),
-      () => check(SEPARATOR, /---[ \t]*($|\n)/, onlyAfterCommentStart),
-      () => check(WORD, /\S+[ \t]*/),
-      () => check(NEW_LINE, /\n/),
-    ];
+  const rules = [
+    // TODO: use/abuse sweet.js to make a DSL?
+    () => check(NON_COMMENT_LINE, /^[ \t]*([^" \t\n].*?)?($|\n)/, () => null),
+    () => check(DOC_BLOCK_START, /^[ \t]*""[ \t]*($|\n)/),
+    () => check(COMMENT_START, /^[ \t]*"[ \t]*/),
+    () => check(HEADING, /#[ \t]*/, onlyAfterCommentStart),
+    () => check(SUB_HEADING, /##[ \t]*/, onlyAfterCommentStart),
+    () => check(ANNOTATION, /@[a-z]+[ \t]*/, onlyAfterCommentStart),
+    () => check(LINK, /\|[^| \t\n]\|/),
+    () => check(LINK_TARGET, /\*[^* \t\n]\*/),
+    () => check(CODE, /`[^`\n]+`[ \t]*/),
+    () => check(BLOCK_QUOTE, />[ \t]*/, onlyAfterCommentStart),
+    () => check(PRE_FENCE, /```[ \t]*/, onlyAfterCommentStart),
+    () => check(SEPARATOR, /---[ \t]*($|\n)/, onlyAfterCommentStart),
+    () => check(WORD, /\S+[ \t]*/),
+    () => check(NEW_LINE, /\n/),
+  ];
 
-    if (!rules.find(rule => rule())) {
+  while (remaining.length) {
+    if (!rules.find(rule => rule())) { // eslint-disable-line no-loop-func
       break;
     }
   }
@@ -133,4 +133,4 @@ export default function lex(input: string): Array<Token> {
   }
 
   return tokens;
-};
+}

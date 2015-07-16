@@ -10,7 +10,7 @@ require('babel/polyfill');
 
 import run from './run';
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', reason => {
   throw reason;
 });
 

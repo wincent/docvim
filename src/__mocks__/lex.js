@@ -3,4 +3,6 @@
  * Licensed under the terms of the MIT license.
  */
 
+'use strict';
+
 module.exports = require.requireActual('../lex');

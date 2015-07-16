@@ -12,7 +12,6 @@ import fs from 'fs';
 import lex from './lex';
 import parse from './parse';
 import path from 'path';
-import type {TokenType} from './Token';
 
 const readFile = Promise.promisify(fs.readFile);
 const readdir = Promise.promisify(fs.readdir);
@@ -61,4 +60,4 @@ export default async function run(): void {
     const contents = await readFile(filename);
     process(contents.toString());
   });
-};
+}

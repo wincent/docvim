@@ -25,5 +25,5 @@ const Token = {
   // TODO: images, markdown links?
 };
 
-export type TokenType = $Enum<typeof Token>;
+export type TokenType = $Enum<typeof Token>; // eslint-disable-line no-undef
 export default Token;
