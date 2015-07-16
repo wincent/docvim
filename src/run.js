@@ -51,7 +51,9 @@ async function getFiles(directory: string): Array<string> {
 
 function process(input: string): Object {
   const tokens = lex(input);
-  return parse(tokens);
+  const ast = parse(tokens);
+  console.log(JSON.stringify(ast, null, 2));
+  return ast;
 }
 
 export default async function run(): void {
