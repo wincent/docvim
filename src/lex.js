@@ -58,7 +58,8 @@ export default function lex(input: string): Array<Token> {
    * Checks whether the input string has the token of type `type` at the current
    * position by testing it with the supplied `regexp`. The `success` callback
    * is called on a successful match, and has the opportunity to modify the
-   * token (by mutating it), or suppress it (by returning `null`)
+   * token (by mutating it), consume and discard it (by returning `null`), or
+   * indicate a failure to match (by returning `false`).
    */
   function check(
     type: TokenType,
