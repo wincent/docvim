@@ -10,6 +10,7 @@
 import Node from './Node';
 import {
   ANNOTATION,
+  BLOCK_QUOTE,
   COMMENT_START,
   DOC_BLOCK_START,
   NEW_LINE,
@@ -89,6 +90,17 @@ class Parser {
     }
   }
 
+  /**
+   * Rolls back the last token.
+   */
+  _rollbackToken(): void {
+    console.assert(
+      this._currentTokenIndex,
+      'Cannot rollback last token.'
+    );
+    this._currentTokenIndex--;
+  }
+
   _parseTranslationUnit(): Array<AST> {
     const result = [];
     for (;;) {
@@ -135,6 +147,11 @@ class Parser {
     switch (annotation.content.trim()) {
       case '@option':
         result.name = Node.OPTION_ANNOTATION;
+        result.option = this._getNextToken(WORD).content.trim();
+        result.type = this._getNextToken(WORD).content.trim();
+        result.default = this._getNextToken(WORD).content.trim();
+        this._skipNextToken(NEW_LINE);
+        result.children = this._parseMarkdown();
         break;
       case '@plugin':
         result.name = Node.PLUGIN_ANNOTATION;
@@ -147,7 +164,8 @@ class Parser {
             break;
           }
         }
-        result.children = this._parsePluginAnnotation();
+        this._skipNextToken(NEW_LINE);
+        result.children = this._parseMarkdown();
         break;
       default:
         throw new Error(`Unrecognized annotation type: ${annotation.type}`);
@@ -155,11 +173,85 @@ class Parser {
     return result;
   }
 
-  _parsePluginAnnotation(): AST {
-    this._skipNextToken(NEW_LINE);
-    return [];
+  _parseMarkdown(): Array<AST> {
+    const result = [];
+    for (;;) {
+      const token = this._getNextToken();
+      if (!token) {
+        break;
+      }
+      switch (token.type) {
+        case ANNOTATION:
+        case DOC_BLOCK_START:
+        case NON_COMMENT_LINE:
+          this._rollbackToken();
+          return result;
+        case COMMENT_START:
+        case NEW_LINE:
+          break;
+        case BLOCK_QUOTE:
+          result.push(this._parseBlockQuote());
+          break;
+      }
+    }
+    return result;
   }
 
+  _parseBlockQuote(): AST {
+    const result = {
+      name: Node.BLOCK_QUOTE,
+      children: [],
+    };
+    for (;;) {
+      const token = this._getNextToken();
+      if (!token) {
+        break;
+      }
+      switch (token.type) {
+        case ANNOTATION:
+        case DOC_BLOCK_START:
+        case NON_COMMENT_LINE:
+          this._rollbackToken();
+          return result;
+        case BLOCK_QUOTE:
+          break;
+        case COMMENT_START:
+          if (!this._peekNextToken(BLOCK_QUOTE)) {
+            return result;
+          }
+          break;
+        case NEW_LINE:
+        case WORD:
+          {
+            // Merge consecutive WORD children.
+            // Replace newlines with a space.
+            const previous = last(result.children);
+            const content = token.content.replace(/\n/, ' ');
+            if (previous && previous.name === Node.TEXT) {
+              previous.content += content;
+            } else {
+              result.children.push({
+                name: Node.TEXT,
+                content,
+              });
+            }
+          }
+          break;
+      }
+    }
+    return result;
+  }
+}
+
+/**
+ * Convenience helper to get the last item in an array.
+ */
+function last(array: Array): mixed {
+  if (array.length) {
+    return array[array.length - 1];
+  } else {
+    return null;
+  }
 }
 
 export default function parse(input: Array<Token>): AST {

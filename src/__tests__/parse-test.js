@@ -125,20 +125,26 @@ describe('parse()', () => {
       {content: '"', position: 281, type: 'COMMENT_START'},
       {content: '\n', position: 282, type: 'NEW_LINE'},
       {content: '" ', position: 283, type: 'COMMENT_START'},
-      {content: '*arbitrary-link-target*', position: 285, type: 'WORD'},
+      {content: '*arbitrary-link-target*', position: 285, type: 'TARGET'},
       {content: '\n', position: 308, type: 'NEW_LINE'},
       {content: '" ', position: 309, type: 'COMMENT_START'},
       {content: 'We ', position: 311, type: 'WORD'},
       {content: 'should ', position: 314, type: 'WORD'},
       {content: 'probably ', position: 321, type: 'WORD'},
-      {content: '|g:LinkToOtherStuff|.', position: 330, type: 'WORD'},
-      {content: '\n', position: 351, type: 'NEW_LINE'}
+      {content: '|g:LinkToOtherStuff|', position: 330, type: 'LINK'},
+      {content: '.', position: 350, type: 'WORD'},
+      {content: '\n', position: 351, type: 'NEW_LINE'},
     ];
     expect(parse(tokens)).toEqual({
       children: [{
         children: [{
-          children: [
-          ],
+          children: [{
+            children: [{
+              content: 'Here is a block-quote. You should read it. # This is not considered a heading. And ``` <-- that isn\'t a "pre fence" ',
+              name: 'TEXT',
+            }],
+            name: 'BLOCK_QUOTE',
+          }],
           description: 'Description of the plug-in',
           name: 'PLUGIN_ANNOTATION',
           plugin: 'Plugin',
