@@ -13,8 +13,10 @@ import {
   BLOCK_QUOTE,
   COMMENT_START,
   DOC_BLOCK_START,
+  HEADING,
   NEW_LINE,
   NON_COMMENT_LINE,
+  SUB_HEADING,
   WORD,
 } from './Token';
 import type {Token} from './lex';
@@ -192,6 +194,12 @@ class Parser {
         case BLOCK_QUOTE:
           result.push(this._parseBlockQuote());
           break;
+        case HEADING:
+          result.push(this._parseHeading(Node.HEADING));
+          break;
+        case SUB_HEADING:
+          result.push(this._parseHeading(Node.SUB_HEADING));
+          break;
       }
     }
     return result;
@@ -240,6 +248,25 @@ class Parser {
       }
     }
     return result;
+  }
+
+  _parseHeading(nodeType: string): AST {
+    const content = [];
+    for (;;) {
+      const token = this._getNextToken();
+      if (!token || token.type === NEW_LINE) {
+        break;
+      } else if (token.type !== WORD) {
+        this._rollbackToken();
+        break;
+      }
+      // Merge consecutive WORD children.
+      content.push(token.content.trim());
+    }
+    return {
+      name: nodeType,
+      content: content.join(' '),
+    };
   }
 }
 

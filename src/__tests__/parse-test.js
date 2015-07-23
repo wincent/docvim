@@ -67,14 +67,25 @@ describe('parse()', () => {
     `);
     expect(parse(lex(input))).toEqual({
       children: [{
-        children: [{
-          children: [{
+        children: [
+          {
             children: [{
-              content: 'Here is a block-quote. You should read it. # This is not considered a heading. And ``` <-- that isn\'t a "pre fence" ',
-              name: 'TEXT',
-            }],
-            name: 'BLOCK_QUOTE',
-          }],
+              children: [{
+                content: 'Here is a block-quote. You should read it. # This is not considered a heading. And ``` <-- that isn\'t a "pre fence" ',
+                name: 'TEXT',
+              }],
+              name: 'BLOCK_QUOTE',
+            },
+            {
+              content: 'Code samples',
+              name: 'HEADING',
+            },
+            // TODO: more here
+            {
+              content: 'More stuff',
+              name: 'SUB_HEADING',
+            }
+          ],
           description: 'Description of the plug-in',
           name: 'PLUGIN_ANNOTATION',
           plugin: 'Plugin',
