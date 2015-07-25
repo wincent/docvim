@@ -89,6 +89,10 @@ describe('parse()', () => {
             {
               content: 'More stuff',
               name: 'SUB_HEADING',
+            },
+            {
+              content: 'arbitrary-link-target',
+              name: 'LINK_TARGET',
             }
           ],
           description: 'Description of the plug-in',

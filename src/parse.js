@@ -14,6 +14,7 @@ import {
   COMMENT_START,
   DOC_BLOCK_START,
   HEADING,
+  LINK_TARGET,
   NEW_LINE,
   NON_COMMENT_LINE,
   PRE_FENCE,
@@ -204,6 +205,12 @@ class Parser {
         case PRE_FENCE:
           this._getNextToken(NEW_LINE);
           result.push(this._parsePre(Node.PRE));
+          break;
+        case LINK_TARGET:
+          result.push({
+            content: token.content.replace(/^\s*\*|\*\s*$/g, ''),
+            name: Node.LINK_TARGET,
+          });
           break;
       }
     }
