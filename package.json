@@ -12,7 +12,10 @@
     "rootDir": "src",
     "setupEnvScriptFile": "../jest/bootstrap.js",
     "scriptPreprocessor": "../node_modules/babel-jest",
-    "unmockedModulePathPatterns": ["core-js/.*"]
+    "unmockedModulePathPatterns": [
+      "core-js/.*",
+      "src"
+    ]
   },
   "license": "MIT",
   "name": "docvim",
