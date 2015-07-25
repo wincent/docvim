@@ -214,10 +214,19 @@ class Parser {
           });
           break;
         case LINK:
-          result.push({
-            content: token.content.replace(/^\||\|\s*$/g, ''),
-            name: Node.LINK,
-          });
+          {
+            result.push({
+              content: token.content.replace(/^\||\|\s*$/g, ''),
+              name: Node.LINK,
+            });
+            const match = token.content.match(/(\s+)$/);
+            if (match) {
+              result.push({
+                content: match[1],
+                name: Node.TEXT,
+              });
+            }
+          }
           break;
         case WORD:
           {
@@ -229,8 +238,8 @@ class Parser {
               previous.content += content;
             } else {
               result.push({
-                name: Node.TEXT,
                 content,
+                name: Node.TEXT,
               });
             }
           }
