@@ -80,7 +80,12 @@ describe('parse()', () => {
               content: 'Code samples',
               name: 'HEADING',
             },
-            // TODO: more here
+            {
+              content:
+                'let g:example=1\n' +
+                'let g:other=2',
+              name: 'PRE',
+            },
             {
               content: 'More stuff',
               name: 'SUB_HEADING',

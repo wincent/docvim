@@ -16,6 +16,7 @@ import {
   HEADING,
   NEW_LINE,
   NON_COMMENT_LINE,
+  PRE_FENCE,
   SUB_HEADING,
   WORD,
 } from './Token';
@@ -200,6 +201,10 @@ class Parser {
         case SUB_HEADING:
           result.push(this._parseHeading(Node.SUB_HEADING));
           break;
+        case PRE_FENCE:
+          this._getNextToken(NEW_LINE);
+          result.push(this._parsePre(Node.PRE));
+          break;
       }
     }
     return result;
@@ -245,6 +250,33 @@ class Parser {
             }
           }
           break;
+      }
+    }
+    return result;
+  }
+
+  _parsePre(): AST {
+    const result = {
+      name: Node.PRE,
+      content: '',
+    };
+    for (;;) {
+      const token = this._getNextToken();
+      if (!token) {
+        break;
+      }
+      switch (token.type) {
+        case PRE_FENCE:
+          // End of the block.
+          this._getNextToken(NEW_LINE);
+          result.content = result.content.trim();
+          return result;
+        case COMMENT_START:
+          break;
+        case NON_COMMENT_LINE:
+          throw new Error(`Found unterminated PRE block at ${token.position}`);
+        default:
+          result.content += token.content;
       }
     }
     return result;
