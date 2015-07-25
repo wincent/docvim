@@ -24,7 +24,7 @@ import {
 } from './Token';
 import type {Token} from './lex';
 
-type AST = {
+export type AST = {
   children?: Array<AST>;
   content?: string;
   name: string;

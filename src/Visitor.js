@@ -7,33 +7,38 @@
 
 'use strict';
 
+import type {AST} from './parse';
 import titleCase from './titleCase';
 
-export type VisitorState = {
-  output: string;
-  [key: string]: mixed;
-};
-
-export default class Visitor {
+export default class Visitor<Ts: Object> {
   _ast: AST;
 
   constructor(ast: AST) {
     this._ast = ast;
   }
 
+  getInitialState(): Ts {
+    // Generic default, subclasses override.
+    return {};
+  }
+
   /**
    * Generic entry point, starts visiting the AST from the root.
    */
-  visit(): mixed {
-    const state = {output: ''};
+  visit(state: ?Ts): Ts {
+    if (state) {
+      state = {...this.getInitialState(), ...state};
+    } else {
+      state = this.getInitialState();
+    }
     this.visitNode(this._ast, state);
-    return state.output;
+    return state;
   }
 
   /**
    * Traverse `node`'s children, if they exist.
    */
-  traverse(node: AST, state: VisitorState): ?AST {
+  traverse(node: AST, state: Ts): ?AST {
     if (node.children) {
       node.children.forEach(child => this.visitNode(child, state));
     }
@@ -43,7 +48,7 @@ export default class Visitor {
   /**
    * Generic node visitor.
    */
-  visitNode(node: AST, state: VisitorState): ?AST {
+  visitNode(node: AST, state: Ts): ?AST {
     // Call specialized visit method, if available.
     const specialized = 'visit' + titleCase(node.name) + 'Node';
     if (specialized in this) {

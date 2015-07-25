@@ -38,6 +38,6 @@ describe('Visitor', () => {
     const ast = parse(lex(input));
     const visitor = new Visitor(ast);
     const result = visitor.visit();
-    expect(result).toEqual('');
+    expect(result).toEqual({});
   });
 });

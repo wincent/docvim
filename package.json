@@ -38,6 +38,7 @@
     "babel-jest": "^5.3.0",
     "bluebird": "^2.9.32",
     "eslint": "^0.24.0",
+    "farmhash": "^1.0.0",
     "gulp": "^3.9.0",
     "gulp-babel": "^5.1.0",
     "gulp-eslint": "^0.15.0",

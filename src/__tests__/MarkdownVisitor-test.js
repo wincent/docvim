@@ -51,8 +51,38 @@ describe('MarkdownVisitor', () => {
 
       ## More stuff
 
-      <em><a name="arbitrary-link-target" />arbitrary-link-target</em>We should probably <strong>[g:LinkToOtherStuff](#g:LinkToOtherStuff)</strong>.
+      <em><a name="arbitrary-link-target" />arbitrary-link-target</em>We should probably <strong>g:LinkToOtherStuff</strong>.
     `).trim();
-    expect(result).toEqual(output);
+    expect(result.output).toEqual(output);
+  });
+
+  it('consults the supplied symbol table', () => {
+    const input = dedent(`
+      ""
+      " @plugin Plugin Description of the plug-in
+      "
+      " A |g:LinkToOtherStuff| and |:augroup|.
+    `);
+    const ast = parse(lex(input));
+    const visitor = new MarkdownVisitor(ast);
+
+    // With no symbol table, we don't get links.
+    let result = visitor.visit();
+    // BUG: slurping whitespace after link here:
+    let output = dedent(`
+      A <strong>g:LinkToOtherStuff</strong>and <strong>:augroup</strong>.
+    `).trim();
+    expect(result.output).toEqual(output);
+
+    // With the symbol table, we get links for items in the table only.
+    result = visitor.visit({
+      table: {
+        'g:LinkToOtherStuff': '[hash-g-linktootherstuff]',
+      },
+    });
+    output = dedent(`
+      A <strong>[g:LinkToOtherStuff](#[hash-g-linktootherstuff])</strong>and <strong>:augroup</strong>.
+    `).trim();
+    expect(result.output).toEqual(output);
   });
 });
