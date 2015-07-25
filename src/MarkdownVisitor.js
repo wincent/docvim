@@ -50,7 +50,7 @@ export default class MarkdownVisitor<State> extends Visitor {
   }
 
   visitLinkTargetNode(node: AST, state: State): ?AST {
-    state.output += `<em><a name="${node.content}" />${node.content}</em>`;
+    state.output += `<a name="${node.content}" />\n`;
     return node;
   }
 
