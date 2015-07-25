@@ -39,16 +39,18 @@ describe('MarkdownVisitor', () => {
     const visitor = new MarkdownVisitor(ast);
     const result = visitor.visit();
     const output = dedent(`
+      # Plugin
+
       > Here is a block-quote. You should read it. # This is not considered a heading. And ${'```'} <-- that isn't a "pre fence"
 
-      # Code samples
+      ## Code samples
 
       ${'```'}
       let g:example=1
       let g:other=2
       ${'```'}
 
-      ## More stuff
+      ### More stuff
 
       <a name="arbitrary-link-target"></a>
       We should probably <strong>g:LinkToOtherStuff</strong>.
@@ -69,6 +71,8 @@ describe('MarkdownVisitor', () => {
     // With no symbol table, we don't get links.
     let result = visitor.visit();
     let output = dedent(`
+      # Plugin
+
       A <strong>g:LinkToOtherStuff</strong> and <strong>:augroup</strong>.
     `).trim();
     expect(result.output).toEqual(output);
@@ -80,6 +84,8 @@ describe('MarkdownVisitor', () => {
       },
     });
     output = dedent(`
+      # Plugin
+
       A <strong>[g:LinkToOtherStuff](#[hash-g-linktootherstuff])</strong> and <strong>:augroup</strong>.
     `).trim();
     expect(result.output).toEqual(output);

@@ -23,6 +23,11 @@ export default class MarkdownVisitor<State> extends Visitor {
     };
   }
 
+  visitPluginAnnotationNode(node: AST, state: State): ?AST {
+    state.output += '# ' + node.plugin + '\n\n';
+    return node;
+  }
+
   visitBlockQuoteNode(node: AST, state: State): ?AST {
     state.output += '> ';
     node.children.forEach(child => {
@@ -40,12 +45,14 @@ export default class MarkdownVisitor<State> extends Visitor {
   }
 
   visitHeadingNode(node: AST, state: State): ?AST {
-    state.output += '# ' + node.content.trim() + '\n\n';
+    // First-level heading is reserved for the @plugin annotation, so "heading"
+    // is actually '##'.
+    state.output += '## ' + node.content.trim() + '\n\n';
     return node;
   }
 
   visitSubHeadingNode(node: AST, state: State): ?AST {
-    state.output += '## ' + node.content.trim() + '\n\n';
+    state.output += '### ' + node.content.trim() + '\n\n';
     return node;
   }
 
