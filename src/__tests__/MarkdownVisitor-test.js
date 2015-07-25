@@ -51,7 +51,7 @@ describe('MarkdownVisitor', () => {
 
       ## More stuff
 
-      <a name="arbitrary-link-target" />
+      <a name="arbitrary-link-target"></a>
       We should probably <strong>g:LinkToOtherStuff</strong>.
     `).trim();
     expect(result.output).toEqual(output);
