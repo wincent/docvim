@@ -93,7 +93,19 @@ describe('parse()', () => {
             {
               content: 'arbitrary-link-target',
               name: 'LINK_TARGET',
-            }
+            },
+            {
+              content: 'We should probably ',
+              name: 'TEXT',
+            },
+            {
+              content: 'g:LinkToOtherStuff',
+              name: 'LINK',
+            },
+            {
+              content: '.',
+              name: 'TEXT',
+            },
           ],
           description: 'Description of the plug-in',
           name: 'PLUGIN_ANNOTATION',

@@ -14,6 +14,7 @@ import {
   COMMENT_START,
   DOC_BLOCK_START,
   HEADING,
+  LINK,
   LINK_TARGET,
   NEW_LINE,
   NON_COMMENT_LINE,
@@ -208,9 +209,31 @@ class Parser {
           break;
         case LINK_TARGET:
           result.push({
-            content: token.content.replace(/^\s*\*|\*\s*$/g, ''),
+            content: token.content.replace(/^\*|\*\s*$/g, ''),
             name: Node.LINK_TARGET,
           });
+          break;
+        case LINK:
+          result.push({
+            content: token.content.replace(/^\||\|\s*$/g, ''),
+            name: Node.LINK,
+          });
+          break;
+        case WORD:
+          {
+            // Merge consecutive WORD children.
+            // Replace newlines with a space.
+            const previous = last(result);
+            const content = token.content.replace(/\n/, ' ');
+            if (previous && previous.name === Node.TEXT) {
+              previous.content += content;
+            } else {
+              result.push({
+                name: Node.TEXT,
+                content,
+              });
+            }
+          }
           break;
       }
     }
