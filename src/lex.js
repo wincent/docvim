@@ -22,6 +22,7 @@ import {
   PRE_FENCE,
   SEPARATOR,
   SUB_HEADING,
+  WHITESPACE,
   WORD
 } from './Token';
 
@@ -35,11 +36,12 @@ export type Token = {
  * Dead-simple lexer.
  *
  * Not intended to be ultra efficient, but rather, provide an easy framework for
- * throwing regexp-based token recognizers together.
+ * putting regexp-based token recognizers together.
  */
 export default function lex(input: string): Array<Token> {
   let position = 0;
   let remaining = input;
+  let tokenizeWhitespace = false;
   const tokens = [];
 
   function lastToken(type: ?TokenType) {
@@ -58,7 +60,7 @@ export default function lex(input: string): Array<Token> {
    * Checks whether the input string has the token of type `type` at the current
    * position by testing it with the supplied `regexp`. The `success` callback
    * is called on a successful match, and has the opportunity to modify the
-   * token (by mutating it), consume and discard it (by returning `null`), or
+   * token (by mutating it), consume/discard it (by returning `null`), or
    * indicate a failure to match (by returning `false`).
    */
   function check(
@@ -109,14 +111,24 @@ export default function lex(input: string): Array<Token> {
     () => check(COMMENT_START, /^[ \t]*"[ \t]*/),
     () => check(SUB_HEADING, /##[ \t]*/, onlyAfterCommentStart),
     () => check(HEADING, /#[ \t]*/, onlyAfterCommentStart),
-    () => check(ANNOTATION, /@[a-z]+[ \t]*/, onlyAfterCommentStart),
-    () => check(LINK, /\|[^| \t\n]+\|[ \t]*/),
-    () => check(LINK_TARGET, /\*[^* \t\n]+\*[ \t]*/),
-    () => check(CODE, /`[^`\n]+`[ \t]*/),
+    () => check(ANNOTATION, /@[a-z]+/, onlyAfterCommentStart),
+    () => check(LINK, /\|[^| \t\n]+\|/),
+    () => check(LINK_TARGET, /\*[^* \t\n]+\*/),
+    () => check(CODE, /`[^`\n]+`/),
     () => check(BLOCK_QUOTE, />[ \t]*/, onlyAfterCommentStart),
-    () => check(PRE_FENCE, /```[ \t]*/, onlyAfterCommentStart),
+    () => check(
+      PRE_FENCE,
+      /```/,
+      (match, token) => {
+        onlyAfterCommentStart(match, token);
+        if (token.type === PRE_FENCE) {
+          tokenizeWhitespace = !tokenizeWhitespace;
+        }
+      }
+    ),
     () => check(SEPARATOR, /---[ \t]*($|\n)/, onlyAfterCommentStart),
-    () => check(WORD, /\S+[ \t]*/),
+    () => check(WORD, /\S+/),
+    () => check(WHITESPACE, /[ \t]+/, (_, token) => tokenizeWhitespace ? token : null),
     () => check(NEW_LINE, /\n/),
   ];
 

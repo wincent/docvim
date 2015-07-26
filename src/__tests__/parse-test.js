@@ -71,7 +71,7 @@ describe('parse()', () => {
           {
             children: [{
               children: [{
-                content: 'Here is a block-quote. You should read it. # This is not considered a heading. And ``` <-- that isn\'t a "pre fence" ',
+                content: 'Here is a block-quote. You should read it. # This is not considered a heading. And ``` <-- that isn\'t a "pre fence"',
                 name: 'TEXT',
               }],
               name: 'BLOCK_QUOTE',
@@ -95,7 +95,7 @@ describe('parse()', () => {
               name: 'LINK_TARGET',
             },
             {
-              content: 'We should probably ',
+              content: 'We should probably',
               name: 'TEXT',
             },
             {

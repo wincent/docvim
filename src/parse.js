@@ -152,25 +152,28 @@ class Parser {
     switch (annotation.content.trim()) {
       case '@option':
         result.name = Node.OPTION_ANNOTATION;
-        result.option = this._getNextToken(WORD).content.trim();
-        result.type = this._getNextToken(WORD).content.trim();
-        result.default = this._getNextToken(WORD).content.trim();
+        result.option = this._getNextToken(WORD).content;
+        result.type = this._getNextToken(WORD).content;
+        result.default = this._getNextToken(WORD).content;
         this._skipNextToken(NEW_LINE);
         result.children = this._parseMarkdown();
         break;
       case '@plugin':
-        result.name = Node.PLUGIN_ANNOTATION;
-        result.plugin = this._getNextToken(WORD).content.trim();
-        result.description = '';
-        for (;;) {
-          if (this._peekNextToken(WORD)) {
-            result.description += this._getNextToken().content;
-          } else {
-            break;
+        {
+          result.name = Node.PLUGIN_ANNOTATION;
+          result.plugin = this._getNextToken(WORD).content;
+          const description = [];
+          for (;;) {
+            if (this._peekNextToken(WORD)) {
+              description.push(this._getNextToken().content);
+            } else {
+              break;
+            }
           }
+          this._skipNextToken(NEW_LINE);
+          result.description = description.join(' ');
+          result.children = this._parseMarkdown();
         }
-        this._skipNextToken(NEW_LINE);
-        result.children = this._parseMarkdown();
         break;
       default:
         throw new Error(`Unrecognized annotation type: ${annotation.type}`);
@@ -209,33 +212,23 @@ class Parser {
           break;
         case LINK_TARGET:
           result.push({
-            content: token.content.replace(/^\*|\*\s*$/g, ''),
+            content: token.content.replace(/^\*|\*$/g, ''),
             name: Node.LINK_TARGET,
           });
           break;
         case LINK:
-          {
-            result.push({
-              content: token.content.replace(/^\||\|\s*$/g, ''),
-              name: Node.LINK,
-            });
-            const match = token.content.match(/(\s+)$/);
-            if (match) {
-              result.push({
-                content: match[1],
-                name: Node.TEXT,
-              });
-            }
-          }
+          result.push({
+            content: token.content.replace(/^\||\|$/g, ''),
+            name: Node.LINK,
+          });
           break;
         case WORD:
           {
             // Merge consecutive WORD children.
-            // Replace newlines with a space.
+            const content = token.content;
             const previous = last(result);
-            const content = token.content.replace(/\n/, ' ');
             if (previous && previous.name === Node.TEXT) {
-              previous.content += content;
+              previous.content += ' ' + content;
             } else {
               result.push({
                 content,
@@ -276,11 +269,13 @@ class Parser {
         case WORD:
           {
             // Merge consecutive WORD children.
-            // Replace newlines with a space.
             const previous = last(result.children);
-            const content = token.content.replace(/\n/, ' ');
+            // WORD token inside the blockquote
+            const content = token.content.trim();
             if (previous && previous.name === Node.TEXT) {
-              previous.content += content;
+              if (content) {
+                previous.content += ' ' + content;
+              }
             } else {
               result.children.push({
                 name: Node.TEXT,
@@ -332,7 +327,7 @@ class Parser {
         break;
       }
       // Merge consecutive WORD children.
-      content.push(token.content.trim());
+      content.push(token.content);
     }
     return {
       name: nodeType,

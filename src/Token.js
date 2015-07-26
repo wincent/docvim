@@ -21,6 +21,7 @@ const Token = {
   PRE_FENCE: 'PRE_FENCE',
   SEPARATOR: 'SEPARATOR',
   SUB_HEADING: 'SUB_HEADING',
+  WHITESPACE: 'WHITESPACE',
   WORD: 'WORD',
   // TODO: images, markdown links?
 };

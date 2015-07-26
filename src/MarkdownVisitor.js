@@ -15,6 +15,18 @@ type State = {
   table: Object;
 };
 
+function pad(input: string, following: ?string): string {
+  if (
+    input &&
+    input.match(/\S$/) &&
+    (!following || !following.match(/^[.,:;!?]$/))
+  ) {
+    return input + ' ';
+  } else {
+    return input;
+  }
+}
+
 export default class MarkdownVisitor<State> extends Visitor {
   getInitialState(): State {
     return {
@@ -57,11 +69,13 @@ export default class MarkdownVisitor<State> extends Visitor {
   }
 
   visitLinkTargetNode(node: AST, state: State): ?AST {
+    // Invisible.
     state.output += `<a name="${node.content}"></a>\n`;
     return node;
   }
 
   visitLinkNode(node: AST, state: State): ?AST {
+    state.output = pad(state.output);
     if (state.table.hasOwnProperty(node.content)) {
       state.output += `<strong>[${node.content}](#${state.table[node.content]})</strong>`;
     } else {
@@ -71,6 +85,7 @@ export default class MarkdownVisitor<State> extends Visitor {
   }
 
   visitTextNode(node: AST, state: State): ?AST {
+    state.output = pad(state.output, node.content);
     state.output += node.content;
     return node;
   }
