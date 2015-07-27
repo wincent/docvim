@@ -9,8 +9,10 @@
 
 import yargs from 'yargs';
 
+const json = require('../package');
+
 export default yargs
-  .version(() => require('../package').version)
+  .version(json.version)
   .usage('Usage: $0 [options]')
   .example('$0 -C build file.txt README.md -')
   .alias('C', 'directory')
@@ -20,6 +22,6 @@ export default yargs
   .string('C')
   .help('h')
   .alias('h', 'help')
-  .epilog('https://github.com/wincent/docvim')
+  .epilog(json.homepage)
   .strict()
   .argv;
