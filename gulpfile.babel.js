@@ -76,7 +76,7 @@ gulp.task('test', () => (
   )
     .pipe(mocha({
       opts: 'mocha/mocha.opts',
-      reporter: watching ? 'min' : 'list',
+      reporter: watching ? 'mocha/watch-reporter' : 'list',
     }))
 ));
 
