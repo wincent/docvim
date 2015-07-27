@@ -13,7 +13,6 @@ process.on('unhandledRejection', function(reason, promise) {
 });
 
 global.expect = require('expect');
-global.sinon = require('sinon');
 
 require('babel/register')(
   JSON.parse(

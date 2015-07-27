@@ -5,7 +5,9 @@
 
 'use strict';
 
-var sandbox;
+import sinon from 'sinon';
+
+let sandbox;
 
 beforeEach(function() {
   sandbox = sinon.sandbox.create();
@@ -15,6 +17,8 @@ afterEach(function() {
   sandbox.restore();
 });
 
-global.stub = function() {
-  sandbox.stub(...arguments);
-}
+global.sinon = {
+  stub() {
+    sandbox.stub(...arguments);
+  },
+};
