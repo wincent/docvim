@@ -5,16 +5,18 @@
 
 'use strict';
 
-// Jest chokes if it tries to require a compiled module, so we fake it.
-jest.setMock('farmhash', {
-  fingerprint32(input) {
-    return `[hash:${input}]`;
-  },
-});
-
 const SymbolVisitor = require('../SymbolVisitor');
+const farmhash = require('farmhash');
 
 describe('SymbolVisitor', () => {
+  beforeEach(() => {
+    sinon.stub(farmhash, 'fingerprint32', (input) => `[hash:${input}]`);
+  });
+
+  afterEach(() => {
+    farmhash.fingerprint32.restore();
+  });
+
   let ast = {
     children: [
       {
