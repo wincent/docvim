@@ -10,11 +10,7 @@ import farmhash from 'farmhash';
 
 describe('SymbolVisitor', () => {
   beforeEach(() => {
-    sinon.stub(farmhash, 'fingerprint32', (input) => `[hash:${input}]`);
-  });
-
-  afterEach(() => {
-    farmhash.fingerprint32.restore();
+    stub(farmhash, 'fingerprint32', (input) => `[hash:${input}]`);
   });
 
   let ast = {
