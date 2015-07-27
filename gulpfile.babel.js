@@ -1,12 +1,12 @@
 // Copyright 2015-present Greg Hurrell. All rights reserved.
 // Licensed under the terms of the MIT license.
 
-var babel = require('gulp-babel');
-var eslint = require('gulp-eslint');
-var flow = require('gulp-flowtype');
-var gulp = require('gulp');
-var gutil = require('gulp-util');
-var mocha = require('gulp-spawn-mocha');
+import babel from 'gulp-babel';
+import eslint from 'gulp-eslint';
+import flow from 'gulp-flowtype';
+import gulp from 'gulp';
+import gutil from 'gulp-util';
+import mocha from 'gulp-spawn-mocha';
 
 var watching = false;
 
@@ -22,7 +22,7 @@ function ringBell() {
  * task from dying on error).
  */
 function wrap(stream) {
-  stream.on('error', function(error) {
+  stream.on('error', error => {
     gutil.log(gutil.colors.red(error.message));
     gutil.log(error.stack);
     if (watching) {
@@ -45,19 +45,19 @@ gulp.task('flow', ['typecheck']);
 
 gulp.task('js', ['babel', 'lint', 'test', 'typecheck']);
 
-gulp.task('babel', function() {
-  return gulp.src('src/**/*.js')
+gulp.task('babel', () => (
+  gulp.src('src/**/*.js')
     .pipe(wrap(babel()))
-    .pipe(gulp.dest('dist'));
-});
+    .pipe(gulp.dest('dist'))
+));
 
-gulp.task('lint', function() {
-  return gulp.src('src/**/*.js')
+gulp.task('lint', () => (
+  gulp.src('src/**/*.js')
     .pipe(eslint())
-    .pipe(eslint.format());
-});
+    .pipe(eslint.format())
+));
 
-gulp.task('typecheck', function() {
+gulp.task('typecheck', () => {
   return gulp.src('src/**/*.js', {read: false})
     .pipe(gutil.noop());
 
@@ -66,16 +66,18 @@ gulp.task('typecheck', function() {
     .pipe(flow())
 });
 
-gulp.task('test', function() {
-  return gulp.src(
+gulp.task('test', () => (
+  gulp.src(
     [
       'src/**/__mocks__/*.js',
       'src/**/__tests__/*-test.js',
-    ], {read: false})
-    .pipe(mocha({opts: 'mocha/mocha.opts'}));
-});
+    ],
+    {read: false}
+  )
+    .pipe(mocha({opts: 'mocha/mocha.opts'}))
+));
 
-gulp.task('watch', function() {
+gulp.task('watch', () => {
   watching = true;
   gulp.watch('src/**/*.js', ['build']);
 });
