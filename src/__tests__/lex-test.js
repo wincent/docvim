@@ -5,8 +5,8 @@
 
 'use strict';
 
-const dedent = require('../dedent');
-const lex = require('../lex');
+import dedent from '../dedent';
+import lex from '../lex';
 
 describe('lex()', () => {
   it('lexes an empty string', () => {

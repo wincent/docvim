@@ -5,8 +5,8 @@
 
 'use strict';
 
-const SymbolVisitor = require('../SymbolVisitor');
-const farmhash = require('farmhash');
+import SymbolVisitor from '../SymbolVisitor';
+import farmhash from 'farmhash';
 
 describe('SymbolVisitor', () => {
   beforeEach(() => {

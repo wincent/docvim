@@ -5,9 +5,9 @@
 
 'use strict';
 
-const dedent = require('../dedent');
-const parse = require('../parse');
-const lex = require('../lex');
+import dedent from '../dedent';
+import parse from '../parse';
+import lex from '../lex';
 
 describe('parse()', () => {
   it('parses an empty file', () => {

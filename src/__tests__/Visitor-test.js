@@ -5,10 +5,10 @@
 
 'use strict';
 
-const Visitor = require('../Visitor');
-const dedent = require('../dedent');
-const lex = require('../lex');
-const parse = require('../parse');
+import Visitor from '../Visitor';
+import dedent from '../dedent';
+import lex from '../lex';
+import parse from '../parse';
 
 describe('Visitor', () => {
   it('visits', () => {

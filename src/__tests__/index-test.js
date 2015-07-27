@@ -5,11 +5,11 @@
 
 'use strict';
 
-const Promise = require('bluebird');
-const fs = require('fs');
-const getFiles = require('../getFiles');
-const lex = require('../lex');
-const parse = require('../parse');
+import Promise from 'bluebird';
+import fs from 'fs';
+import getFiles from '../getFiles';
+import lex from '../lex';
+import parse from '../parse';
 
 const readFile = Promise.promisify(fs.readFile);
 

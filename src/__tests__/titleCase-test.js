@@ -5,7 +5,7 @@
 
 'use strict';
 
-const titleCase = require('../titleCase');
+import titleCase from '../titleCase';
 
 describe('titleCase()', () => {
   it('converts to title case', () => {
