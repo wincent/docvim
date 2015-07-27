@@ -12,8 +12,8 @@ import yargs from 'yargs';
 const json = require('../package');
 
 export default yargs
-  .usage('Usage: $0 [options]')
-  .example('$0 -C build file.txt README.md -')
+  .usage('Usage: $0 [option...] [outfile...]')
+  .example('$0 -C build file.txt README.md')
   .alias('C', 'directory')
   .default('C', '.', 'current directory')
   .describe('C', 'Change to directory before processing')
