@@ -17,13 +17,22 @@ import parse from './parse';
 const readFile = Promise.promisify(fs.readFile);
 
 export default async function run(): void {
-  const directory = Array.isArray(config.directory) ?
-    config.directory[config.directory.length - 1] :
-    config.directory;
+  try {
+    const directory = Array.isArray(config.directory) ?
+      config.directory[config.directory.length - 1] :
+      config.directory;
 
-  const files = await getFiles(directory);
-  const asts = await* files.map(async filename => {
-    const contents = await readFile(filename);
-    return parse(lex(contents.toString()));
-  });
+    const files = await getFiles(directory);
+    const asts = await* files.map(async filename => {
+      const contents = await readFile(filename);
+      return parse(lex(contents.toString()));
+    });
+  } catch (error) {
+    if (config.debug) {
+      throw error;
+    } else {
+      console.error(`${error.name}: ${error.message}`);
+      console.error('[Pass --debug to see full stack trace]');
+    }
+  }
 }
