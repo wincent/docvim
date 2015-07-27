@@ -27,7 +27,7 @@ function pad(input: string, following: ?string): string {
   }
 }
 
-export default class MarkdownVisitor<State> extends Visitor {
+export default class MarkdownVisitor extends Visitor<State> {
   getInitialState(): State {
     return {
       output: '',

@@ -34,11 +34,11 @@ function anchor(target: string) {
 /**
  * Traverses entire AST building up symbol table representing linkable targets.
  */
-export default class SymbolVisitor<State> extends Visitor {
+export default class SymbolVisitor extends Visitor<State> {
   getInitialState(): State {
     return {
       table: {},
-    }
+    };
   }
 
   visitLinkTargetNode(node: AST, state: State) {

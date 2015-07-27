@@ -24,6 +24,7 @@ describe('Integration tests', () => {
     });
 
     // TODO: actual assertions here
+    asts;  // eslint-disable-line no-unused-expressions
     done();
   });
 });
