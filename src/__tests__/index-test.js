@@ -10,12 +10,14 @@ import fs from 'fs';
 import getFiles from '../getFiles';
 import lex from '../lex';
 import parse from '../parse';
+import path from 'path';
 
 const readFile = Promise.promisify(fs.readFile);
 
 describe('Integration tests', () => {
   it('produces output', async function(done) {
-    const files = await getFiles('fixtures');
+    const fixtures = path.join(__dirname, '..', '..', 'fixtures');
+    const files = await getFiles(fixtures);
     const asts = await* files.map(async filename => {
       const contents = await readFile(filename);
       return parse(lex(contents.toString()));

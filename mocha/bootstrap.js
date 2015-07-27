@@ -5,6 +5,9 @@
 
 require('babel/polyfill');
 
+var fs = require('fs');
+var path = require('path');
+
 process.on('unhandledRejection', function(reason, promise) {
   throw reason;
 });
@@ -13,5 +16,9 @@ global.expect = require('expect');
 global.sinon = require('sinon');
 
 require('babel/register')(
-  JSON.parse(require('fs').readFileSync('.babelrc'))
+  JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, '..', '.babelrc')
+    )
+  )
 );
