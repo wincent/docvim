@@ -33,6 +33,7 @@
     "gulp-babel": "^5.1.0",
     "gulp-eslint": "^0.15.0",
     "gulp-flowtype": "^0.4.7",
+    "gulp-spawn-mocha": "^2.2.1",
     "gulp-util": "^3.0.6",
     "mocha": "^2.2.5",
     "sinon": "^1.15.4",

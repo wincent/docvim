@@ -6,6 +6,7 @@ var eslint = require('gulp-eslint');
 var flow = require('gulp-flowtype');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
+var mocha = require('gulp-spawn-mocha');
 
 var watching = false;
 
@@ -42,10 +43,10 @@ gulp.task('build', ['js']);
 
 gulp.task('flow', ['typecheck']);
 
-gulp.task('js', function() {
+gulp.task('js', ['babel', 'lint', 'test', 'typecheck']);
+
+gulp.task('babel', function() {
   return gulp.src('src/**/*.js')
-    .pipe(eslint())
-    .pipe(eslint.format())
     .pipe(wrap(babel()))
     .pipe(gulp.dest('dist'));
 });
@@ -53,15 +54,28 @@ gulp.task('js', function() {
 gulp.task('lint', function() {
   return gulp.src('src/**/*.js')
     .pipe(eslint())
-    .pipe(eslint.format())
+    .pipe(eslint.format());
 });
 
 gulp.task('typecheck', function() {
+  return gulp.src('src/**/*.js', {read: false})
+    .pipe(gutil.noop());
+
+  // TODO: enable this once Flow groks ES2015/ES2016 features.
   return gulp.src('src/**/*.js')
     .pipe(flow())
 });
 
+gulp.task('test', function() {
+  return gulp.src(
+    [
+      'src/**/__mocks__/*.js',
+      'src/**/__tests__/*-test.js',
+    ], {read: false})
+    .pipe(mocha({opts: 'mocha/mocha.opts'}));
+});
+
 gulp.task('watch', function() {
   watching = true;
-  gulp.watch('src/**/*.js', ['js']);
+  gulp.watch('src/**/*.js', ['build']);
 });
