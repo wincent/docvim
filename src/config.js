@@ -11,7 +11,7 @@ import yargs from 'yargs';
 
 const json = require('../package');
 
-export default yargs
+const config = yargs
   .usage('Usage: $0 [option...] [outfile...]')
   .example('$0 -C build file.txt README.md')
   .alias('C', 'directory')
@@ -28,3 +28,9 @@ export default yargs
   .epilog(json.homepage)
   .strict()
   .argv;
+
+if (Array.isArray(config.directory)) {
+  config.directory = config.directory[config.directory.length - 1];
+}
+
+export default config;
