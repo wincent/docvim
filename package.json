@@ -17,7 +17,7 @@
   "scripts": {
     "build": "gulp build",
     "lint": "node_modules/.bin/eslint src",
-    "test": "mocha --require mocha/bootstrap --recursive --reporter min 'src/**/__mocks__/*.js' 'src/**/__tests__/*-test.js'",
+    "test": "mocha --opts mocha/mocha.opts 'src/**/__mocks__/*.js' 'src/**/__tests__/*-test.js'",
     "watch": "gulp"
   },
   "version": "0.0.1-pre",
