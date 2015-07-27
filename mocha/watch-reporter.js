@@ -13,8 +13,13 @@ var Base = require('mocha').reporters.Base;
  * @see https://github.com/mochajs/mocha/wiki/Third-party-reporters
  */
 function WatchReporter(runner) {
+  var self = this;
   Base.call(this, runner);
-  runner.on('end', Base.prototype.epilogue.bind(this));
+  runner.on('end', function() {
+    if (this.stats.failures) {
+      Base.prototype.epilogue.call(self);
+    }
+  });
 }
 
 module.exports = WatchReporter;
