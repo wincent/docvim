@@ -149,7 +149,16 @@ class Parser {
 
   _parseAnnotation(annotation: Token): AST {
     const result = {};
-    switch (annotation.content.trim()) {
+    const type = annotation.content.trim();
+    switch (type) {
+      case '@command':
+        break;
+      case '@dedent':
+        break;
+      case '@footer':
+        break;
+      case '@indent':
+        break;
       case '@option':
         result.name = Node.OPTION_ANNOTATION;
         result.option = this._getNextToken(WORD).content;
@@ -157,6 +166,10 @@ class Parser {
         result.default = this._getNextToken(WORD).content;
         this._skipNextToken(NEW_LINE);
         result.children = this._parseMarkdown();
+        break;
+      case '@mapping':
+        break;
+      case '@mappings':
         break;
       case '@plugin':
         {
@@ -176,7 +189,7 @@ class Parser {
         }
         break;
       default:
-        throw new Error(`Unrecognized annotation type: ${annotation.type}`);
+        throw new Error(`Unrecognized annotation type: ${type}`);
     }
     return result;
   }
