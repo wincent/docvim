@@ -230,7 +230,7 @@ function! ferret#private#hlsearch() abort
     " Controls whether Ferret should attempt to highlight the search pattern
     " when running |:Ack| or |:Lack|. If left unset, Ferret will respect the
     " current 'hlsearch' setting. To force highlighting on or off irrespective
-    " of 'hlsearch', set |g:FerretHlsearch| to 1 or 0:
+    " of 'hlsearch', set |g:FerretHlsearch| to 1 (on) or 0 (off):
     "
     " ```
     " let g:FerretHlsearch=0
