@@ -8,13 +8,13 @@ import gulp from 'gulp';
 import gutil from 'gulp-util';
 import mocha from 'gulp-spawn-mocha';
 
-var watching = false;
+let watching = false;
 
 /**
  * Ring the terminal bell.
  */
 function ringBell() {
-  process.stderr.write("\x07");
+  process.stderr.write('\x07');
 }
 
 /**
@@ -63,7 +63,7 @@ gulp.task('typecheck', () => {
 
   // TODO: enable this once Flow groks ES2015/ES2016 features.
   return gulp.src('src/**/*.js')
-    .pipe(flow())
+    .pipe(wrap(flow()))
 });
 
 gulp.task('test', () => (
@@ -74,10 +74,10 @@ gulp.task('test', () => (
     ],
     {read: false}
   )
-    .pipe(mocha({
+    .pipe(wrap(mocha({
       opts: 'mocha/mocha.opts',
       reporter: watching ? 'mocha/watch-reporter' : 'list',
-    }))
+    })))
 ));
 
 gulp.task('watch', () => {
