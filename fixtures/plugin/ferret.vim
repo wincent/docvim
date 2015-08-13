@@ -347,12 +347,17 @@
 " Other contributors that have submitted patches include (in alphabetical
 " order):
 "
+" - Daniel Silva
 " - Joe Lencioni
 " - Nelo-Thara Wallus
 " - Vaibhav Sagar
 "
 "
 " # History
+"
+" 0.3.1 (not yet released)
+"
+" - Fix broken |:Qargs| command (patch from Daniel Silva).
 "
 " 0.3 (24 July 2015)
 "
@@ -569,7 +574,7 @@ endif
 "
 " It takes the files currently in the |quickfix| listing and sets them as
 " |:args| so that they can be operated on en masse via the |:argdo| command.
-command! -bar Qargs execute 'args' ferret#qargs()
+command! -bar Qargs execute 'args' ferret#private#qargs()
 
 ""
 " @option g:FerretQFCommands boolean 1
