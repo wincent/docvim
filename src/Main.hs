@@ -20,12 +20,12 @@ config = Config
         <> help "Print debug information during processing" )
 
 
-intro :: Config -> IO ()
-intro (Config d False) = putStrLn "debugging off"
-intro (Config d True) = putStrLn "debugging on"
+run :: Config -> IO ()
+run (Config d False) = putStrLn "debugging off"
+run (Config d True) = putStrLn "debugging on"
 
 main :: IO ()
-main = execParser opts >>= intro
+main = execParser opts >>= run
   where
     opts = info (helper <*> config)
         (  fullDesc
