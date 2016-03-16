@@ -33,6 +33,7 @@ parseDirectory = strOption
   <> short 'c'
   <> metavar "DIRECTORY"
   <> value "."
+  <> showDefault
   <> help "Change to DIRECTORY before processing"
 
 parseVerbose :: Parser Bool
