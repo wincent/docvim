@@ -18,6 +18,7 @@ parseDirectory = strOption
   $ long "directory"
   <> short 'c'
   <> metavar "DIRECTORY"
+  <> value "."
   <> help "Change to DIRECTORY before processing"
 
 parseOptions :: Parser Options
