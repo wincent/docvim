@@ -4,30 +4,36 @@ module Main (main) where
 import Options.Applicative
 
 data Options = Options
-  { directory :: String
-  , debug :: Bool }
+  { debug :: Bool
+  , directory :: String }
 
-options :: Parser Options
-options = Options
-     <$> strOption
-         ( long "directory"
-        <> short 'c'
-        <> metavar "DIRECTORY"
-        <> help "Change to DIRECTORY before processing" )
-     <*> switch
-         ( long "debug"
-        <> short 'd'
-        <> help "Print debug information during processing" )
+parseDebug :: Parser Bool
+parseDebug = switch
+  $ long "debug"
+  <> short 'd'
+  <> help "Print debug information during processing"
+
+parseDirectory :: Parser String
+parseDirectory = strOption
+  $ long "directory"
+  <> short 'c'
+  <> metavar "DIRECTORY"
+  <> help "Change to DIRECTORY before processing"
+
+parseOptions :: Parser Options
+parseOptions = Options
+  <$> parseDebug
+  <*> parseDirectory
 
 
 run :: Options -> IO ()
-run (Options d False) = putStrLn "debugging off"
-run (Options d True) = putStrLn "debugging on"
+run (Options False d) = putStrLn "debugging off"
+run (Options True d) = putStrLn "debugging on"
 
 main :: IO ()
-main = execParser opts >>= run
+main = execParser options >>= run
   where
-    opts = info (helper <*> options)
-        (  fullDesc
-        <> progDesc "Generate documentation for a Vim plug-in"
-        <> header "docim - a documentation generator for Vim plug-ins" )
+    options = info (helper <*> parseOptions)
+            ( fullDesc
+            <> progDesc "Generate documentation for a Vim plug-in"
+            <> header "docim - a documentation generator for Vim plug-ins" )
