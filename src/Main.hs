@@ -11,18 +11,18 @@ data Options = Options
   , directory :: String }
 
 version = infoOption (showVersion Paths_docvim.version)
-  ( long "version"
+  (  long "version"
   <> help "Print version information" )
 
 parseDebug :: Parser Bool
 parseDebug = switch
-  $ long "debug"
+  $  long "debug"
   <> short 'd'
   <> help "Print debug information during processing"
 
 parseDirectory :: Parser String
 parseDirectory = strOption
-  $ long "directory"
+  $  long "directory"
   <> short 'c'
   <> metavar "DIRECTORY"
   <> value "."
