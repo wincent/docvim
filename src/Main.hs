@@ -7,8 +7,15 @@ import Data.Version (showVersion)
 import qualified Paths_docvim (version)
 
 data Options = Options
-  { debug :: Bool
-  , directory :: String }
+  { outfile :: Maybe FilePath
+  , debug :: Bool
+  , directory :: String
+  , verbose :: Bool }
+
+parseOutfile = argument str
+  (  metavar "OUTFILE"
+  <> help (unlines [ "Target file for generated output"
+                   , "(default: standard output)" ]))
 
 version = infoOption (showVersion Paths_docvim.version)
   (  long "version"
@@ -28,14 +35,23 @@ parseDirectory = strOption
   <> value "."
   <> help "Change to DIRECTORY before processing"
 
+parseVerbose :: Parser Bool
+parseVerbose = switch
+  $  long "verbose"
+  <> short 'v'
+  <> help "Be verbose during processing"
+
 parseOptions :: Parser Options
 parseOptions = Options
-  <$> parseDebug
+  <$> optional parseOutfile
+  <*> parseDebug
   <*> parseDirectory
+  <*> parseVerbose
 
 run :: Options -> IO ()
-run (Options False d) = putStrLn "debugging off"
-run (Options True d) = putStrLn "debugging on"
+run (Options (Just a) _ _ _) = putStrLn ("got file " ++ a)
+run (Options _ False d _) = putStrLn "debugging off"
+run (Options _ True d _) = putStrLn "debugging on"
 
 main :: IO ()
 main = execParser options >>= run
