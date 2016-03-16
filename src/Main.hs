@@ -3,12 +3,12 @@ module Main (main) where
 
 import Options.Applicative
 
-data Config = Config
+data Options = Options
   { directory :: String
   , debug :: Bool }
 
-config :: Parser Config
-config = Config
+options :: Parser Options
+options = Options
      <$> strOption
          ( long "directory"
         <> short 'c'
@@ -20,14 +20,14 @@ config = Config
         <> help "Print debug information during processing" )
 
 
-run :: Config -> IO ()
-run (Config d False) = putStrLn "debugging off"
-run (Config d True) = putStrLn "debugging on"
+run :: Options -> IO ()
+run (Options d False) = putStrLn "debugging off"
+run (Options d True) = putStrLn "debugging on"
 
 main :: IO ()
 main = execParser opts >>= run
   where
-    opts = info (helper <*> config)
+    opts = info (helper <*> options)
         (  fullDesc
         <> progDesc "Generate documentation for a Vim plug-in"
         <> header "docim - a documentation generator for Vim plug-ins" )
