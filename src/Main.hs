@@ -12,11 +12,13 @@ data Options = Options
   , directory :: String
   , verbose :: Bool }
 
+parseOutfile :: Parser String
 parseOutfile = argument str
   (  metavar "OUTFILE"
   <> help (unlines [ "Target file for generated output"
                    , "(default: standard output)" ]))
 
+version :: Parser (a -> a)
 version = infoOption (showVersion Paths_docvim.version)
   (  long "version"
   <> help "Print version information" )
