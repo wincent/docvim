@@ -43,4 +43,4 @@ main = execParser options >>= run
     options = info (helper <*> version <*> parseOptions)
             ( fullDesc
             <> progDesc "Generate documentation for a Vim plug-in"
-            <> header "docim - a documentation generator for Vim plug-ins" )
+            <> header "docvim - a documentation generator for Vim plug-ins" )
