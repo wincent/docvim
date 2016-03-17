@@ -12,6 +12,6 @@ run (Options _ _ directory _) = do
   contents <- mapM readFile filtered
   putStrLn $ show contents
 
-main :: IO ()
 -- | Run the executable using the supplied options.
+main :: IO ()
 main = options >>= run
