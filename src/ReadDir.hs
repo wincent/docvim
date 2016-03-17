@@ -1,4 +1,4 @@
--- | Recursively read the contents of Vim source files in a directory.
+-- | Recursively read the paths in a directory.
 --
 -- Based on `RecursiveContents` example in chapter 9 of "Real World Haskell".
 module ReadDir (readDir) where
