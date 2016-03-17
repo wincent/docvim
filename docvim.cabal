@@ -61,6 +61,10 @@ executable docvim
 
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.8 && <4.9,
+                       directory,
+                       filepath,
+
+                       -- Third party
                        optparse-applicative
 
   -- Directories containing source files.
