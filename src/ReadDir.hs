@@ -8,11 +8,11 @@ import System.Directory (doesDirectoryExist, getDirectoryContents)
 import System.FilePath ((</>))
 
 readDir :: FilePath -> IO [FilePath]
-readDir topdir = do
-  names <- getDirectoryContents topdir
+readDir dir = do
+  names <- getDirectoryContents dir
   let properNames = filter (`notElem` [".", ".."]) names
   paths <- forM properNames $ \name -> do
-    let path = topdir </> name
+    let path = dir </> name
     isDirectory <- doesDirectoryExist path
     if isDirectory
       then readDir path
