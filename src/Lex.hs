@@ -11,14 +11,14 @@ import System.Exit (exitFailure)
 import System.FilePath (takeExtension)
 import System.IO (hPutStrLn, stderr)
 -- TODO: custom error messages with <?>
-import Text.Parsec
-  ( (<|>)
-  , (<?>)
-  , many
-  , many1
-  , runParser
-  )
-import Text.Parsec (choice, try)
+import Text.Parsec ( (<|>)
+                   , (<?>)
+                   , choice
+                   , many
+                   , many1
+                   , runParser
+                   , try
+                   )
 import Text.Parsec.Prim (parseTest)
 import Text.Parsec.String (Parser, parseFromFile)
 import Text.Parsec.Combinator (eof)
