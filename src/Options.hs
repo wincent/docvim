@@ -5,6 +5,7 @@ import Options.Applicative
 import Data.Version (showVersion)
 import qualified Paths_docvim (version)
 
+-- TODO: figure out where (and if!) to expand ~ and such in path options
 data Options = Options
   { outfile :: Maybe FilePath
   , debug :: Bool
