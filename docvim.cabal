@@ -65,7 +65,8 @@ executable docvim
                        filepath,
 
                        -- Third party
-                       optparse-applicative
+                       optparse-applicative,
+                       parsec
 
   -- Directories containing source files.
   hs-source-dirs:      src
