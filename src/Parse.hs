@@ -45,7 +45,7 @@ parseVimScript =   VimScript
 
 parseComment :: Parser Node
 parseComment =   Comment
-             <$> (string "\"" *> many1 (noneOf ['\n']))
+             <$> (char '"' *> many1 (noneOf ['\n']))
 
 -- To test in the REPL:
 -- import Parse (parseUnit)
