@@ -52,6 +52,6 @@ parseOptions = Options
 
 options :: IO Options
 options = execParser $ info (helper <*> version <*> parseOptions)
-  ( fullDesc
+  (  fullDesc
   <> progDesc "Generate documentation for a Vim plug-in"
   <> header "docvim - a documentation generator for Vim plug-ins" )

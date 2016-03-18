@@ -1,4 +1,4 @@
-module Parse (parse) where
+module Parse (parse, parseUnit) where
 
 import Control.Applicative
   ( (*>)
@@ -19,7 +19,7 @@ import Text.Parsec
   )
 import Text.Parsec.String (Parser, parseFromFile)
 import Text.Parsec.Combinator (eof)
-import Text.ParserCombinators.Parsec.Char (anyChar, char, noneOf)
+import Text.ParserCombinators.Parsec.Char (anyChar, char, noneOf, string)
 
 data Node = TranslationUnit [Node]
           | VimScript String
@@ -45,9 +45,10 @@ parseVimScript =   VimScript
 
 parseComment :: Parser Node
 parseComment =   Comment
-             <$> many1 (char '"')
+             <$> (string "\"" *> many1 (noneOf ['\n']))
 
 -- To test in the REPL:
+-- import Parse (parseUnit)
 -- Text.Parsec.runParser parseUnit () "this" "that"
 parse :: String -> IO Node
 parse fileName = parseFromFile parseUnit fileName >>= either report return
