@@ -3,7 +3,8 @@ module Main (main) where
 
 import Control.Monad (when)
 import Options (Options(..), options)
-import Parse (parse)
+import Lex (l, lexTokens)
+import Parse (p, parse)
 import ReadDir (readDir)
 import System.FilePath (takeExtension)
 
