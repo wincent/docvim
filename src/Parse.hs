@@ -1,4 +1,4 @@
-module Parse (p, parse, parseUnit) where
+module Parse (p, parse) where
 
 import Control.Applicative
   ( (*>)
