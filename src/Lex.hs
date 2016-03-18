@@ -14,8 +14,10 @@ import System.IO (hPutStrLn, stderr)
 import Text.Parsec ( (<|>)
                    , (<?>)
                    , choice
+                   , lookAhead
                    , many
                    , many1
+                   , manyTill
                    , runParser
                    , try
                    )
@@ -25,17 +27,18 @@ import Text.Parsec.Combinator (eof)
 import Text.ParserCombinators.Parsec.Char (anyChar, char, noneOf, oneOf, string)
 
 data Token = Annotation String
-           | Blockquote String
+           | Blockquote
            | Code String
-           | CommentStart String
-           | DocBlockStart String
-           | Heading String
+           | CommentStart
+           | DocBlockStart
+           | Heading
            | Link String
            | LinkTarget String
-           | Newline String
-           | PreFence String
-           | Separator String
-           | SubHeading String
+           | ListItem
+           | Newline
+           | PreFence
+           | Separator
+           | SubHeading
            | VimScriptLine String -- later, this gets more complicated
            | Whitespace String
            | Word String
@@ -45,7 +48,9 @@ data Token = Annotation String
 lexUnit :: Parser [Token]
 lexUnit = (many token) <* eof
 
-token = choice [ annotation
+-- TODO: literal <br /> support
+token = choice [ --vimScriptLine -- must come first
+               {-,-} annotation
                , blockquote
                , preFence -- must come before code
                , code
@@ -56,8 +61,8 @@ token = choice [ annotation
                , link
                , linkTarget
                , newline
-               , separator
-               -- , vimScriptLine
+               , separator -- must come before listItem
+               , listItem
                , whitespace
                , word
                ]
@@ -74,17 +79,19 @@ annotationName = choice [ string "command"
                         ]
 
 annotation    = Annotation <$> (char '@' *> annotationName)
-commentStart  = CommentStart <$> string "\""
-blockquote    = Blockquote <$> string ">"
+commentStart  = string "\"" >> return CommentStart
+blockquote    = string ">" >> return Blockquote
 code          = Code <$> (char '`' *> many1 (noneOf "`") <* char '`')
-docBlockStart = try $ DocBlockStart <$> string "\"\""
-heading       = Heading <$> string "#"
+docBlockStart = try $ string "\"\"" >> return DocBlockStart
+heading       = string "#" >> return Heading
 link          = Link <$> (char '|' *> many1 (noneOf "|") <* char '|')
 linkTarget    = LinkTarget <$> (char '*' *> many1 (noneOf "*") <* char '*')
-newline       = Newline <$> string "\n"
-preFence      = try $ PreFence <$> string "```"
-separator     = Separator <$> string "---"
-subHeading    = try $ Heading <$> string "##"
+listItem      = string "-" >> return ListItem
+newline       = string "\n"  >> return Newline
+preFence      = try $ string "```" >> return PreFence
+separator     = try $ string "---" >> return Separator
+subHeading    = try $ string "##" >> return SubHeading
+
 whitespace    = Whitespace <$> many1 (oneOf " \t")
 word          = Word <$> many1 (noneOf " \t\n")
 
