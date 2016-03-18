@@ -1,16 +1,12 @@
 -- | The docvim executable.
 module Main (main) where
 
--- TODO: for now skip vimscript; later, parse it and use it to enrich the docs
--- or take some manual work out of specifying what's going on
 import Control.Applicative
   ( (*>)
   , (<$)
   , (<$>)
   , (<*)
   , (<*>)
-  , (<|>)
-  , many
   )
 -- TODO: custom error messages with <?>
 import Options (Options(..), options)
@@ -18,7 +14,12 @@ import ReadDir (readDir)
 import System.Exit (exitFailure)
 import System.FilePath (takeExtension)
 import System.IO (hPutStrLn, stderr)
-import Text.Parsec (many1)
+import Text.Parsec
+  ( (<|>)
+  , (<?>)
+  , many
+  , many1
+  )
 import Text.Parsec.String (Parser, parseFromFile)
 import Text.Parsec.Combinator (eof)
 import Text.ParserCombinators.Parsec.Char (anyChar, char, noneOf)
@@ -39,6 +40,8 @@ parseNode :: Parser Node
 parseNode =   parseVimScript
           <|> parseComment
 
+-- TODO: for now skip vimscript; later, parse it and use it to enrich the docs
+-- or take some manual work out of specifying what's going on
 parseVimScript :: Parser Node
 parseVimScript =   VimScript
                <$> many1 (noneOf ['"']) -- anyChar
