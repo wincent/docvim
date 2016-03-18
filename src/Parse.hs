@@ -1,4 +1,4 @@
-module Parse (parse, parseUnit) where
+module Parse (p, parse, parseUnit) where
 
 import Control.Applicative
   ( (*>)
@@ -16,6 +16,7 @@ import Text.Parsec
   , (<?>)
   , many
   , many1
+  , runParser
   )
 import Text.Parsec.String (Parser, parseFromFile)
 import Text.Parsec.Combinator (eof)
@@ -47,12 +48,14 @@ parseComment :: Parser Node
 parseComment =   Comment
              <$> (char '"' *> many1 (noneOf ['\n']))
 
--- To test in the REPL:
--- import Parse (parseUnit)
--- Text.Parsec.runParser parseUnit () "this" "that"
 parse :: String -> IO Node
 parse fileName = parseFromFile parseUnit fileName >>= either report return
   where
     report err = do
       hPutStrLn stderr $ "Error: " ++ show err
       exitFailure
+
+-- | To facilitate quick testing in the console.
+-- import Parse (p)
+-- p "test"
+p = runParser parseUnit () "(eval)"
