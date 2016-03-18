@@ -7,10 +7,13 @@ import Parse (parse)
 import ReadDir (readDir)
 import System.FilePath (takeExtension)
 
+isVimScript :: FilePath -> Bool
+isVimScript = (==) ".vim" . takeExtension
+
 run :: Options -> IO ()
 run (Options _ _ directory verbose) = do
   paths <- readDir directory
-  let filtered = filter (\path -> takeExtension path == ".vim") paths
+  let filtered = filter isVimScript paths
   parsed <- mapM (\path -> do
       when verbose (putStrLn $ "Processing " ++ path)
       parse path
