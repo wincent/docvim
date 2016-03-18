@@ -7,10 +7,14 @@ import ReadDir (readDir)
 import System.FilePath (takeExtension)
 
 run :: Options -> IO ()
-run (Options _ _ directory _) = do
+run (Options _ _ directory verbose) = do
   paths <- readDir directory
   let filtered = filter (\path -> takeExtension path == ".vim") paths
-  parsed <- mapM parse filtered
+  parsed <- mapM (\path -> do
+      if verbose then putStrLn $ "Processing " ++ path
+      else return ()
+      parse path
+    ) filtered
   print parsed
   return ()
 
