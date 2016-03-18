@@ -20,7 +20,8 @@ import System.FilePath (takeExtension)
 import System.IO (hPutStrLn, stderr)
 import Text.Parsec (many1)
 import Text.Parsec.String (Parser, parseFromFile)
-import Text.ParserCombinators.Parsec.Char (anyChar)
+import Text.Parsec.Combinator (eof)
+import Text.ParserCombinators.Parsec.Char (anyChar, char, noneOf)
 
 data Node = TranslationUnit [Node]
           | VimScript String
@@ -30,14 +31,23 @@ data Node = TranslationUnit [Node]
 
 -- | Parses a translation unit (file contents) into an AST.
 parseUnit :: Parser Node
-parseUnit = TranslationUnit
-  <$> (many parseNode)
+parseUnit =   TranslationUnit
+          <$> many parseNode
+          <*  eof
 
 parseNode :: Parser Node
-parseNode = parseVimScript
+parseNode =   parseVimScript
+          <|> parseComment
 
 parseVimScript :: Parser Node
-parseVimScript = VimScript <$> many1 anyChar
+parseVimScript =   VimScript
+               <$> many1 (noneOf ['"']) -- anyChar
+
+parseComment :: Parser Node
+parseComment =   Comment
+             <$> many1 (char '"')
+
+-- parse
 
 -- To test in the REPL:
 -- Text.Parsec.runParser parseUnit () "this" "that"
