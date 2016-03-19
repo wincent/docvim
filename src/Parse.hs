@@ -20,6 +20,7 @@ import Text.Parsec ( (<|>)
                    , optionMaybe
                    , optional
                    , runParser
+                   , skipMany
                    , try
                    )
 import Text.Parsec.String (Parser, parseFromFile)
@@ -33,7 +34,7 @@ import Text.ParserCombinators.Parsec.Char ( alphaNum
                                           )
 
 data Node = DocComment [DocNode]
-          -- ...everything else
+          | VimScript String
   deriving (Eq, Show)
 
 -- | Textual tokens recognized during parsing but not embedded in the AST.
@@ -50,15 +51,22 @@ data DocNode = DocNode Annotation
              | Heading String
   deriving (Eq, Show)
 
-data Annotation = Plugin String String -- name desc
+type Default = String
+type Description = String
+type Name = String
+type Type = String
+type Usage = String
+data Annotation = Plugin Name Description
                 | Indent
                 | Dedent
-                | Command String -- example
+                | Command Usage
                 | Footer
                 | Mappings
-                | Mapping String -- name
-                | Option String String (Maybe String) -- name type optional-default
+                | Mapping Name
+                | Option Name Type (Maybe Default)
   deriving (Eq, Show)
+
+vimScriptLine = VimScript <$> many1 (noneOf "\n") <* (optional newline)
 
 -- These cause type errors unless used...
 -- blockquote    = string ">" >> return Blockquote
@@ -69,7 +77,21 @@ newline       = char '\n' >> return Newline
 ws    = Whitespace <$> many1 (oneOf " \t")
 
 docComment :: Parser Node
-docComment = docBlockStart *> (DocComment <$> many1 docNode)
+docComment = do
+  optional ws
+  -- docBlockStart
+  -- comment <- DocComment <$> many1 docNode
+  -- skipMany vimScriptLine
+  -- return comment
+
+  -- want to conditionally choose between docNode and vimScriptLine based on
+  -- whether we succeeded in peeking at and consuming docBlockStart
+  maybeDocBlock <- optionMaybe $ try docBlockStart
+  case maybeDocBlock of
+    Just a -> DocComment <$> many1 docNode
+    -- TODO: parse the VimScript too and extract metadata from it to attach to
+    -- DocComment node
+    Nothing -> vimScriptLine -- would like to use skipMany here
 
 docNode :: Parser DocNode
 docNode = choice [ annotation
@@ -88,7 +110,7 @@ word = many1 (noneOf " \n\t")
 lexeme parser = do
   result <- parser
   ws
-  return result
+  return result -- could also just do (parser <* ws)
 -- ^ not sure if I want to use this yet, as I have a few whitespace patterns
 -- here:
 --   * require but skip
@@ -108,23 +130,26 @@ annotation = DocNode <$> (char '@' *> annotationName)
              , plugin
              ]
 
-    command = string "command" >> ws >> Command <$> ((:) <$> char ':' <*> (many1 (noneOf "\n")))
+    command           = string "command" >> ws >> Command <$> ((:) <$> char ':' <*> (many1 (noneOf "\n")))
 
-    mapping = string "mapping" >> ws >> Mapping <$> mappingName
-    mappingName = word <* optional ws
+    mapping           = string "mapping" >> ws >> Mapping <$> mappingName
+    mappingName       = word <* optional ws
 
-    option = string "option" >> ws >> Option <$> optionName <*> optionType <*> optionDefault
-    optionName = many1 (alphaNum <|> char ':') <* ws <?> "option name"
-    optionType = many1 alphaNum <* ws <?> "option type"
-    optionDefault = (optionMaybe $ word) <?> "option default value"
+    option            = string "option" >> ws >> Option <$> optionName <*> optionType <*> optionDefault
+    optionName        = many1 (alphaNum <|> char ':') <* ws <?> "option name"
+    optionType        = many1 alphaNum <* ws <?> "option type"
+    optionDefault     = (optionMaybe $ word) <?> "option default value"
 
-    plugin = string "plugin" >> ws >> Plugin <$> pluginName <*> plugInDescription
-    pluginName = many1 alphaNum <* ws
+    plugin            = string "plugin" >> ws >> Plugin <$> pluginName <*> plugInDescription
+    pluginName        = many1 alphaNum <* ws
     plugInDescription = manyTill anyChar (newline <|> (eof >> return EOF))
 
 -- | Parses a translation unit (file contents) into an AST.
 unit :: Parser [Node]
-unit = (optional ws) *> (many docComment) <* eof
+unit = do
+  nodes <- many docComment
+  eof
+  return nodes
 
 parse :: String -> IO [Node]
 parse fileName = parseFromFile unit fileName >>= either report return
