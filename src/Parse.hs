@@ -57,6 +57,7 @@ type Name = String
 type Type = String
 type Usage = String
 data Annotation = Plugin Name Description
+                | Function Name -- not sure if I will want more here
                 | Indent
                 | Dedent
                 | Command Usage
@@ -88,7 +89,7 @@ docComment = do
   -- whether we succeeded in peeking at and consuming docBlockStart
   maybeDocBlock <- optionMaybe $ try docBlockStart
   case maybeDocBlock of
-    Just a -> DocComment <$> many1 docNode
+    Just DocBlockStart -> DocComment <$> many1 docNode
     -- TODO: parse the VimScript too and extract metadata from it to attach to
     -- DocComment node
     Nothing -> vimScriptLine -- would like to use skipMany here
@@ -116,13 +117,15 @@ lexeme parser = do
 --   * require but skip
 --   * optional but consume if present
 
+-- TODO: only allow these after "" and " at start of line
 annotation :: Parser DocNode
 annotation = DocNode <$> (char '@' *> annotationName)
   where
     annotationName =
       choice [ command
              , string "dedent" >> return Dedent
-             , string "footer" >> return Footer
+             , try $ string "footer" >> return Footer -- must come before function
+             , function
              , string "indent" >> return Indent
              , try $ string "mappings" >> return Mappings -- must come before mapping
              , mapping
@@ -131,6 +134,8 @@ annotation = DocNode <$> (char '@' *> annotationName)
              ]
 
     command           = string "command" >> ws >> Command <$> ((:) <$> char ':' <*> (many1 (noneOf "\n")))
+
+    function          = string "function" >> ws >> Function <$> word <* optional ws
 
     mapping           = string "mapping" >> ws >> Mapping <$> mappingName
     mappingName       = word <* optional ws
