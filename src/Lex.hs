@@ -87,10 +87,15 @@ heading       = string "#" >> return Heading
 link          = Link <$> (char '|' *> many1 (noneOf "|") <* char '|')
 linkTarget    = LinkTarget <$> (char '*' *> many1 (noneOf "*") <* char '*')
 listItem      = string "-" >> return ListItem
-newline       = string "\n"  >> return Newline
+newline       = string "\n" >> return Newline
 preFence      = try $ string "```" >> return PreFence
 separator     = try $ string "---" >> return Separator
 subHeading    = try $ string "##" >> return SubHeading
+-- type error
+-- vimScriptLine = VimScriptLine <$> (manyTill anyChar (newline <|> (lookAhead eof)))
+
+-- "works", but it is too greedy
+-- vimScriptLine = try $ VimScriptLine <$> manyTill anyChar newline
 
 whitespace    = Whitespace <$> many1 (oneOf " \t")
 word          = Word <$> many1 (noneOf " \t\n")
