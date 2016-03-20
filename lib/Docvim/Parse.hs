@@ -56,19 +56,18 @@ data Node = DocComment [DocNode]
 -- TODO: deal with line continuation markers
 
 data FunctionDeclaration = FunctionDeclaration String deriving (Eq, Show)
--- function = FunctionDeclaration <$> string "function"
-function = FunctionDeclaration <$> string "function"
-
+function = FunctionDeclaration <$> functionKeyword
+  where
+    functionKeyword = choice [ try $ string "function"
+                             , try $ string "functio"
+                             , try $ string "functi"
+                             , try $ string "funct"
+                             , try $ string "func"
+                             , try $ string "fun"
+                             , string "fu"
+                             ] <* (optional $ char '!')
 -- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
 --   where
---     functionKeyword = choice [ try string "function"
---                              , try string "functio"
---                              , try string "functi"
---                              , try string "funct"
---                              , try string "func"
---                              , try string "fun"
---                              , try string "fu"
---                              ] -- >> optional $ char '!'
     -- probably more efficient like this:
     -- functionKeyword' =  string "fu"
     --                  >> (optional (char 'n')
