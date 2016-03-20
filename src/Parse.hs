@@ -107,12 +107,12 @@ data Annotation = Plugin Name Description
                 | Option Name Type (Maybe Default)
   deriving (Eq, Show)
 
-vimScriptLine = VimScript <$> many1 (noneOf "\n") <* (optional newline)
+vimScriptLine = VimScript <$> many1 (noneOf "\n") <* optional newline
 
 -- These cause type errors unless used...
 -- blockquote    = string ">" >> return Blockquote
 -- commentStart  = string "\"" >> return CommentStart
-docBlockStart = (string "\"\"" <* (optional ws)) >> return DocBlockStart
+docBlockStart = (string "\"\"" <* optional ws) >> return DocBlockStart
 -- listItem      = string "-" >> return ListItem
 newline       = char '\n' >> return Newline
 ws    = Whitespace <$> many1 (oneOf " \t")
@@ -140,7 +140,7 @@ docNode = choice [ annotation
                  ]
 
 heading :: Parser DocNode
-heading = Heading <$> (char '#' >> (optional ws) *> (manyTill anyChar (newline <|> (eof >> return EOF))))
+heading = Heading <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (eof >> return EOF)))
 -- TODO: probably want to swallow the newline here; make it implicit
 -- (and any trailing whitespace)
 
@@ -173,7 +173,7 @@ annotation = DocNode <$> (char '@' *> annotationName)
              , plugin
              ]
 
-    command           = string "command" >> ws >> Command <$> ((:) <$> char ':' <*> (many1 (noneOf "\n")))
+    command           = string "command" >> ws >> Command <$> ((:) <$> char ':' <*> many1 (noneOf "\n"))
 
     function          = string "function" >> ws >> Function <$> word <* optional ws
 
@@ -183,7 +183,7 @@ annotation = DocNode <$> (char '@' *> annotationName)
     option            = string "option" >> ws >> Option <$> optionName <*> optionType <*> optionDefault
     optionName        = many1 (alphaNum <|> char ':') <* ws <?> "option name"
     optionType        = many1 alphaNum <* ws <?> "option type"
-    optionDefault     = (optionMaybe $ word) <?> "option default value"
+    optionDefault     = optionMaybe word <?> "option default value"
 
     plugin            = string "plugin" >> ws >> Plugin <$> pluginName <*> plugInDescription
     pluginName        = many1 alphaNum <* ws

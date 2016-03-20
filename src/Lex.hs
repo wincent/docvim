@@ -46,7 +46,7 @@ data Token = Annotation String
 
 -- | Parses a translation unit (file contents) into an AST.
 lexUnit :: Parser [Token]
-lexUnit = (many token) <* eof
+lexUnit = many token <* eof
 
 -- TODO: literal <br /> support
 token = choice [ --vimScriptLine -- must come first

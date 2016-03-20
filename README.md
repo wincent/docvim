@@ -27,3 +27,10 @@ cabal repl
 cabal haddock --executables
 open dist/doc/html/docvim/docvim/index.html
 ```
+
+### Linting
+
+```
+cabal install hlint
+hlint src
+```
