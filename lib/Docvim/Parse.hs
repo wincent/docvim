@@ -58,15 +58,22 @@ data Node = DocComment [DocNode]
 data FunctionDeclaration = FunctionDeclaration deriving (Eq, Show)
 function = functionKeyword >> return FunctionDeclaration
   where
-    functionKeyword = choice [ try $ string "function"
-                             , try $ string "functio"
-                             , try $ string "functi"
-                             , try $ string "funct"
-                             , try $ string "func"
-                             , try $ string "fun"
-                             , string "fu"
-                             ] <* (optional $ char '!')
-    -- functionKeyword = string "fu" >>
+    -- functionKeyword = choice [ try $ string "function"
+    --                          , try $ string "functio"
+    --                          , try $ string "functi"
+    --                          , try $ string "funct"
+    --                          , try $ string "func"
+    --                          , try $ string "fun"
+    --                          , string "fu"
+    --                          ] <* (optional $ char '!')
+    functionKeyword =  string "fu"
+                    >> (optional (char 'n')
+                    >> (optional (char 'c')
+                    >> (optional (char 't')
+                    >> (optional (char 'i')
+                    >> (optional (char 'o')
+                    >> (optional (char 'n')))))))
+                    >> (optional $ char '!')
 -- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
 --   where
     -- probably more efficient like this:
