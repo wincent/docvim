@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Docvim.Parse (p, parse) where
 
 import Control.Applicative ( (*>)
@@ -58,27 +60,22 @@ data Node = DocComment [DocNode]
 data FunctionDeclaration = FunctionDeclaration
                          | FunctionRedeclaration
   deriving (Eq, Show)
+
+-- | Given `prefix` "fu" and `rest` "nction", returns a parser that matches
+-- "fu", "fun", "func", "funct", "functi", "functio" and "function".
+--
+-- Requires the FlexibleContexts extension, for reasons that I don't fully
+-- understand.
+command prefix rest = string prefix >> remainder rest
+  where remainder [r]    = optional (char r)
+        remainder (r:rs) = optional (char r) >> remainder rs
+
 function = functionKeyword
   where
-    functionKeyword =  string "fu"
-                    >> (optional (char 'n')
-                    >> (optional (char 'c')
-                    >> (optional (char 't')
-                    >> (optional (char 'i')
-                    >> (optional (char 'o')
-                    >> (optional (char 'n')))))))
+    functionKeyword =  command "fu" "nction"
                     >> (((try $ char '!') *> return FunctionRedeclaration) <|> return FunctionDeclaration)
 -- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
 --   where
-    -- probably more efficient like this:
-    -- functionKeyword' =  string "fu"
-    --                  >> (optional (char 'n')
-    --                  >> (optional (char 'c')
-    --                  >> (optional (char 't')
-    --                  >> (optional (char 'i')
-    --                  >> (optional (char 'o')
-    --                  >> (optional (char 'n')))))))
-    --                  >> (optional $ char '!')
     -- functionName = string "test"
     -- functionArgumentList = char '(' *> (string "something") <* char ')' -- TODO: use sepBy (char ',' >> optional ws) or similar
     -- functionBody = optional $ FunctionBody <$> string "body"
