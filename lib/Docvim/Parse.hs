@@ -64,9 +64,10 @@ data FunctionDeclaration = FunctionDeclaration
 -- | Given `prefix` "fu" and `rest` "nction", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".
 --
--- Requires the FlexibleContexts extension, for reasons that I don't fully
+-- Requires the FlexibleContexts extension, for reasons that I don't yet fully
 -- understand.
-command prefix rest = string prefix >> remainder rest
+command prefix rest =   (try $ string prefix >> remainder rest)
+                    <?> prefix ++ rest
   where remainder [r]    = optional (char r)
         remainder (r:rs) = optional (char r >> remainder rs)
 
