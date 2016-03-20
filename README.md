@@ -32,5 +32,6 @@ open dist/doc/html/docvim/docvim/index.html
 
 ```
 cabal install hlint
-hlint src
+hlint src # or, alternatively...
+cabal test
 ```
