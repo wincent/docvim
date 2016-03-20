@@ -1,5 +1,5 @@
 -- | Options parser for the docvim executable.
-module Options (Options(..), options) where
+module Docvim.Options (Options(..), options) where
 
 import Options.Applicative
 import Data.Version (showVersion)

@@ -60,19 +60,31 @@ executable docvim
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.8 && <4.9,
-                       directory,
-                       filepath,
-
-                       -- Third party
-                       optparse-applicative,
-                       parsec
+  build-depends:       base >=4.8 && <4.9
+               ,       docvim
 
   -- Directories containing source files.
   hs-source-dirs:      src
 
   -- Base language which the package is written in.
   default-language:    Haskell2010
+
+library
+  build-depends:    base
+               ,    directory
+               ,    filepath
+
+                    -- Third party
+               ,    optparse-applicative
+               ,    parsec
+  default-language:    Haskell2010
+  exposed-modules:  Docvim.CLI
+                 ,  Docvim.Lex
+                 ,  Docvim.Options
+                 ,  Docvim.Parse
+                 ,  Docvim.ReadDir
+                 ,  Paths_docvim
+  hs-source-dirs:   lib
 
 test-suite hlint
   build-depends:    base

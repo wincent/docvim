@@ -1,4 +1,4 @@
-module Parse (p, parse) where
+module Docvim.Parse (p, parse) where
 
 import Control.Applicative ( (*>)
                            , (<$)

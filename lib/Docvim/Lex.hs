@@ -1,4 +1,4 @@
-module Lex (l, lexTokens) where
+module Docvim.Lex (l, lexTokens) where
 
 import Control.Applicative
   ( (*>)
@@ -109,6 +109,6 @@ lexTokens fileName = parseFromFile lexUnit fileName >>= either report return
       exitFailure
 
 -- | To facilitate quick testing in the console.
--- import Lex (l)
+-- import Docvim.Lex (l)
 -- l "test"
 l = parseTest lexUnit

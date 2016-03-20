@@ -5,5 +5,5 @@ import System.Exit (exitFailure, exitSuccess)
 
 main :: IO ()
 main = do
-  hints <- hlint ["src"]
+  hints <- hlint ["lib", "src"]
   if null hints then exitSuccess else exitFailure
