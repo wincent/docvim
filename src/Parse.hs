@@ -19,6 +19,7 @@ import Text.Parsec ( (<|>)
                    , manyTill
                    , optionMaybe
                    , optional
+                   , parseTest
                    , runParser
                    , skipMany
                    , try
@@ -205,4 +206,4 @@ parse fileName = parseFromFile unit fileName >>= either report return
 -- | To facilitate quick testing in the console.
 -- import Parse (p)
 -- p "test"
-p = runParser unit () "(eval)"
+p = parseTest unit
