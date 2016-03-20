@@ -55,17 +55,11 @@ data Node = DocComment [DocNode]
 -- Q: should i be using record syntax here?
 -- TODO: deal with line continuation markers
 
-data FunctionDeclaration = FunctionDeclaration deriving (Eq, Show)
-function = functionKeyword >> return FunctionDeclaration
+data FunctionDeclaration = FunctionDeclaration
+                         | FunctionRedeclaration
+  deriving (Eq, Show)
+function = functionKeyword
   where
-    -- functionKeyword = choice [ try $ string "function"
-    --                          , try $ string "functio"
-    --                          , try $ string "functi"
-    --                          , try $ string "funct"
-    --                          , try $ string "func"
-    --                          , try $ string "fun"
-    --                          , string "fu"
-    --                          ] <* (optional $ char '!')
     functionKeyword =  string "fu"
                     >> (optional (char 'n')
                     >> (optional (char 'c')
@@ -73,7 +67,7 @@ function = functionKeyword >> return FunctionDeclaration
                     >> (optional (char 'i')
                     >> (optional (char 'o')
                     >> (optional (char 'n')))))))
-                    >> (optional $ char '!')
+                    >> (((try $ char '!') *> return FunctionRedeclaration) <|> return FunctionDeclaration)
 -- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
 --   where
     -- probably more efficient like this:
