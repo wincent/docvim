@@ -40,6 +40,7 @@ import Text.ParserCombinators.Parsec.Char ( alphaNum
 -- DocComment nodes during the parse; will likely need a separate pass of the
 -- AST after that.
 data Node = DocComment [DocNode]
+          | VimL FunctionDeclaration
           | VimScript String
   deriving (Eq, Show)
 
@@ -48,11 +49,15 @@ data Node = DocComment [DocNode]
 -- specification for it, and there are many ambiguities that can only be
 -- resolved at runtime. We aim to parse a loose subset.
 -- data VimL = VimL State
-data Statement = Statement String
-data FunctionDeclaration = FunctionDeclaration Name FunctionBody (Maybe String)
-data FunctionBody = FunctionBody [Statement]
+-- data Statement = Statement String
+-- data FunctionDeclaration = FunctionDeclaration Name FunctionBody (Maybe String)
+-- data FunctionBody = FunctionBody [Statement]
 -- Q: should i be using record syntax here?
 -- TODO: deal with line continuation markers
+
+data FunctionDeclaration = FunctionDeclaration String deriving (Eq, Show)
+-- function = FunctionDeclaration <$> string "function"
+function = FunctionDeclaration <$> string "function"
 
 -- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
 --   where
@@ -63,19 +68,19 @@ data FunctionBody = FunctionBody [Statement]
 --                              , try string "func"
 --                              , try string "fun"
 --                              , try string "fu"
---                              ] >> optional $ char '!'
---     -- probably more efficient like this:
---     functionKeyword' =  string "fu"
---                      >> (optional (char 'n')
---                      >> (optional (char 'c')
---                      >> (optional (char 't')
---                      >> (optional (char 'i')
---                      >> (optional (char 'o')
---                      >> (optional (char 'n')))))))
---                      >> (optional $ char '!')
---     functionName = string "test"
---     functionArgumentList = char '(' *> (string "something") <* char ')' -- TODO: use sepBy (char ',' >> optional ws) or similar
---     functionBody = string "body"
+--                              ] -- >> optional $ char '!'
+    -- probably more efficient like this:
+    -- functionKeyword' =  string "fu"
+    --                  >> (optional (char 'n')
+    --                  >> (optional (char 'c')
+    --                  >> (optional (char 't')
+    --                  >> (optional (char 'i')
+    --                  >> (optional (char 'o')
+    --                  >> (optional (char 'n')))))))
+    --                  >> (optional $ char '!')
+    -- functionName = string "test"
+    -- functionArgumentList = char '(' *> (string "something") <* char ')' -- TODO: use sepBy (char ',' >> optional ws) or similar
+    -- functionBody = optional $ FunctionBody <$> string "body"
 
 -- | Textual tokens recognized during parsing but not embedded in the AST.
 data Token = Blockquote
@@ -132,7 +137,8 @@ docComment = do
     Just DocBlockStart -> DocComment <$> many1 docNode
     -- TODO: parse the VimScript too and extract metadata from it to attach to
     -- DocComment node
-    Nothing -> vimScriptLine -- would like to use skipMany here
+    -- Nothing -> vimScriptLine -- would like to use skipMany here
+    Nothing -> VimL <$> function
 
 docNode :: Parser DocNode
 docNode = choice [ annotation
