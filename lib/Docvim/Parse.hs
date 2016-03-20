@@ -59,7 +59,11 @@ data Node = DocComment [DocNode]
 
 data FunctionDeclaration = FunctionDeclaration
                          | FunctionRedeclaration
-  deriving (Eq, Show)
+  deriving (Eq)
+
+instance Show FunctionDeclaration where
+  show FunctionDeclaration = "function"
+  show FunctionRedeclaration = "function!"
 
 -- | Given `prefix` "fu" and `rest` "nction", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".
