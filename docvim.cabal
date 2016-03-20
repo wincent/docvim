@@ -75,8 +75,19 @@ executable docvim
   default-language:    Haskell2010
 
 test-suite hlint
-  build-depends:    base, hlint
+  build-depends:    base
+               ,    hlint
   default-language: Haskell2010
   hs-source-dirs:   tests
   main-is:          HLint.hs
+  type:             exitcode-stdio-1.0
+
+test-suite tasty
+  build-depends:    base >= 4 && < 5
+               ,    tasty
+               ,    tasty-hunit
+             --,    docvim
+  default-language: Haskell2010
+  hs-source-dirs:   tests
+  main-is:          Tasty.hs
   type:             exitcode-stdio-1.0
