@@ -33,9 +33,48 @@ import Text.ParserCombinators.Parsec.Char ( alphaNum
                                           , string
                                           )
 
+-- Note that VimScript can contain a DocComment almost anywhere, so will
+-- probably want to make DocComment into a real island parser, with the
+-- VimScript parser being the primary parser. Won't attach VimScript info to
+-- DocComment nodes during the parse; will likely need a separate pass of the
+-- AST after that.
 data Node = DocComment [DocNode]
           | VimScript String
   deriving (Eq, Show)
+
+-- The VimScript (VimL) grammar is embodied in the implementation of
+-- https://github.com/vim/vim/blob/master/src/eval.c; there is no formal
+-- specification for it, and there are many ambiguities that can only be
+-- resolved at runtime. We aim to parse a loose subset.
+-- data VimL = VimL State
+data Statement = Statement String
+data FunctionDeclaration = FunctionDeclaration Name FunctionBody (Maybe String)
+data FunctionBody = FunctionBody [Statement]
+-- Q: should i be using record syntax here?
+-- TODO: deal with line continuation markers
+
+-- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
+--   where
+--     functionKeyword = choice [ try string "function"
+--                              , try string "functio"
+--                              , try string "functi"
+--                              , try string "funct"
+--                              , try string "func"
+--                              , try string "fun"
+--                              , try string "fu"
+--                              ] >> optional $ char '!'
+--     -- probably more efficient like this:
+--     functionKeyword' =  string "fu"
+--                      >> (optional (char 'n')
+--                      >> (optional (char 'c')
+--                      >> (optional (char 't')
+--                      >> (optional (char 'i')
+--                      >> (optional (char 'o')
+--                      >> (optional (char 'n')))))))
+--                      >> (optional $ char '!')
+--     functionName = string "test"
+--     functionArgumentList = char '(' *> (string "something") <* char ')' -- TODO: use sepBy (char ',' >> optional ws) or similar
+--     functionBody = string "body"
 
 -- | Textual tokens recognized during parsing but not embedded in the AST.
 data Token = Blockquote
