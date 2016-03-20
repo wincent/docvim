@@ -68,7 +68,7 @@ data FunctionDeclaration = FunctionDeclaration
 -- understand.
 command prefix rest = string prefix >> remainder rest
   where remainder [r]    = optional (char r)
-        remainder (r:rs) = optional (char r) >> remainder rs
+        remainder (r:rs) = optional (char r >> remainder rs)
 
 function = functionKeyword
   where
