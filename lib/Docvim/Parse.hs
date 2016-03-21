@@ -20,6 +20,7 @@ import Text.Parsec ( (<|>)
                    , many
                    , many1
                    , manyTill
+                   , option
                    , optionMaybe
                    , optional
                    , parseTest
@@ -60,14 +61,19 @@ data Node = DocComment [DocNode]
 -- TODO: deal with line continuation markers
 
 -- TODO: qualifiers after arglist (abort/range/dict), optional in any order
+-- TODO: deal with line continuation \ and bar |
 -- TODO: validate name = CapitalLetter or s:foo or auto#loaded
-data FunctionDeclaration = FunctionDeclaration Name ArgumentList
-                         | FunctionRedeclaration Name ArgumentList
+data FunctionDeclaration = FunctionDeclaration Bool Name ArgumentList
   deriving (Eq)
 
 instance Show FunctionDeclaration where
-  show (FunctionDeclaration name arguments) = "function " ++ name ++ show arguments
-  show (FunctionRedeclaration name arguments) = "function! " ++ name ++ show arguments
+  show (FunctionDeclaration bang name arguments) =  keyword
+                                                 ++ " "
+                                                 ++ name
+                                                 ++ show arguments
+    where
+      keyword | bang == True = "function!"
+              | otherwise    = "function"
 
 data ArgumentList = ArgumentList [Argument]
   deriving (Eq)
@@ -92,18 +98,17 @@ command prefix rest =   try (string prefix >> remainder rest)
                     <?> prefix ++ rest
   where remainder [r]    = optional (char r)
         remainder (r:rs) = optional (char r >> remainder rs)
+-- TODO: make this take one param of the form "prefix[rest]"
 
-function = do
-    fu
-    bang <- optionMaybe $ try $ char '!'
-    constructor <- case bang of
-      Nothing -> return FunctionDeclaration
-      _       -> return FunctionRedeclaration
-    ws
-    constructor <$> name <*> arguments <* endf
+function =   FunctionDeclaration
+         <$> (fu *> bang <* ws)
+         <*> (name <* optional ws)
+         <*> arguments
+         <* endf
   where
     fu = command "fu" "nction"
     name = many1 alphaNum <* optional ws
+    bang = option False (True <$ char '!')
     arguments =  (char '(' >> optional ws)
               *> (ArgumentList <$> argument `sepBy` (char ',' >> optional ws))
               <* (optional ws >> char ')' >> optional ws)
