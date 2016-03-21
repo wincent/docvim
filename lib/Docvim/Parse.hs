@@ -59,6 +59,8 @@ data Node = DocComment [DocNode]
 -- Q: should i be using record syntax here?
 -- TODO: deal with line continuation markers
 
+-- TODO: qualifiers after arglist (abort/range/dict), optional in any order
+-- TODO: validate name = CapitalLetter or s:foo or auto#loaded
 data FunctionDeclaration = FunctionDeclaration Name ArgumentList
                          | FunctionRedeclaration Name ArgumentList
   deriving (Eq)
@@ -104,8 +106,8 @@ function = do
     name = many1 alphaNum <* optional ws
     arguments =  (char '(' >> optional ws)
               *> (ArgumentList <$> argument `sepBy` (char ',' >> optional ws))
-              <* (char ')' >> optional ws)
-    argument = Argument <$> many1 alphaNum
+              <* (optional ws >> char ')' >> optional ws)
+    argument = Argument <$> many1 alphaNum <* optional ws
     endf = command "endf" "unction"
     -- body = optional $ FunctionBody <$> string "body"
 
