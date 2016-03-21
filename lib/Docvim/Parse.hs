@@ -89,7 +89,7 @@ data Argument = Argument String
 instance Show Argument where
   show (Argument argument) = argument
 
--- | Given `description` like "fu[nction]", returns a parser that matches
+-- | Given a `description` like "fu[nction]", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".
 --
 -- Beware, may explode at runtime if passed an invalid `description`, due to the
