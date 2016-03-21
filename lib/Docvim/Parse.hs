@@ -79,9 +79,10 @@ function = do
     fu
     bang <- optionMaybe $ try $ char '!'
     ws
-    case bang of
-      Nothing -> FunctionDeclaration <$> name <* endf
-      _ -> FunctionRedeclaration <$> name <* endf
+    constructor <- case bang of
+      Nothing -> return (FunctionDeclaration)
+      _ -> return (FunctionRedeclaration)
+    constructor <$> name <* endf
   where
     fu = command "fu" "nction"
     name = many1 alphaNum <* ws
