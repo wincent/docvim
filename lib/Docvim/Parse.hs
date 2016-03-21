@@ -8,6 +8,7 @@ import Control.Applicative ( (*>)
                            , (<*)
                            , (<*>)
                            )
+import Data.List (intercalate)
 import System.Exit (exitFailure)
 import System.FilePath (takeExtension)
 import System.IO (hPutStrLn, stderr)
@@ -58,13 +59,27 @@ data Node = DocComment [DocNode]
 -- Q: should i be using record syntax here?
 -- TODO: deal with line continuation markers
 
-data FunctionDeclaration = FunctionDeclaration Name [Name]
-                         | FunctionRedeclaration Name [Name]
+data FunctionDeclaration = FunctionDeclaration Name ArgumentList
+                         | FunctionRedeclaration Name ArgumentList
   deriving (Eq)
 
 instance Show FunctionDeclaration where
   show (FunctionDeclaration name arguments) = "function " ++ name ++ show arguments
   show (FunctionRedeclaration name arguments) = "function! " ++ name ++ show arguments
+
+data ArgumentList = ArgumentList [Argument]
+  deriving (Eq)
+
+instance Show ArgumentList where
+  show (ArgumentList arguments) = "(" ++ (intercalate ", " argStrings) ++ ")"
+    where
+      argStrings = map show arguments
+
+data Argument = Argument String
+  deriving (Eq)
+
+instance Show Argument where
+  show (Argument argument) = argument
 
 -- | Given `prefix` "fu" and `rest` "nction", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".
@@ -88,8 +103,9 @@ function = do
     fu = command "fu" "nction"
     name = many1 alphaNum <* optional ws
     arguments =  (char '(' >> optional ws)
-              *> (many1 alphaNum) `sepBy` (char ',' >> optional ws)
+              *> (ArgumentList <$> argument `sepBy` (char ',' >> optional ws))
               <* (char ')' >> optional ws)
+    argument = Argument <$> (many1 alphaNum)
     endf = command "endf" "unction"
     -- body = optional $ FunctionBody <$> string "body"
 
