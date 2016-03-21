@@ -89,16 +89,20 @@ data Argument = Argument String
 instance Show Argument where
   show (Argument argument) = argument
 
--- | Given `prefix` "fu" and `rest` "nction", returns a parser that matches
+-- | Given `description` like "fu[nction]", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".
+--
+-- Beware, may explode at runtime if passed an invalid `description`, due to the
+-- use of `init`.
 --
 -- Requires the FlexibleContexts extension, for reasons that I don't yet fully
 -- understand.
-command prefix rest =   try (string prefix >> remainder rest)
+command description =   try (string prefix >> remainder rest)
                     <?> prefix ++ rest
-  where remainder [r]    = optional (char r)
+  where prefix           = takeWhile (\c -> c /= '[') description
+        rest             = init (snd (splitAt (1 + (length prefix)) description))
+        remainder [r]    = optional (char r)
         remainder (r:rs) = optional (char r >> remainder rs)
--- TODO: make this take one param of the form "prefix[rest]"
 
 function =   FunctionDeclaration
          <$> (fu *> bang <* ws)
@@ -106,14 +110,14 @@ function =   FunctionDeclaration
          <*> arguments
          <* endf
   where
-    fu = command "fu" "nction"
+    fu = command "fu[nction]"
     name = many1 alphaNum <* optional ws
     bang = option False (True <$ char '!')
     arguments =  (char '(' >> optional ws)
               *> (ArgumentList <$> argument `sepBy` (char ',' >> optional ws))
               <* (optional ws >> char ')' >> optional ws)
     argument = Argument <$> many1 alphaNum <* optional ws
-    endf = command "endf" "unction"
+    endf = command "endf[unction]"
     -- body = optional $ FunctionBody <$> string "body"
 
 -- | Textual tokens recognized during parsing but not embedded in the AST.
