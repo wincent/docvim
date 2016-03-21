@@ -26,6 +26,7 @@ import Text.Parsec ( (<|>)
                    , parseTest
                    , runParser
                    , sepBy
+                   , sepEndBy
                    , skipMany
                    , try
                    )
@@ -58,23 +59,26 @@ data Node = DocComment [DocNode]
 -- data FunctionDeclaration = FunctionDeclaration Name FunctionBody (Maybe String)
 -- data FunctionBody = FunctionBody [Statement]
 -- Q: should i be using record syntax here?
--- TODO: deal with line continuation markers
 
 -- TODO: qualifiers after arglist (abort/range/dict), optional in any order
 -- TODO: deal with line continuation \ and bar |
+--       note that `function X() |` does not work, and `endf` must be on a line
+--       of its own too (not a syntax error to do `| endf`, but it doesn't work
+--       , so you need to add another `endf`, which will blow up at runtime.
 -- TODO: validate name = CapitalLetter or s:foo or auto#loaded
 data FunctionDeclaration = FunctionDeclaration
   { functionBang :: Bool
   , functionName :: String
   , functionArguments :: ArgumentList
+  , functionAttributes :: [String]
   }
   deriving (Eq)
 
 instance Show FunctionDeclaration where
-  show (FunctionDeclaration bang name arguments) =  keyword
-                                                 ++ " "
-                                                 ++ name
-                                                 ++ show arguments
+  show (FunctionDeclaration bang name arguments _) =  keyword
+                                                   ++ " "
+                                                   ++ name
+                                                   ++ show arguments
     where
       keyword | bang == True = "function!"
               | otherwise    = "function"
@@ -112,7 +116,8 @@ function =   FunctionDeclaration
          <$> (fu *> bang <* ws)
          <*> (name <* optional ws)
          <*> arguments
-         <* endf
+         <*> (attributes <* optional ws)
+         <* (newline >> endf)
   where
     fu = command "fu[nction]"
     name = many1 alphaNum <* optional ws
@@ -121,6 +126,7 @@ function =   FunctionDeclaration
               *> (ArgumentList <$> argument `sepBy` (char ',' >> optional ws))
               <* (optional ws >> char ')' >> optional ws)
     argument = Argument <$> many1 alphaNum <* optional ws
+    attributes = (choice [string "abort", string "range", string "dict"]) `sepEndBy` ws
     endf = command "endf[unction]"
     -- body = optional $ FunctionBody <$> string "body"
 
