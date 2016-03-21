@@ -80,10 +80,11 @@ function = do
     bang <- optionMaybe $ try $ char '!'
     ws
     case bang of
-      Nothing -> FunctionDeclaration <$> (string "name") <* (ws >> endf)
-      _ -> FunctionRedeclaration <$> (string "name") <* (ws >> endf)
+      Nothing -> FunctionDeclaration <$> name <* (ws >> endf)
+      _ -> FunctionRedeclaration <$> name <* (ws >> endf)
   where
     fu = command "fu" "nction"
+    name = many1 alphaNum
     endf = command "endf" "unction"
 -- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
 --   where
