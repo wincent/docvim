@@ -23,6 +23,7 @@ import Text.Parsec ( (<|>)
                    , optional
                    , parseTest
                    , runParser
+                   , sepBy
                    , skipMany
                    , try
                    )
@@ -57,13 +58,13 @@ data Node = DocComment [DocNode]
 -- Q: should i be using record syntax here?
 -- TODO: deal with line continuation markers
 
-data FunctionDeclaration = FunctionDeclaration Name
-                         | FunctionRedeclaration Name
+data FunctionDeclaration = FunctionDeclaration Name [Name]
+                         | FunctionRedeclaration Name [Name]
   deriving (Eq)
 
 instance Show FunctionDeclaration where
-  show (FunctionDeclaration name) = "function " ++ name
-  show (FunctionRedeclaration name) = "function! " ++ name
+  show (FunctionDeclaration name arguments) = "function " ++ name ++ show arguments
+  show (FunctionRedeclaration name arguments) = "function! " ++ name ++ show arguments
 
 -- | Given `prefix` "fu" and `rest` "nction", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".
@@ -78,19 +79,19 @@ command prefix rest =   (try $ string prefix >> remainder rest)
 function = do
     fu
     bang <- optionMaybe $ try $ char '!'
-    ws
     constructor <- case bang of
       Nothing -> return (FunctionDeclaration)
       _ -> return (FunctionRedeclaration)
-    constructor <$> name <* endf
+    ws
+    constructor <$> name <*> arguments <* endf
   where
     fu = command "fu" "nction"
-    name = many1 alphaNum <* ws
+    name = many1 alphaNum <* optional ws
+    arguments =  (char '(' >> optional ws)
+              *> (many1 alphaNum) `sepBy` (char ',' >> optional ws)
+              <* (char ')' >> optional ws)
     endf = command "endf" "unction"
--- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
---   where
-    -- functionArgumentList = char '(' *> (string "something") <* char ')' -- TODO: use sepBy (char ',' >> optional ws) or similar
-    -- functionBody = optional $ FunctionBody <$> string "body"
+    -- body = optional $ FunctionBody <$> string "body"
 
 -- | Textual tokens recognized during parsing but not embedded in the AST.
 data Token = Blockquote
