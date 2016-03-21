@@ -75,10 +75,12 @@ command prefix rest =   (try $ string prefix >> remainder rest)
   where remainder [r]    = optional (char r)
         remainder (r:rs) = optional (char r >> remainder rs)
 
-function = functionKeyword
+function =  functionKeyword
+         <* (ws >> endfunction)
   where
     functionKeyword =  command "fu" "nction"
                     >> (((try $ char '!') *> return FunctionRedeclaration) <|> return FunctionDeclaration)
+    endfunction = command "endf" "unction"
 -- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
 --   where
     -- functionName = string "test"
