@@ -71,7 +71,7 @@ data ArgumentList = ArgumentList [Argument]
   deriving (Eq)
 
 instance Show ArgumentList where
-  show (ArgumentList arguments) = "(" ++ (intercalate ", " argStrings) ++ ")"
+  show (ArgumentList arguments) = "(" ++ intercalate ", " argStrings ++ ")"
     where
       argStrings = map show arguments
 
@@ -86,7 +86,7 @@ instance Show Argument where
 --
 -- Requires the FlexibleContexts extension, for reasons that I don't yet fully
 -- understand.
-command prefix rest =   (try $ string prefix >> remainder rest)
+command prefix rest =   try (string prefix >> remainder rest)
                     <?> prefix ++ rest
   where remainder [r]    = optional (char r)
         remainder (r:rs) = optional (char r >> remainder rs)
@@ -95,8 +95,8 @@ function = do
     fu
     bang <- optionMaybe $ try $ char '!'
     constructor <- case bang of
-      Nothing -> return (FunctionDeclaration)
-      _ -> return (FunctionRedeclaration)
+      Nothing -> return FunctionDeclaration
+      _       -> return FunctionRedeclaration
     ws
     constructor <$> name <*> arguments <* endf
   where
@@ -105,7 +105,7 @@ function = do
     arguments =  (char '(' >> optional ws)
               *> (ArgumentList <$> argument `sepBy` (char ',' >> optional ws))
               <* (char ')' >> optional ws)
-    argument = Argument <$> (many1 alphaNum)
+    argument = Argument <$> many1 alphaNum
     endf = command "endf" "unction"
     -- body = optional $ FunctionBody <$> string "body"
 
