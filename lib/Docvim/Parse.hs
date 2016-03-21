@@ -57,13 +57,13 @@ data Node = DocComment [DocNode]
 -- Q: should i be using record syntax here?
 -- TODO: deal with line continuation markers
 
-data FunctionDeclaration = FunctionDeclaration
-                         | FunctionRedeclaration
+data FunctionDeclaration = FunctionDeclaration Name
+                         | FunctionRedeclaration Name
   deriving (Eq)
 
 instance Show FunctionDeclaration where
-  show FunctionDeclaration = "function"
-  show FunctionRedeclaration = "function!"
+  show (FunctionDeclaration name) = "function " ++ name
+  show (FunctionRedeclaration name) = "function! " ++ name
 
 -- | Given `prefix` "fu" and `rest` "nction", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".
@@ -75,12 +75,16 @@ command prefix rest =   (try $ string prefix >> remainder rest)
   where remainder [r]    = optional (char r)
         remainder (r:rs) = optional (char r >> remainder rs)
 
-function =  functionKeyword
-         <* (ws >> endfunction)
+function = do
+    fu
+    bang <- optionMaybe $ try $ char '!'
+    ws
+    case bang of
+      Nothing -> FunctionDeclaration <$> (string "name") <* (ws >> endf)
+      _ -> FunctionRedeclaration <$> (string "name") <* (ws >> endf)
   where
-    functionKeyword =  command "fu" "nction"
-                    >> (((try $ char '!') *> return FunctionRedeclaration) <|> return FunctionDeclaration)
-    endfunction = command "endf" "unction"
+    fu = command "fu" "nction"
+    endf = command "endf" "unction"
 -- function = functionKeyword >> ws >> FunctionDeclaration <$> functionName <*> functionBody
 --   where
     -- functionName = string "test"
