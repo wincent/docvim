@@ -63,7 +63,11 @@ data Node = DocComment [DocNode]
 -- TODO: qualifiers after arglist (abort/range/dict), optional in any order
 -- TODO: deal with line continuation \ and bar |
 -- TODO: validate name = CapitalLetter or s:foo or auto#loaded
-data FunctionDeclaration = FunctionDeclaration Bool Name ArgumentList
+data FunctionDeclaration = FunctionDeclaration
+  { functionBang :: Bool
+  , functionName :: String
+  , functionArguments :: ArgumentList
+  }
   deriving (Eq)
 
 instance Show FunctionDeclaration where
