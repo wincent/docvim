@@ -56,6 +56,9 @@ data Node
                                 , functionAttributes :: [String]
                                 , functionBody :: [Node]
                                 }
+          | LetStatement { letLexpr :: String
+                         , letValue :: String
+                         }
           | UnletStatement { unletBang :: Bool
                            , unletBody :: String
                            }
@@ -129,13 +132,17 @@ function =   FunctionDeclaration
     attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
     endf       = command "endf[unction]" <* eos
 
+-- "let" is a reserved word in Haskell, so we call this "letStatement" instead.
+letStatement =   LetStatement
+    <$> (string "let" >> wsc >> word)
+    <*> (optional wsc >> char '=' >> optional wsc *> word <* eos)
+
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
-      <*> body
+      <*> word
       <*  (optional ws >> eos)
   where
     unl  = command "unl[et]"
-    body = many1 $ noneOf " \t\n"
 
 -- | Textual tokens recognized during parsing but not embedded in the AST.
 data Token = Blockquote
@@ -189,7 +196,9 @@ vimL = choice [ block
               ]
 
 block = choice [ function ]
-statement = choice [ unlet ]
+statement = choice [ letStatement
+                   , unlet
+                   ]
 
 heading :: Parser Node
 heading = HeadingAnnotation <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (eof >> return EOF)))
