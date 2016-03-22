@@ -53,6 +53,7 @@ data Node
                                 , functionName :: String
                                 , functionArguments :: ArgumentList
                                 , functionAttributes :: [String]
+                                , functionBody :: [Node]
                                 }
           | UnletStatement { unletBang :: Bool
                            , unletBody :: String
@@ -116,7 +117,7 @@ function =   FunctionDeclaration
          <*> (name <* optional wsc)
          <*> arguments
          <*> (attributes <* optional wsc)
-         <* (newline >> optional ws >> endf)
+         <*> (newline *> many node <* (optional ws >> endf))
   where
     fu         = command "fu[nction]"
     name       = many1 alphaNum <* optional wsc
@@ -126,7 +127,6 @@ function =   FunctionDeclaration
     argument   = Argument <$> many1 alphaNum <* optional wsc
     attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
     endf       = command "endf[unction]"
-    -- body = optional $ FunctionBody <$> string "body"
 
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
