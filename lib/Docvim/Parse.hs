@@ -20,6 +20,7 @@ import Text.Parsec ( (<|>)
                    , many
                    , many1
                    , manyTill
+                   , notFollowedBy
                    , option
                    , optionMaybe
                    , optional
@@ -131,7 +132,7 @@ function =   FunctionDeclaration
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
       <*> body
-      <*  optional ws
+      <*  (optional ws >> eos)
   where
     unl  = command "unl[et]"
     body = many1 $ noneOf " \t\n"
@@ -163,10 +164,16 @@ ws = Whitespace <$> many1 (oneOf " \t")
 -- | Continuation-aware whitespace (\).
 wsc = many1 $ choice [whitespace, continuation]
   where whitespace = oneOf " \t"
-        continuation = try $ char '\n' >> many whitespace >> char '\\'
+        continuation = try $ char '\n' >> ws >> char '\\'
 
 -- | Optional bang suffix for VimL commands.
 bang = option False (True <$ char '!')
+
+-- | End-of-statement.
+eos = choice [bar, ws']
+  where
+    bar = char '|' >> optional wsc
+    ws' = newline >> notFollowedBy wsc
 
 node :: Parser Node
 node = choice [ docBlock
