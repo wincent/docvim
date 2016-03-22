@@ -47,10 +47,14 @@ data Unit = Unit [Node] deriving (Eq, Show)
 -- VimL parser being the primary parser. Won't attach VimL info to
 -- DocComment nodes during the parse; will likely need a separate pass of the
 -- AST after that.
-data Node = VimL FunctionDeclaration
+data Node = FunctionDeclaration { functionBang :: Bool
+                                , functionName :: String
+                                , functionArguments :: ArgumentList
+                                , functionAttributes :: [String]
+                                }
           | DocNode [Annotation]
           | Heading String
-  deriving (Eq, Show)
+  deriving (Eq)
 
 -- The VimScript (VimL) grammar is embodied in the implementation of
 -- https://github.com/vim/vim/blob/master/src/eval.c; there is no formal
@@ -67,15 +71,8 @@ data Node = VimL FunctionDeclaration
 --       of its own too (not a syntax error to do `| endf`, but it doesn't work
 --       , so you need to add another `endf`, which will blow up at runtime.
 -- TODO: validate name = CapitalLetter or s:foo or auto#loaded
-data FunctionDeclaration = FunctionDeclaration
-  { functionBang :: Bool
-  , functionName :: String
-  , functionArguments :: ArgumentList
-  , functionAttributes :: [String]
-  }
-  deriving (Eq)
 
-instance Show FunctionDeclaration where
+instance Show Node where
   show (FunctionDeclaration bang name arguments _) =  keyword
                                                    ++ " "
                                                    ++ name
@@ -83,6 +80,8 @@ instance Show FunctionDeclaration where
     where
       keyword | bang == True = "function!"
               | otherwise    = "function"
+  show (Heading a) = show a
+  show (DocNode a) = "not yet implemented"
 
 data ArgumentList = ArgumentList [Argument]
   deriving (Eq)
@@ -179,7 +178,7 @@ node = do
     Just DocBlockStart -> DocNode <$> many1 docNode
     -- TODO: parse the VimScript too and extract metadata from it to attach to
     -- DocComment node
-    Nothing -> VimL <$> function
+    Nothing -> function
 
 -- docNode :: Parser Node
 docNode = annotation
