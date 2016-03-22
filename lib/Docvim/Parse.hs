@@ -60,7 +60,6 @@ data Node = DocComment [DocNode]
 -- data FunctionBody = FunctionBody [Statement]
 -- Q: should i be using record syntax here?
 
--- TODO: qualifiers after arglist (abort/range/dict), optional in any order
 -- TODO: deal with line continuation \ and bar |
 --       note that `function X() |` does not work, and `endf` must be on a line
 --       of its own too (not a syntax error to do `| endf`, but it doesn't work
@@ -166,9 +165,12 @@ vimScriptLine = VimScript <$> many1 (noneOf "\n") <* optional newline
 -- blockquote    = string ">" >> return Blockquote
 -- commentStart  = string "\"" >> return CommentStart
 docBlockStart = (string "\"\"" <* optional ws) >> return DocBlockStart
--- listItem      = string "-" >> return ListItem
-newline       = char '\n' >> return Newline
-ws    = Whitespace <$> many1 (oneOf " \t")
+-- listItem = string "-" >> return ListItem
+newline = Newline <$ char '\n'
+ws = Whitespace <$> many1 (oneOf " \t")
+
+-- Continuation-aware whitespace (\)
+-- wsc = Whitespace <
 
 docComment :: Parser Node
 docComment = do
