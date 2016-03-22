@@ -40,14 +40,16 @@ import Text.ParserCombinators.Parsec.Char ( alphaNum
                                           , string
                                           )
 
--- Note that VimScript can contain a DocComment almost anywhere, so will
+data Unit = Unit [Node] deriving (Eq, Show)
+
+-- Note that VimL can contain a DocComment almost anywhere, so will
 -- probably want to make DocComment into a real island parser, with the
--- VimScript parser being the primary parser. Won't attach VimScript info to
+-- VimL parser being the primary parser. Won't attach VimL info to
 -- DocComment nodes during the parse; will likely need a separate pass of the
 -- AST after that.
-data Node = DocComment [DocNode]
-          | VimL FunctionDeclaration
-          | VimScript String
+data Node = VimL FunctionDeclaration
+          | DocNode [Annotation]
+          | Heading String
   deriving (Eq, Show)
 
 -- The VimScript (VimL) grammar is embodied in the implementation of
@@ -139,10 +141,6 @@ data Token = Blockquote
            | EOF
   deriving (Eq, Show)
 
-data DocNode = DocNode Annotation
-             | Heading String
-  deriving (Eq, Show)
-
 type Default = String
 type Description = String
 type Name = String
@@ -159,8 +157,6 @@ data Annotation = Plugin Name Description
                 | Option Name Type (Maybe Default)
   deriving (Eq, Show)
 
-vimScriptLine = VimScript <$> many1 (noneOf "\n") <* optional newline
-
 -- These cause type errors unless used...
 -- blockquote    = string ">" >> return Blockquote
 -- commentStart  = string "\"" >> return CommentStart
@@ -174,30 +170,24 @@ wsc = many1 $ choice [whitespace, continuation]
   where whitespace = oneOf " \t"
         continuation = try $ char '\n' >> many whitespace >> char '\\'
 
-docComment :: Parser Node
-docComment = do
+node :: Parser Node
+node = do
   optional ws
-  -- docBlockStart
-  -- comment <- DocComment <$> many1 docNode
-  -- skipMany vimScriptLine
-  -- return comment
 
-  -- want to conditionally choose between docNode and vimScriptLine based on
-  -- whether we succeeded in peeking at and consuming docBlockStart
   maybeDocBlock <- optionMaybe $ try docBlockStart
   case maybeDocBlock of
-    Just DocBlockStart -> DocComment <$> many1 docNode
+    Just DocBlockStart -> DocNode <$> many1 docNode
     -- TODO: parse the VimScript too and extract metadata from it to attach to
     -- DocComment node
-    -- Nothing -> vimScriptLine -- would like to use skipMany here
     Nothing -> VimL <$> function
 
-docNode :: Parser DocNode
-docNode = choice [ annotation
-                 , heading
-                 ]
+-- docNode :: Parser Node
+docNode = annotation
+-- docNode = choice [ annotation
+--                  , heading
+--                  ]
 
-heading :: Parser DocNode
+-- heading :: Parser Node
 heading = Heading <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (eof >> return EOF)))
 -- TODO: probably want to swallow the newline here; make it implicit
 -- (and any trailing whitespace)
@@ -216,8 +206,8 @@ lexeme parser = do
 --   * optional but consume if present
 
 -- TODO: only allow these after "" and " at start of line
-annotation :: Parser DocNode
-annotation = DocNode <$> (char '@' *> annotationName)
+annotation :: Parser Annotation
+annotation = char '@' *> annotationName
   where
     annotationName =
       choice [ command
@@ -248,13 +238,10 @@ annotation = DocNode <$> (char '@' *> annotationName)
     plugInDescription = manyTill anyChar (newline <|> (eof >> return EOF))
 
 -- | Parses a translation unit (file contents) into an AST.
-unit :: Parser [Node]
-unit = do
-  nodes <- many docComment
-  eof
-  return nodes
+unit :: Parser Unit
+unit = Unit <$> many node <* eof
 
-parse :: String -> IO [Node]
+parse :: String -> IO Unit
 parse fileName = parseFromFile unit fileName >>= either report return
   where
     report err = do
