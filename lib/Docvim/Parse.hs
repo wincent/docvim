@@ -60,7 +60,7 @@ data Node = DocComment [DocNode]
 -- data FunctionBody = FunctionBody [Statement]
 -- Q: should i be using record syntax here?
 
--- TODO: deal with line continuation \ and bar |
+-- TODO: deal with bar |
 --       note that `function X() |` does not work, and `endf` must be on a line
 --       of its own too (not a syntax error to do `| endf`, but it doesn't work
 --       , so you need to add another `endf`, which will blow up at runtime.
@@ -112,20 +112,20 @@ command description =   try (string prefix >> remainder rest)
         remainder (r:rs) = optional (char r >> remainder rs)
 
 function =   FunctionDeclaration
-         <$> (fu *> bang <* ws)
-         <*> (name <* optional ws)
+         <$> (fu *> bang <* wsc)
+         <*> (name <* optional wsc)
          <*> arguments
-         <*> (attributes <* optional ws)
-         <* (newline >> endf)
+         <*> (attributes <* optional wsc)
+         <* (newline >> optional ws >> endf)
   where
     fu = command "fu[nction]"
-    name = many1 alphaNum <* optional ws
+    name = many1 alphaNum <* optional wsc
     bang = option False (True <$ char '!')
-    arguments =  (char '(' >> optional ws)
-              *> (ArgumentList <$> argument `sepBy` (char ',' >> optional ws))
-              <* (optional ws >> char ')' >> optional ws)
-    argument = Argument <$> many1 alphaNum <* optional ws
-    attributes = (choice [string "abort", string "range", string "dict"]) `sepEndBy` ws
+    arguments =  (char '(' >> optional wsc)
+              *> (ArgumentList <$> argument `sepBy` (char ',' >> optional wsc))
+              <* (optional wsc >> char ')' >> optional wsc)
+    argument = Argument <$> many1 alphaNum <* optional wsc
+    attributes = (choice [string "abort", string "range", string "dict"]) `sepEndBy` wsc
     endf = command "endf[unction]"
     -- body = optional $ FunctionBody <$> string "body"
 
@@ -170,7 +170,9 @@ newline = Newline <$ char '\n'
 ws = Whitespace <$> many1 (oneOf " \t")
 
 -- Continuation-aware whitespace (\)
--- wsc = Whitespace <
+wsc = many1 $ choice [whitespace, continuation]
+  where whitespace = oneOf " \t"
+        continuation = try $ char '\n' >> many whitespace >> char '\\'
 
 docComment :: Parser Node
 docComment = do
