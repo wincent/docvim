@@ -47,14 +47,25 @@ data Unit = Unit [Node] deriving (Eq, Show)
 -- VimL parser being the primary parser. Won't attach VimL info to
 -- DocComment nodes during the parse; will likely need a separate pass of the
 -- AST after that.
-data Node = FunctionDeclaration { functionBang :: Bool
+data Node =
+          -- VimL nodes
+            FunctionDeclaration { functionBang :: Bool
                                 , functionName :: String
                                 , functionArguments :: ArgumentList
                                 , functionAttributes :: [String]
                                 }
-          | DocComment [Annotation]
-          | Heading String
-  deriving (Eq)
+          -- docvim nodes
+          | PluginAnnotation Name Description
+          | FunctionAnnotation Name -- not sure if I will want more here
+          | IndentAnnotation
+          | DedentAnnotation
+          | CommandAnnotation Usage
+          | FooterAnnotation
+          | MappingsAnnotation
+          | MappingAnnotation Name
+          | OptionAnnotation Name Type (Maybe Default)
+          | HeadingAnnotation String
+  deriving (Eq, Show)
 
 -- The VimScript (VimL) grammar is embodied in the implementation of
 -- https://github.com/vim/vim/blob/master/src/eval.c; there is no formal
@@ -66,20 +77,6 @@ data Node = FunctionDeclaration { functionBang :: Bool
 --       of its own too (not a syntax error to do `| endf`, but it doesn't work
 --       , so you need to add another `endf`, which will blow up at runtime.
 -- TODO: validate name = CapitalLetter or s:foo or auto#loaded
-
-instance Show Node where
-  show (FunctionDeclaration bang name arguments attributes) =  keyword
-                                                            ++ " "
-                                                            ++ name
-                                                            ++ show arguments
-                                                            ++ attrs
-    where
-      keyword | bang == True     = "function!"
-              | otherwise        = "function"
-      attrs   | attributes == [] = ""
-              | otherwise        = " " ++ intercalate " " attributes
-  show (Heading a) = show a
-  show (DocComment a) = "not yet implemented"
 
 data ArgumentList = ArgumentList [Argument]
   deriving (Eq)
@@ -143,16 +140,6 @@ type Description = String
 type Name = String
 type Type = String
 type Usage = String
-data Annotation = Plugin Name Description
-                | Function Name -- not sure if I will want more here
-                | Indent
-                | Dedent
-                | Command Usage
-                | Footer
-                | Mappings
-                | Mapping Name
-                | Option Name Type (Maybe Default)
-  deriving (Eq, Show)
 
 -- These cause type errors unless used...
 -- blockquote    = string ">" >> return Blockquote
@@ -168,22 +155,30 @@ wsc = many1 $ choice [whitespace, continuation]
         continuation = try $ char '\n' >> many whitespace >> char '\\'
 
 node :: Parser Node
-node = do
-  maybeDocBlock <- optionMaybe $ try docBlockStart
-  case maybeDocBlock of
-    Just DocBlockStart -> DocComment <$> many1 docNode
-    -- TODO: parse the VimScript too and extract metadata from it to attach to
-    -- DocComment node
-    Nothing -> function
+node = choice [ docBlock
+              , vimL
+              ]
 
--- docNode :: Parser Node
-docNode = annotation
--- docNode = choice [ annotation
---                  , heading
---                  ]
+docBlock = docBlockStart >> choice [ annotation
+                                   , heading
+                                   ]
+vimL = choice [ function ]
 
--- heading :: Parser Node
-heading = Heading <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (eof >> return EOF)))
+--   maybeDocBlock <- optionMaybe $ try docBlockStart
+--   case maybeDocBlock of
+--     Just DocBlockStart -> DocComment <$> many1 docNode
+--     -- TODO: parse the VimScript too and extract metadata from it to attach to
+--     -- DocComment node
+--     Nothing -> function
+--
+-- -- docNode :: Parser Node
+-- docNode = annotation
+-- -- docNode = choice [ annotation
+-- --                  , heading
+-- --                  ]
+
+heading :: Parser Node
+heading = HeadingAnnotation <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (eof >> return EOF)))
 -- TODO: probably want to swallow the newline here; make it implicit
 -- (and any trailing whitespace)
 
@@ -201,34 +196,34 @@ lexeme parser = do
 --   * optional but consume if present
 
 -- TODO: only allow these after "" and " at start of line
-annotation :: Parser Annotation
+annotation :: Parser Node
 annotation = char '@' *> annotationName
   where
     annotationName =
       choice [ command
-             , string "dedent" >> return Dedent
-             , try $ string "footer" >> return Footer -- must come before function
+             , string "dedent" >> return DedentAnnotation
+             , try $ string "footer" >> return FooterAnnotation -- must come before function
              , function
-             , string "indent" >> return Indent
-             , try $ string "mappings" >> return Mappings -- must come before mapping
+             , string "indent" >> return IndentAnnotation
+             , try $ string "mappings" >> return MappingsAnnotation -- must come before mapping
              , mapping
              , option
              , plugin
              ]
 
-    command           = string "command" >> ws >> Command <$> ((:) <$> char ':' <*> many1 (noneOf "\n"))
+    command           = string "command" >> ws >> CommandAnnotation <$> ((:) <$> char ':' <*> many1 (noneOf "\n"))
 
-    function          = string "function" >> ws >> Function <$> word <* optional ws
+    function          = string "function" >> ws >> FunctionAnnotation <$> word <* optional ws
 
-    mapping           = string "mapping" >> ws >> Mapping <$> mappingName
+    mapping           = string "mapping" >> ws >> MappingAnnotation <$> mappingName
     mappingName       = word <* optional ws
 
-    option            = string "option" >> ws >> Option <$> optionName <*> optionType <*> optionDefault
+    option            = string "option" >> ws >> OptionAnnotation <$> optionName <*> optionType <*> optionDefault
     optionName        = many1 (alphaNum <|> char ':') <* ws <?> "option name"
     optionType        = many1 alphaNum <* ws <?> "option type"
     optionDefault     = optionMaybe word <?> "option default value"
 
-    plugin            = string "plugin" >> ws >> Plugin <$> pluginName <*> plugInDescription
+    plugin            = string "plugin" >> ws >> PluginAnnotation <$> pluginName <*> plugInDescription
     pluginName        = many1 alphaNum <* ws
     plugInDescription = manyTill anyChar (newline <|> (eof >> return EOF))
 
