@@ -47,13 +47,17 @@ data Unit = Unit [Node] deriving (Eq, Show)
 -- VimL parser being the primary parser. Won't attach VimL info to
 -- DocComment nodes during the parse; will likely need a separate pass of the
 -- AST after that.
-data Node =
+data Node
           -- VimL nodes
-            FunctionDeclaration { functionBang :: Bool
+          = FunctionDeclaration { functionBang :: Bool
                                 , functionName :: String
                                 , functionArguments :: ArgumentList
                                 , functionAttributes :: [String]
                                 }
+          | UnletStatement { unletBang :: Bool
+                           , unletBody :: String
+                           }
+
           -- docvim nodes
           | PluginAnnotation Name Description
           | FunctionAnnotation Name -- not sure if I will want more here
@@ -114,16 +118,23 @@ function =   FunctionDeclaration
          <*> (attributes <* optional wsc)
          <* (newline >> optional ws >> endf)
   where
-    fu = command "fu[nction]"
-    name = many1 alphaNum <* optional wsc
-    bang = option False (True <$ char '!')
-    arguments =  (char '(' >> optional wsc)
-              *> (ArgumentList <$> argument `sepBy` (char ',' >> optional wsc))
-              <* (optional wsc >> char ')' >> optional wsc)
-    argument = Argument <$> many1 alphaNum <* optional wsc
+    fu         = command "fu[nction]"
+    name       = many1 alphaNum <* optional wsc
+    arguments  =  (char '(' >> optional wsc)
+               *> (ArgumentList <$> argument `sepBy` (char ',' >> optional wsc))
+               <* (optional wsc >> char ')' >> optional wsc)
+    argument   = Argument <$> many1 alphaNum <* optional wsc
     attributes = (choice [string "abort", string "range", string "dict"]) `sepEndBy` wsc
-    endf = command "endf[unction]"
+    endf       = command "endf[unction]"
     -- body = optional $ FunctionBody <$> string "body"
+
+unlet =   UnletStatement
+      <$> (unl *> bang <* wsc)
+      <*> body
+      <* optional ws
+  where
+    unl  = command "unl[et]"
+    body = many1 $ noneOf " \t\n"
 
 -- | Textual tokens recognized during parsing but not embedded in the AST.
 data Token = Blockquote
@@ -149,10 +160,13 @@ docBlockStart = (string "\"\"" <* optional ws) >> return DocBlockStart
 newline = Newline <$ char '\n'
 ws = Whitespace <$> many1 (oneOf " \t")
 
--- Continuation-aware whitespace (\)
+-- | Continuation-aware whitespace (\).
 wsc = many1 $ choice [whitespace, continuation]
   where whitespace = oneOf " \t"
         continuation = try $ char '\n' >> many whitespace >> char '\\'
+
+-- | Optional bang suffix for VimL commands.
+bang = option False (True <$ char '!')
 
 node :: Parser Node
 node = choice [ docBlock
@@ -162,7 +176,12 @@ node = choice [ docBlock
 docBlock = docBlockStart >> choice [ annotation
                                    , heading
                                    ]
-vimL = choice [ function ]
+vimL = choice [ block
+              , statement
+              ]
+
+block = choice [ function ]
+statement = choice [ unlet ]
 
 --   maybeDocBlock <- optionMaybe $ try docBlockStart
 --   case maybeDocBlock of
