@@ -191,19 +191,6 @@ vimL = choice [ block
 block = choice [ function ]
 statement = choice [ unlet ]
 
---   maybeDocBlock <- optionMaybe $ try docBlockStart
---   case maybeDocBlock of
---     Just DocBlockStart -> DocComment <$> many1 docNode
---     -- TODO: parse the VimScript too and extract metadata from it to attach to
---     -- DocComment node
---     Nothing -> function
---
--- -- docNode :: Parser Node
--- docNode = annotation
--- -- docNode = choice [ annotation
--- --                  , heading
--- --                  ]
-
 heading :: Parser Node
 heading = HeadingAnnotation <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (eof >> return EOF)))
 -- TODO: probably want to swallow the newline here; make it implicit
