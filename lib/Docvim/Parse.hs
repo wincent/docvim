@@ -52,7 +52,7 @@ data Node = FunctionDeclaration { functionBang :: Bool
                                 , functionArguments :: ArgumentList
                                 , functionAttributes :: [String]
                                 }
-          | DocNode [Annotation]
+          | DocComment [Annotation]
           | Heading String
   deriving (Eq)
 
@@ -60,11 +60,6 @@ data Node = FunctionDeclaration { functionBang :: Bool
 -- https://github.com/vim/vim/blob/master/src/eval.c; there is no formal
 -- specification for it, and there are many ambiguities that can only be
 -- resolved at runtime. We aim to parse a loose subset.
--- data VimL = VimL State
--- data Statement = Statement String
--- data FunctionDeclaration = FunctionDeclaration Name FunctionBody (Maybe String)
--- data FunctionBody = FunctionBody [Statement]
--- Q: should i be using record syntax here?
 
 -- TODO: deal with bar |
 --       note that `function X() |` does not work, and `endf` must be on a line
@@ -73,15 +68,18 @@ data Node = FunctionDeclaration { functionBang :: Bool
 -- TODO: validate name = CapitalLetter or s:foo or auto#loaded
 
 instance Show Node where
-  show (FunctionDeclaration bang name arguments _) =  keyword
-                                                   ++ " "
-                                                   ++ name
-                                                   ++ show arguments
+  show (FunctionDeclaration bang name arguments attributes) =  keyword
+                                                            ++ " "
+                                                            ++ name
+                                                            ++ show arguments
+                                                            ++ attrs
     where
       keyword | bang == True = "function!"
               | otherwise    = "function"
+      attrs | attributes == [] = ""
+            | otherwise        = " " ++ intercalate " " attributes
   show (Heading a) = show a
-  show (DocNode a) = "not yet implemented"
+  show (DocComment a) = "not yet implemented"
 
 data ArgumentList = ArgumentList [Argument]
   deriving (Eq)
@@ -175,7 +173,7 @@ node = do
 
   maybeDocBlock <- optionMaybe $ try docBlockStart
   case maybeDocBlock of
-    Just DocBlockStart -> DocNode <$> many1 docNode
+    Just DocBlockStart -> DocComment <$> many1 docNode
     -- TODO: parse the VimScript too and extract metadata from it to attach to
     -- DocComment node
     Nothing -> function
