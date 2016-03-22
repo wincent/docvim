@@ -74,10 +74,10 @@ instance Show Node where
                                                             ++ show arguments
                                                             ++ attrs
     where
-      keyword | bang == True = "function!"
-              | otherwise    = "function"
-      attrs | attributes == [] = ""
-            | otherwise        = " " ++ intercalate " " attributes
+      keyword | bang == True     = "function!"
+              | otherwise        = "function"
+      attrs   | attributes == [] = ""
+              | otherwise        = " " ++ intercalate " " attributes
   show (Heading a) = show a
   show (DocComment a) = "not yet implemented"
 
@@ -169,8 +169,6 @@ wsc = many1 $ choice [whitespace, continuation]
 
 node :: Parser Node
 node = do
-  optional ws
-
   maybeDocBlock <- optionMaybe $ try docBlockStart
   case maybeDocBlock of
     Just DocBlockStart -> DocComment <$> many1 docNode
@@ -236,7 +234,9 @@ annotation = char '@' *> annotationName
 
 -- | Parses a translation unit (file contents) into an AST.
 unit :: Parser Unit
-unit = Unit <$> many node <* eof
+unit =   Unit
+     <$> (optional ws >> many node)
+     <*  eof
 
 parse :: String -> IO Unit
 parse fileName = parseFromFile unit fileName >>= either report return
