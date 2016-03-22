@@ -170,7 +170,7 @@ wsc = many1 $ choice [whitespace, continuation]
 bang = option False (True <$ char '!')
 
 -- | End-of-statement.
-eos = choice [bar, ws']
+eos = choice [bar, ws', eof]
   where
     bar = char '|' >> optional wsc
     ws' = newline >> notFollowedBy wsc
