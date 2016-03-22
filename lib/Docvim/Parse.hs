@@ -131,7 +131,7 @@ function =   FunctionDeclaration
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
       <*> body
-      <* optional ws
+      <*  optional ws
   where
     unl  = command "unl[et]"
     body = many1 $ noneOf " \t\n"
