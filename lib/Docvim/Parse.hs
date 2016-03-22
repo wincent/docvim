@@ -118,7 +118,7 @@ function =   FunctionDeclaration
          <*> (name <* optional wsc)
          <*> arguments
          <*> (attributes <* optional wsc)
-         <*> (newline *> many node <* (optional ws >> endf))
+         <*> (newlines *> many node <* (optional ws >> endf))
   where
     fu         = command "fu[nction]"
     name       = many1 alphaNum <* optional wsc
@@ -159,6 +159,7 @@ type Usage = String
 docBlockStart = DocBlockStart <$ (string "\"\"" <* optional ws) <?> "\"\""
 -- listItem = string "-" >> return ListItem
 newline = Newline <$ char '\n'
+newlines = many1 newline
 ws = Whitespace <$> many1 (oneOf " \t")
 
 -- | Continuation-aware whitespace (\).
@@ -173,7 +174,7 @@ bang = option False (True <$ char '!')
 eos = choice [bar, ws', eof]
   where
     bar = char '|' >> optional wsc
-    ws' = newline >> notFollowedBy wsc
+    ws' = newlines >> notFollowedBy wsc
 
 node :: Parser Node
 node = choice [ docBlock
@@ -256,8 +257,10 @@ annotation = char '@' *> annotationName
 -- | Parses a translation unit (file contents) into an AST.
 unit :: Parser Unit
 unit =   Unit
-     <$> (optional ws >> many node)
+     <$> (ws' >> many node)
      <*  eof
+  where
+    ws' = many $ choice [ws, newline]
 
 parse :: String -> IO Unit
 parse fileName = parseFromFile unit fileName >>= either report return
