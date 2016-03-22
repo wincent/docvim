@@ -127,7 +127,7 @@ function =   FunctionDeclaration
                <* (optional wsc >> char ')' >> optional wsc)
     argument   = Argument <$> many1 alphaNum <* optional wsc
     attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
-    endf       = command "endf[unction]"
+    endf       = command "endf[unction]" <* eos
 
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
