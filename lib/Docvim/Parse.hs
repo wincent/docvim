@@ -134,8 +134,10 @@ function =   FunctionDeclaration
 
 -- "let" is a reserved word in Haskell, so we call this "letStatement" instead.
 letStatement =   LetStatement
-    <$> (string "let" >> wsc >> word)
-    <*> (optional wsc >> char '=' >> optional wsc *> word <* eos)
+    <$> (string "let" >> wsc >> word')
+    <*> (optional wsc >> char '=' >> optional wsc *> word' <* eos)
+  where
+    word' = many1 $ noneOf " \n\t="
 
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
