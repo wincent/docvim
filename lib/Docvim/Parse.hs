@@ -156,7 +156,7 @@ type Usage = String
 -- These cause type errors unless used...
 -- blockquote    = string ">" >> return Blockquote
 -- commentStart  = string "\"" >> return CommentStart
-docBlockStart = (string "\"\"" <* optional ws) >> return DocBlockStart
+docBlockStart = DocBlockStart <$ (string "\"\"" <* optional ws) <?> "\"\""
 -- listItem = string "-" >> return ListItem
 newline = Newline <$ char '\n'
 ws = Whitespace <$> many1 (oneOf " \t")
