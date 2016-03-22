@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module Docvim.Parse ( p
+                    , pp
                     , parse
                     , parseUnit
                     ) where
@@ -18,6 +19,7 @@ import System.IO (hPutStrLn, stderr)
 -- TODO: custom error messages with <?>
 import Text.Parsec ( (<|>)
                    , (<?>)
+                   , ParseError
                    , choice
                    , lookAhead
                    , many
@@ -43,6 +45,9 @@ import Text.ParserCombinators.Parsec.Char ( alphaNum
                                           , oneOf
                                           , string
                                           )
+
+-- might want to pull this into a separate, test-only module
+import Text.Show.Pretty (ppShow)
 
 data Unit = Unit [Node] deriving (Eq, Show)
 
@@ -270,10 +275,19 @@ parse fileName = parseFromFile unit fileName >>= either report return
       hPutStrLn stderr $ "Error: " ++ show err
       exitFailure
 
--- | To facilitate quick testing in the console.
--- import Parse (p)
--- p "test"
-p = parseTest unit
-
 -- | To facilitate unit-testing.
+parseUnit :: String -> Either ParseError Unit
 parseUnit = runParser unit () "(eval)"
+
+-- | For unit testing.
+p :: String -> String
+p input = case (parseUnit input) of
+            Left error -> show error
+            Right ast -> ppShow ast
+
+-- | To facilitate quick testing in the console.
+-- import Parse (pp)
+-- pp "unlet g:var"
+-- pp :: String -> IO ()
+pp input = do
+  putStrLn $ p input

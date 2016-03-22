@@ -16,6 +16,7 @@ suite :: TestTree
 suite = testGroup "Test suite"
   [ testGroup "Unit tests"
     [ testCase "Parse empty unit" $ assert $ parseSuccess (parseUnit "")
+    , testCase "Parse whitespace-only unit" $ assert $ parseSuccess (parseUnit "  \n    ")
     , testCase "Bad input" $ assert $ parseFailure (parseUnit "bzzzzt")
 
     -- Some example syntax:
