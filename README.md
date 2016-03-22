@@ -28,6 +28,12 @@ cabal haddock --executables
 open dist/doc/html/docvim/docvim/index.html
 ```
 
+### Testing
+
+```
+cabal test
+```
+
 ### Linting
 
 ```

@@ -96,10 +96,13 @@ test-suite hlint
 
 test-suite tasty
   build-depends:    base >= 4 && < 5
+               ,    docvim
+               ,    filepath
+               ,    parsec
                ,    tasty
                ,    tasty-hunit
-             --,    docvim
   default-language: Haskell2010
   hs-source-dirs:   tests
+                ,   lib
   main-is:          Tasty.hs
   type:             exitcode-stdio-1.0

@@ -1,6 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Docvim.Parse (p, parse) where
+module Docvim.Parse ( p
+                    , parse
+                    , parseUnit
+                    ) where
 
 import Control.Applicative ( (*>)
                            , (<$)
@@ -271,3 +274,6 @@ parse fileName = parseFromFile unit fileName >>= either report return
 -- import Parse (p)
 -- p "test"
 p = parseTest unit
+
+-- | To facilitate unit-testing.
+parseUnit = runParser unit () "(eval)"
