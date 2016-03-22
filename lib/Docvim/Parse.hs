@@ -106,8 +106,8 @@ instance Show Argument where
 -- understand.
 command description =   try (string prefix >> remainder rest)
                     <?> prefix ++ rest
-  where prefix           = takeWhile (\c -> c /= '[') description
-        rest             = init (snd (splitAt (1 + (length prefix)) description))
+  where prefix           = takeWhile (/= '[') description
+        rest             = init (snd (splitAt (1 + length prefix) description))
         remainder [r]    = optional (char r)
         remainder (r:rs) = optional (char r >> remainder rs)
 
@@ -124,7 +124,7 @@ function =   FunctionDeclaration
                *> (ArgumentList <$> argument `sepBy` (char ',' >> optional wsc))
                <* (optional wsc >> char ')' >> optional wsc)
     argument   = Argument <$> many1 alphaNum <* optional wsc
-    attributes = (choice [string "abort", string "range", string "dict"]) `sepEndBy` wsc
+    attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
     endf       = command "endf[unction]"
     -- body = optional $ FunctionBody <$> string "body"
 
