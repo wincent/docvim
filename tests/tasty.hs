@@ -38,16 +38,7 @@ goldenTests sources = testGroup "Golden tests" $ do
       return $ pack output -- goldenVsString wants a ByteString
     name = takeBaseName file
     golden = replaceExtension file ".golden"
-    diff = \ref new -> [ "diff"
-                       , "-u"
-                       , "-d"
-                       , "--label"
-                       , name ++ ".expected"
-                       , ref
-                       , "--label"
-                       , name ++ ".actual"
-                       , new
-                       ]
+    diff = \ref new -> ["git", "diff", "--color", ref, new]
   return $ goldenVsStringDiff name diff golden run
 
 getFixtures :: IO [FilePath]
