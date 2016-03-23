@@ -4,7 +4,7 @@ import Docvim.Parse (p, parseUnit)
 import System.FilePath (replaceExtension, takeBaseName)
 import System.IO (readFile)
 import Test.Tasty
-import Test.Tasty.Golden (findByExtension, goldenVsString)
+import Test.Tasty.Golden (findByExtension, goldenVsStringDiff)
 import Test.Tasty.HUnit
 
 import Data.ByteString.Lazy.Char8 (pack)
@@ -36,7 +36,19 @@ goldenTests sources = testGroup "Golden tests" $ do
       input <- readFile file
       let output = p input ++ "\n" -- Editors ensure the final newline.
       return $ pack output -- goldenVsString wants a ByteString
-  return $ goldenVsString (takeBaseName file) (replaceExtension file ".golden" ) run
+    name = takeBaseName file
+    golden = replaceExtension file ".golden"
+    diff = \ref new -> [ "diff"
+                       , "-u"
+                       , "-d"
+                       , "--label"
+                       , name ++ ".expected"
+                       , ref
+                       , "--label"
+                       , name ++ ".actual"
+                       , new
+                       ]
+  return $ goldenVsStringDiff name diff golden run
 
 getFixtures :: IO [FilePath]
 getFixtures = findByExtension [".vim"] "tests/fixtures/parser"
