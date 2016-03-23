@@ -1,13 +1,25 @@
 module Main (main) where
 
+import qualified Data.ByteString as ByteString
+import qualified Data.ByteString.Lazy as LazyByteString
+import Control.DeepSeq (rnf)
+import Control.Exception (evaluate)
+import Data.ByteString.Lazy.Char8 (pack, unpack)
 import Docvim.Parse (p, parseUnit)
-import System.FilePath (replaceExtension, takeBaseName)
-import System.IO (readFile)
+import System.Exit (ExitCode(ExitSuccess))
+import System.FilePath ((<.>), replaceExtension, takeBaseName, takeFileName)
+import System.IO (hFlush, readFile)
+import System.IO.Temp (withSystemTempFile)
+import System.Process ( StdStream(CreatePipe)
+                      , createProcess
+                      , proc
+                      , std_out
+                      , waitForProcess
+                      )
 import Test.Tasty
-import Test.Tasty.Golden (findByExtension, goldenVsStringDiff)
+import Test.Tasty.Golden (findByExtension)
+import Test.Tasty.Golden.Advanced (goldenTest)
 import Test.Tasty.HUnit
-
-import Data.ByteString.Lazy.Char8 (pack)
 
 -- | Crude check to see if parse worked.
 parseSuccess :: Either a b -> Bool
@@ -34,12 +46,50 @@ goldenTests sources = testGroup "Golden tests" $ do
   let
     run = do
       input <- readFile file
-      let output = p input ++ "\n" -- Editors ensure the final newline.
-      return $ pack output -- goldenVsString wants a ByteString
+      let output = normalize $ p input
+      return $ pack output -- pack because tasty-golden wants a ByteString
     name = takeBaseName file
     golden = replaceExtension file ".golden"
     diff = \ref new -> ["git", "diff", "--color", ref, new]
-  return $ goldenVsStringDiff name diff golden run
+  return $ goldenVsStringDiff' name diff golden run
+
+-- | Normalize a string to always end with a newline, unless zero-length, to
+-- match standard text editor behavior.
+normalize :: String -> String
+normalize s | s == ""   = ""
+            | otherwise = if last s == '\n' then s else s ++ "\n"
+
+-- | This is based on `goldenVsStringDiff` function defined in:
+-- https://github.com/feuerbach/tasty-golden/blob/470e7af018/Test/Tasty/Golden.hs#L150-L191
+--
+-- Differences:
+--
+--  - Omission of the verbose/ugly failure output message (this is the
+--    motivating change here).
+--  - Some revised names to make things a little clearer.
+--  - Removed an `error` call which I am not worried about needing.
+--
+goldenVsStringDiff' :: TestName -> (FilePath -> FilePath -> [String]) -> FilePath -> IO LazyByteString.ByteString -> TestTree
+goldenVsStringDiff' name diff golden run =
+  goldenTest
+    name
+    (ByteString.readFile golden)
+    (LazyByteString.toStrict <$> run)
+    compare
+    update
+  where
+  template = takeFileName golden <.> "actual"
+  compare _ actBS = withSystemTempFile template $ \tmpFile tmpHandle -> do
+    ByteString.hPut tmpHandle actBS >> hFlush tmpHandle
+    let cmd = diff golden tmpFile
+    (_, Just sout, _, pid) <- createProcess (proc (head cmd) (tail cmd)) { std_out = CreatePipe }
+    out <- LazyByteString.hGetContents sout
+    evaluate . rnf $ out
+    r <- waitForProcess pid
+    return $ case r of
+      ExitSuccess -> Nothing
+      _ -> Just (unpack $ out)
+  update = ByteString.writeFile golden
 
 getFixtures :: IO [FilePath]
 getFixtures = findByExtension [".vim"] "tests/fixtures/parser"
