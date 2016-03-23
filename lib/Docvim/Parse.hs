@@ -14,7 +14,6 @@ import Control.Applicative ( (*>)
                            )
 import Data.List (intercalate)
 import System.Exit (exitFailure)
-import System.FilePath (takeExtension)
 import System.IO (hPutStrLn, stderr)
 -- TODO: custom error messages with <?>
 import Text.Parsec ( (<|>)
@@ -281,7 +280,7 @@ parseUnit = runParser unit () "(eval)"
 
 -- | For unit testing.
 p :: String -> String
-p input = case (parseUnit input) of
+p input = case parseUnit input of
             Left error -> show error
             Right ast -> ppShow ast
 
@@ -289,5 +288,4 @@ p input = case (parseUnit input) of
 -- import Parse (pp)
 -- pp "unlet g:var"
 -- pp :: String -> IO ()
-pp input = do
-  putStrLn $ p input
+pp input = putStrLn $ p input
