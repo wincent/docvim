@@ -5,6 +5,7 @@ import qualified Data.ByteString.Lazy as LazyByteString
 import Control.DeepSeq (rnf)
 import Control.Exception (evaluate)
 import Data.ByteString.Lazy.Char8 (pack, unpack)
+import Data.Char (chr)
 import Data.List (isPrefixOf)
 import Docvim.Parse (p, parseUnit)
 import System.Exit (ExitCode(ExitSuccess))
@@ -53,7 +54,7 @@ goldenTests sources = testGroup "Golden tests" $ do
     golden = replaceExtension file ".golden"
     diff ref new = [ "git"
                    , "diff"
-                   -- , "--color"
+                   , "--color"
                    , "--diff-algorithm=histogram"
                    , ref
                    , new
@@ -87,7 +88,8 @@ goldenVsStringDiff' name diff golden run =
     update
   where
     template = takeFileName golden <.> "actual"
-    strip out = unlines $ dropWhile (not . isPrefixOf "@@ ") (lines $ unpack out)
+    hunkHeader = map chr [0x1b, 0x5b, 0x33, 0x36, 0x6d] ++ "@@ "
+    strip out = unlines $ dropWhile (not . isPrefixOf hunkHeader) (lines $ unpack out)
     compare _ actBS = withSystemTempFile template $ \tmpFile tmpHandle -> do
       ByteString.hPut tmpHandle actBS >> hFlush tmpHandle
       let cmd = diff golden tmpFile
