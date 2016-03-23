@@ -4,9 +4,17 @@ docvim is a documentation generator for Vim plug-ins, written in Haskell.
 
 ## Development
 
+### Set-up
+
+```
+cabal sandbox init
+cabal install --only-dependencies --enable-tests
+cabal build
+```
+
 ### Running
 
-Run using `cabal` and passing in docvim-specific `OPTIONS`:
+Run using `cabal run` and passing in docvim-specific `OPTIONS`:
 
 ```
 cabal run -- [OPTIONS]
@@ -16,9 +24,9 @@ You can also run the modules from inside the Cabal REPL:
 
 ```
 cabal repl
+> import Docvim.Parse
 > let sample = "let l:test=1"
-> l sample -- prints lexed tokens
-> p sample -- prints AST
+> pp sample -- pretty-prints AST
 ```
 
 ### Building and viewing the code-level documentation
