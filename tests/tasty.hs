@@ -5,6 +5,7 @@ import qualified Data.ByteString.Lazy as LazyByteString
 import Control.DeepSeq (rnf)
 import Control.Exception (evaluate)
 import Data.ByteString.Lazy.Char8 (pack, unpack)
+import Data.List (isPrefixOf)
 import Docvim.Parse (p, parseUnit)
 import System.Exit (ExitCode(ExitSuccess))
 import System.FilePath ((<.>), replaceExtension, takeBaseName, takeFileName)
@@ -50,7 +51,13 @@ goldenTests sources = testGroup "Golden tests" $ do
       return $ pack output -- pack because tasty-golden wants a ByteString
     name = takeBaseName file
     golden = replaceExtension file ".golden"
-    diff = \ref new -> ["git", "diff", "--color", ref, new]
+    diff ref new = [ "git"
+                   , "diff"
+                   -- , "--color"
+                   , "--diff-algorithm=histogram"
+                   , ref
+                   , new
+                   ]
   return $ goldenVsStringDiff' name diff golden run
 
 -- | Normalize a string to always end with a newline, unless zero-length, to
@@ -66,6 +73,7 @@ normalize s | s == ""   = ""
 --
 --  - Omission of the verbose/ugly failure output message (this is the
 --    motivating change here).
+--  - Strip diff headers up to first "@@" (again, for brevity).
 --  - Some revised names to make things a little clearer.
 --  - Removed an `error` call which I am not worried about needing.
 --
@@ -78,18 +86,19 @@ goldenVsStringDiff' name diff golden run =
     compare
     update
   where
-  template = takeFileName golden <.> "actual"
-  compare _ actBS = withSystemTempFile template $ \tmpFile tmpHandle -> do
-    ByteString.hPut tmpHandle actBS >> hFlush tmpHandle
-    let cmd = diff golden tmpFile
-    (_, Just sout, _, pid) <- createProcess (proc (head cmd) (tail cmd)) { std_out = CreatePipe }
-    out <- LazyByteString.hGetContents sout
-    evaluate . rnf $ out
-    r <- waitForProcess pid
-    return $ case r of
-      ExitSuccess -> Nothing
-      _ -> Just (unpack $ out)
-  update = ByteString.writeFile golden
+    template = takeFileName golden <.> "actual"
+    strip out = unlines $ dropWhile (not . isPrefixOf "@@ ") (lines $ unpack out)
+    compare _ actBS = withSystemTempFile template $ \tmpFile tmpHandle -> do
+      ByteString.hPut tmpHandle actBS >> hFlush tmpHandle
+      let cmd = diff golden tmpFile
+      (_, Just sout, _, pid) <- createProcess (proc (head cmd) (tail cmd)) { std_out = CreatePipe }
+      out <- LazyByteString.hGetContents sout
+      evaluate . rnf $ out
+      r <- waitForProcess pid
+      return $ case r of
+        ExitSuccess -> Nothing
+        _ -> Just (strip out)
+    update = ByteString.writeFile golden
 
 getFixtures :: IO [FilePath]
 getFixtures = findByExtension [".vim"] "tests/fixtures/parser"
