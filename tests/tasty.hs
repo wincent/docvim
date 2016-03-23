@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Docvim.Parse (p, parseUnit)
-import System.FilePath (takeBaseName)
+import System.FilePath (replaceExtension, takeBaseName)
 import System.IO (readFile)
 import Test.Tasty
 import Test.Tasty.Golden (findByExtension, goldenVsString)
@@ -30,11 +30,13 @@ unitTests = testGroup "Unit tests"
 
 goldenTests :: [FilePath] -> TestTree
 goldenTests sources = testGroup "Golden tests" $ do
-  file <- sources -- list monad (?)
-  -- input <- readFile "tests/fixtures/parser/empty.vim" -- file
-  let input = ""
-  let output = return $ pack $ p input ++ "\n" -- goldenVsString wants a ByteString
-  return $ goldenVsString (takeBaseName file) "tests/fixtures/parser/empty.golden" output
+  file <- sources -- list monad
+  let
+    run = do
+      input <- readFile file
+      let output = p input ++ "\n" -- Editors ensure the final newline.
+      return $ pack output -- goldenVsString wants a ByteString
+  return $ goldenVsString (takeBaseName file) (replaceExtension file ".golden" ) run
 
 getFixtures :: IO [FilePath]
 getFixtures = findByExtension [".vim"] "tests/fixtures/parser"
