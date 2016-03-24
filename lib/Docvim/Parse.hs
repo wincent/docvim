@@ -71,6 +71,7 @@ data Node
                            }
 
           -- docvim nodes
+          | DocBlock Node
           | PluginAnnotation Name Description
           | FunctionAnnotation Name -- not sure if I will want more here
           | IndentAnnotation
@@ -207,9 +208,11 @@ node =  optional comment
                , vimL
                ]
 
-docBlock = docBlockStart >> choice [ annotation
-                                   , heading
-                                   ]
+docBlock = DocBlock <$> blockBody
+  where
+    blockBody = docBlockStart *> choice [ annotation
+                                        , heading
+                                        ]
 vimL = choice [ block
               , statement
               ]
