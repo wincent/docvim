@@ -213,7 +213,7 @@ node =  optional comment
 docBlock = DocBlock <$> blockBody
   where
     -- TODO make this an actual island parser
-    blockBody = docBlockStart *> (many $ blockElement)
+    blockBody = docBlockStart *> many blockElement
     blockElement = choice [annotation, heading]
 
 vimL = choice [ block
