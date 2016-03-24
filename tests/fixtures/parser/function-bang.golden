@@ -1,0 +1,9 @@
+Unit
+  [ FunctionDeclaration
+      { functionBang = True
+      , functionName = "Foo"
+      , functionArguments = ()
+      , functionAttributes = []
+      , functionBody = []
+      }
+  ]

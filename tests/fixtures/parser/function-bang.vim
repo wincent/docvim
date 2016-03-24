@@ -1,0 +1,2 @@
+fu! Foo()
+endf

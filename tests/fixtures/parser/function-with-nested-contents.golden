@@ -1,0 +1,10 @@
+Unit
+  [ FunctionDeclaration
+      { functionBang = False
+      , functionName = "Foo"
+      , functionArguments = ()
+      , functionAttributes = []
+      , functionBody =
+          [ LetStatement { letLexpr = "g:foo" , letValue = "1" } ]
+      }
+  ]

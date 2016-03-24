@@ -1,0 +1,37 @@
+Unit
+  [ FunctionDeclaration
+      { functionBang = False
+      , functionName = "Function1"
+      , functionArguments = ()
+      , functionAttributes = [ "abort" ]
+      , functionBody = []
+      }
+  , FunctionDeclaration
+      { functionBang = False
+      , functionName = "Function2"
+      , functionArguments = ()
+      , functionAttributes = [ "range" ]
+      , functionBody = []
+      }
+  , FunctionDeclaration
+      { functionBang = False
+      , functionName = "Function3"
+      , functionArguments = ()
+      , functionAttributes = [ "dict" ]
+      , functionBody = []
+      }
+  , FunctionDeclaration
+      { functionBang = False
+      , functionName = "Function4"
+      , functionArguments = ()
+      , functionAttributes = [ "abort" , "range" , "dict" ]
+      , functionBody = []
+      }
+  , FunctionDeclaration
+      { functionBang = False
+      , functionName = "Function5"
+      , functionArguments = ()
+      , functionAttributes = [ "abort" , "range" , "abort" , "abort" ]
+      , functionBody = []
+      }
+  ]
