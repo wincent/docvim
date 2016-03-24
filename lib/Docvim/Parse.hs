@@ -175,7 +175,9 @@ type Usage = String
 -- commentStart  = string "\"" >> return CommentStart
 docBlockStart = DocBlockStart <$ (string "\"\"" <* optional ws) <?> "\"\""
 -- listItem = string "-" >> return ListItem
-newline = Newline <$ char '\n'
+
+-- | Newline (and slurps up following horizontal whitespace as well).
+newline = Newline <$ (char '\n' >> optional ws)
 newlines = many1 newline
 ws = Whitespace <$> many1 (oneOf " \t")
 
