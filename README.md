@@ -98,5 +98,26 @@ cabal test hlint        # Runs linter alone.
 hlint src               # If you have HLint installed under $PATH.
 ```
 
+## FAQ
+
+### Why a new tool and not an existing one like [Vimdoc]?
+
+* I wanted to target multiple output formats (Vim help files and Markdown).
+* I wanted total control over the presentation of the output.
+* It's fun to build new things from scratch.
+* The project is a great fit for my learn-me-a-Haskell goal this year.
+
+### Why is it called "Docvim"?
+
+"Vimdoc" was the first name that occurred to me when I started this project, but:
+
+* The number one hit for "vimdoc" is [this online copy of Vim's own documentation](http://vimdoc.sourceforge.net/).
+* The name "Vimdoc" is already taken by [a similar project](https://github.com/google/vimdoc).
+
+So, in a remarkable flash of profound creativity, I settled on "Docvim" instead, which right now yields this pleasing search result:
+
+> Did you mean: dacvim
+
 [Cabal]: https://www.haskell.org/cabal/
 [Stack]: http://haskellstack.org/
+[Vimdoc]: https://github.com/google/vimdoc
