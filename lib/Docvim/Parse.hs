@@ -155,6 +155,7 @@ unlet =   UnletStatement
 
 -- | Textual tokens recognized during parsing but not embedded in the AST.
 data Token = Blockquote
+           | Comment
            | CommentStart
            | DocBlockStart
            | ListItem
@@ -183,6 +184,12 @@ wsc = many1 $ choice [whitespace, continuation]
   where whitespace = oneOf " \t"
         continuation = try $ char '\n' >> ws >> char '\\'
 
+-- TODO: string literals
+comment = Comment <$ (quote >> notFollowedBy quote >> rest >> optional newline)
+  where
+    quote = char '"'
+    rest = many $ noneOf "\n"
+
 -- | Optional bang suffix for VimL commands.
 bang = option False (True <$ char '!')
 
@@ -193,9 +200,10 @@ eos = choice [bar, ws', eof]
     ws' = newlines >> notFollowedBy wsc
 
 node :: Parser Node
-node = choice [ docBlock
-              , vimL
-              ]
+node =  optional comment
+     >> choice [ docBlock
+               , vimL
+               ]
 
 docBlock = docBlockStart >> choice [ annotation
                                    , heading
@@ -265,7 +273,7 @@ unit =   Unit
      <$> (ws' >> many node)
      <*  eof
   where
-    ws' = many $ choice [ws, newline]
+    ws' = many $ choice [comment, ws, newline]
 
 parse :: String -> IO Unit
 parse fileName = parseFromFile unit fileName >>= either report return
