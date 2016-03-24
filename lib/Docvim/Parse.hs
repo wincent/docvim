@@ -71,7 +71,7 @@ data Node
                            }
 
           -- docvim nodes
-          | DocBlock Node
+          | DocBlock [Node]
           | PluginAnnotation Name Description
           | FunctionAnnotation Name -- not sure if I will want more here
           | IndentAnnotation
@@ -212,9 +212,9 @@ node =  optional comment
 
 docBlock = DocBlock <$> blockBody
   where
-    blockBody = docBlockStart *> choice [ annotation
-                                        , heading
-                                        ]
+    -- TODO make this an actual island parser
+    blockBody = docBlockStart *> (many $ blockElement)
+    blockElement = choice [annotation, heading]
 
 vimL = choice [ block
               , statement
