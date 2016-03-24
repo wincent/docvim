@@ -72,6 +72,9 @@ data Node
 
           -- docvim nodes
           | DocBlock [Node]
+          | Plaintext [String] -- TODO: may want to try joining this to normalize it
+
+          -- annotations
           | PluginAnnotation Name Description
           | FunctionAnnotation Name -- not sure if I will want more here
           | IndentAnnotation
@@ -213,8 +216,10 @@ docBlock = DocBlock <$> blockBody
   where
     -- TODO make this an actual island parser
     blockBody = docBlockStart *> many blockElement
-    blockElement = choice [annotation, heading] <* next
+    blockElement = choice [annotation, heading, plaintext] <* next
     next = optional ws >> optional commentStart
+
+plaintext = Plaintext <$> many1 (word <* optional ws)
 
 vimL = choice [ block
               , statement
