@@ -1,0 +1,5 @@
+Unit
+  [ LetStatement { letLexpr = "g:x" , letValue = "1" }
+  , DocBlock [ PluginAnnotation "foo" "bar" , DedentAnnotation ]
+  , LetStatement { letLexpr = "g:y" , letValue = "1" }
+  ]

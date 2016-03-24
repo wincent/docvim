@@ -174,7 +174,7 @@ type Usage = String
 quote = char '"' <?> "quote"
 -- blockquote    = string ">" >> return Blockquote
 commentStart  = CommentStart <$ (quote >> notFollowedBy quote <* optional ws)
-docBlockStart = DocBlockStart <$ (try $ string "\"\"" <* optional ws) <?> "\"\""
+docBlockStart = DocBlockStart <$ try (string "\"\"" <* optional ws) <?> "\"\""
 -- listItem = string "-" >> return ListItem
 
 -- | Newline (and slurps up following horizontal whitespace as well).
@@ -213,8 +213,8 @@ docBlock = DocBlock <$> blockBody
   where
     -- TODO make this an actual island parser
     blockBody = docBlockStart *> many blockElement
-    blockElement = (choice [annotation, heading]) <* optional ws'
-    ws' = ws >> (newline <|> (eof >> return EOF)) >> (optional (ws >> commentStart))
+    blockElement = choice [annotation, heading] <* next
+    next = optional ws >> optional commentStart
 
 vimL = choice [ block
               , statement
@@ -249,7 +249,7 @@ annotation = char '@' *> annotationName
   where
     annotationName =
       choice [ command
-             , string "dedent" >> return DedentAnnotation
+             , string "dedent" >> optional ws >> optional newline >> return DedentAnnotation
              , try $ string "footer" >> return FooterAnnotation -- must come before function
              , function
              , string "indent" >> return IndentAnnotation
