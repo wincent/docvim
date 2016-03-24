@@ -234,8 +234,6 @@ statement = choice [ letStatement
 
 heading :: Parser Node
 heading = HeadingAnnotation <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (EOF <$ eof)))
--- TODO: probably want to swallow the newline here; make it implicit
--- (and any trailing whitespace)
 
 -- | Match a "word" of non-whitespace characters.
 word = many1 (noneOf " \n\t")

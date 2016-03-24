@@ -3,7 +3,6 @@ module Docvim.CLI (run) where
 
 import Control.Monad (when)
 import Docvim.Options (Options(..), options)
-import Docvim.Lex (l, lexTokens)
 import Docvim.Parse (p, parse)
 import Docvim.ReadDir (readDir)
 import System.FilePath (takeExtension)
