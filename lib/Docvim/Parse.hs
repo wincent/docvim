@@ -150,7 +150,7 @@ letStatement =   LetStatement
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
       <*> word
-      <*  (optional ws >> eos)
+      <*  eos
   where
     unl  = command "unl[et]"
 
@@ -197,7 +197,9 @@ comment = Comment <$ try (quote >> notFollowedBy quote >> rest >> optional newli
 bang = option False (True <$ char '!')
 
 -- | End-of-statement.
-eos = choice [bar, ws', eof]
+-- TODO: see `:h :bar` for a list of commands which see | as an arg instead of a
+-- command separator.
+eos = optional ws >> choice [bar, ws', skipMany comment, eof]
   where
     bar = char '|' >> optional wsc
     ws' = newlines >> notFollowedBy wsc
@@ -213,6 +215,7 @@ docBlock = DocBlock <$> blockBody
     blockBody = docBlockStart *> choice [ annotation
                                         , heading
                                         ]
+
 vimL = choice [ block
               , statement
               ]
