@@ -171,10 +171,10 @@ type Name = String
 type Type = String
 type Usage = String
 
--- These cause type errors unless used...
+quote = char '"' <?> "quote"
 -- blockquote    = string ">" >> return Blockquote
--- commentStart  = string "\"" >> return CommentStart
-docBlockStart = DocBlockStart <$ (string "\"\"" <* optional ws) <?> "\"\""
+commentStart  = CommentStart <$ (quote >> notFollowedBy quote <* optional ws)
+docBlockStart = DocBlockStart <$ (try $ string "\"\"" <* optional ws) <?> "\"\""
 -- listItem = string "-" >> return ListItem
 
 -- | Newline (and slurps up following horizontal whitespace as well).
@@ -190,7 +190,6 @@ wsc = many1 $ choice [whitespace, continuation]
 -- TODO: string literals
 comment = Comment <$ try (quote >> notFollowedBy quote >> rest >> optional newline)
   where
-    quote = char '"'
     rest = many $ noneOf "\n"
 
 -- | Optional bang suffix for VimL commands.
@@ -214,7 +213,8 @@ docBlock = DocBlock <$> blockBody
   where
     -- TODO make this an actual island parser
     blockBody = docBlockStart *> many blockElement
-    blockElement = choice [annotation, heading]
+    blockElement = (choice [annotation, heading]) <* optional ws'
+    ws' = ws >> (newline <|> (eof >> return EOF)) >> (optional (ws >> commentStart))
 
 vimL = choice [ block
               , statement
