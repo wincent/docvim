@@ -61,6 +61,12 @@ cabal repl`
 > pp "let l:test=1" -- pretty-prints AST
 ```
 
+### Building
+
+```bash
+stack build --file-watch
+```
+
 ### Building and viewing the code-level documentation
 
 ```bash
@@ -77,22 +83,36 @@ open dist/doc/html/docvim/docvim/index.html
 
 ```bash
 # Stack:
-stack test
+stack test        # Runs all test suites, including linting.
+stack test :tasty # Runs just the Tasty test suite.
 
 # Cabal:
-cabal test
+cabal test       # Runs all test suites, including linting.
+cabal test tasty # Runs just the Tasty test suite.
+```
+
+#### Updating "golden" files
+
+```bash
+# Stack:
+stack test --test-arguments=--accept          # Runs all test suites.
+stack test :tasty --test-arguments=--accept   # Runs just the Tasty test suite.
+
+# Cabal:
+cabal test --test-options=---accept           # Runs all test suites.
+cabal test tasty --test-options=---accept     # Runs just the Tasty test suite.
 ```
 
 ### Linting
 
 ```bash
 # Stack:
-stack test              # Runs linter as part of overall suite.
-stack test :hlint       # Runs the linter alone.
+stack test              # Runs linter as part of overall set of suites.
+stack test :hlint       # Runs linter alone.
 
 # Cabal:
 cabal install hlint     # (First-time only).
-cabal test              # Runs linter as part of overall suite.
+cabal test              # Runs linter as part of overall set of suites.
 cabal test hlint        # Runs linter alone.
 
 hlint src               # If you have HLint installed under $PATH.
