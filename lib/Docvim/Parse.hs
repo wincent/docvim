@@ -187,7 +187,7 @@ wsc = many1 $ choice [whitespace, continuation]
   where whitespace = oneOf " \t"
         continuation = try $ char '\n' >> ws >> char '\\'
 
--- TODO: string literals
+-- TODO: string literals; some nasty lookahead might be required
 comment = Comment <$ try (quote >> notFollowedBy quote >> rest >> optional newline)
   where
     rest = many $ noneOf "\n"
@@ -226,7 +226,7 @@ statement = choice [ letStatement
                    ]
 
 heading :: Parser Node
-heading = HeadingAnnotation <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (eof >> return EOF)))
+heading = HeadingAnnotation <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (EOF <$ eof)))
 -- TODO: probably want to swallow the newline here; make it implicit
 -- (and any trailing whitespace)
 
@@ -249,11 +249,11 @@ annotation = char '@' *> annotationName
   where
     annotationName =
       choice [ command
-             , string "dedent" >> optional ws >> optional newline >> return DedentAnnotation
-             , try $ string "footer" >> return FooterAnnotation -- must come before function
+             , string "dedent" >> optional ws >> optional newline >> pure DedentAnnotation
+             , try $ string "footer" >> pure FooterAnnotation -- must come before function
              , function
-             , string "indent" >> return IndentAnnotation
-             , try $ string "mappings" >> return MappingsAnnotation -- must come before mapping
+             , string "indent" >> pure IndentAnnotation
+             , try $ string "mappings" >> pure MappingsAnnotation -- must come before mapping
              , mapping
              , option
              , plugin
@@ -273,7 +273,7 @@ annotation = char '@' *> annotationName
 
     plugin            = string "plugin" >> ws >> PluginAnnotation <$> pluginName <*> plugInDescription
     pluginName        = many1 alphaNum <* ws
-    plugInDescription = manyTill anyChar (newline <|> (eof >> return EOF))
+    plugInDescription = manyTill anyChar (newline <|> (EOF <$ eof))
 
 -- | Parses a translation unit (file contents) into an AST.
 unit :: Parser Unit
