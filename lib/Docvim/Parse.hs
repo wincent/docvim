@@ -1,9 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module Docvim.Parse ( p
-                    , pp
                     , parse
                     , parseUnit
+                    , pp
                     ) where
 
 import Control.Applicative ( (*>)
