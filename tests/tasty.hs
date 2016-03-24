@@ -18,7 +18,7 @@ import System.Process ( StdStream(CreatePipe)
                       , std_out
                       , waitForProcess
                       )
-import Test.Tasty
+import Test.Tasty (testGroup, TestName, TestTree, defaultMain)
 import Test.Tasty.Golden (findByExtension)
 import Test.Tasty.Golden.Advanced (goldenTest)
 import Test.Tasty.HUnit
