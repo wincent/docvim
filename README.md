@@ -72,7 +72,7 @@ cabal test
 ```bash
 # Stack:
 stack test              # Runs linter as part of overall suite.
-stack test docvim:hlint # Runs the linter alone.
+stack test :hlint       # Runs the linter alone.
 
 # Cabal:
 cabal install hlint     # (First-time only).
