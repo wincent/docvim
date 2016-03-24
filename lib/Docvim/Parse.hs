@@ -188,7 +188,7 @@ wsc = many1 $ choice [whitespace, continuation]
         continuation = try $ char '\n' >> ws >> char '\\'
 
 -- TODO: string literals
-comment = Comment <$ (try $ quote >> notFollowedBy quote >> rest >> optional newline)
+comment = Comment <$ try (quote >> notFollowedBy quote >> rest >> optional newline)
   where
     quote = char '"'
     rest = many $ noneOf "\n"
