@@ -213,12 +213,13 @@ node =  optional comment
                , vimL
                ]
 
-docBlock = DocBlock <$> blockBody
+docBlock = lookAhead docBlockStart >> (DocBlock <$> many1 blockElement)
   where
-    -- TODO make this an actual island parser
-    blockBody = docBlockStart *> many blockElement
-    blockElement = choice [annotation, heading, paragraph] <* next
-    next = optional ws >> optional commentStart
+    blockElement =  (try docBlockStart <|> commentStart)
+                 *> choice [annotation, heading, paragraph]
+                 <* next
+    next = optional ws >> endOfBlockElement >> optional ws
+    endOfBlockElement = try newline <|> (EOF <$ eof)
 
 paragraph = Paragraph <$> many1 plaintext
 plaintext = Plaintext <$> many1 (word <* optional ws)
@@ -254,7 +255,7 @@ annotation = char '@' *> annotationName
   where
     annotationName =
       choice [ command
-             , string "dedent" >> optional ws >> optional newline >> pure DedentAnnotation
+             , string "dedent" >> pure DedentAnnotation
              , try $ string "footer" >> pure FooterAnnotation -- must come before function
              , function
              , string "indent" >> pure IndentAnnotation
@@ -278,7 +279,9 @@ annotation = char '@' *> annotationName
 
     plugin            = string "plugin" >> ws >> PluginAnnotation <$> pluginName <*> plugInDescription
     pluginName        = many1 alphaNum <* ws
-    plugInDescription = manyTill anyChar (newline <|> (EOF <$ eof))
+    -- TODO: bug... this includes trailing whitespace in the token, which we
+    -- should just skip over
+    plugInDescription = manyTill anyChar (lookAhead $ newline <|> (EOF <$ eof))
 
 -- | Parses a translation unit (file contents) into an AST.
 unit :: Parser Unit
