@@ -218,7 +218,7 @@ node =  optional comment
 
 docBlock = lookAhead docBlockStart
          >> (DocBlock <$> many1 blockElement)
-         <* (skipMany $ start >> endOfBlockElement)
+         <* trailingBlankCommentLines
   where
     blockElement =  try $ start
                  >> skipMany emptyLines
@@ -233,6 +233,7 @@ docBlock = lookAhead docBlockStart
     emptyLines = try $ newline >> optional ws >> start
     next = optional ws >> endOfBlockElement >> optional ws
     endOfBlockElement = try newline <|> (EOF <$ eof)
+    trailingBlankCommentLines = skipMany $ start >> endOfBlockElement
 
 paragraph = Paragraph <$> many1 plaintext
 plaintext = Plaintext <$> many1 (word <* optional ws)
