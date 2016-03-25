@@ -1,4 +1,7 @@
 Unit
   [ DocBlock
-      [ HeadingAnnotation "Heading" , SubheadingAnnotation "Subheading" ]
+      [ HeadingAnnotation "Heading"
+      , SubheadingAnnotation "Subheading"
+      , HeadingAnnotation "Heading with trailing whitespace"
+      ]
   ]

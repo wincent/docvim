@@ -255,16 +255,30 @@ statement = choice [ letStatement
                    , unlet
                    ]
 
+-- | Remainder of the line up to but not including a newline.
+-- Does not include any trailing whitespace.
+restOfLine :: Parser String
+restOfLine = do
+  rest <- many1 (noneOf "\n")
+  return $ strip rest
+  where strip = lstrip . rstrip
+        lstrip = dropWhile (`elem` " \t")
+        rstrip = reverse . lstrip . reverse
+-- many1 choice [
+-- noneOf " \t\n",
+-- noneOf "\n" >> notFollowedBy "\n"
+-- ]
+
 heading :: Parser Node
 heading =  char '#'
         >> notFollowedBy (char '#')
         >> optional ws
-        >> HeadingAnnotation <$> many1 (noneOf "\n")
+        >> HeadingAnnotation <$> restOfLine
 
 subheading :: Parser Node
 subheading =  string "##"
            >> optional ws
-           >> SubheadingAnnotation <$> many1 (noneOf "\n")
+           >> SubheadingAnnotation <$> restOfLine
 
 -- | Match a "word" of non-whitespace characters.
 word = many1 (noneOf " \n\t")
