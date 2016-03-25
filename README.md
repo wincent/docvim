@@ -20,6 +20,20 @@ docvim is a documentation generator for Vim plug-ins, written in Haskell.
 
 ## Development
 
+### Convenience wrappers
+
+```bash
+bin/accept  # Accept current "golden" test output.
+bin/docvim  # Run the docvim executable.
+bin/golden  # Run just the "golden" tests.
+bin/haddock # Produce Haddock documentation.
+bin/lint    # Run the linter.
+bin/tasty   # Run just the Tasty tests.
+bin/test    # Run all tests, including lints.
+```
+
+These are wrappers for the explicit invocations described below.
+
 ### Set-up
 
 You can set-up a development environment using [Stack] (recommended) or [Cabal]:
