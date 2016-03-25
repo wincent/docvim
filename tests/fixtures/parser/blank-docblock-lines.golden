@@ -1,3 +1,7 @@
-"(eval)" (line 10, column 1):
-unexpected end of input
-expecting "" or quote
+Unit
+  [ DocBlock
+      [ LinkTargets [ "leading-blank-lines" ]
+      , LinkTargets [ "trailing-whitespace-is-ok-too" ]
+      , LinkTargets [ "trailing-blank-lines" ]
+      ]
+  ]

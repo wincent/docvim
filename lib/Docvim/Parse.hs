@@ -88,6 +88,7 @@ data Node
           | MappingAnnotation Name
           | OptionAnnotation Name Type (Maybe Default)
           | HeadingAnnotation String
+          | SubheadingAnnotation String
   deriving (Eq, Show)
 
 -- The VimScript (VimL) grammar is embodied in the implementation of
@@ -222,6 +223,7 @@ docBlock = lookAhead docBlockStart
     blockElement =  try $ start
                  >> skipMany emptyLines
                  *> choice [ annotation
+                           , try subheading -- must come before heading
                            , heading
                            , linkTargets
                            , paragraph -- must come last
@@ -253,7 +255,15 @@ statement = choice [ letStatement
                    ]
 
 heading :: Parser Node
-heading = HeadingAnnotation <$> (char '#' >> optional ws *> manyTill anyChar (newline <|> (EOF <$ eof)))
+heading =  char '#'
+        >> notFollowedBy (char '#')
+        >> optional ws
+        >> HeadingAnnotation <$> many1 (noneOf "\n")
+
+subheading :: Parser Node
+subheading =  string "##"
+           >> optional ws
+           >> SubheadingAnnotation <$> many1 (noneOf "\n")
 
 -- | Match a "word" of non-whitespace characters.
 word = many1 (noneOf " \n\t")
