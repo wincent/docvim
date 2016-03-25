@@ -264,10 +264,6 @@ restOfLine = do
   where strip = lstrip . rstrip
         lstrip = dropWhile (`elem` " \t")
         rstrip = reverse . lstrip . reverse
--- many1 choice [
--- noneOf " \t\n",
--- noneOf "\n" >> notFollowedBy "\n"
--- ]
 
 heading :: Parser Node
 heading =  char '#'
