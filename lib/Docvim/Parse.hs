@@ -34,6 +34,7 @@ import Text.Parsec ( (<|>)
                    , sepEndBy
                    , skipMany
                    , try
+                   , unexpected
                    )
 import Text.Parsec.String (Parser, parseFromFile)
 import Text.Parsec.Combinator (eof)
@@ -179,7 +180,7 @@ type Usage = String
 quote = char '"' <?> "quote"
 -- blockquote    = string ">" >> return Blockquote
 commentStart  = CommentStart <$ (quote >> notFollowedBy quote <* optional ws)
-docBlockStart = DocBlockStart <$ try (string "\"\"" <* optional ws) <?> "\"\""
+docBlockStart = DocBlockStart <$ (string "\"\"" <* optional ws) <?> "\"\""
 -- listItem = string "-" >> return ListItem
 
 -- | Newline (and slurps up following horizontal whitespace as well).
@@ -214,9 +215,11 @@ node =  optional comment
                , vimL
                ]
 
-docBlock = lookAhead docBlockStart >> (DocBlock <$> many1 blockElement)
+docBlock = lookAhead docBlockStart
+         >> (DocBlock <$> many1 blockElement)
+         <* (skipMany $ start >> endOfBlockElement)
   where
-    blockElement =  start
+    blockElement =  try $ start
                  >> skipMany emptyLines
                  *> choice [ annotation
                            , heading
@@ -224,9 +227,9 @@ docBlock = lookAhead docBlockStart >> (DocBlock <$> many1 blockElement)
                            , paragraph -- must come last
                            ]
                  <* next
-    next = optional ws >> endOfBlockElement >> optional ws
-    start = (try docBlockStart <|> commentStart)
+    start = try docBlockStart <|> commentStart
     emptyLines = try $ newline >> optional ws >> start
+    next = optional ws >> endOfBlockElement >> optional ws
     endOfBlockElement = try newline <|> (EOF <$ eof)
 
 paragraph = Paragraph <$> many1 plaintext
