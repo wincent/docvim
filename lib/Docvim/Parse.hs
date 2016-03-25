@@ -74,7 +74,7 @@ data Node
           | DocBlock [Node]
           | Paragraph [Node]
           | Plaintext [String]
-          | LinkTarget String
+          | LinkTargets [String]
 
           -- annotations
           | PluginAnnotation Name Description
@@ -216,14 +216,17 @@ node =  optional comment
 
 docBlock = lookAhead docBlockStart >> (DocBlock <$> many1 blockElement)
   where
-    blockElement =  (try docBlockStart <|> commentStart)
+    blockElement =  start
+                 >> skipMany emptyLines
                  *> choice [ annotation
                            , heading
-                           , linkTarget
+                           , linkTargets
                            , paragraph -- must come last
                            ]
                  <* next
     next = optional ws >> endOfBlockElement >> optional ws
+    start = (try docBlockStart <|> commentStart)
+    emptyLines = try $ newline >> optional ws >> start
     endOfBlockElement = try newline <|> (EOF <$ eof)
 
 paragraph = Paragraph <$> many1 plaintext
@@ -232,7 +235,7 @@ plaintext = Plaintext <$> many1 (word <* optional ws)
 -- TODO: record this in symbol table similar to
 -- https://github.com/wincent/docvim/blob/js/src/SymbolVisitor.js
 -- (probably want to make this a post-processing step?)
-linkTarget = LinkTarget <$> (star *> target <* (star >> optional ws))
+linkTargets = LinkTargets <$> many1 (star *> target <* (star >> optional ws))
   where
     star = char '*'
     target = many1 $ noneOf " \t\n*"
