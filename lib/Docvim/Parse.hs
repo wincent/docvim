@@ -200,8 +200,9 @@ ws = many1 (oneOf " \t")
 
 -- | Continuation-aware whitespace (\).
 wsc = many1 $ choice [whitespace, continuation]
-  where whitespace = oneOf " \t"
-        continuation = try $ char '\n' >> ws >> char '\\'
+  where
+    whitespace   = oneOf " \t"
+    continuation = try $ char '\n' >> ws >> char '\\'
 
 -- TODO: string literals; some nasty lookahead might be required
 comment = try $ quote >> notFollowedBy quote >> restOfLine >> optional newline
