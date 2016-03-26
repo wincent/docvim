@@ -184,7 +184,7 @@ blockquote = lookAhead (char '>') >> Blockquote <$> body
     lineEnd = try newline <|> eof
     tailLine =  try $ lineEnd
              >> optional ws
-             >> (try (string "\"\"") <|> string "\"")
+             >> (commentStart <|> docBlockStart)
              >> optional ws
              >> line
 
