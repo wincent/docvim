@@ -164,8 +164,6 @@ unlet =   UnletStatement
 -- | Textual tokens recognized during parsing but not embedded in the AST.
 data Token = Blockquote
            | Comment
-           | CommentStart
-           | DocBlockStart
            | ListItem
            | Newline
            | Whitespace String
@@ -178,10 +176,10 @@ type Name = String
 type Type = String
 type Usage = String
 
-quote = char '"' <?> "quote"
+quote = string "\"" <?> "quote"
 -- blockquote    = string ">" >> return Blockquote
-commentStart  = CommentStart <$ (quote >> notFollowedBy quote <* optional ws)
-docBlockStart = DocBlockStart <$ (string "\"\"" <* optional ws) <?> "\"\""
+commentStart  = quote <* (notFollowedBy quote >> optional ws)
+docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 -- listItem = string "-" >> return ListItem
 
 -- | Newline (and slurps up following horizontal whitespace as well).
