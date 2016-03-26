@@ -237,7 +237,7 @@ docBlock = lookAhead docBlockStart
                            ]
                  <* next
     start = try docBlockStart <|> commentStart
-    emptyLines = try $ newline >> optional ws >> start
+    emptyLines = try $ newline >> start
     next = optional ws >> endOfBlockElement >> optional ws
     endOfBlockElement = try newline <|> eof
     trailingBlankCommentLines = skipMany $ start >> endOfBlockElement
