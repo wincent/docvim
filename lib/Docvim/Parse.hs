@@ -258,12 +258,17 @@ statement = choice [ letStatement
 -- | Remainder of the line up to but not including a newline.
 -- Does not include any trailing whitespace.
 restOfLine :: Parser String
-restOfLine = do
-  rest <- many1 (noneOf "\n")
-  return $ strip rest
-  where strip = lstrip . rstrip
-        lstrip = dropWhile (`elem` " \t")
-        rstrip = reverse . lstrip . reverse
+restOfLine =
+  many1 (choice [ noneOf " \t\n"
+                , try ((oneOf " \t")) <* (notFollowedBy $ string "\n")
+                ])
+  <* optional ws
+-- restOfLine = do
+--   rest <- many1 (noneOf "\n")
+--   return $ strip rest
+--   where strip = lstrip . rstrip
+--         lstrip = dropWhile (`elem` " \t")
+--         rstrip = reverse . lstrip . reverse
 
 heading :: Parser Node
 heading =  char '#'
