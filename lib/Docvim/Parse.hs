@@ -177,16 +177,16 @@ docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 blockquote = lookAhead (char '>') >> Blockquote <$> body
   where
     body = do
-      first  <- line
-      rest   <- many (tailLine)
+      first  <- firstLine
+      rest   <- many (otherLine)
       return (first:rest)
-    line = char '>' >> optional ws >> restOfLine
+    firstLine = char '>' >> optional ws >> restOfLine
     lineEnd = try newline <|> eof
-    tailLine =  try $ lineEnd
-             >> optional ws
-             >> (commentStart <|> docBlockStart)
-             >> optional ws
-             >> line
+    otherLine =  try $ lineEnd
+              >> optional ws
+              >> (commentStart <|> docBlockStart)
+              >> optional ws
+              >> firstLine
 
 listItem = char '-' >> optional ws >> ListItem <$> body
   where body = restOfLine
