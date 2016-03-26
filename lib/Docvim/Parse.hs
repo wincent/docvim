@@ -329,9 +329,7 @@ annotation = char '@' *> annotationName
 
     plugin            = string "plugin" >> ws >> PluginAnnotation <$> pluginName <*> plugInDescription
     pluginName        = many1 alphaNum <* ws
-    -- TODO: bug... this includes trailing whitespace in the token, which we
-    -- should just skip over
-    plugInDescription = manyTill anyChar (lookAhead $ newline <|> eof)
+    plugInDescription = restOfLine
 
 -- | Parses a translation unit (file contents) into an AST.
 unit :: Parser Unit
