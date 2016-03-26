@@ -334,10 +334,10 @@ annotation = char '@' *> annotationName
 -- | Parses a translation unit (file contents) into an AST.
 unit :: Parser Unit
 unit =   Unit
-     <$> (ws' >> many node)
+     <$> (skippable >> many node)
      <*  eof
   where
-    ws' = many $ choice [comment, skipMany1 ws, newline]
+    skippable = many $ choice [comment, skipMany1 ws, newline]
 
 parse :: String -> IO Unit
 parse fileName = parseFromFile unit fileName >>= either report return
