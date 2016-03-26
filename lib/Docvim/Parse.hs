@@ -194,6 +194,8 @@ listItem = char '-' >> optional ws >> ListItem <$> body
 -- | Newline (and slurps up following horizontal whitespace as well).
 newline = char '\n' >> optional ws
 newlines = many1 newline
+
+-- | Whitespace (specifically, horizontal whitespace: spaces and tabs).
 ws = many1 (oneOf " \t")
 
 -- | Continuation-aware whitespace (\).
