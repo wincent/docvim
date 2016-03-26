@@ -33,6 +33,7 @@ import Text.Parsec ( (<|>)
                    , sepBy
                    , sepEndBy
                    , skipMany
+                   , skipMany1
                    , try
                    , unexpected
                    )
@@ -161,15 +162,6 @@ unlet =   UnletStatement
   where
     unl  = command "unl[et]"
 
--- | Textual tokens recognized during parsing but not embedded in the AST.
-data Token = Blockquote
-           | Comment
-           | ListItem
-           | Newline
-           | Whitespace String
-           | EOF
-  deriving (Eq, Show)
-
 type Default = String
 type Description = String
 type Name = String
@@ -183,9 +175,9 @@ docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 -- listItem = string "-" >> return ListItem
 
 -- | Newline (and slurps up following horizontal whitespace as well).
-newline = Newline <$ (char '\n' >> optional ws)
+newline = char '\n' >> optional ws
 newlines = many1 newline
-ws = Whitespace <$> many1 (oneOf " \t")
+ws = many1 (oneOf " \t")
 
 -- | Continuation-aware whitespace (\).
 wsc = many1 $ choice [whitespace, continuation]
@@ -193,8 +185,7 @@ wsc = many1 $ choice [whitespace, continuation]
         continuation = try $ char '\n' >> ws >> char '\\'
 
 -- TODO: string literals; some nasty lookahead might be required
-comment =  Comment
-        <$ try (quote >> notFollowedBy quote >> restOfLine >> optional newline)
+comment = try $ quote >> notFollowedBy quote >> restOfLine >> optional newline
 
 -- | Optional bang suffix for VimL commands.
 bang = option False (True <$ char '!')
@@ -229,7 +220,7 @@ docBlock = lookAhead docBlockStart
     start = try docBlockStart <|> commentStart
     emptyLines = try $ newline >> optional ws >> start
     next = optional ws >> endOfBlockElement >> optional ws
-    endOfBlockElement = try newline <|> (EOF <$ eof)
+    endOfBlockElement = try newline <|> eof
     trailingBlankCommentLines = skipMany $ start >> endOfBlockElement
 
 paragraph = Paragraph <$> many1 plaintext
@@ -318,7 +309,7 @@ annotation = char '@' *> annotationName
     pluginName        = many1 alphaNum <* ws
     -- TODO: bug... this includes trailing whitespace in the token, which we
     -- should just skip over
-    plugInDescription = manyTill anyChar (lookAhead $ newline <|> (EOF <$ eof))
+    plugInDescription = manyTill anyChar (lookAhead $ newline <|> eof)
 
 -- | Parses a translation unit (file contents) into an AST.
 unit :: Parser Unit
@@ -326,7 +317,7 @@ unit =   Unit
      <$> (ws' >> many node)
      <*  eof
   where
-    ws' = many $ choice [comment, ws, newline]
+    ws' = many $ choice [comment, skipMany1 ws, newline]
 
 parse :: String -> IO Unit
 parse fileName = parseFromFile unit fileName >>= either report return
