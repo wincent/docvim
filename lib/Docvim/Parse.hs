@@ -78,6 +78,7 @@ data Node
           | Plaintext [String]
           | LinkTargets [String]
           | ListItem String
+          | Blockquote String
 
           -- annotations
           | PluginAnnotation Name Description
@@ -170,14 +171,12 @@ type Type = String
 type Usage = String
 
 quote = string "\"" <?> "quote"
--- blockquote    = string ">" >> return Blockquote
 commentStart  = quote <* (notFollowedBy quote >> optional ws)
 docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
-listItem = char '-'
-         >> optional ws
-         >> ListItem <$> listItemBody
-  where
-    listItemBody = restOfLine
+blockquote = char '>' >> optional ws >> Blockquote <$> body
+  where body = restOfLine
+listItem = char '-' >> optional ws >> ListItem <$> body
+  where body = restOfLine
 
 -- | Newline (and slurps up following horizontal whitespace as well).
 newline = char '\n' >> optional ws
@@ -220,6 +219,7 @@ docBlock = lookAhead docBlockStart
                            , heading
                            , linkTargets
                            , listItem
+                           , blockquote
                            , paragraph -- must come last
                            ]
                  <* next

@@ -1,0 +1,6 @@
+Unit
+  [ DocBlock
+      [ Blockquote
+          "Here is a single-line blockquote with trailing space..."
+      ]
+  ]
