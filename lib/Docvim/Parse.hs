@@ -195,9 +195,8 @@ wsc = many1 $ choice [whitespace, continuation]
         continuation = try $ char '\n' >> ws >> char '\\'
 
 -- TODO: string literals; some nasty lookahead might be required
-comment = Comment <$ try (quote >> notFollowedBy quote >> rest >> optional newline)
-  where
-    rest = many $ noneOf "\n"
+comment =  Comment
+        <$ try (quote >> notFollowedBy quote >> restOfLine >> optional newline)
 
 -- | Optional bang suffix for VimL commands.
 bang = option False (True <$ char '!')
@@ -258,17 +257,12 @@ statement = choice [ letStatement
 -- | Remainder of the line up to but not including a newline.
 -- Does not include any trailing whitespace.
 restOfLine :: Parser String
-restOfLine =
-  many1 (choice [ noneOf " \t\n"
-                , try ((oneOf " \t")) <* (notFollowedBy $ string "\n")
-                ])
-  <* optional ws
--- restOfLine = do
---   rest <- many1 (noneOf "\n")
---   return $ strip rest
---   where strip = lstrip . rstrip
---         lstrip = dropWhile (`elem` " \t")
---         rstrip = reverse . lstrip . reverse
+restOfLine = do
+  rest <- many (noneOf "\n")
+  return $ strip rest
+  where strip = lstrip . rstrip
+        lstrip = dropWhile (`elem` " \t")
+        rstrip = reverse . lstrip . reverse
 
 heading :: Parser Node
 heading =  char '#'
