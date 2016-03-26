@@ -77,6 +77,7 @@ data Node
           | Paragraph [Node]
           | Plaintext [String]
           | LinkTargets [String]
+          | ListItem String
 
           -- annotations
           | PluginAnnotation Name Description
@@ -172,7 +173,11 @@ quote = string "\"" <?> "quote"
 -- blockquote    = string ">" >> return Blockquote
 commentStart  = quote <* (notFollowedBy quote >> optional ws)
 docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
--- listItem = string "-" >> return ListItem
+listItem = char '-'
+         >> optional ws
+         >> ListItem <$> listItemBody
+  where
+    listItemBody = restOfLine
 
 -- | Newline (and slurps up following horizontal whitespace as well).
 newline = char '\n' >> optional ws
@@ -214,6 +219,7 @@ docBlock = lookAhead docBlockStart
                            , try subheading -- must come before heading
                            , heading
                            , linkTargets
+                           , listItem
                            , paragraph -- must come last
                            ]
                  <* next
