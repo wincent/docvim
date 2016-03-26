@@ -1,6 +1,7 @@
 Unit
   [ DocBlock
       [ Blockquote
-          "Here is a single-line blockquote with trailing space..."
+          [ "Here is a single-line blockquote with trailing space..." ]
+      , Blockquote [ "And here is" , "a multline" , "one." ]
       ]
   ]

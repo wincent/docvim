@@ -78,7 +78,7 @@ data Node
           | Plaintext [String]
           | LinkTargets [String]
           | ListItem String
-          | Blockquote String
+          | Blockquote [String]
 
           -- annotations
           | PluginAnnotation Name Description
@@ -173,8 +173,21 @@ type Usage = String
 quote = string "\"" <?> "quote"
 commentStart  = quote <* (notFollowedBy quote >> optional ws)
 docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
-blockquote = char '>' >> optional ws >> Blockquote <$> body
-  where body = restOfLine
+
+blockquote = lookAhead (char '>') >> Blockquote <$> body
+  where
+    body = do
+      first  <- line
+      rest   <- many (tailLine)
+      return (first:rest)
+    line = char '>' >> optional ws >> restOfLine
+    lineEnd = try newline <|> eof
+    tailLine =  try $ lineEnd
+             >> optional ws
+             >> (try (string "\"\"") <|> string "\"")
+             >> optional ws
+             >> line
+
 listItem = char '-' >> optional ws >> ListItem <$> body
   where body = restOfLine
 
