@@ -4,4 +4,7 @@
 " -     Another item.
 "    - Note that we parse nested lists.
 "    - But don't do anything special with them.
+" - This one is a
+"   multiline list
+"   item.
 "

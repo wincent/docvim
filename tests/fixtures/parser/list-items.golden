@@ -1,9 +1,10 @@
 Unit
   [ DocBlock
-      [ ListItem "Item 1."
-      , ListItem "Item with trailing space."
-      , ListItem "Another item."
-      , ListItem "Note that we parse nested lists."
-      , ListItem "But don't do anything special with them."
+      [ ListItem [ "Item 1." ]
+      , ListItem [ "Item with trailing space." ]
+      , ListItem [ "Another item." ]
+      , ListItem [ "Note that we parse nested lists." ]
+      , ListItem [ "But don't do anything special with them." ]
+      , ListItem [ "This one is a" , "multiline list" , "item." ]
       ]
   ]

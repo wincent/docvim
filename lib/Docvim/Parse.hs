@@ -77,7 +77,7 @@ data Node
           | Paragraph [Node]
           | Plaintext [String]
           | LinkTargets [String]
-          | ListItem String
+          | ListItem [String]
           | Blockquote [String]
 
           -- annotations
@@ -174,26 +174,38 @@ quote = string "\"" <?> "quote"
 commentStart  = quote <* (notFollowedBy quote >> optional ws)
 docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 
+-- TODO: allow blank lines within blockquote
 blockquote = lookAhead (char '>') >> Blockquote <$> body
   where
     body = do
       first  <- firstLine
-      rest   <- many (otherLine)
+      rest   <- many otherLine
       return (first:rest)
     firstLine = char '>' >> optional ws >> restOfLine
-    lineEnd = try newline <|> eof
-    otherLine =  try $ lineEnd
+    otherLine =  try $ newline
               >> optional ws
               >> (commentStart <|> docBlockStart)
-              >> optional ws
               >> firstLine
 
-listItem = char '-' >> optional ws >> ListItem <$> body
-  where body = restOfLine
+listItem = lookAhead (char '-') >> ListItem <$> body
+  where
+    body = do
+      first  <- firstLine
+      rest   <- many otherLine
+      return (first:rest)
+      -- TODO: join (intercalate) to return a single string
+    firstLine = char '-' >> optional ws >> restOfLine
+    otherLine =  try $ newline
+              >> optional ws
+              >> (commentStart <|> docBlockStart)
+              -- TODO ^ DRY this up?
+              >> optional ws
+              >> lookAhead (noneOf "-")
+              >> restOfLine
 
 -- | Newline (and slurps up following horizontal whitespace as well).
-newline = char '\n' >> optional ws
-newlines = many1 newline
+newline = (char '\n' >> optional ws) <|> eof
+newlines = many1 (char '\n' >> optional ws)
 
 -- | Whitespace (specifically, horizontal whitespace: spaces and tabs).
 ws = many1 (oneOf " \t")
@@ -213,7 +225,7 @@ bang = option False (True <$ char '!')
 -- | End-of-statement.
 -- TODO: see `:h :bar` for a list of commands which see | as an arg instead of a
 -- command separator.
-eos = optional ws >> choice [bar, ws', skipMany comment, eof]
+eos = optional ws >> choice [bar, ws', skipMany comment]
   where
     bar = char '|' >> optional wsc
     ws' = newlines >> notFollowedBy wsc
@@ -241,9 +253,8 @@ docBlock = lookAhead docBlockStart
                  <* next
     start = try docBlockStart <|> commentStart
     emptyLines = try $ newline >> start
-    next = optional ws >> endOfBlockElement
-    endOfBlockElement = try newline <|> eof
-    trailingBlankCommentLines = skipMany $ start >> endOfBlockElement
+    next = optional ws >> newline
+    trailingBlankCommentLines = skipMany $ start >> newline
 
 paragraph = Paragraph <$> many1 plaintext
 plaintext = Plaintext <$> many1 (word <* optional ws)
@@ -269,7 +280,7 @@ statement = choice [ letStatement
 -- Does not include any trailing whitespace.
 restOfLine :: Parser String
 restOfLine = do
-  rest <- many (noneOf "\n")
+  rest <- many1 (noneOf "\n")
   return $ strip rest
   where strip = lstrip . rstrip
         lstrip = dropWhile (`elem` " \t")
@@ -337,7 +348,10 @@ unit =   Unit
      <$> (skippable >> many node)
      <*  eof
   where
-    skippable = many $ choice [comment, skipMany1 ws, newline]
+    skippable = many $ choice [ comment
+                              , skipMany1 ws
+                              , skipMany1 (char '\n')
+                              ]
 
 parse :: String -> IO Unit
 parse fileName = parseFromFile unit fileName >>= either report return
