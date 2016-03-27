@@ -72,15 +72,19 @@ data Node
                            , unletBody :: String
                            }
 
-          -- docvim nodes
+          -- docvim nodes: "block-level" elements
           | DocBlock [Node]
           | Paragraph [Node]
-          | Plaintext [String]
           | LinkTargets [String]
           | ListItem [String]
           | Blockquote [String]
 
-          -- annotations
+          -- docvim nodes: "phrasing content" elements
+          | Plaintext String
+          | BreakTag
+          | Whitespace
+
+          -- docvim nodes: annotations
           | PluginAnnotation Name Description
           | FunctionAnnotation Name -- not sure if I will want more here
           | IndentAnnotation
@@ -256,8 +260,15 @@ docBlock = lookAhead docBlockStart
     next = optional ws >> newline
     trailingBlankCommentLines = skipMany $ start >> newline
 
-paragraph = Paragraph <$> many1 plaintext
-plaintext = Plaintext <$> many1 (word <* optional ws)
+-- paragraph = Paragraph <$> (many1 $ choice [plaintext, br])
+paragraph = Paragraph <$> (many1 $ choice [plaintext, whitespace])
+plaintext = Plaintext <$> word
+whitespace = Whitespace <$ ws
+
+br = BreakTag <$ (try htmlTag <|> xhtmlTag) <?> "<br />"
+  where
+    htmlTag = string "<br>"
+    xhtmlTag = string "<br" >> optional ws >> string "/>"
 
 -- TODO: record this in symbol table similar to
 -- https://github.com/wincent/docvim/blob/js/src/SymbolVisitor.js
