@@ -82,6 +82,7 @@ data Node
           -- docvim nodes: "phrasing content" elements
           | Plaintext String
           | BreakTag
+          | Link String
           | Whitespace
 
           -- docvim nodes: annotations
@@ -289,6 +290,7 @@ paragraph = Paragraph <$> body
         fn Whitespace Whitespace = True
         fn _ _                   = False
 phrasing = choice [ br
+                  , link
                   , plaintext
                   ]
 
@@ -297,7 +299,7 @@ phrasing = choice [ br
 plaintext = Plaintext <$> wordChars
   where
     wordChars = many1 $ choice [ try $ char '<' <* notFollowedBy (string "br")
-                               , noneOf " \n\t<"
+                               , noneOf " \n\t<|"
                                ]
 
 -- | Tokenized whitespace.
@@ -311,6 +313,13 @@ br = BreakTag <$ (try htmlTag <|> xhtmlTag) <?> "<br />"
   where
     htmlTag = string "<br>"
     xhtmlTag = string "<br" >> optional ws >> string "/>"
+
+link = Link <$> (bar *> linkText <* bar)
+  where
+    bar      = char '|'
+    linkText = many1 $ noneOf " \t\n|"
+
+-- TODO: backticks
 
 -- TODO: record this in symbol table similar to
 -- https://github.com/wincent/docvim/blob/js/src/SymbolVisitor.js
