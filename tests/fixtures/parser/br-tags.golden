@@ -1,0 +1,16 @@
+Unit
+  [ DocBlock
+      [ Paragraph
+          [ Plaintext "This.<br>" , Whitespace , Plaintext "That." ]
+      , Paragraph
+          [ Plaintext "This.<br"
+          , Whitespace
+          , Plaintext "/>"
+          , Whitespace
+          , Plaintext "That."
+          ]
+      , Paragraph
+          [ Plaintext "This.<br/>" , Whitespace , Plaintext "That." ]
+      , Paragraph [ Plaintext "This.<br>That." ]
+      ]
+  ]
