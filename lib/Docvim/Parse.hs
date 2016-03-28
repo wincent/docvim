@@ -273,7 +273,7 @@ paragraph = Paragraph <$> body
       return $ ( if last compressed == Whitespace
                  then init compressed
                  else compressed )
-    firstLine = many1 $ choice [plaintext, whitespace]
+    firstLine = many1 $ choice [phrasing, whitespace]
     otherLine =  try $ newline
               >> optional ws
               >> (commentStart <|> docBlockStart)
@@ -283,10 +283,28 @@ paragraph = Paragraph <$> body
     appendWhitespace xs = xs ++ [Whitespace]
     compress = map head . group
       where
-        group = groupBy fn
+        group                    = groupBy fn
+        fn BreakTag Whitespace   = True
+        fn Whitespace BreakTag   = True
         fn Whitespace Whitespace = True
-        fn _ _ = False
-plaintext = Plaintext <$> word
+        fn _ _                   = False
+phrasing = choice [ br
+                  , plaintext
+                  ]
+
+-- similar to "word"... might end up replacing "word" later on...
+-- something more sophisticated here with satisfy?
+plaintext = Plaintext <$> wordChars
+  where
+    wordChars = many1 $ choice [ try $ char '<' <* notFollowedBy (string "br")
+                               , noneOf " \n\t<"
+                               ]
+
+-- | Tokenized whitespace.
+--
+-- Most whitespace is insignificant and gets omitted from the AST, but
+-- whitespace inside "phrasing content" is significant so is preserved i nthe
+-- AST,  at least in normalized form.
 whitespace = Whitespace <$ ws
 
 br = BreakTag <$ (try htmlTag <|> xhtmlTag) <?> "<br />"
