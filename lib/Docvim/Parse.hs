@@ -260,8 +260,20 @@ docBlock = lookAhead docBlockStart
     next = optional ws >> newline
     trailingBlankCommentLines = skipMany $ start >> newline
 
--- paragraph = Paragraph <$> (many1 $ choice [plaintext, br])
-paragraph = Paragraph <$> (many1 $ choice [plaintext, whitespace])
+paragraph = Paragraph <$> body
+  where
+    body = do
+      first <- firstLine
+      rest <- many otherLine
+      return $ concat (first:rest)
+    firstLine = many1 $ choice [plaintext, whitespace]
+    otherLine =  try $ newline
+              >> optional ws
+              >> (commentStart <|> docBlockStart)
+              >> optional ws
+              -- maybe lookAhead (noneOf "->") etc
+              >> firstLine
+              -- and maybe join/transform at the end
 plaintext = Plaintext <$> word
 whitespace = Whitespace <$ ws
 
