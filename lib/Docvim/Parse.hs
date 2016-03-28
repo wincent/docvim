@@ -12,7 +12,7 @@ import Control.Applicative ( (*>)
                            , (<*)
                            , (<*>)
                            )
-import Data.List (intercalate)
+import Data.List (groupBy, intercalate)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
 -- TODO: custom error messages with <?>
@@ -265,7 +265,14 @@ paragraph = Paragraph <$> body
     body = do
       first <- firstLine
       rest <- many otherLine
-      return $ concat (first:rest)
+      -- Make every line end with whitespace
+      let nodes = concat $ map appendWhitespace (first:rest)
+      -- Collapse consecutive whitespace
+      let compressed = compress nodes
+      -- Trim final whitespace
+      return $ ( if last compressed == Whitespace
+                 then init compressed
+                 else compressed )
     firstLine = many1 $ choice [plaintext, whitespace]
     otherLine =  try $ newline
               >> optional ws
@@ -273,7 +280,12 @@ paragraph = Paragraph <$> body
               >> optional ws
               -- maybe lookAhead (noneOf "->") etc
               >> firstLine
-              -- and maybe join/transform at the end
+    appendWhitespace xs = xs ++ [Whitespace]
+    compress = map head . group
+      where
+        group = groupBy fn
+        fn Whitespace Whitespace = True
+        fn _ _ = False
 plaintext = Plaintext <$> word
 whitespace = Whitespace <$ ws
 
