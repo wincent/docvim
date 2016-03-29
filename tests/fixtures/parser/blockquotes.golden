@@ -1,7 +1,57 @@
 Unit
   [ DocBlock
       [ Blockquote
-          [ "Here is a single-line blockquote with trailing space..." ]
-      , Blockquote [ "And here is" , "a multline" , "one." ]
+          [ Plaintext "Here"
+          , Whitespace
+          , Plaintext "is"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Plaintext "single-line"
+          , Whitespace
+          , Plaintext "blockquote"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "trailing"
+          , Whitespace
+          , Plaintext "space..."
+          ]
+      , Blockquote
+          [ Plaintext "And"
+          , Whitespace
+          , Plaintext "here"
+          , Whitespace
+          , Plaintext "is"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Plaintext "multline"
+          , Whitespace
+          , Plaintext "one."
+          ]
+      , Blockquote
+          [ Plaintext "And"
+          , Whitespace
+          , Plaintext "this"
+          , Whitespace
+          , Plaintext "is"
+          , Whitespace
+          , Plaintext "one"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Plaintext "blank"
+          , Whitespace
+          , Plaintext "line"
+          , Whitespace
+          , Plaintext "in"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "middle."
+          ]
       ]
   ]

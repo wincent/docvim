@@ -79,7 +79,7 @@ data Node
           | Paragraph [Node]
           | LinkTargets [String]
           | ListItem [Node]
-          | Blockquote [String]
+          | Blockquote [Node]
 
           -- Docvim nodes: "phrasing content" elements
           | Plaintext String
@@ -188,8 +188,17 @@ blockquote = lookAhead (char '>') >> Blockquote <$> body
     body = do
       first  <- firstLine
       rest   <- many otherLine
-      return (first:rest)
-    firstLine = char '>' >> optional ws >> restOfLine
+      -- Make every line end with whitespace.
+      let nodes = concat $ map appendWhitespace (first:rest)
+      -- Collapse consecutive whitespace.
+      let compressed = compress nodes
+      -- Trim final whitespace.
+      return ( if last compressed == Whitespace
+               then init compressed
+               else compressed )
+    firstLine =  char '>'
+              >> optional ws
+              >> (many $ choice [phrasing, whitespace])
     otherLine =  try $ newline
               >> optional ws
               >> (commentStart <|> docBlockStart)
@@ -205,9 +214,9 @@ listItem = lookAhead (char '-') >> ListItem <$> body
       -- Collapse consecutive whitespace.
       let compressed = compress nodes
       -- Trim final whitespace.
-      return $ ( if last compressed == Whitespace
-                 then init compressed
-                 else compressed )
+      return ( if last compressed == Whitespace
+               then init compressed
+               else compressed )
     firstLine = char '-'
               >> optional ws
               >> (many1 $ choice [phrasing, whitespace])
@@ -282,9 +291,9 @@ paragraph = Paragraph <$> body
       -- Collapse consecutive whitespace
       let compressed = compress nodes
       -- Trim final whitespace
-      return $ ( if last compressed == Whitespace
-                 then init compressed
-                 else compressed )
+      return ( if last compressed == Whitespace
+               then init compressed
+               else compressed )
     firstLine = many1 $ choice [phrasing, whitespace]
     otherLine =  try $ newline
               >> optional ws
