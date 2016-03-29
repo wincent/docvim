@@ -196,8 +196,9 @@ fenced = fence >> newline >> Fenced <$> body
     commentStart'  = quote <* notFollowedBy quote
     docBlockStart' = string "\"\"" <?> "\"\""
 
-blockquote = lookAhead (char '>') >> Blockquote <$> body
+blockquote = lookAhead (char '>') >> Blockquote <$> many1 paragraph
   where
+    paragraph = Paragraph <$> body
     body = do
       first  <- firstLine
       rest   <- many otherLine
