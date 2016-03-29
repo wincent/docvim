@@ -242,7 +242,7 @@ wsc = many1 $ choice [whitespace, continuation]
     continuation = try $ char '\n' >> ws >> char '\\'
 
 -- TODO: string literals; some nasty lookahead might be required
-comment = try $ quote >> notFollowedBy quote >> restOfLine >> optional newline
+comment = try $ quote >> notFollowedBy quote >> restOfLine >> newline
 
 -- | Optional bang suffix for VimL commands.
 bang = option False (True <$ char '!')
