@@ -33,7 +33,9 @@ import Text.Parsec ( (<|>)
                    , runParser
                    , satisfy
                    , sepBy
+                   , sepBy1
                    , sepEndBy
+                   , sepEndBy1
                    , skipMany
                    , skipMany1
                    , try
@@ -196,9 +198,11 @@ fenced = fence >> newline >> Fenced <$> body
     commentStart'  = quote <* notFollowedBy quote
     docBlockStart' = string "\"\"" <?> "\"\""
 
-blockquote = lookAhead (char '>') >> Blockquote <$> many1 paragraph
+blockquote =   lookAhead (char '>')
+           >>  Blockquote
+           <$> sepBy1 paragraph blankLine
   where
-    paragraph = Paragraph <$> body <* many blankLine
+    paragraph = Paragraph <$> body
     body = do
       first  <- firstLine
       rest   <- many otherLine
@@ -222,7 +226,9 @@ blockquote = lookAhead (char '>') >> Blockquote <$> many1 paragraph
               >> (commentStart <|> docBlockStart)
               >> char '>'
               >> optional ws
-              >> lookAhead newline
+              >> newline
+              >> (commentStart <|> docBlockStart)
+              -- BUG: we don't grok multiple blank lines
 
 listItem = lookAhead (char '-') >> ListItem <$> body
   where

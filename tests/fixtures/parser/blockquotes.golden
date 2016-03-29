@@ -35,9 +35,8 @@ Unit
               ]
           ]
       , Blockquote
-          [ Paragraph [ Plaintext "And" , Whitespace , Plaintext "this" ] ]
-      , Blockquote
-          [ Paragraph
+          [ Paragraph [ Plaintext "And" , Whitespace , Plaintext "this" ]
+          , Paragraph
               [ Plaintext "is"
               , Whitespace
               , Plaintext "one"
