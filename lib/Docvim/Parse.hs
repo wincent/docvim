@@ -183,12 +183,16 @@ quote = string "\"" <?> "quote"
 commentStart  = quote <* (notFollowedBy quote >> optional ws)
 docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 
-
 fenced = fence >> newline >> Fenced <$> body
   where
     fence = string "```" >> optional ws
     body = manyTill line (try $ (commentStart <|> docBlockStart) >> optional ws >> fence)
-    line = (commentStart <|> docBlockStart) >> restOfLine <* newline
+    line = do
+      -- Assume starting indented by 1 space, so trim that off each line.
+      rawLine <- (commentStart' <|> docBlockStart') >> restOfLine <* newline
+      return $ tail rawLine
+    commentStart'  = quote <* (notFollowedBy quote)
+    docBlockStart' = (string "\"\"") <?> "\"\""
 
 blockquote = lookAhead (char '>') >> Blockquote <$> body
   where
