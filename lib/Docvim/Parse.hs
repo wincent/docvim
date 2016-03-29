@@ -186,11 +186,18 @@ docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 fenced = fence >> newline >> Fenced <$> body
   where
     fence = string "```" >> optional ws
-    body = manyTill line (try $ (commentStart <|> docBlockStart) >> optional ws >> fence)
-    line = do
-      -- Assume starting indented by 1 space, so trim that off each line.
-      rawLine <- (commentStart' <|> docBlockStart') >> restOfLine <* newline
-      return $ tail rawLine
+    body = do
+      lines <- manyTill line (try $ (commentStart <|> docBlockStart) >> optional ws >> fence)
+      let indent = foldr countLeadingSpaces infinity lines
+      return $ map (trimLeadingSpace indent) lines
+      where
+        -- Find minimum count of leading spaces.
+        countLeadingSpaces line count = min (length (takeWhile ((==) ' ') line)) count
+        trimLeadingSpace count = if count > 0
+                                 then drop count
+                                 else id
+        infinity = maxBound :: Int
+    line           = (commentStart' <|> docBlockStart') >> restOfLine <* newline
     commentStart'  = quote <* (notFollowedBy quote)
     docBlockStart' = (string "\"\"") <?> "\"\""
 
