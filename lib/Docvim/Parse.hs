@@ -222,11 +222,10 @@ blockquote =   lookAhead (char '>')
               >> firstLine
     blankLine =  try $ newline
               >> (commentStart <|> docBlockStart)
-              >> char '>'
+              >> (many1 $ try $ char '>'
               >> optional ws
               >> newline
-              >> (commentStart <|> docBlockStart)
-              -- BUG: we don't grok multiple blank lines
+              >> (commentStart <|> docBlockStart))
 
 listItem = lookAhead (char '-') >> ListItem <$> body
   where

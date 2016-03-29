@@ -58,6 +58,19 @@ Unit
           ]
       , Blockquote
           [ Paragraph
+              [ Plaintext "This"
+              , Whitespace
+              , Plaintext "one"
+              , Whitespace
+              , Plaintext "with"
+              , Whitespace
+              , Plaintext "multiple"
+              ]
+          , Paragraph
+              [ Plaintext "consecutive" , Whitespace , Plaintext "blanks..." ]
+          ]
+      , Blockquote
+          [ Paragraph
               [ Plaintext "Look"
               , BreakTag
               , Plaintext "Line"
