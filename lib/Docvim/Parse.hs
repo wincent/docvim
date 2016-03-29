@@ -377,7 +377,7 @@ string' s = mapM_ char' s >> pure s <?> s
 -- AST,  at least in normalized form.
 whitespace = Whitespace <$ ws
 
-br = BreakTag <$ (try htmlTag <|> xhtmlTag) <?> "<br />"
+br = BreakTag <$ (try htmlTag <|> try xhtmlTag) <?> "<br />"
   where
     htmlTag = string' "<br>"
     xhtmlTag = string' "<br" >> optional ws >> string "/>"
