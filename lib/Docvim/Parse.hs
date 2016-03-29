@@ -400,10 +400,18 @@ statement = choice [ letStatement
 restOfLine :: Parser String
 restOfLine = do
   rest <- many1 (noneOf "\n")
-  return $ strip rest
-  where strip = lstrip . rstrip
-        lstrip = dropWhile (`elem` " \t")
-        rstrip = reverse . lstrip . reverse
+  return $ rstrip rest
+
+-- | Strip trailing and leading whitespace.
+--
+-- Not efficient, but chosen for readablility.
+strip = lstrip . rstrip
+
+-- | Strip leading (left) whitespace.
+lstrip = dropWhile (`elem` " \t")
+
+-- | Strip trailing (right) whitespace.
+rstrip = reverse . lstrip . reverse
 
 heading :: Parser Node
 heading =  char '#'
