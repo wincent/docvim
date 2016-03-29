@@ -106,7 +106,7 @@ docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 
 fenced = fence >> newline >> Fenced <$> body
   where
-    fence = string "```" >> optional ws
+    fence = try $ string "```" >> optional ws
     body = do
       lines <- manyTill line (try $ (commentStart <|> docBlockStart) >> optional ws >> fence)
       let indent = foldr countLeadingSpaces infinity lines

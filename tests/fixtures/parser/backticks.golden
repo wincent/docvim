@@ -32,5 +32,6 @@ Unit
           , Whitespace
           , Plaintext "it."
           ]
+      , Paragraph [ Code "backticks in first column work too" ]
       ]
   ]
