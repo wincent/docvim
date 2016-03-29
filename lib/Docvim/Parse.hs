@@ -187,14 +187,14 @@ fenced = fence >> newline >> Fenced <$> body
       return $ map (trimLeadingSpace indent) lines
       where
         -- Find minimum count of leading spaces.
-        countLeadingSpaces line count = min (length (takeWhile ((==) ' ') line)) count
+        countLeadingSpaces line = min (length (takeWhile (' ' ==) line))
         trimLeadingSpace count = if count > 0
                                  then drop count
                                  else id
         infinity = maxBound :: Int
     line           = (commentStart' <|> docBlockStart') >> restOfLine <* newline
-    commentStart'  = quote <* (notFollowedBy quote)
-    docBlockStart' = (string "\"\"") <?> "\"\""
+    commentStart'  = quote <* notFollowedBy quote
+    docBlockStart' = string "\"\"" <?> "\"\""
 
 blockquote = lookAhead (char '>') >> Blockquote <$> body
   where
@@ -202,7 +202,7 @@ blockquote = lookAhead (char '>') >> Blockquote <$> body
       first  <- firstLine
       rest   <- many otherLine
       -- Make every line end with whitespace.
-      let nodes = concat $ map appendWhitespace (first:rest)
+      let nodes = concatMap appendWhitespace (first:rest)
       -- Collapse consecutive whitespace.
       let compressed = compress nodes
       -- Trim final whitespace.
@@ -211,7 +211,7 @@ blockquote = lookAhead (char '>') >> Blockquote <$> body
                else compressed )
     firstLine =  char '>'
               >> optional ws
-              >> (many $ choice [phrasing, whitespace])
+              >> many (choice [phrasing, whitespace])
     otherLine =  try $ newline
               >> optional ws
               >> (commentStart <|> docBlockStart)
@@ -223,7 +223,7 @@ listItem = lookAhead (char '-') >> ListItem <$> body
       first  <- firstLine
       rest   <- many otherLine
       -- Make every line end with whitespace.
-      let nodes = concat $ map appendWhitespace (first:rest)
+      let nodes = concatMap appendWhitespace (first:rest)
       -- Collapse consecutive whitespace.
       let compressed = compress nodes
       -- Trim final whitespace.
@@ -232,14 +232,14 @@ listItem = lookAhead (char '-') >> ListItem <$> body
                else compressed )
     firstLine = char '-'
               >> optional ws
-              >> (many1 $ choice [phrasing, whitespace])
+              >> many1 (choice [phrasing, whitespace])
     otherLine =  try $ newline
               >> optional ws
               >> (commentStart <|> docBlockStart)
               -- TODO ^ DRY this up?
               >> optional ws
               >> lookAhead (noneOf "-")
-              >> (many1 $ choice [phrasing, whitespace])
+              >> many1 (choice [phrasing, whitespace])
 
 -- | Newline (and slurps up following horizontal whitespace as well).
 newline = (char '\n' >> optional ws) <|> eof
@@ -301,7 +301,7 @@ paragraph = Paragraph <$> body
       first <- firstLine
       rest <- many otherLine
       -- Make every line end with whitespace
-      let nodes = concat $ map appendWhitespace (first:rest)
+      let nodes = concatMap appendWhitespace (first:rest)
       -- Collapse consecutive whitespace
       let compressed = compress nodes
       -- Trim final whitespace
@@ -341,7 +341,7 @@ compress = map prioritizeBreakTag . group
     prioritizeBreakTag xs = if hasBreakTag xs
                             then BreakTag
                             else head xs
-    hasBreakTag = any (\n -> n == BreakTag)
+    hasBreakTag = elem BreakTag
 -- similar to "word"... might end up replacing "word" later on...
 -- something more sophisticated here with satisfy?
 plaintext = Plaintext <$> wordChars
