@@ -12,6 +12,7 @@ import Control.Applicative ( (*>)
                            , (<*)
                            , (<*>)
                            )
+import Data.Char (toUpper)
 import Data.List (groupBy, intercalate)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
@@ -30,6 +31,7 @@ import Text.Parsec ( (<|>)
                    , optional
                    , parseTest
                    , runParser
+                   , satisfy
                    , sepBy
                    , sepEndBy
                    , skipMany
@@ -72,21 +74,21 @@ data Node
                            , unletBody :: String
                            }
 
-          -- docvim nodes: "block-level" elements
+          -- Docvim nodes: "block-level" elements
           | DocBlock [Node]
           | Paragraph [Node]
           | LinkTargets [String]
           | ListItem [String]
           | Blockquote [String]
 
-          -- docvim nodes: "phrasing content" elements
+          -- Docvim nodes: "phrasing content" elements
           | Plaintext String
           | BreakTag
           | Link String
           | Code String
           | Whitespace
 
-          -- docvim nodes: annotations
+          -- Docvim nodes: annotations
           | PluginAnnotation Name Description
           | FunctionAnnotation Name -- not sure if I will want more here
           | IndentAnnotation
@@ -283,13 +285,17 @@ paragraph = Paragraph <$> body
               -- maybe lookAhead (noneOf "->") etc
               >> firstLine
     appendWhitespace xs = xs ++ [Whitespace]
-    compress = map head . group
+    compress = map prioritizeBreakTag . group
       where
         group                    = groupBy fn
         fn BreakTag Whitespace   = True
         fn Whitespace BreakTag   = True
         fn Whitespace Whitespace = True
         fn _ _                   = False
+        prioritizeBreakTag xs = if hasBreakTag xs
+                                then BreakTag
+                                else head xs
+        hasBreakTag = any (\n -> n == BreakTag)
 phrasing = choice [ br
                   , link
                   , code
@@ -300,9 +306,21 @@ phrasing = choice [ br
 -- something more sophisticated here with satisfy?
 plaintext = Plaintext <$> wordChars
   where
-    wordChars = many1 $ choice [ try $ char '<' <* notFollowedBy (string "br")
+    wordChars = many1 $ choice [ try $ char '<' <* notFollowedBy (string' "br")
                                , noneOf " \n\t<|`"
                                ]
+
+-- | Case-insensitive char match.
+--
+-- Based on `caseChar` function in:
+-- https://hackage.haskell.org/package/hsemail-1.3/docs/Text-ParserCombinators-Parsec-Rfc2234.html
+char' c = satisfy $ \x -> toUpper x == toUpper c
+
+-- | Case-insensitive string match.
+--
+-- Based on `caseString` function in:
+-- https://hackage.haskell.org/package/hsemail-1.3/docs/Text-ParserCombinators-Parsec-Rfc2234.html
+string' s = mapM_ char' s >> pure s <?> s
 
 -- | Tokenized whitespace.
 --
@@ -313,8 +331,8 @@ whitespace = Whitespace <$ ws
 
 br = BreakTag <$ (try htmlTag <|> xhtmlTag) <?> "<br />"
   where
-    htmlTag = string "<br>"
-    xhtmlTag = string "<br" >> optional ws >> string "/>"
+    htmlTag = string' "<br>"
+    xhtmlTag = string' "<br" >> optional ws >> string "/>"
 
 link = Link <$> (bar *> linkText <* bar)
   where
