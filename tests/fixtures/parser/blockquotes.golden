@@ -53,5 +53,16 @@ Unit
           , Whitespace
           , Plaintext "middle."
           ]
+      , Blockquote
+          [ Plaintext "Look"
+          , BreakTag
+          , Plaintext "Line"
+          , Whitespace
+          , Plaintext "breaks"
+          , Whitespace
+          , Plaintext "work"
+          , Whitespace
+          , Plaintext "too."
+          ]
       ]
   ]
