@@ -4,6 +4,7 @@ module Docvim.Printer.Markdown
   , ppm
   ) where
 
+import Data.List (intercalate)
 import Docvim.AST
 import Docvim.Parse (parseUnit)
 
@@ -12,11 +13,11 @@ markdown (Unit nodes) = concatMap md nodes
 
 md :: Node -> String
 md (DocBlock d) = concatMap node d
-md (Link l)     = "|" ++ l ++ "|" -- TODO: actual links
-md (Whitespace) = " "
--- TODO: etc...
+md (Link l) = "|" ++ l ++ "|" -- TODO: actual links
 
+-- TODO: group list items together
 node :: Node -> String
+node (Blockquote b) = blockquote b ++ "\n\n"
 node (BreakTag) = "<br />"
 node (Code c) = "`" ++ c ++ "`"
 node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
@@ -25,6 +26,12 @@ node (Paragraph p) = (concatMap node p) ++ "\n\n"
 node (Plaintext p) = p
 node (SubheadingAnnotation s) = "## " ++ s ++ "\n\n"
 node (Whitespace) = " "
+
+blockquote :: [Node] -> String
+blockquote ps = "> " ++ intercalate "\n>\n> " (map paragraph ps)
+  where
+    -- Strip off trailing newlines from each paragraph
+    paragraph p = take ((length (node p)) - 2) (node p)
 
 -- | For unit testing.
 pm :: String -> String
