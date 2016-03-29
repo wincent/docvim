@@ -18,6 +18,7 @@ md (Whitespace) = " "
 -- TODO: etc...
 
 node :: Node -> String
+node (BreakTag) = "<br />"
 node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
 node (Paragraph p) = (concatMap node p) ++ "\n\n"
 node (Plaintext p) = p
