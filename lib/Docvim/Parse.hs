@@ -151,6 +151,16 @@ blockquote =   lookAhead (char '>')
               >> newline
               >> (commentStart <|> docBlockStart))
 
+list =  lookAhead (char '-')
+     >> List
+     <$> sepBy1 listItem separator
+  where
+    -- Yes, this is a bit hideous.
+    separator =  try $ newline
+              >> (commentStart <|> docBlockStart)
+              >> optional ws
+              >> lookAhead (char '-')
+
 listItem = lookAhead (char '-') >> ListItem <$> body
   where
     body = do
@@ -217,7 +227,7 @@ docBlock = lookAhead docBlockStart
                            , try subheading -- must come before heading
                            , heading
                            , linkTargets
-                           , listItem
+                           , list
                            , blockquote
                            , fenced
                            , paragraph -- must come last

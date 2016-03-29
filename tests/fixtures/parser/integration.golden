@@ -364,9 +364,11 @@ Unit
           , Whitespace
           , Plaintext "at:"
           ]
-      , ListItem [ Plaintext "https://github.com/wincent/docvim" ]
-      , ListItem [ Plaintext "https://gitlab.com/wincent/docvim" ]
-      , ListItem [ Plaintext "https://bitbucket.org/ghurrell/docvim" ]
+      , List
+          [ ListItem [ Plaintext "https://github.com/wincent/docvim" ]
+          , ListItem [ Plaintext "https://gitlab.com/wincent/docvim" ]
+          , ListItem [ Plaintext "https://bitbucket.org/ghurrell/docvim" ]
+          ]
       , HeadingAnnotation "Website"
       , Paragraph
           [ Plaintext "The"
@@ -801,82 +803,92 @@ Unit
           , Whitespace
           , Plaintext "manual:"
           ]
-      , ListItem
-          [ Plaintext "Perform"
-          , Whitespace
-          , Plaintext "final"
-          , Whitespace
-          , Plaintext "sanity"
-          , Whitespace
-          , Plaintext "checks"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "manual"
-          , Whitespace
-          , Plaintext "testing"
-          ]
-      , ListItem
-          [ Plaintext "Update"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Link "docvim-history"
-          , Whitespace
-          , Plaintext "section"
-          , Whitespace
-          , Plaintext "of"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "documentation"
-          ]
-      , ListItem
-          [ Plaintext "Verify"
-          , Whitespace
-          , Plaintext "clean"
-          , Whitespace
-          , Plaintext "work"
-          , Whitespace
-          , Plaintext "tree:"
+      , List
+          [ ListItem
+              [ Plaintext "Perform"
+              , Whitespace
+              , Plaintext "final"
+              , Whitespace
+              , Plaintext "sanity"
+              , Whitespace
+              , Plaintext "checks"
+              , Whitespace
+              , Plaintext "and"
+              , Whitespace
+              , Plaintext "manual"
+              , Whitespace
+              , Plaintext "testing"
+              ]
+          , ListItem
+              [ Plaintext "Update"
+              , Whitespace
+              , Plaintext "the"
+              , Whitespace
+              , Link "docvim-history"
+              , Whitespace
+              , Plaintext "section"
+              , Whitespace
+              , Plaintext "of"
+              , Whitespace
+              , Plaintext "the"
+              , Whitespace
+              , Plaintext "documentation"
+              ]
+          , ListItem
+              [ Plaintext "Verify"
+              , Whitespace
+              , Plaintext "clean"
+              , Whitespace
+              , Plaintext "work"
+              , Whitespace
+              , Plaintext "tree:"
+              ]
           ]
       , Fenced [ "git status" ]
-      , ListItem
-          [ Plaintext "Tag"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "release:"
+      , List
+          [ ListItem
+              [ Plaintext "Tag"
+              , Whitespace
+              , Plaintext "the"
+              , Whitespace
+              , Plaintext "release:"
+              ]
           ]
       , Fenced [ "git tag -s -m \"$VERSION release\" $VERSION" ]
-      , ListItem
-          [ Plaintext "Publish"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "code:"
+      , List
+          [ ListItem
+              [ Plaintext "Publish"
+              , Whitespace
+              , Plaintext "the"
+              , Whitespace
+              , Plaintext "code:"
+              ]
           ]
       , Fenced
           [ "git push origin master --follow-tags"
           , "git push github master --follow-tags"
           ]
-      , ListItem
-          [ Plaintext "Produce"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "release"
-          , Whitespace
-          , Plaintext "archive:"
+      , List
+          [ ListItem
+              [ Plaintext "Produce"
+              , Whitespace
+              , Plaintext "the"
+              , Whitespace
+              , Plaintext "release"
+              , Whitespace
+              , Plaintext "archive:"
+              ]
           ]
       , Fenced [ "git archive -o vim-docvim-$VERSION.zip HEAD -- ." ]
-      , ListItem
-          [ Plaintext "Upload"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext
-              "http://www.vim.org/scripts/script.php?script_id=[TODO]"
+      , List
+          [ ListItem
+              [ Plaintext "Upload"
+              , Whitespace
+              , Plaintext "to"
+              , Whitespace
+              , Plaintext
+                  "http://www.vim.org/scripts/script.php?script_id=[TODO]"
+              ]
           ]
       , HeadingAnnotation "Authors"
       , Paragraph
@@ -908,7 +920,9 @@ Unit
           , Whitespace
           , Plaintext "released)"
           ]
-      , ListItem
-          [ Plaintext "Initial" , Whitespace , Plaintext "release." ]
+      , List
+          [ ListItem
+              [ Plaintext "Initial" , Whitespace , Plaintext "release." ]
+          ]
       ]
   ]

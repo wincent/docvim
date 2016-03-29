@@ -23,6 +23,7 @@ data Node
           | DocBlock [Node]
           | Paragraph [Node]
           | LinkTargets [String]
+          | List [Node]
           | ListItem [Node]
           | Blockquote [Node]
           | Fenced [String]
