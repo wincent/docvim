@@ -11,7 +11,6 @@ markdown :: Unit -> String
 markdown (Unit nodes) = concatMap md nodes
 
 md :: Node -> String
-md (Code c)     = "`" ++ c ++ "`"
 md (DocBlock d) = concatMap node d
 md (Link l)     = "|" ++ l ++ "|" -- TODO: actual links
 md (Whitespace) = " "
@@ -19,6 +18,7 @@ md (Whitespace) = " "
 
 node :: Node -> String
 node (BreakTag) = "<br />"
+node (Code c)     = "`" ++ c ++ "`"
 node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
 node (Paragraph p) = (concatMap node p) ++ "\n\n"
 node (Plaintext p) = p
