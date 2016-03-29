@@ -301,6 +301,7 @@ paragraph = Paragraph <$> body
               >> optional ws
               -- maybe lookAhead (noneOf "->") etc
               >> firstLine
+
 phrasing = choice [ br
                   , link
                   , code
