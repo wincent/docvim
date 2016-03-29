@@ -43,8 +43,8 @@ unitTests = testGroup "Unit tests"
   -- , testCase "Assertion" $ assert $ (length [1, 2, 3]) == 3
   ]
 
-goldenTests :: [FilePath] -> (String -> String) -> TestTree
-goldenTests sources transform = testGroup "Golden tests" $ do
+goldenTests :: String -> [FilePath] -> (String -> String) -> TestTree
+goldenTests description sources transform = testGroup groupName $ do
   file <- sources -- list monad
   let
     run = do
@@ -61,6 +61,8 @@ goldenTests sources transform = testGroup "Golden tests" $ do
                    , new
                    ]
   return $ goldenVsStringDiff' name diff golden run
+  where
+    groupName = "Golden " ++ description ++ " tests"
 
 -- | Normalize a string to always end with a newline, unless zero-length, to
 -- match standard text editor behavior.
@@ -112,6 +114,6 @@ main = do
   markdownSources <- getFixtures "tests/fixtures/markdown"
   defaultMain $ testGroup "Test suite"
     [ unitTests
-    , goldenTests parserSources p
-    , goldenTests markdownSources pm
+    , goldenTests "parser" parserSources p
+    , goldenTests "Markdown printer" markdownSources pm
     ]
