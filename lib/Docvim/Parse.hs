@@ -146,7 +146,7 @@ blockquote =   lookAhead (char '>')
               >> firstLine
     blankLine =  try $ newline
               >> (commentStart <|> docBlockStart)
-              >> (many1 $ try $ char '>'
+              >> many1 (try $ char '>'
               >> optional ws
               >> newline
               >> (commentStart <|> docBlockStart))
