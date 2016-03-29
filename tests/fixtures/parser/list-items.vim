@@ -8,3 +8,4 @@
 "   multiline list
 "   item.
 "
+" This is a paragraph that follows the list item.

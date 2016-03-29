@@ -1,10 +1,77 @@
 Unit
   [ DocBlock
-      [ ListItem [ "Item 1." ]
-      , ListItem [ "Item with trailing space." ]
-      , ListItem [ "Another item." ]
-      , ListItem [ "Note that we parse nested lists." ]
-      , ListItem [ "But don't do anything special with them." ]
-      , ListItem [ "This one is a" , "multiline list" , "item." ]
+      [ ListItem [ Plaintext "Item" , Whitespace , Plaintext "1." ]
+      , ListItem
+          [ Plaintext "Item"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "trailing"
+          , Whitespace
+          , Plaintext "space."
+          ]
+      , ListItem [ Plaintext "Another" , Whitespace , Plaintext "item." ]
+      , ListItem
+          [ Plaintext "Note"
+          , Whitespace
+          , Plaintext "that"
+          , Whitespace
+          , Plaintext "we"
+          , Whitespace
+          , Plaintext "parse"
+          , Whitespace
+          , Plaintext "nested"
+          , Whitespace
+          , Plaintext "lists."
+          ]
+      , ListItem
+          [ Plaintext "But"
+          , Whitespace
+          , Plaintext "don't"
+          , Whitespace
+          , Plaintext "do"
+          , Whitespace
+          , Plaintext "anything"
+          , Whitespace
+          , Plaintext "special"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "them."
+          ]
+      , ListItem
+          [ Plaintext "This"
+          , Whitespace
+          , Plaintext "one"
+          , Whitespace
+          , Plaintext "is"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Plaintext "multiline"
+          , Whitespace
+          , Plaintext "list"
+          , Whitespace
+          , Plaintext "item."
+          ]
+      , Paragraph
+          [ Plaintext "This"
+          , Whitespace
+          , Plaintext "is"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Plaintext "paragraph"
+          , Whitespace
+          , Plaintext "that"
+          , Whitespace
+          , Plaintext "follows"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "list"
+          , Whitespace
+          , Plaintext "item."
+          ]
       ]
   ]

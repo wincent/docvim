@@ -78,7 +78,7 @@ data Node
           | DocBlock [Node]
           | Paragraph [Node]
           | LinkTargets [String]
-          | ListItem [String]
+          | ListItem [Node]
           | Blockquote [String]
 
           -- Docvim nodes: "phrasing content" elements
@@ -200,16 +200,24 @@ listItem = lookAhead (char '-') >> ListItem <$> body
     body = do
       first  <- firstLine
       rest   <- many otherLine
-      return (first:rest)
-      -- TODO: join (intercalate) to return a single string
-    firstLine = char '-' >> optional ws >> restOfLine
+      -- Make every line end with whitespace.
+      let nodes = concat $ map appendWhitespace (first:rest)
+      -- Collapse consecutive whitespace.
+      let compressed = compress nodes
+      -- Trim final whitespace.
+      return $ ( if last compressed == Whitespace
+                 then init compressed
+                 else compressed )
+    firstLine = char '-'
+              >> optional ws
+              >> (many1 $ choice [phrasing, whitespace])
     otherLine =  try $ newline
               >> optional ws
               >> (commentStart <|> docBlockStart)
               -- TODO ^ DRY this up?
               >> optional ws
               >> lookAhead (noneOf "-")
-              >> restOfLine
+              >> (many1 $ choice [phrasing, whitespace])
 
 -- | Newline (and slurps up following horizontal whitespace as well).
 newline = (char '\n' >> optional ws) <|> eof
@@ -284,24 +292,32 @@ paragraph = Paragraph <$> body
               >> optional ws
               -- maybe lookAhead (noneOf "->") etc
               >> firstLine
-    appendWhitespace xs = xs ++ [Whitespace]
-    compress = map prioritizeBreakTag . group
-      where
-        group                    = groupBy fn
-        fn BreakTag Whitespace   = True
-        fn Whitespace BreakTag   = True
-        fn Whitespace Whitespace = True
-        fn _ _                   = False
-        prioritizeBreakTag xs = if hasBreakTag xs
-                                then BreakTag
-                                else head xs
-        hasBreakTag = any (\n -> n == BreakTag)
 phrasing = choice [ br
                   , link
                   , code
                   , plaintext
                   ]
 
+-- | Appends a Whitespace token to a list of nodes.
+appendWhitespace :: [Node] -> [Node]
+appendWhitespace xs = xs ++ [Whitespace]
+
+-- | Compress whitespace.
+-- Consecutive Whitespace tokens are replaced with a single token.
+-- If a run of whitespace includes a BreakTag, the run is replaced with the
+-- BreakTag.
+compress :: [Node] -> [Node]
+compress = map prioritizeBreakTag . group
+  where
+    group                    = groupBy fn
+    fn BreakTag Whitespace   = True
+    fn Whitespace BreakTag   = True
+    fn Whitespace Whitespace = True
+    fn _ _                   = False
+    prioritizeBreakTag xs = if hasBreakTag xs
+                            then BreakTag
+                            else head xs
+    hasBreakTag = any (\n -> n == BreakTag)
 -- similar to "word"... might end up replacing "word" later on...
 -- something more sophisticated here with satisfy?
 plaintext = Plaintext <$> wordChars
