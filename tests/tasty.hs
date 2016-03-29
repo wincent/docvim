@@ -8,6 +8,7 @@ import Data.ByteString.Lazy.Char8 (pack, unpack)
 import Data.Char (chr)
 import Data.List (isPrefixOf)
 import Docvim.Parse (p, parseUnit)
+import Docvim.Printer.Markdown (pm)
 import System.Exit (ExitCode(ExitSuccess))
 import System.FilePath ((<.>), replaceExtension, takeBaseName, takeFileName)
 import System.IO (hFlush, readFile)
@@ -42,13 +43,13 @@ unitTests = testGroup "Unit tests"
   -- , testCase "Assertion" $ assert $ (length [1, 2, 3]) == 3
   ]
 
-goldenTests :: [FilePath] -> TestTree
-goldenTests sources = testGroup "Golden tests" $ do
+goldenTests :: [FilePath] -> (String -> String) -> TestTree
+goldenTests sources transform = testGroup "Golden tests" $ do
   file <- sources -- list monad
   let
     run = do
       input <- readFile file
-      let output = normalize $ p input
+      let output = normalize $ transform input
       return $ pack output -- pack because tasty-golden wants a ByteString
     name = takeBaseName file
     golden = replaceExtension file ".golden"
@@ -102,12 +103,15 @@ goldenVsStringDiff' name diff golden run =
         _ -> Just (strip out)
     update = ByteString.writeFile golden
 
-getFixtures :: IO [FilePath]
-getFixtures = findByExtension [".vim"] "tests/fixtures/parser"
+getFixtures :: String -> IO [FilePath]
+getFixtures = findByExtension [".vim"]
 
 main :: IO ()
 main = do
-  sources <- getFixtures
-  defaultMain $ testGroup "Test suite" [ unitTests
-                                       , goldenTests sources
-                                       ]
+  parserSources <- getFixtures "tests/fixtures/parser"
+  markdownSources <- getFixtures "tests/fixtures/markdown"
+  defaultMain $ testGroup "Test suite"
+    [ unitTests
+    , goldenTests parserSources p
+    , goldenTests markdownSources pm
+    ]
