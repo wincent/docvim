@@ -436,7 +436,6 @@ p input = case parseUnit input of
             Right ast -> ppShow ast
 
 -- | To facilitate quick testing in the console.
--- import Parse (pp)
 -- pp "unlet g:var"
--- pp :: String -> IO ()
-pp input = putStrLn $ p input
+pp :: String -> IO ()
+pp = putStrLn . p
