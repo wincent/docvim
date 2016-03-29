@@ -18,7 +18,8 @@ md (Whitespace) = " "
 -- TODO: etc...
 
 node :: Node -> String
-node (HeadingAnnotation h) = "# " ++ h ++ "\n"
+node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
+node (SubheadingAnnotation s) = "## " ++ s ++ "\n\n"
 
 -- | For unit testing.
 pm :: String -> String
@@ -28,4 +29,4 @@ pm input = case parseUnit input of
 
 -- | For logging in the REPL.
 ppm :: String -> IO ()
-ppm = putStrLn . pm
+ppm = putStr . pm
