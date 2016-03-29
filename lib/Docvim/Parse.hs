@@ -218,11 +218,9 @@ blockquote =   lookAhead (char '>')
               >> optional ws
               >> many1 (choice [phrasing, whitespace])
     otherLine =  try $ newline
-              >> optional ws
               >> (commentStart <|> docBlockStart)
               >> firstLine
     blankLine =  try $ newline
-              >> optional ws
               >> (commentStart <|> docBlockStart)
               >> char '>'
               >> optional ws
@@ -247,7 +245,6 @@ listItem = lookAhead (char '-') >> ListItem <$> body
               >> optional ws
               >> many1 (choice [phrasing, whitespace])
     otherLine =  try $ newline
-              >> optional ws
               >> (commentStart <|> docBlockStart)
               -- TODO ^ DRY this up?
               >> optional ws
@@ -323,7 +320,6 @@ paragraph = Paragraph <$> body
                else compressed )
     firstLine = many1 $ choice [phrasing, whitespace]
     otherLine =  try $ newline
-              >> optional ws
               >> (commentStart <|> docBlockStart)
               >> optional ws
               -- maybe lookAhead (noneOf "->") etc
