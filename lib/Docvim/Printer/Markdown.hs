@@ -19,7 +19,10 @@ md (Whitespace) = " "
 
 node :: Node -> String
 node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
+node (Paragraph p) = (concatMap node p) ++ "\n\n"
+node (Plaintext p) = p
 node (SubheadingAnnotation s) = "## " ++ s ++ "\n\n"
+node (Whitespace) = " "
 
 -- | For unit testing.
 pm :: String -> String
