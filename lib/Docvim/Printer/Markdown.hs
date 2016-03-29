@@ -18,8 +18,9 @@ md (Whitespace) = " "
 
 node :: Node -> String
 node (BreakTag) = "<br />"
-node (Code c)     = "`" ++ c ++ "`"
+node (Code c) = "`" ++ c ++ "`"
 node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
+node (ListItem l) = "- " ++ (concatMap node l) ++ "\n\n"
 node (Paragraph p) = (concatMap node p) ++ "\n\n"
 node (Plaintext p) = p
 node (SubheadingAnnotation s) = "## " ++ s ++ "\n\n"
