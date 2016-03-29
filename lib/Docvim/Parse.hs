@@ -80,6 +80,7 @@ data Node
           | LinkTargets [String]
           | ListItem [Node]
           | Blockquote [Node]
+          | Fenced [String]
 
           -- Docvim nodes: "phrasing content" elements
           | Plaintext String
@@ -182,7 +183,13 @@ quote = string "\"" <?> "quote"
 commentStart  = quote <* (notFollowedBy quote >> optional ws)
 docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 
--- TODO: allow blank lines within blockquote
+
+fenced = fence >> newline >> Fenced <$> body
+  where
+    fence = string "```" >> optional ws
+    body = manyTill line (try $ (commentStart <|> docBlockStart) >> optional ws >> fence)
+    line = (commentStart <|> docBlockStart) >> restOfLine <* newline
+
 blockquote = lookAhead (char '>') >> Blockquote <$> body
   where
     body = do
@@ -273,6 +280,7 @@ docBlock = lookAhead docBlockStart
                            , linkTargets
                            , listItem
                            , blockquote
+                           , fenced
                            , paragraph -- must come last
                            ]
                  <* next
