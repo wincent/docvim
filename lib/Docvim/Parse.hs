@@ -54,11 +54,6 @@ import Text.Show.Pretty (ppShow)
 
 data Unit = Unit [Node] deriving (Eq, Show)
 
--- Note that VimL can contain a DocComment almost anywhere, so will
--- probably want to make DocComment into a real island parser, with the
--- VimL parser being the primary parser. Won't attach VimL info to
--- DocComment nodes during the parse; will likely need a separate pass of the
--- AST after that.
 data Node
           -- VimL nodes
           = FunctionDeclaration { functionBang :: Bool
