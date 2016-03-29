@@ -79,7 +79,8 @@ library
                ,    parsec
                ,    pretty-show
   default-language:    Haskell2010
-  exposed-modules:  Docvim.CLI
+  exposed-modules:  Docvim.AST
+                 ,  Docvim.CLI
                  ,  Docvim.Options
                  ,  Docvim.Parse
                  ,  Docvim.ReadDir
