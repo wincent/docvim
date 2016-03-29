@@ -198,7 +198,7 @@ fenced = fence >> newline >> Fenced <$> body
 
 blockquote = lookAhead (char '>') >> Blockquote <$> many1 paragraph
   where
-    paragraph = Paragraph <$> body
+    paragraph = Paragraph <$> body <* many blankLine
     body = do
       first  <- firstLine
       rest   <- many otherLine
@@ -212,11 +212,17 @@ blockquote = lookAhead (char '>') >> Blockquote <$> many1 paragraph
                else compressed )
     firstLine =  char '>'
               >> optional ws
-              >> many (choice [phrasing, whitespace])
+              >> many1 (choice [phrasing, whitespace])
     otherLine =  try $ newline
               >> optional ws
               >> (commentStart <|> docBlockStart)
               >> firstLine
+    blankLine =  try $ newline
+              >> optional ws
+              >> (commentStart <|> docBlockStart)
+              >> char '>'
+              >> optional ws
+              >> lookAhead newline
 
 listItem = lookAhead (char '-') >> ListItem <$> body
   where
