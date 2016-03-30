@@ -64,10 +64,10 @@ linkTargets ls =  "<p align=\"right\">"
 sanitizeAnchorName :: String -> String
 sanitizeAnchorName = hyphenate . keepValid . downcase
   where
-    downcase = map toLower
-    keepValid = filter (`elem` (['a'..'z'] ++ ['0'..'9'] ++ " -"))
     hyphenate = map spaceToHyphen
     spaceToHyphen c = if c == ' ' then '-' else c
+    keepValid = filter (`elem` (['a'..'z'] ++ ['0'..'9'] ++ " -"))
+    downcase = map toLower
 
 gitHubAnchorName :: String -> String
 gitHubAnchorName n = "user-content-" ++ sanitizeAnchorName n
