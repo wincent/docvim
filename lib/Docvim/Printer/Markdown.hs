@@ -15,7 +15,6 @@ md :: Node -> String
 md (DocBlock d) = concatMap node d
 md (Link l) = "|" ++ l ++ "|" -- TODO: actual links
 
--- TODO: group list items together
 node :: Node -> String
 node (Blockquote b) = blockquote b ++ "\n\n"
 node (BreakTag) = "<br />"
