@@ -124,7 +124,7 @@ fenced = fence >> newline >> Fenced <$> body
 
 blockquote =   lookAhead (char '>')
            >>  Blockquote
-           <$> sepBy1 paragraph blankLine
+           <$> paragraph `sepBy1` blankLine
   where
     paragraph = Paragraph <$> body
     body = do
@@ -153,7 +153,7 @@ blockquote =   lookAhead (char '>')
 
 list =  lookAhead (char '-')
      >> List
-     <$> sepBy1 listItem separator
+     <$> listItem `sepBy1` separator
   where
     -- Yes, this is a bit hideous.
     separator =  try $ newline
