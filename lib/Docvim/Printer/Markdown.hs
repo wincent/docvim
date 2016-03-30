@@ -4,6 +4,7 @@ module Docvim.Printer.Markdown
   , ppm
   ) where
 
+import Data.Char (toLower)
 import Data.List (intercalate)
 import Docvim.AST
 import Docvim.Parse (parseUnit)
@@ -52,7 +53,23 @@ linkTargets ls =  "<p align=\"right\">"
                   ++ l
                   ++ "</a>"
 
-sanitizeAnchorName = id
+-- | Sanitizes a link target similar to the way that GitHub does:
+--
+--    - Downcase.
+--    - Filter, keeping only letter, number, space, hyphen.
+--    - Change spaces to hyphens.
+--    - Uniquify by appending "-1", "-2", "-3" etc.
+--
+-- Source: https://gist.github.com/asabaylus/3071099#gistcomment-1593627
+sanitizeAnchorName :: String -> String
+sanitizeAnchorName = hyphenate . keepValid . downcase
+  where
+    downcase = map toLower
+    keepValid = filter (`elem` (['a'..'z'] ++ ['0'..'9'] ++ " -"))
+    hyphenate = map spaceToHyphen
+    spaceToHyphen c = if c == ' ' then '-' else c
+
+gitHubAnchorName :: String -> String
 gitHubAnchorName n = "user-content-" ++ sanitizeAnchorName n
 
 -- | For unit testing.

@@ -1,5 +1,5 @@
 ""
-"                                   *foo-bar* *baz*
-" This paragraph has some associated link targets
-" above it.
+"                                   *g:Thing* *foo_bar*
+" This paragraph has some associated link targets above
+" it.
 "
