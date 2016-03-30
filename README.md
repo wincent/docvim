@@ -70,7 +70,7 @@ stack repl
 > pp "let l:test=1" -- pretty-prints AST
 
 # Cabal:
-cabal repl`
+cabal repl
 > import Docvim.Parse
 > pp "let l:test=1" -- pretty-prints AST
 ```
