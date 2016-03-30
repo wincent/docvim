@@ -26,14 +26,18 @@ node (Blockquote b) = blockquote b ++ "\n\n"
 node (BreakTag) = "<br />"
 node (Code c) = "`" ++ c ++ "`"
 node (Fenced f) = fenced f ++ "\n\n"
-node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
+node (HeadingAnnotation h) = "## " ++ h ++ "\n\n"
 node (Link l) = link l
 node (LinkTargets l) = linkTargets l ++ "\n"
 node (List ls) = (concatMap node ls) ++ "\n"
 node (ListItem l) = "- " ++ (concatMap node l) ++ "\n"
+-- TODO: this should be order-independent and always appear at the top.
+-- Note that I don't really have anywhere to put the description; maybe I should
+-- scrap it.
+node (PluginAnnotation name _) = "# " ++ name ++ "\n\n"
 node (Paragraph p) = (concatMap node p) ++ "\n\n"
 node (Plaintext p) = p
-node (SubheadingAnnotation s) = "## " ++ s ++ "\n\n"
+node (SubheadingAnnotation s) = "### " ++ s ++ "\n\n"
 node (Whitespace) = " "
 
 blockquote :: [Node] -> String
@@ -49,7 +53,8 @@ fenced f = "```\n" ++ code ++ "```"
                else (intercalate "\n" f) ++ "\n"
 
 -- TODO: handle "interesting" link text like containing [, ], "
--- TODO: handle other kinds of links
+-- TODO: handle other kinds of links (ie. using symbol table, distinguish links
+-- to internal vim functionality, like |:highlight| etc
 link :: String -> String
 link l = "[" ++ l ++ "](" ++ gitHubAnchor l ++ ")"
 
