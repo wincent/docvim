@@ -9,6 +9,7 @@ import Data.Char (chr)
 import Data.List (isPrefixOf)
 import Docvim.Parse (p, parseUnit)
 import Docvim.Printer.Markdown (pm)
+import Docvim.Printer.Vim (pv)
 import System.Exit (ExitCode(ExitSuccess))
 import System.FilePath ((<.>), replaceExtension, takeBaseName, takeFileName)
 import System.IO (hFlush, readFile)
@@ -112,8 +113,10 @@ main :: IO ()
 main = do
   parserSources <- getFixtures "tests/fixtures/parser"
   markdownSources <- getFixtures "tests/fixtures/markdown"
+  vimHelpSources <- getFixtures "tests/fixtures/vim"
   defaultMain $ testGroup "Test suite"
     [ unitTests
     , goldenTests "parser" parserSources p
     , goldenTests "Markdown printer" markdownSources pm
+    , goldenTests "Vim help printer" vimHelpSources pv
     ]
