@@ -1,0 +1,14 @@
+""
+" Here is some fenced code:
+"
+" ```
+" function foo() {
+"   return 1;
+" }
+" ```
+"
+" That was it. Here's an empty block:
+"
+" ```
+" ```
+"

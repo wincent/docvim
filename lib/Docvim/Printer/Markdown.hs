@@ -19,6 +19,7 @@ node :: Node -> String
 node (Blockquote b) = blockquote b ++ "\n\n"
 node (BreakTag) = "<br />"
 node (Code c) = "`" ++ c ++ "`"
+node (Fenced f) = fenced f ++ "\n\n"
 node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
 node (List ls) = (concatMap node ls) ++ "\n"
 node (ListItem l) = "- " ++ (concatMap node l) ++ "\n"
@@ -32,6 +33,12 @@ blockquote ps = "> " ++ intercalate "\n>\n> " (map paragraph ps)
   where
     -- Strip off trailing newlines from each paragraph
     paragraph p = take ((length (node p)) - 2) (node p)
+
+fenced :: [String] -> String
+fenced f = "```\n" ++ code ++ "```"
+  where code = if length f == 0
+               then ""
+               else (intercalate "\n" f) ++ "\n"
 
 -- | For unit testing.
 pm :: String -> String
