@@ -21,6 +21,7 @@ node (BreakTag) = "<br />"
 node (Code c) = "`" ++ c ++ "`"
 node (Fenced f) = fenced f ++ "\n\n"
 node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
+node (LinkTargets l) = linkTargets l ++ "\n"
 node (List ls) = (concatMap node ls) ++ "\n"
 node (ListItem l) = "- " ++ (concatMap node l) ++ "\n"
 node (Paragraph p) = (concatMap node p) ++ "\n\n"
@@ -39,6 +40,20 @@ fenced f = "```\n" ++ code ++ "```"
   where code = if length f == 0
                then ""
                else (intercalate "\n" f) ++ "\n"
+
+-- TODO sanitize fragments
+linkTargets :: [String] -> String
+linkTargets ls =  "<p align=\"right\">"
+               ++ intercalate " " (map linkify ls)
+               ++ "</p>"
+  -- TODO make fn for templating HTML...
+  where linkify l =  "<a name=\"" ++ sanitizeAnchorName l ++ "\" "
+                  ++ "href=\"#" ++ gitHubAnchorName l ++ "\">"
+                  ++ l
+                  ++ "</a>"
+
+sanitizeAnchorName = id
+gitHubAnchorName n = "user-content-" ++ sanitizeAnchorName n
 
 -- | For unit testing.
 pm :: String -> String
