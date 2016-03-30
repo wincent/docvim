@@ -307,8 +307,8 @@ string' s = mapM_ char' s >> pure s <?> s
 -- | Tokenized whitespace.
 --
 -- Most whitespace is insignificant and gets omitted from the AST, but
--- whitespace inside "phrasing content" is significant so is preserved i nthe
--- AST,  at least in normalized form.
+-- whitespace inside "phrasing content" is significant so is preserved (in
+-- normalized form) in the AST.
 whitespace = Whitespace <$ ws
 
 br = BreakTag <$ (try htmlTag <|> try xhtmlTag) <?> "<br />"
