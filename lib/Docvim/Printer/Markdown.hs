@@ -66,9 +66,12 @@ a :: Anchor -> String
 a (Anchor attributes target) = "<a" ++ attrs ++ ">" ++ target ++ "</a>"
   where
     attrs = if length attributes /= 0
-            then " " ++ intercalate " " (map attributeToString attributes)
+            then " " ++ attributesString attributes
             else ""
-    attributeToString (Attribute name value) = name ++ "=\"" ++ value ++ "\""
+
+attributesString :: [Attribute] -> String
+attributesString as = intercalate " " (map attributeToString as)
+  where attributeToString (Attribute name value) = name ++ "=\"" ++ value ++ "\""
 
 -- | Sanitizes a link target similar to the way that GitHub does:
 --
