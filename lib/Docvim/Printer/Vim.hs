@@ -8,7 +8,7 @@ import Data.Char (toUpper)
 import Docvim.AST
 import Docvim.Parse (parseUnit)
 
-vimHelp :: Unit -> String
+vimHelp :: Node -> String
 vimHelp (Unit nodes) = concatMap vh nodes
 
 vh :: Node -> String

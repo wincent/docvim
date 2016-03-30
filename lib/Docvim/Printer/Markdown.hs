@@ -14,7 +14,7 @@ data Attribute = Attribute { attributeName :: String
                            , attributeValue :: String
                            }
 
-markdown :: Unit -> String
+markdown :: Node -> String
 markdown (Unit nodes) = concatMap md nodes
 
 md :: Node -> String

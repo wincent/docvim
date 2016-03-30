@@ -408,7 +408,7 @@ annotation = char '@' *> annotationName
     plugInDescription = restOfLine
 
 -- | Parses a translation unit (file contents) into an AST.
-unit :: Parser Unit
+unit :: Parser Node
 unit =   Unit
      <$> (skippable >> many node)
      <*  eof
@@ -418,7 +418,7 @@ unit =   Unit
                               , skipMany1 (char '\n')
                               ]
 
-parse :: String -> IO Unit
+parse :: String -> IO Node
 parse fileName = parseFromFile unit fileName >>= either report return
   where
     report err = do
@@ -426,7 +426,7 @@ parse fileName = parseFromFile unit fileName >>= either report return
       exitFailure
 
 -- | To facilitate unit-testing.
-parseUnit :: String -> Either ParseError Unit
+parseUnit :: String -> Either ParseError Node
 parseUnit = runParser unit () "(eval)"
 
 -- | For unit testing.

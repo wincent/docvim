@@ -2,11 +2,12 @@ module Docvim.AST where
 
 import Data.List (intercalate)
 
-data Unit = Unit [Node] deriving (Eq, Show)
-
 data Node
+          -- Root (translation unit)
+          = Unit [Node]
+
           -- VimL nodes
-          = FunctionDeclaration { functionBang :: Bool
+          | FunctionDeclaration { functionBang :: Bool
                                 , functionName :: String
                                 , functionArguments :: ArgumentList
                                 , functionAttributes :: [String]
