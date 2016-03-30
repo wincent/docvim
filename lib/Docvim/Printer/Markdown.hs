@@ -9,6 +9,11 @@ import Data.List (intercalate)
 import Docvim.AST
 import Docvim.Parse (parseUnit)
 
+data Anchor = Anchor [Attribute] String
+data Attribute = Attribute { attributeName :: String
+                           , attributeValue :: String
+                           }
+
 markdown :: Unit -> String
 markdown (Unit nodes) = concatMap md nodes
 
@@ -46,17 +51,24 @@ fenced f = "```\n" ++ code ++ "```"
 -- TODO: handle "interesting" link text like containing [, ], "
 -- TODO: handle other kinds of links
 link :: String -> String
-link l = "[" ++ l ++ "](#" ++ gitHubAnchorName l ++ ")"
+link l = "[" ++ l ++ "](" ++ gitHubAnchor l ++ ")"
 
 linkTargets :: [String] -> String
 linkTargets ls =  "<p align=\"right\">"
                ++ intercalate " " (map linkify ls)
                ++ "</p>"
-  -- TODO make fn for templating HTML...
-  where linkify l =  "<a name=\"" ++ sanitizeAnchorName l ++ "\" "
-                  ++ "href=\"#" ++ gitHubAnchorName l ++ "\">"
-                  ++ l
-                  ++ "</a>"
+  where linkify l = a $ Anchor [ Attribute "name" (sanitizeAnchor l)
+                               , Attribute "href" (gitHubAnchor l)
+                               ]
+                               l
+
+a :: Anchor -> String
+a (Anchor attributes target) = "<a" ++ attrs ++ ">" ++ target ++ "</a>"
+  where
+    attrs = if length attributes /= 0
+            then " " ++ intercalate " " (map attributeToString attributes)
+            else ""
+    attributeToString (Attribute name value) = name ++ "=\"" ++ value ++ "\""
 
 -- | Sanitizes a link target similar to the way that GitHub does:
 --
@@ -66,16 +78,16 @@ linkTargets ls =  "<p align=\"right\">"
 --    - Uniquify by appending "-1", "-2", "-3" etc (not yet implemented).
 --
 -- Source: https://gist.github.com/asabaylus/3071099#gistcomment-1593627
-sanitizeAnchorName :: String -> String
-sanitizeAnchorName = hyphenate . keepValid . downcase
+sanitizeAnchor :: String -> String
+sanitizeAnchor = hyphenate . keepValid . downcase
   where
     hyphenate = map spaceToHyphen
     spaceToHyphen c = if c == ' ' then '-' else c
     keepValid = filter (`elem` (['a'..'z'] ++ ['0'..'9'] ++ " -"))
     downcase = map toLower
 
-gitHubAnchorName :: String -> String
-gitHubAnchorName n = "user-content-" ++ sanitizeAnchorName n
+gitHubAnchor :: String -> String
+gitHubAnchor n = "#user-content-" ++ sanitizeAnchor n
 
 -- | For unit testing.
 pm :: String -> String
