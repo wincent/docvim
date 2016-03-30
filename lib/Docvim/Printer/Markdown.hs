@@ -22,6 +22,7 @@ node (BreakTag) = "<br />"
 node (Code c) = "`" ++ c ++ "`"
 node (Fenced f) = fenced f ++ "\n\n"
 node (HeadingAnnotation h) = "# " ++ h ++ "\n\n"
+node (Link l) = link l
 node (LinkTargets l) = linkTargets l ++ "\n"
 node (List ls) = (concatMap node ls) ++ "\n"
 node (ListItem l) = "- " ++ (concatMap node l) ++ "\n"
@@ -42,7 +43,11 @@ fenced f = "```\n" ++ code ++ "```"
                then ""
                else (intercalate "\n" f) ++ "\n"
 
--- TODO sanitize fragments
+-- TODO: handle "interesting" link text like containing [, ], "
+-- TODO: handle other kinds of links
+link :: String -> String
+link l = "[" ++ l ++ "](#" ++ gitHubAnchorName l ++ ")"
+
 linkTargets :: [String] -> String
 linkTargets ls =  "<p align=\"right\">"
                ++ intercalate " " (map linkify ls)
@@ -58,7 +63,7 @@ linkTargets ls =  "<p align=\"right\">"
 --    - Downcase.
 --    - Filter, keeping only letter, number, space, hyphen.
 --    - Change spaces to hyphens.
---    - Uniquify by appending "-1", "-2", "-3" etc.
+--    - Uniquify by appending "-1", "-2", "-3" etc (not yet implemented).
 --
 -- Source: https://gist.github.com/asabaylus/3071099#gistcomment-1593627
 sanitizeAnchorName :: String -> String
