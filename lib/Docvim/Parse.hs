@@ -375,16 +375,6 @@ subheading =  string "##"
 -- | Match a "word" of non-whitespace characters.
 word = many1 (noneOf " \n\t")
 
--- | Run a parser and consume trailing whitespace.
-lexeme parser = do
-  result <- parser
-  ws
-  return result -- could also just do (parser <* ws)
--- ^ not sure if I want to use this yet, as I have a few whitespace patterns
--- here:
---   * require but skip
---   * optional but consume if present
-
 -- TODO: only allow these after "" and " at start of line
 annotation :: Parser Node
 annotation = char '@' *> annotationName
