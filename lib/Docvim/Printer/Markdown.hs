@@ -27,31 +27,30 @@ markdown unit@(Unit nodes) = concatMap (\n -> runReader (node n) symbols) nodes
   where
     symbols = getSymbols unit
 
+nodes :: [Node] -> Printer
+nodes ns = do
+  symbols <- ask
+  return $ concatMap (\n -> runReader (node n) symbols) ns
+
 node :: Node -> Printer
 node n = case n of
   (Blockquote b) -> do
     b' <- blockquote b
     return $ b' ++ "\n\n"
 
-  (DocBlock d) -> do
-    symbols <- ask
-    let d' = concatMap (\n -> runReader (node n) symbols) d
-    return d'
+  (DocBlock d) -> nodes d
 
   (Paragraph p) -> do
-    symbols <- ask
-    let ps = concatMap (\n -> runReader (node n) symbols) p
-    return $ ps ++ "\n\n"
+    p' <- nodes p
+    return $ p' ++ "\n\n"
 
   (List ls) -> do
-    symbols <- ask
-    let lss = concatMap (\n -> runReader (node n) symbols) ls
-    return $ lss ++ "\n"
+    ls' <- nodes ls
+    return $ ls' ++ "\n"
 
   (ListItem l) -> do
-    symbols <- ask
-    let ls = concatMap (\n -> runReader (node n) symbols) l
-    return $ "- "  ++ ls ++ "\n"
+    l' <- nodes l
+    return $ "- "  ++ l' ++ "\n"
 
   BreakTag                  -> return "<br />"
   (Code c)                  -> return $ "`" ++ c ++ "`"
