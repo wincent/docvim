@@ -43,7 +43,8 @@ blockquote :: [Node] -> String
 blockquote ps = "> " ++ intercalate "\n>\n> " (map paragraph ps)
   where
     -- Strip off trailing newlines from each paragraph
-    paragraph p = take (length (node p) - 2) (node p)
+    paragraph p = let contents = node p
+                  in take (length contents - 2) contents
 
 fenced :: [String] -> String
 fenced f = "```\n" ++ code ++ "```"
