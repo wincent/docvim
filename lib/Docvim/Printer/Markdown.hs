@@ -23,7 +23,7 @@ data Attribute = Attribute { attributeName :: String
 -- (might want to accept any block-level element, or perhaps even any node at
 -- all)
 markdown :: Node -> String
-markdown unit@(Unit nodes) = concatMap (\n -> runReader (node n) symbols) nodes
+markdown unit@(Unit ns) = concatMap (\n -> runReader (node n) symbols) ns
   where
     symbols = getSymbols unit
 
