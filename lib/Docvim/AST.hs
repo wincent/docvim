@@ -81,6 +81,22 @@ type Name = String
 type Type = String
 type Usage = String
 
+-- | Walks an AST node calling the supplied visitor function.
+--
+-- This is an in-order traversal.
+--
+-- For example, to implement a visitor which counts all nodes:
+--
+-- >  import Data.Monoid
+-- >  counter i _ = mappend i 1
+-- >  count = getSum $ walk counter (Sum 0) tree
+--
+-- Another example; accumulating `SubheadingAnnotation` nodes into a list:
+--
+-- >  accumulator nodes node@(SubheadingAnnotation _) = mappend nodes [node]
+-- >  accumulator nodes _ = nodes -- skip everything else
+-- >  nodes = walk accumulator [] tree
+--
 walk :: Monoid a => (a -> Node -> a) -> a -> Node -> a
 walk f acc n = foldl (walk f) (f acc n) children
   where
@@ -92,28 +108,4 @@ walk f acc n = foldl (walk f) (f acc n) children
       Blockquote b           -> b
       Paragraph p            -> p
       Unit u                 -> u
-      otherwise              -> []
-
-tree = Unit [FunctionDeclaration True "name" (ArgumentList []) [] [UnletStatement True "foo"], DocBlock [HeadingAnnotation "foo", SubheadingAnnotation "bar", SubheadingAnnotation "baz"]]
-
-counter :: Num a => [a] -> Node -> [a]
-counter i _ = mappend i [1]
-
-initial :: Num a => [a]
-initial = []
-
--- works, but only when i add type hints
-val :: Num a => [a]
-val = walk counter initial tree
-
--- another example, accumulating SubheadingAnnotation nodes
-
--- accumulator :: [Node] -> Node -> [Node]
-accumulator nodes node@(SubheadingAnnotation _) = mappend nodes [node]
-accumulator nodes _ = nodes
-
--- initial' :: [Node]
-initial' = []
-
--- val' :: [Node]
-val' = walk accumulator initial' tree
+      otherwise              -> [] -- no Node children

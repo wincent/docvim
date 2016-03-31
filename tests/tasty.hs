@@ -7,6 +7,8 @@ import Control.Exception (evaluate)
 import Data.ByteString.Lazy.Char8 (pack, unpack)
 import Data.Char (chr)
 import Data.List (isPrefixOf)
+import Data.Monoid (Sum(..))
+import Docvim.AST
 import Docvim.Parse (p, parseUnit)
 import Docvim.Printer.Markdown (pm)
 import Docvim.Printer.Vim (pv)
@@ -33,11 +35,37 @@ parseSuccess _        = True
 parseFailure :: Either a b -> Bool
 parseFailure = not . parseSuccess
 
+tree = Unit
+  [ FunctionDeclaration True
+                      "name"
+                      (ArgumentList [])
+                      []
+                      [UnletStatement True "foo"]
+  , DocBlock [ HeadingAnnotation "foo"
+            , SubheadingAnnotation "bar"
+            , SubheadingAnnotation "baz"
+            ]
+  ]
+
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
   [ testCase "Parse empty unit" $ assert $ parseSuccess (parseUnit "")
   , testCase "Parse whitespace-only unit" $ assert $ parseSuccess (parseUnit "  \n    ")
   , testCase "Bad input" $ assert $ parseFailure (parseUnit "bzzzzt")
+
+  , testCase "Counting all nodes" $
+    7 @=? let
+        counter i _ = mappend i 1
+        nodeCount = getSum $ walk counter (Sum 0) tree
+      in nodeCount
+
+  , testCase "Gathering specific nodes" $
+    [SubheadingAnnotation "bar", SubheadingAnnotation "baz"] @=? let
+        accumulateSubheadings nodes node@(SubheadingAnnotation _) = mappend nodes [node]
+        accumulateSubheadings nodes _ = nodes -- skip everything else
+        selection = walk accumulateSubheadings [] tree
+      in selection
+
 
   -- Some example syntax:
   -- , testCase "Equality" $ True @=? True
