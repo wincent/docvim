@@ -62,18 +62,10 @@ data Node
 -- TODO: validate name = CapitalLetter or s:foo or auto#loaded
 
 data ArgumentList = ArgumentList [Argument]
-  deriving (Eq)
-
-instance Show ArgumentList where
-  show (ArgumentList arguments) = "(" ++ intercalate ", " argStrings ++ ")"
-    where
-      argStrings = map show arguments
+  deriving (Eq, Show)
 
 data Argument = Argument String
-  deriving (Eq)
-
-instance Show Argument where
-  show (Argument argument) = argument
+  deriving (Eq, Show)
 
 type Default = String
 type Description = String

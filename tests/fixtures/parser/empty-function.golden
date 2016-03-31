@@ -2,7 +2,7 @@ Unit
   [ FunctionDeclaration
       { functionBang = False
       , functionName = "Foo"
-      , functionArguments = ()
+      , functionArguments = ArgumentList []
       , functionAttributes = []
       , functionBody = []
       }
