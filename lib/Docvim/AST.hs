@@ -85,10 +85,14 @@ walk :: Monoid a => (a -> Node -> a) -> a -> Node -> a
 walk f acc n = f (foldl (walk f) acc children) n
   where
     children = case n of
-      (DocBlock d) -> d
-      (FunctionDeclaration {}) -> functionBody n
-      (Unit u) -> u
-      otherwise -> []
+      DocBlock d             -> d
+      FunctionDeclaration {} -> functionBody n
+      List l                 -> l
+      ListItem i             -> i
+      Blockquote b           -> b
+      Paragraph p            -> p
+      Unit u                 -> u
+      otherwise              -> []
 
 tree = Unit [FunctionDeclaration True "name" (ArgumentList []) [] [UnletStatement True "foo"], DocBlock [HeadingAnnotation "foo", SubheadingAnnotation "bar", SubheadingAnnotation "baz"]]
 
