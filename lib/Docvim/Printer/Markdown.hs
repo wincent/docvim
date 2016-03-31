@@ -17,27 +17,27 @@ data Attribute = Attribute { attributeName :: String
 markdown :: Node -> String
 markdown (Unit nodes) = concatMap node nodes
 
-
 node :: Node -> String
-node (Blockquote b)            = blockquote b ++ "\n\n"
-node BreakTag                  = "<br />"
-node (Code c)                  = "`" ++ c ++ "`"
-node (DocBlock d)              = concatMap node d
-node (Fenced f)                = fenced f ++ "\n\n"
-node (HeadingAnnotation h)     = "## " ++ h ++ "\n\n"
-node (Link l)                  = link l
-node (LinkTargets l)           = linkTargets l ++ "\n"
-node (List ls)                 = concatMap node ls ++ "\n"
-node (ListItem l)              = "- " ++ concatMap node l ++ "\n"
--- TODO: this should be order-independent and always appear at the top.
--- Note that I don't really have anywhere to put the description; maybe I should
--- scrap it.
-node (PluginAnnotation name _) = "# " ++ name ++ "\n\n"
-node (Paragraph p)             = concatMap node p ++ "\n\n"
-node (Plaintext p)             = p
-node (SubheadingAnnotation s)  = "### " ++ s ++ "\n\n"
-node Whitespace                = " "
-node _                         = ""
+node n = case n of
+  (Blockquote b)            -> blockquote b ++ "\n\n"
+  BreakTag                  -> "<br />"
+  (Code c)                  -> "`" ++ c ++ "`"
+  (DocBlock d)              -> concatMap node d
+  (Fenced f)                -> fenced f ++ "\n\n"
+  (HeadingAnnotation h)     -> "## " ++ h ++ "\n\n"
+  (Link l)                  -> link l
+  (LinkTargets l)           -> linkTargets l ++ "\n"
+  (List ls)                 -> concatMap node ls ++ "\n"
+  (ListItem l)              -> "- " ++ concatMap node l ++ "\n"
+   -- TODO: this should be order-independent and always appear at the top.
+   -- Note that I don't really have anywhere to put the description; maybe I should
+   -- scrap it.
+  (PluginAnnotation name _) -> "# " ++ name ++ "\n\n"
+  (Paragraph p)             -> concatMap node p ++ "\n\n"
+  (Plaintext p)             -> p
+  (SubheadingAnnotation s)  -> "### " ++ s ++ "\n\n"
+  Whitespace                -> " "
+  _                         -> ""
 
 blockquote :: [Node] -> String
 blockquote ps = "> " ++ intercalate "\n>\n> " (map paragraph ps)
