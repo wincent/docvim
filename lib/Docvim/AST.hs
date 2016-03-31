@@ -105,3 +105,24 @@ initial = []
 -- works, but only when i add type hints
 val :: Num a => [a]
 val = walk counter initial tree
+
+-- another example, accumulating SubheadingAnnotation nodes
+
+accumulator :: [Node] -> Node -> [Node]
+accumulator nodes node@(SubheadingAnnotation _) = mappend nodes [node]
+accumulator nodes _ = nodes
+
+initial' :: [Node]
+initial' = []
+
+val' :: [Node]
+val' = walk accumulator initial' tree
+
+-- ugh...
+-- walk f acc node = case node of
+--     DocBlock c -> walkNodeAndChildren node c f acc
+--     Unit c -> walkNodeAndChildren node c f acc
+--     -- ...
+--
+-- or...
+-- walk f acc n@(DocBlock d) = walkNodeAndChildren n d f acc
