@@ -86,7 +86,7 @@ walk f acc n = f (foldl (walk f) acc children) n
   where
     children = case n of
       (DocBlock d) -> d
-      (FunctionDeclaration _ _ _ _ _) -> functionBody n
+      (FunctionDeclaration {}) -> functionBody n
       (Unit u) -> u
       otherwise -> []
 
