@@ -4,50 +4,80 @@ module Docvim.Printer.Markdown
   , ppm
   ) where
 
+import Control.Monad.Reader
 import Data.Char (toLower)
 import Data.List (intercalate)
 import Docvim.AST
 import Docvim.Parse (parseUnit)
 import Docvim.Visitor.Symbol (getSymbols)
 
+type Symbols = [String]
+type Printer = Reader Symbols String
+
 data Anchor = Anchor [Attribute] String
 data Attribute = Attribute { attributeName :: String
                            , attributeValue :: String
                            }
 
+-- TODO: consider relaxing the pattern here to accept more than Unit
+-- (might want to accept any block-level element, or perhaps even any node at
+-- all)
 markdown :: Node -> String
-markdown unit@(Unit nodes) = do
-  let symbols = getSymbols unit
-  concatMap node nodes
-
-node :: Node -> String
-node n = case n of
-  (Blockquote b)            -> blockquote b ++ "\n\n"
-  BreakTag                  -> "<br />"
-  (Code c)                  -> "`" ++ c ++ "`"
-  (DocBlock d)              -> concatMap node d
-  (Fenced f)                -> fenced f ++ "\n\n"
-  (HeadingAnnotation h)     -> "## " ++ h ++ "\n\n"
-  (Link l)                  -> link l
-  (LinkTargets l)           -> linkTargets l ++ "\n"
-  (List ls)                 -> concatMap node ls ++ "\n"
-  (ListItem l)              -> "- " ++ concatMap node l ++ "\n"
-   -- TODO: this should be order-independent and always appear at the top.
-   -- Note that I don't really have anywhere to put the description; maybe I should
-   -- scrap it.
-  (PluginAnnotation name _) -> "# " ++ name ++ "\n\n"
-  (Paragraph p)             -> concatMap node p ++ "\n\n"
-  (Plaintext p)             -> p
-  (SubheadingAnnotation s)  -> "### " ++ s ++ "\n\n"
-  Whitespace                -> " "
-  _                         -> ""
-
-blockquote :: [Node] -> String
-blockquote ps = "> " ++ intercalate "\n>\n> " (map paragraph ps)
+markdown unit@(Unit nodes) = concatMap (\n -> runReader (node n) symbols) nodes
   where
-    -- Strip off trailing newlines from each paragraph
-    paragraph p = let contents = node p
-                  in take (length contents - 2) contents
+    symbols = getSymbols unit
+
+node :: Node -> Printer
+node n = case n of
+  (Blockquote b) -> do
+    b' <- blockquote b
+    return $ b' ++ "\n\n"
+
+  (DocBlock d) -> do
+    symbols <- ask
+    let d' = concatMap (\n -> runReader (node n) symbols) d
+    return d'
+
+  (Paragraph p) -> do
+    symbols <- ask
+    let ps = concatMap (\n -> runReader (node n) symbols) p
+    return $ ps ++ "\n\n"
+
+  (List ls) -> do
+    symbols <- ask
+    let lss = concatMap (\n -> runReader (node n) symbols) ls
+    return $ lss ++ "\n"
+
+  (ListItem l) -> do
+    symbols <- ask
+    let ls = concatMap (\n -> runReader (node n) symbols) l
+    return $ "- "  ++ ls ++ "\n"
+
+  BreakTag                  -> return "<br />"
+  (Code c)                  -> return $ "`" ++ c ++ "`"
+  (Fenced f)                -> return $ fenced f ++ "\n\n"
+  (HeadingAnnotation h)     -> return $ "## " ++ h ++ "\n\n"
+  (Link l)                  -> return $ link l
+  (LinkTargets l)           -> return $ linkTargets l ++ "\n"
+  -- TODO: this should be order-independent and always appear at the top.
+  -- Note that I don't really have anywhere to put the description; maybe I should
+  -- scrap it.
+  (PluginAnnotation name _) -> return $ "# " ++ name ++ "\n\n"
+  (Plaintext p)             -> return p
+  (SubheadingAnnotation s)  -> return $ "### " ++ s ++ "\n\n"
+  Whitespace                -> return " "
+  _                         -> return ""
+
+blockquote :: [Node] -> Printer
+blockquote ps = do
+  symbols <- ask
+  return $ "> " ++ intercalate "\n>\n> " (paragraphs symbols)
+  where
+    -- Strip off trailing newlines from each paragraph.
+    paragraph p = do
+      contents <- node p -- no runReader here?
+      return $ take (length contents - 2) contents
+    paragraphs symbols = map (\n -> runReader (paragraph n) symbols) ps
 
 fenced :: [String] -> String
 fenced f = "```\n" ++ code ++ "```"
