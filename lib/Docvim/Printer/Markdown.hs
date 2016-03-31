@@ -23,34 +23,34 @@ md (Link l) = "|" ++ l ++ "|" -- TODO: actual links
 
 node :: Node -> String
 node (Blockquote b) = blockquote b ++ "\n\n"
-node (BreakTag) = "<br />"
+node BreakTag = "<br />"
 node (Code c) = "`" ++ c ++ "`"
 node (Fenced f) = fenced f ++ "\n\n"
 node (HeadingAnnotation h) = "## " ++ h ++ "\n\n"
 node (Link l) = link l
 node (LinkTargets l) = linkTargets l ++ "\n"
-node (List ls) = (concatMap node ls) ++ "\n"
-node (ListItem l) = "- " ++ (concatMap node l) ++ "\n"
+node (List ls) = concatMap node ls ++ "\n"
+node (ListItem l) = "- " ++ concatMap node l ++ "\n"
 -- TODO: this should be order-independent and always appear at the top.
 -- Note that I don't really have anywhere to put the description; maybe I should
 -- scrap it.
 node (PluginAnnotation name _) = "# " ++ name ++ "\n\n"
-node (Paragraph p) = (concatMap node p) ++ "\n\n"
+node (Paragraph p) = concatMap node p ++ "\n\n"
 node (Plaintext p) = p
 node (SubheadingAnnotation s) = "### " ++ s ++ "\n\n"
-node (Whitespace) = " "
+node Whitespace = " "
 
 blockquote :: [Node] -> String
 blockquote ps = "> " ++ intercalate "\n>\n> " (map paragraph ps)
   where
     -- Strip off trailing newlines from each paragraph
-    paragraph p = take ((length (node p)) - 2) (node p)
+    paragraph p = take (length (node p) - 2) (node p)
 
 fenced :: [String] -> String
 fenced f = "```\n" ++ code ++ "```"
-  where code = if length f == 0
+  where code = if null f
                then ""
-               else (intercalate "\n" f) ++ "\n"
+               else intercalate "\n" f ++ "\n"
 
 -- TODO: handle "interesting" link text like containing [, ], "
 -- TODO: handle other kinds of links (ie. using symbol table, distinguish links
@@ -60,7 +60,7 @@ link l = "[" ++ l ++ "](" ++ gitHubAnchor l ++ ")"
 
 linkTargets :: [String] -> String
 linkTargets ls =  "<p align=\"right\">"
-               ++ intercalate " " (map linkify ls)
+               ++ unwords (map linkify ls)
                ++ "</p>"
   where linkify l = a $ Anchor [ Attribute "name" (sanitizeAnchor l)
                                , Attribute "href" (gitHubAnchor l)
@@ -70,12 +70,12 @@ linkTargets ls =  "<p align=\"right\">"
 a :: Anchor -> String
 a (Anchor attributes target) = "<a" ++ attrs ++ ">" ++ target ++ "</a>"
   where
-    attrs = if length attributes /= 0
+    attrs = if not (null attributes)
             then " " ++ attributesString attributes
             else ""
 
 attributesString :: [Attribute] -> String
-attributesString as = intercalate " " (map attributeToString as)
+attributesString as = unwords (map attributeToString as)
   where attributeToString (Attribute name value) = name ++ "=\"" ++ value ++ "\""
 
 -- | Sanitizes a link target similar to the way that GitHub does:

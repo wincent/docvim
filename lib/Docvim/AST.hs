@@ -108,4 +108,4 @@ walk f acc n = foldl (walk f) (f acc n) children
       Blockquote b           -> b
       Paragraph p            -> p
       Unit u                 -> u
-      otherwise              -> [] -- no Node children
+      _                      -> [] -- no Node children
