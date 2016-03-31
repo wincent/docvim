@@ -12,6 +12,7 @@ import Docvim.AST
 import Docvim.Parse (p, parseUnit)
 import Docvim.Printer.Markdown (pm)
 import Docvim.Printer.Vim (pv)
+import Docvim.Visitor.Symbol (getSymbols)
 import System.Exit (ExitCode(ExitSuccess))
 import System.FilePath ((<.>), replaceExtension, takeBaseName, takeFileName)
 import System.IO (hFlush, readFile)
@@ -35,18 +36,6 @@ parseSuccess _        = True
 parseFailure :: Either a b -> Bool
 parseFailure = not . parseSuccess
 
-tree = Unit
-  [ FunctionDeclaration True
-                      "name"
-                      (ArgumentList [])
-                      []
-                      [UnletStatement True "foo"]
-  , DocBlock [ HeadingAnnotation "foo"
-            , SubheadingAnnotation "bar"
-            , SubheadingAnnotation "baz"
-            ]
-  ]
-
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
   [ testCase "Parse empty unit" $ assert $ parseSuccess (parseUnit "")
@@ -55,16 +44,40 @@ unitTests = testGroup "Unit tests"
 
   , testCase "Counting all nodes" $
     7 @=? let
+        tree = Unit
+          [ FunctionDeclaration True
+                              "name"
+                              (ArgumentList [])
+                              []
+                              [UnletStatement True "foo"]
+          , DocBlock [ HeadingAnnotation "foo"
+                    , SubheadingAnnotation "bar"
+                    , SubheadingAnnotation "baz"
+                    ]
+          ]
         counter i _ = mappend i 1
         nodeCount = getSum $ walk counter (Sum 0) tree
       in nodeCount
 
   , testCase "Gathering specific nodes" $
     [SubheadingAnnotation "bar", SubheadingAnnotation "baz"] @=? let
+        tree = DocBlock [ HeadingAnnotation "foo"
+                        , SubheadingAnnotation "bar"
+                        , SubheadingAnnotation "baz"
+                        ]
         accumulateSubheadings nodes node@(SubheadingAnnotation _) = mappend nodes [node]
         accumulateSubheadings nodes _ = nodes -- skip everything else
         selection = walk accumulateSubheadings [] tree
       in selection
+
+  , testCase "Extracting symbols" $
+    ["foo", "bar", "baz"] @=? let
+        tree = DocBlock [ HeadingAnnotation "section"
+                        , LinkTargets ["foo"]
+                        , LinkTargets ["bar", "baz"]
+                        ]
+        symbols = getSymbols tree
+      in symbols
 
 
   -- Some example syntax:

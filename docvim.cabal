@@ -86,6 +86,7 @@ library
                  ,  Docvim.Printer.Markdown
                  ,  Docvim.Printer.Vim
                  ,  Docvim.ReadDir
+                 ,  Docvim.Visitor.Symbol
                  ,  Paths_docvim
   hs-source-dirs:   lib
 
