@@ -34,6 +34,7 @@ nodes ns = do
 
 node :: Node -> Printer
 node n = case n of
+  -- Nodes that depend on reader context.
   (Blockquote b) -> do
     b' <- blockquote b
     return $ b' ++ "\n\n"
@@ -52,6 +53,7 @@ node n = case n of
     l' <- nodes l
     return $ "- "  ++ l' ++ "\n"
 
+  -- Nodes that don't depend on reader context.
   BreakTag                  -> return "<br />"
   (Code c)                  -> return $ "`" ++ c ++ "`"
   (Fenced f)                -> return $ fenced f ++ "\n\n"
