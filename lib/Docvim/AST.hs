@@ -80,3 +80,28 @@ type Description = String
 type Name = String
 type Type = String
 type Usage = String
+
+walk :: Monoid a => (a -> Node -> a) -> a -> Node -> a
+-- there has to be a better way to write this...
+
+-- Nodes with child nodes.
+walk f acc db@(DocBlock d) = f (foldr (\nd ac -> walk f ac nd) acc d) db
+walk f acc un@(Unit u) = f (foldr (\nd ac -> walk f ac nd) acc u) un
+
+-- Complex nodes (multi-argument constructors with child nodes).
+walk f acc fd@(FunctionDeclaration _ _ _ _ _) = f (foldr (\nd ac -> walk f ac nd) acc (functionBody fd)) fd
+
+-- Nodes that don't have children just get here.
+walk f acc n = f acc n
+
+tree = Unit [FunctionDeclaration True "name" (ArgumentList []) [] [UnletStatement True "foo"], DocBlock [HeadingAnnotation "foo", SubheadingAnnotation "bar", SubheadingAnnotation "baz"]]
+
+counter :: Num a => [a] -> Node -> [a]
+counter i _ = mappend i [1]
+
+initial :: Num a => [a]
+initial = []
+
+-- works, but only when i add type hints
+val :: Num a => [a]
+val = walk counter initial tree
