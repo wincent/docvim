@@ -8,6 +8,7 @@ import Data.Char (toLower)
 import Data.List (intercalate)
 import Docvim.AST
 import Docvim.Parse (parseUnit)
+import Docvim.Visitor.Symbol (getSymbols)
 
 data Anchor = Anchor [Attribute] String
 data Attribute = Attribute { attributeName :: String
@@ -15,7 +16,9 @@ data Attribute = Attribute { attributeName :: String
                            }
 
 markdown :: Node -> String
-markdown (Unit nodes) = concatMap node nodes
+markdown unit@(Unit nodes) = do
+  let symbols = getSymbols unit
+  concatMap node nodes
 
 node :: Node -> String
 node n = case n of
