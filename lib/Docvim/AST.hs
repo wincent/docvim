@@ -85,11 +85,11 @@ walk :: Monoid a => (a -> Node -> a) -> a -> Node -> a
 -- there has to be a better way to write this...
 
 -- Nodes with child nodes.
-walk f acc db@(DocBlock d) = f (foldr (flip $ walk f) acc d) db
-walk f acc un@(Unit u) = f (foldr (flip $ walk f) acc u) un
+walk f acc db@(DocBlock d) = f (foldl (walk f) acc d) db
+walk f acc un@(Unit u) = f (foldl (walk f) acc u) un
 
 -- Complex nodes (multi-argument constructors with child nodes).
-walk f acc fd@(FunctionDeclaration _ _ _ _ _) = f (foldr (flip $ walk f) acc (functionBody fd)) fd
+walk f acc fd@(FunctionDeclaration _ _ _ _ _) = f (foldl (walk f) acc (functionBody fd)) fd
 
 -- Nodes that don't have children just get here.
 walk f acc n = f acc n
