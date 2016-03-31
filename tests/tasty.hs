@@ -78,11 +78,6 @@ unitTests = testGroup "Unit tests"
                         ]
         symbols = getSymbols tree
       in symbols
-
-
-  -- Some example syntax:
-  -- , testCase "Equality" $ True @=? True
-  -- , testCase "Assertion" $ assert $ (length [1, 2, 3]) == 3
   ]
 
 goldenTests :: String -> [FilePath] -> (String -> String) -> TestTree
