@@ -45,6 +45,8 @@ node n = case n of
     p' <- nodes p
     return $ p' ++ "\n\n"
 
+  (Link l) -> link l
+
   (List ls) -> do
     ls' <- nodes ls
     return $ ls' ++ "\n"
@@ -58,7 +60,6 @@ node n = case n of
   (Code c)                  -> return $ "`" ++ c ++ "`"
   (Fenced f)                -> return $ fenced f ++ "\n\n"
   (HeadingAnnotation h)     -> return $ "## " ++ h ++ "\n\n"
-  (Link l)                  -> return $ link l
   (LinkTargets l)           -> return $ linkTargets l ++ "\n"
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
@@ -80,17 +81,21 @@ blockquote ps = do
       return $ take (length contents - 2) contents
     paragraphs symbols = map (\n -> runReader (paragraph n) symbols) ps
 
+-- TODO: handle "interesting" link text like containing [, ], "
+link :: String -> Printer
+link l = do
+  symbols <- ask
+  return $ if l `elem` symbols
+           then "[" ++ l ++ "](" ++ gitHubAnchor l ++ ")"
+           else "`" ++ l ++ "`" -- TODO: decide on styling here,
+                                -- may want to try producing a link to Vim
+                                -- online help if I can find a search for it
+
 fenced :: [String] -> String
 fenced f = "```\n" ++ code ++ "```"
   where code = if null f
                then ""
                else intercalate "\n" f ++ "\n"
-
--- TODO: handle "interesting" link text like containing [, ], "
--- TODO: handle other kinds of links (ie. using symbol table, distinguish links
--- to internal vim functionality, like |:highlight| etc
-link :: String -> String
-link l = "[" ++ l ++ "](" ++ gitHubAnchor l ++ ")"
 
 linkTargets :: [String] -> String
 linkTargets ls =  "<p align=\"right\">"
