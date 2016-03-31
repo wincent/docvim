@@ -82,7 +82,7 @@ type Type = String
 type Usage = String
 
 walk :: Monoid a => (a -> Node -> a) -> a -> Node -> a
-walk f acc n = f (foldl (walk f) acc children) n
+walk f acc n = foldl (walk f) (f acc n) children
   where
     children = case n of
       DocBlock d             -> d
@@ -117,12 +117,3 @@ initial' = []
 
 -- val' :: [Node]
 val' = walk accumulator initial' tree
-
--- ugh...
--- walk f acc node = case node of
---     DocBlock c -> walkNodeAndChildren node c f acc
---     Unit c -> walkNodeAndChildren node c f acc
---     -- ...
---
--- or...
--- walk f acc n@(DocBlock d) = walkNodeAndChildren n d f acc
