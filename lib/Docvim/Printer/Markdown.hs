@@ -27,9 +27,6 @@ nodes ns = do
   symbols <- ask
   return $ concatMap (\n -> runReader (node n) symbols) ns
 
-appendNewline :: String -> Printer
-appendNewline = return . (++ "\n")
-
 node :: Node -> Printer
 node n = case n of
   -- Nodes that depend on (or must propagate) reader context.
@@ -39,10 +36,7 @@ node n = case n of
   (Link l)       -> link l
   (List ls)      -> nodes ls >>= appendNewline
   (ListItem l)   -> (return . ("- " ++) =<< nodes l) >>= appendNewline
-
-  (Unit u) -> do
-    u' <- nodes u
-    return $ concat [u']
+  (Unit u)       -> nodes u
 
   -- Nodes that don't depend on reader context.
   BreakTag                  -> return "<br />"
@@ -59,6 +53,9 @@ node n = case n of
   (SubheadingAnnotation s)  -> return $ "### " ++ s ++ "\n\n"
   Whitespace                -> return " "
   _                         -> return ""
+
+appendNewline :: String -> Printer
+appendNewline = return . (++ "\n")
 
 blockquote :: [Node] -> Printer
 blockquote ps = do
