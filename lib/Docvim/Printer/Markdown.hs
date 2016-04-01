@@ -66,6 +66,7 @@ node n = case n of
   -- scrap it.
   (PluginAnnotation name _) -> return $ "# " ++ name ++ "\n\n"
   (Plaintext p)             -> return p
+  Separator                 -> return $ "---" ++ "\n\n"
   (SubheadingAnnotation s)  -> return $ "### " ++ s ++ "\n\n"
   Whitespace                -> return " "
   _                         -> return ""

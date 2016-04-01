@@ -28,6 +28,7 @@ data Node
           | ListItem [Node]
           | Blockquote [Node]
           | Fenced [String]
+          | Separator
 
           -- Docvim nodes: "phrasing content" elements
           | Plaintext String

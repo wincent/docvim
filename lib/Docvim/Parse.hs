@@ -104,6 +104,8 @@ quote = string "\"" <?> "quote"
 commentStart  = quote <* (notFollowedBy quote >> optional ws)
 docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 
+separator = Separator <$ (try (string "---") >> optional ws) <?> "wat"
+
 fenced = fence >> newline >> Fenced <$> body
   where
     fence = try $ string "```" >> optional ws
@@ -151,7 +153,7 @@ blockquote =   lookAhead (char '>')
               >> newline
               >> (commentStart <|> docBlockStart))
 
-list =  lookAhead (char '-')
+list =  lookAhead (char '-' >> notFollowedBy (char '-'))
      >> List
      <$> listItem `sepBy1` separator
   where
@@ -161,7 +163,9 @@ list =  lookAhead (char '-')
               >> optional ws
               >> lookAhead (char '-')
 
-listItem = lookAhead (char '-') >> ListItem <$> body
+listItem =  lookAhead (char '-' >> notFollowedBy (char '-'))
+         >> ListItem
+         <$> body
   where
     body = do
       first  <- firstLine
@@ -227,6 +231,7 @@ docBlock = lookAhead docBlockStart
                            , try subheading -- must come before heading
                            , heading
                            , linkTargets
+                           , separator
                            , list
                            , blockquote
                            , fenced
