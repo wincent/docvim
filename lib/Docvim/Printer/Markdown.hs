@@ -87,8 +87,9 @@ link :: String -> Printer
 link l = do
   symbols <- ask
   return $ if l `elem` symbols
-           then "[" ++ l ++ "](" ++ gitHubAnchor l ++ ")"
-           else "`" ++ l ++ "`" -- TODO: decide on styling here,
+           -- TODO: beware names with < ` etc in them
+           then "<strong>[`" ++ l ++ "`](" ++ gitHubAnchor l ++ ")</strong>"
+           else "<strong>`" ++ l ++ "`</strong>" -- TODO:
                                 -- may want to try producing a link to Vim
                                 -- online help if I can find a search for it
 
@@ -105,7 +106,7 @@ linkTargets ls =  "<p align=\"right\">"
   where linkify l = a $ Anchor [ Attribute "name" (sanitizeAnchor l)
                                , Attribute "href" (gitHubAnchor l)
                                ]
-                               l
+                               ("<code>" ++ l ++ "</code>")
 
 a :: Anchor -> String
 a (Anchor attributes target) = "<a" ++ attrs ++ ">" ++ target ++ "</a>"
