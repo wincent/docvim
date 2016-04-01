@@ -23,9 +23,7 @@ markdown :: Node -> String
 markdown n = runReader (node n) (getSymbols n)
 
 nodes :: [Node] -> Printer
-nodes ns = do
-  symbols <- ask
-  return $ concatMap (\n -> runReader (node n) symbols) ns
+nodes ns = mapM node ns >>= return . concat
 
 node :: Node -> Printer
 node n = case n of
