@@ -19,13 +19,8 @@ data Attribute = Attribute { attributeName :: String
                            , attributeValue :: String
                            }
 
--- TODO: consider relaxing the pattern here to accept more than Unit
--- (might want to accept any block-level element, or perhaps even any node at
--- all)
 markdown :: Node -> String
-markdown unit@(Unit ns) = concatMap (\n -> runReader (node n) symbols) ns
-  where
-    symbols = getSymbols unit
+markdown n = runReader (node n) (getSymbols n)
 
 nodes :: [Node] -> Printer
 nodes ns = do
@@ -54,6 +49,10 @@ node n = case n of
   (ListItem l) -> do
     l' <- nodes l
     return $ "- "  ++ l' ++ "\n"
+
+  (Unit u) -> do
+    u' <- nodes u
+    return $ concat [u']
 
   -- Nodes that don't depend on reader context.
   BreakTag                  -> return "<br />"
