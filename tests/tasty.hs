@@ -6,7 +6,7 @@ import Control.DeepSeq (rnf)
 import Control.Exception (evaluate)
 import Data.ByteString.Lazy.Char8 (pack, unpack)
 import Data.Char (chr)
-import Data.List (isPrefixOf)
+import Data.List (isPrefixOf, sort)
 import Data.Monoid (Sum(..))
 import Docvim.AST
 import Docvim.Parse (p, parseUnit)
@@ -71,31 +71,30 @@ unitTests = testGroup "Unit tests"
       in selection
 
   , testCase "Extracting symbols" $
-    ["foo", "bar", "baz"] @=? let
-        tree = DocBlock [ HeadingAnnotation "section"
-                        , LinkTargets ["foo"]
+    sort ["foo", "bar", "baz"] @=? let
+        tree = DocBlock [ LinkTargets ["foo"]
                         , LinkTargets ["bar", "baz"]
                         ]
-        symbols = getSymbols tree
+        symbols = sort $ getSymbols tree
       in symbols
 
   , testCase "Synthesizing symbols from the @plugin annotation" $
-    ["foo", "foo.txt", "bar"] @=? let
+    sort ["foo", "foo.txt", "bar"] @=? let
         tree = DocBlock [ PluginAnnotation "foo" "some plugin"
                         , LinkTargets ["bar"]
                         ]
-        symbols = getSymbols tree
+        symbols = sort $ getSymbols tree
       in symbols
 
   , testCase "Synthesizing symbols from the headings" $
     -- will need to pass in plugin name (prefix) to make this work
-    ["foo-history", "foo-troubleshooting-tips", "bar"] @=? let
+    sort ["foo", "foo.txt", "foo-history", "foo-troubleshooting-tips", "bar"] @=? let
         tree = DocBlock [ PluginAnnotation "foo" "some plugin"
                         , HeadingAnnotation "History"
                         , HeadingAnnotation "Troubleshooting tips"
                         , LinkTargets ["bar"]
                         ]
-        symbols = getSymbols tree
+        symbols = sort $ getSymbols tree
       in symbols
   ]
 

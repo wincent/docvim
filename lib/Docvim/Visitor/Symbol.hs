@@ -10,17 +10,19 @@ getSymbols :: Node -> [String]
 getSymbols node = symbols
   where
     -- TODO: error on duplicates; use a real set
-    symbols = linkTargets
+    symbols = pluginAnnotations ++ linkTargets ++ headings
 
     -- TODO: merge these into a single walk
-    headings = concat $ walk gatherHeadings [] node
-    gatherHeadings nodes (HeadingAnnotation h) = mappend nodes [h]
+    headings = walk gatherHeadings [] node
+    gatherHeadings nodes (HeadingAnnotation h) = mappend nodes [sanitizeAnchor h]
     gatherHeadings nodes _ = nodes
 
     linkTargets = concat $ walk gatherLinkTargets [] node
     gatherLinkTargets nodes (LinkTargets ts) = mappend nodes [ts]
     gatherLinkTargets nodes _ = nodes
 
-    pluginAnnotations = concat $ walk gatherPluginAnnotations [] node
-    gatherPluginAnnotations nodes (PluginAnnotation name _) = mappend nodes [name]
+    -- TODO: probably don't want this target to exist in the symbol table when
+    -- emitting Markdown
+    pluginAnnotations = walk gatherPluginAnnotations [] node
+    gatherPluginAnnotations nodes (PluginAnnotation name _) = mappend nodes [name, name ++ ".txt"]
     gatherPluginAnnotations nodes _ = nodes
