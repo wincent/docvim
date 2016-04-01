@@ -61,9 +61,8 @@ blockquote ps = do
   return $ "> " ++ intercalate "\n>\n> " ps'
   where
     -- Strip off trailing newlines from each paragraph.
-    paragraph p = do
-      contents <- node p
-      return $ take (length contents - 2) contents
+    paragraph p = node p >>= return . trim
+    trim contents = take (length contents - 2) contents
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Printer
