@@ -38,7 +38,7 @@ node n = case n of
   (Paragraph p)  -> nodes p >>= appendNewline >>= appendNewline
   (Link l)       -> link l
   (List ls)      -> nodes ls >>= appendNewline
-  (ListItem l)   -> nodes l >>= return . ("- " ++) >>= appendNewline
+  (ListItem l)   -> (return . ("- " ++) =<< nodes l) >>= appendNewline
 
   (Unit u) -> do
     u' <- nodes u
