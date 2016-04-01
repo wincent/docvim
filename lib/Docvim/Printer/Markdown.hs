@@ -78,7 +78,7 @@ blockquote ps = do
   where
     -- Strip off trailing newlines from each paragraph.
     paragraph p = do
-      contents <- node p -- no runReader here?
+      contents <- node p
       return $ take (length contents - 2) contents
     paragraphs symbols = map (\n -> runReader (paragraph n) symbols) ps
 
