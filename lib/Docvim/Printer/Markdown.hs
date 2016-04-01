@@ -57,14 +57,13 @@ appendNewline = return . (++ "\n")
 
 blockquote :: [Node] -> Printer
 blockquote ps = do
-  symbols <- ask
-  return $ "> " ++ intercalate "\n>\n> " (paragraphs symbols)
+  ps' <- mapM paragraph ps
+  return $ "> " ++ intercalate "\n>\n> " ps'
   where
     -- Strip off trailing newlines from each paragraph.
     paragraph p = do
       contents <- node p
       return $ take (length contents - 2) contents
-    paragraphs symbols = map (\n -> runReader (paragraph n) symbols) ps
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Printer
