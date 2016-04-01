@@ -29,22 +29,12 @@ nodes ns = do
 
 node :: Node -> Printer
 node n = case n of
-  -- Nodes that depend on reader context.
-  (Blockquote b) -> do
-    b' <- blockquote b
-    return $ b' ++ "\n\n"
-
-  (DocBlock d) -> nodes d
-
-  (Paragraph p) -> do
-    p' <- nodes p
-    return $ p' ++ "\n\n"
-
-  (Link l) -> link l
-
-  (List ls) -> do
-    ls' <- nodes ls
-    return $ ls' ++ "\n"
+  -- Nodes that depend on (or must propagate) reader context.
+  (Blockquote b) -> blockquote b >>= return . (++ "\n\n")
+  (DocBlock d)   -> nodes d
+  (Paragraph p)  -> nodes p >>= return . (++ "\n\n")
+  (Link l)       -> link l
+  (List ls)      -> nodes ls >>= return . (++ "\n")
 
   (ListItem l) -> do
     l' <- nodes l
