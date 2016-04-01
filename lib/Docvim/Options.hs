@@ -7,15 +7,15 @@ import qualified Paths_docvim (version)
 
 -- TODO: figure out where (and if!) to expand ~ and such in path options
 data Options = Options
-  { outfile :: Maybe FilePath
+  { outfiles :: Maybe [FilePath]
   , debug :: Bool
   , directory :: String
   , verbose :: Bool }
 
-parseOutfile :: Parser String
-parseOutfile = argument str
-  (  metavar "OUTFILE"
-  <> help (unlines [ "Target file for generated output"
+parseOutfiles :: Parser [String]
+parseOutfiles = some $ argument str
+  (  metavar "OUTFILES..."
+  <> help (unlines [ "Target file(s) for generated output"
                    , "(default: standard output)" ]))
 
 version :: Parser (a -> a)
@@ -46,7 +46,7 @@ parseVerbose = switch
 
 parseOptions :: Parser Options
 parseOptions = Options
-  <$> optional parseOutfile
+  <$> optional parseOutfiles
   <*> parseDebug
   <*> parseDirectory
   <*> parseVerbose
