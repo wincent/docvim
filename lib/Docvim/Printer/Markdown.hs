@@ -27,14 +27,17 @@ nodes ns = do
   symbols <- ask
   return $ concatMap (\n -> runReader (node n) symbols) ns
 
+appendNewline :: String -> Printer
+appendNewline = return . (++ "\n")
+
 node :: Node -> Printer
 node n = case n of
   -- Nodes that depend on (or must propagate) reader context.
-  (Blockquote b) -> blockquote b >>= return . (++ "\n\n")
+  (Blockquote b) -> blockquote b >>= appendNewline >>= appendNewline
   (DocBlock d)   -> nodes d
-  (Paragraph p)  -> nodes p >>= return . (++ "\n\n")
+  (Paragraph p)  -> nodes p >>= appendNewline >>= appendNewline
   (Link l)       -> link l
-  (List ls)      -> nodes ls >>= return . (++ "\n")
+  (List ls)      -> nodes ls >>= appendNewline
 
   (ListItem l) -> do
     l' <- nodes l
