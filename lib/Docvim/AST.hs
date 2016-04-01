@@ -1,5 +1,6 @@
 module Docvim.AST where
 
+import Data.Char (toLower)
 import Data.List (intercalate)
 
 data Node
@@ -102,3 +103,22 @@ walk f acc n = foldl (walk f) (f acc n) children
       Paragraph p            -> p
       Unit u                 -> u
       _                      -> [] -- no Node children
+
+-- | Sanitizes a link target similar to the way that GitHub does:
+--
+--    - Downcase.
+--    - Filter, keeping only letter, number, space, hyphen.
+--    - Change spaces to hyphens.
+--    - Uniquify by appending "-1", "-2", "-3" etc (not yet implemented).
+--
+-- We use this both for generating GitHub friendly link targets, and for
+-- auto-generating new link targets for use inside Vim help files.
+--
+-- Source: https://gist.github.com/asabaylus/3071099#gistcomment-1593627
+sanitizeAnchor :: String -> String
+sanitizeAnchor = hyphenate . keepValid . downcase
+  where
+    hyphenate = map spaceToHyphen
+    spaceToHyphen c = if c == ' ' then '-' else c
+    keepValid = filter (`elem` (['a'..'z'] ++ ['0'..'9'] ++ " -"))
+    downcase = map toLower
