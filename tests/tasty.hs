@@ -78,6 +78,25 @@ unitTests = testGroup "Unit tests"
                         ]
         symbols = getSymbols tree
       in symbols
+
+  , testCase "Synthesizing symbols from the @plugin annotation" $
+    ["foo", "foo.txt", "bar"] @=? let
+        tree = DocBlock [ PluginAnnotation "foo" "some plugin"
+                        , LinkTargets ["bar"]
+                        ]
+        symbols = getSymbols tree
+      in symbols
+
+  , testCase "Synthesizing symbols from the headings" $
+    -- will need to pass in plugin name (prefix) to make this work
+    ["foo-history", "foo-troubleshooting-tips", "bar"] @=? let
+        tree = DocBlock [ PluginAnnotation "foo" "some plugin"
+                        , HeadingAnnotation "History"
+                        , HeadingAnnotation "Troubleshooting tips"
+                        , LinkTargets ["bar"]
+                        ]
+        symbols = getSymbols tree
+      in symbols
   ]
 
 goldenTests :: String -> [FilePath] -> (String -> String) -> TestTree
