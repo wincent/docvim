@@ -47,7 +47,7 @@ node n = case n of
   (LinkTargets l)           -> return $ linkTargets l ++ "\n"
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
-  -- scrap it.
+  -- scrap it (nope: need it in the Vim help version).
   (PluginAnnotation name _) -> return $ "# " ++ name ++ "\n\n"
   (Plaintext p)             -> return p
   Separator                 -> return $ "---" ++ "\n\n"

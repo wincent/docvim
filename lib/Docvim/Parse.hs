@@ -364,7 +364,15 @@ vimL = choice [ block
 block = choice [ function ]
 statement = choice [ letStatement
                    , unlet
+                   , genericStatement
                    ]
+
+-- | Generic VimL node parser to represent stuff that we haven't built out full parsing
+-- for yet.
+genericStatement = do
+  atoms <- sepEndBy1 word wsc
+  eos
+  return $ GenericStatement (concat atoms)
 
 -- | Remainder of the line up to but not including a newline.
 -- Does not include any trailing whitespace.

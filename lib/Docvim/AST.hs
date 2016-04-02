@@ -20,6 +20,7 @@ data Node
           | UnletStatement { unletBang :: Bool
                            , unletBody :: String
                            }
+          | GenericStatement String -- ^ For the stuff we only crudely parse for now.
 
           -- Docvim nodes: "block-level" elements
           | DocBlock [Node]
