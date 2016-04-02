@@ -265,7 +265,7 @@ paragraph = Paragraph <$> body
     otherLine =  try $ newline
               >> (commentStart <|> docBlockStart)
               >> optional ws
-              -- maybe lookAhead (noneOf "->") etc
+              >> lookAhead (noneOf "->#@") -- probably too simplistic, need to handle ``` as well
               >> firstLine
 
 phrasing = choice [ br
