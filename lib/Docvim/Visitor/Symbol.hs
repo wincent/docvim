@@ -22,13 +22,13 @@ getSymbols node = if length symbols == Set.size set
     gatherSymbols nodes _                         = nodes
     titleAnchor title                             = titlePrefix ++ sanitizeAnchor title
     titlePrefix                                   = downcase $ maybe "" (++ "-") $ getPluginName node
-    duplicates                                    = findDupes (sort symbols)
+    duplicates                                    = nub $ f (sort symbols)
       where
-        findDupes [] = []
-        findDupes [x] = []
-        findDupes (x:xs) = if x == head xs
-                           then x : findDupes xs
-                           else findDupes xs
+        f [] = []
+        f [x] = []
+        f (x:xs) = if x == head xs
+                   then x : f xs
+                   else f xs
 
 downcase :: String -> String
 downcase = map toLower
