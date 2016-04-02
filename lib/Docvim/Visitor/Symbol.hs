@@ -4,6 +4,7 @@ import Data.Char (toLower)
 import Data.List (nub, sort)
 import qualified Data.Set as Set
 import Docvim.AST
+import Docvim.Visitor.Plugin (getPluginName)
 
 -- TODO: return Set instead of [String]
 -- TODO: use Either instead of dying unceremoniously with `error`
