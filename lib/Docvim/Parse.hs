@@ -11,6 +11,7 @@ import Control.Applicative ( (*>)
                            , (<$>)
                            , (<*)
                            , (<*>)
+                           , liftA2
                            )
 import Data.Char (toUpper)
 import Data.List (groupBy)
@@ -50,6 +51,7 @@ import Text.ParserCombinators.Parsec.Char ( alphaNum
                                           , noneOf
                                           , oneOf
                                           , string
+                                          , upper
                                           )
 
 -- might want to pull this into a separate, test-only module
@@ -72,13 +74,16 @@ command description =   try (string prefix >> remainder rest)
 
 function =   FunctionDeclaration
          <$> (fu *> bang <* wsc)
+         -- TODO handle colons
          <*> (name <* optional wsc)
          <*> arguments
          <*> (attributes <* optional wsc)
          <*> (newlines *> many node <* (optional ws >> endf))
   where
     fu         = command "fu[nction]"
-    name       = many1 alphaNum <* optional wsc
+    -- TODO: handle autoloaded function names with # in them.
+    name       = liftA2 (++) (try (string "s:") <|> many1 upper) (many $ oneOf identifier) <* optional wsc
+    identifier = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "_"
     arguments  =  (char '(' >> optional wsc)
                *> (ArgumentList <$> argument `sepBy` (char ',' >> optional wsc))
                <* (optional wsc >> char ')' >> optional wsc)

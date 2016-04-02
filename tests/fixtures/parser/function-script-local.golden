@@ -1,0 +1,23 @@
+Unit
+  [ FunctionDeclaration
+      { functionBang = True
+      , functionName = "s:foo"
+      , functionArguments = ArgumentList []
+      , functionAttributes = []
+      , functionBody = []
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "s:underscores_too"
+      , functionArguments = ArgumentList []
+      , functionAttributes = []
+      , functionBody = []
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "s:"
+      , functionArguments = ArgumentList []
+      , functionAttributes = []
+      , functionBody = []
+      }
+  ]
