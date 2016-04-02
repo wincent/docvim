@@ -27,7 +27,7 @@ getSymbols node = if length symbols == Set.size set
         findDupes [] = []
         findDupes [x] = []
         findDupes (x:xs) = if x == head xs
-                           then [x] ++ findDupes xs
+                           then x : findDupes xs
                            else findDupes xs
 
 downcase :: String -> String
@@ -36,7 +36,7 @@ downcase = map toLower
 getPluginName :: Node -> Maybe String
 getPluginName node = name
   where
-    name = if length names == 0
+    name = if null names
            then Nothing
            else Just $ head names
     names = walk getName [] node

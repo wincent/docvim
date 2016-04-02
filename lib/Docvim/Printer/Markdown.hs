@@ -22,7 +22,7 @@ markdown :: Node -> String
 markdown n = runReader (node n) (getSymbols n)
 
 nodes :: [Node] -> Printer
-nodes ns = mapM node ns >>= return . concat
+nodes ns = concat <$> mapM node ns
 
 node :: Node -> Printer
 node n = case n of
@@ -32,7 +32,7 @@ node n = case n of
   (Paragraph p)  -> nodes p >>= appendNewline >>= appendNewline
   (Link l)       -> link l
   (List ls)      -> nodes ls >>= appendNewline
-  (ListItem l)   -> (return . ("- " ++) =<< nodes l) >>= appendNewline
+  (ListItem l)   -> fmap ("- " ++) (nodes l) >>= appendNewline
   (Unit u)       -> nodes u
 
   -- Nodes that don't depend on reader context.
@@ -60,7 +60,7 @@ blockquote ps = do
   return $ "> " ++ intercalate "\n>\n> " ps'
   where
     -- Strip off trailing newlines from each paragraph.
-    paragraph p = node p >>= return . trim
+    paragraph p = fmap trim (node p)
     trim contents = take (length contents - 2) contents
 
 -- TODO: handle "interesting" link text like containing [, ], "
