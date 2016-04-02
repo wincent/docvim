@@ -64,7 +64,7 @@ Patches can be sent via mail to greg@hurrell.net, or as GitHub pull requests at:
 At the moment the release process is manual:
 
 - Perform final sanity checks and manual testing
-- Update the [pinnacle-history](#user-content-pinnacle-history) section of the documentation
+- Update the <strong>[`pinnacle-history`](#user-content-pinnacle-history)</strong> section of the documentation
 - Verify clean work tree:
 
 ```
