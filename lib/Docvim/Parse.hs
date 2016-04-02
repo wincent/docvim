@@ -271,7 +271,7 @@ paragraph = Paragraph <$> body
 -- | Used in lookahead rules to make sure that we don't greedily consume special
 -- tokens as if they were just phrasing content.
 special :: Parser String
-special = choice [ string "-" <* (notFollowedBy $ char '-')
+special = choice [ string "-" <* notFollowedBy (char '-')
                  , string ">"
                  , string "---"
                  , string "-" <* string "--"
