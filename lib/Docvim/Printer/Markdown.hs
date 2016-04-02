@@ -8,10 +8,13 @@ import Control.Monad.Reader
 import Data.List (intercalate)
 import Docvim.AST
 import Docvim.Parse (parseUnit)
+import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
-type Symbols = [String]
-type Printer = Reader Symbols String
+data State = State { symbols :: [String]
+                   , pluginName :: Maybe String
+                   }
+type Env = Reader State String
 
 data Anchor = Anchor [Attribute] String
 data Attribute = Attribute { attributeName :: String
@@ -19,12 +22,13 @@ data Attribute = Attribute { attributeName :: String
                            }
 
 markdown :: Node -> String
-markdown n = runReader (node n) (getSymbols n)
+markdown n = runReader (node n) state
+  where state = State (getSymbols n) (getPluginName n)
 
-nodes :: [Node] -> Printer
+nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
 
-node :: Node -> Printer
+node :: Node -> Env
 node n = case n of
   -- Nodes that depend on (or must propagate) reader context.
   (Blockquote b) -> blockquote b >>= appendNewline >>= appendNewline
@@ -51,10 +55,10 @@ node n = case n of
   Whitespace                -> return " "
   _                         -> return ""
 
-appendNewline :: String -> Printer
+appendNewline :: String -> Env
 appendNewline = return . (++ "\n")
 
-blockquote :: [Node] -> Printer
+blockquote :: [Node] -> Env
 blockquote ps = do
   ps' <- mapM paragraph ps
   return $ "> " ++ intercalate "\n>\n> " ps'
@@ -64,10 +68,10 @@ blockquote ps = do
     trim contents = take (length contents - 2) contents
 
 -- TODO: handle "interesting" link text like containing [, ], "
-link :: String -> Printer
+link :: String -> Env
 link l = do
-  symbols <- ask
-  return $ if l `elem` symbols
+  state <- ask
+  return $ if l `elem` symbols state
            -- TODO: beware names with < ` etc in them
            then "<strong>[`" ++ l ++ "`](" ++ gitHubAnchor l ++ ")</strong>"
            else "<strong>`" ++ l ++ "`</strong>" -- TODO:

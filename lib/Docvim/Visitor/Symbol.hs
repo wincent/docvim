@@ -32,13 +32,3 @@ getSymbols node = if length symbols == Set.size set
 
 downcase :: String -> String
 downcase = map toLower
-
-getPluginName :: Node -> Maybe String
-getPluginName node = name
-  where
-    name = if null names
-           then Nothing
-           else Just $ head names
-    names = walk getName [] node
-    getName nodes (PluginAnnotation name _) = mappend nodes [name]
-    getName nodes _                         = nodes
