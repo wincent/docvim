@@ -265,8 +265,21 @@ paragraph = Paragraph <$> body
     otherLine =  try $ newline
               >> (commentStart <|> docBlockStart)
               >> optional ws
-              >> lookAhead (noneOf "->#@") -- probably too simplistic, need to handle ``` as well
+              >> notFollowedBy special
               >> firstLine
+
+-- | Used in lookahead rules to make sure that we don't greedily consume special
+-- tokens as if they were just phrasing content.
+special :: Parser String
+special = choice [ string "-" <* (notFollowedBy $ char '-')
+                 , string ">"
+                 , string "---"
+                 , string "-" <* string "--"
+                 , string "```"
+                 , string "`" <* string "``"
+                 , string "@"
+                 , string "#"
+                 ]
 
 phrasing = choice [ br
                   , link
