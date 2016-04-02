@@ -71,6 +71,7 @@ executable docvim
 
 library
   build-depends:    base
+               ,    containers
                ,    directory
                ,    filepath
 
@@ -102,6 +103,7 @@ test-suite hlint
 test-suite tasty
   build-depends:    base >= 4 && < 5
                ,    bytestring
+               ,    containers
                ,    deepseq
                ,    docvim
                ,    filepath
