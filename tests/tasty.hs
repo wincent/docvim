@@ -40,7 +40,6 @@ unitTests :: TestTree
 unitTests = testGroup "Unit tests"
   [ testCase "Parse empty unit" $ assert $ parseSuccess (parseUnit "")
   , testCase "Parse whitespace-only unit" $ assert $ parseSuccess (parseUnit "  \n    ")
-  , testCase "Bad input" $ assert $ parseFailure (parseUnit "bzzzzt")
 
   , testCase "Counting all nodes" $
     7 @=? let

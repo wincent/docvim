@@ -93,10 +93,13 @@ endfunction = command "endf[unction]" <* eos
 
 -- "let" is a reserved word in Haskell, so we call this "letStatement" instead.
 letStatement =   LetStatement
-    <$> (string "let" >> wsc >> word')
-    <*> (optional wsc >> char '=' >> optional wsc *> word' <* eos)
+    <$> (string "let" >> wsc >> lhs)
+    <*> (optional wsc >> char '=' >> optional wsc *> rhs <* eos)
   where
-    word' = many1 $ noneOf " \n\t="
+    -- Kludge alert! Until we get a full expression parser, we use this crude
+    -- thing.
+    lhs = many1 $ noneOf "\"\n="
+    rhs = many1 $ noneOf " \n\t"
 
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
@@ -207,7 +210,11 @@ wsc = many1 $ choice [whitespace, continuation]
     continuation = try $ char '\n' >> ws >> char '\\'
 
 -- TODO: string literals; some nasty lookahead might be required
-comment = try $ quote >> notFollowedBy quote >> restOfLine >> newline
+comment = try
+        $ quote
+        >> notFollowedBy quote
+        >> restOfLine
+        >> skipMany (char '\n' >> optional ws)
 
 -- | Optional bang suffix for VimL commands.
 bang = option False (True <$ char '!')
