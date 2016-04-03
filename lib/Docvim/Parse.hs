@@ -77,7 +77,7 @@ function =   FunctionDeclaration
          <*> (name <* optional wsc)
          <*> arguments
          <*> (attributes <* optional wsc)
-         <*> (newlines *> many node <* (optional ws >> endf))
+         <*> (newlines *> many node <* (optional ws >> endfunction))
   where
     fu         = command "fu[nction]"
     -- TODO: handle autoloaded function names with # in them.
@@ -88,7 +88,8 @@ function =   FunctionDeclaration
                <* (optional wsc >> char ')' >> optional wsc)
     argument   = Argument <$> many1 alphaNum <* optional wsc
     attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
-    endf       = command "endf[unction]" <* eos
+
+endfunction = command "endf[unction]" <* eos
 
 -- "let" is a reserved word in Haskell, so we call this "letStatement" instead.
 letStatement =   LetStatement
@@ -369,9 +370,14 @@ statement = choice [ letStatement
 -- | Generic VimL node parser to represent stuff that we haven't built out full parsing
 -- for yet.
 genericStatement = do
-  atoms <- sepEndBy1 word wsc
+  -- Make sure we never recognize `endfunction` as a generic statement. This is
+  -- necessary because we call `node` recursively inside `function` while
+  -- parsing the function body. We must stop `node` from consuming
+  -- `endfunction`, otherwise the `function` parse will fail to find it.
+  notFollowedBy endfunction
+  atoms <- sepEndBy1 word (optional wsc)
   eos
-  return $ GenericStatement (concat atoms)
+  return $ GenericStatement $ concat atoms
 
 -- | Remainder of the line up to but not including a newline.
 -- Does not include any trailing whitespace.
