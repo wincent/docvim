@@ -74,7 +74,6 @@ command description =   try (string prefix >> remainder rest)
 
 function =   FunctionDeclaration
          <$> (fu *> bang <* wsc)
-         -- TODO handle colons
          <*> (name <* optional wsc)
          <*> arguments
          <*> (attributes <* optional wsc)
