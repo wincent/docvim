@@ -83,12 +83,12 @@ type Usage = String
 -- For example, to implement a visitor which counts all nodes:
 --
 -- >  import Data.Monoid
--- >  counter i _ = mappend i 1
+-- >  counter i _ = i <> 1
 -- >  count = getSum $ walk counter (Sum 0) tree
 --
 -- Another example; accumulating `SubheadingAnnotation` nodes into a list:
 --
--- >  accumulator nodes node@(SubheadingAnnotation _) = mappend nodes [node]
+-- >  accumulator nodes node@(SubheadingAnnotation _) = nodes <> [node]
 -- >  accumulator nodes _ = nodes -- skip everything else
 -- >  nodes = walk accumulator [] tree
 --

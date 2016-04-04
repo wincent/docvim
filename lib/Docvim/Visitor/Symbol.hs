@@ -2,6 +2,7 @@ module Docvim.Visitor.Symbol (getSymbols) where
 
 import Data.Char (toLower)
 import Data.List (nub, sort)
+import Data.Monoid ((<>))
 import qualified Data.Set as Set
 import Docvim.AST
 import Docvim.Visitor.Plugin (getPluginName)
@@ -15,11 +16,11 @@ getSymbols node = if length symbols == Set.size set
   where
     set                                           = Set.fromList symbols
     symbols                                       = walk gatherSymbols [] node
-    gatherSymbols nodes (HeadingAnnotation h)     = mappend nodes [titleAnchor h]
-    gatherSymbols nodes (LinkTargets ts)          = mappend nodes ts
+    gatherSymbols nodes (HeadingAnnotation h)     = nodes <> [titleAnchor h]
+    gatherSymbols nodes (LinkTargets ts)          = nodes <> ts
     -- TODO: probably don't want this target to exist in the symbol table when
     -- emitting Markdown
-    gatherSymbols nodes (PluginAnnotation name _) = mappend nodes [name, name ++ ".txt"]
+    gatherSymbols nodes (PluginAnnotation name _) = nodes <> [name, name ++ ".txt"]
     gatherSymbols nodes _                         = nodes
     titleAnchor title                             = titlePrefix ++ sanitizeAnchor title
     titlePrefix                                   = downcase $ maybe "" (++ "-") $ getPluginName node
