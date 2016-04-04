@@ -5,10 +5,10 @@ Unit
   , LwindowStatement { lwindowHeight = Nothing }
   , LwindowStatement { lwindowHeight = Nothing }
   , LwindowStatement { lwindowHeight = Nothing }
-  , LwindowStatement { lwindowHeight = Just "10" }
-  , LwindowStatement { lwindowHeight = Just "20" }
-  , LwindowStatement { lwindowHeight = Just "30" }
-  , LwindowStatement { lwindowHeight = Just "40" }
-  , LwindowStatement { lwindowHeight = Just "50" }
-  , LwindowStatement { lwindowHeight = Just "60" }
+  , LwindowStatement { lwindowHeight = Just 10 }
+  , LwindowStatement { lwindowHeight = Just 20 }
+  , LwindowStatement { lwindowHeight = Just 30 }
+  , LwindowStatement { lwindowHeight = Just 40 }
+  , LwindowStatement { lwindowHeight = Just 50 }
+  , LwindowStatement { lwindowHeight = Just 60 }
   ]

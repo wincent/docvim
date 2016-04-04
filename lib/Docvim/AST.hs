@@ -20,7 +20,7 @@ data Node
           | LexprStatement { lexprBang :: Bool
                            , lexprExpr :: String
                            }
-          | LwindowStatement { lwindowHeight :: Maybe String }
+          | LwindowStatement { lwindowHeight :: Maybe Int }
           | UnletStatement { unletBang :: Bool
                            , unletBody :: String
                            }

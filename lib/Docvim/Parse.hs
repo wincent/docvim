@@ -11,6 +11,7 @@ import Control.Applicative ( (*>)
                            , (<$>)
                            , (<*)
                            , (<*>)
+                           , liftA
                            , liftA2
                            )
 import Data.Char (toUpper)
@@ -108,10 +109,12 @@ lStatement =  lookAhead (char 'l')
                      , lexpr
                      ]
 
+-- BUG: lwx parses as lw + GenericStatement x
 lwindow = LwindowStatement <$> (lw *> height <* eos)
   where
     lw     = command "l[window]"
-    height = optionMaybe (wsc *> many1 digit)
+    height = optionMaybe (wsc *> number)
+    number = liftA read (many1 digit)
 
 lexpr = LexprStatement
       <$> (command "lex[pr]" *> bang <* wsc)
