@@ -10,8 +10,7 @@ Unit
           , LetStatement { letLexpr = "l:line" , letValue = "a:first" }
           , GenericStatement "whilel:line>=a:first&&l:line<=a:last"
           , LetStatement { letLexpr = "l:list[l:line - 1]" , letValue = "0" }
-          , LetStatement { letLexpr = "l:line" , letValue = "l:line" }
-          , GenericStatement "+1"
+          , LetStatement { letLexpr = "l:line" , letValue = "l:line + 1" }
           , GenericStatement "endwhile"
           , GenericStatement "callsetqflist(l:list,'r')"
           , GenericStatement "execute'cc'.a:first"
@@ -78,8 +77,10 @@ Unit
                   ]
               , Fenced [ "let g:FerretDispatch=0" ]
               ]
-          , LetStatement { letLexpr = "l:dispatch" , letValue = "get(g:," }
-          , GenericStatement "'FerretDispatch',1)"
+          , LetStatement
+              { letLexpr = "l:dispatch"
+              , letValue = "get(g:, 'FerretDispatch', 1)"
+              }
           , GenericStatement "returnl:dispatch&&exists(':Make')==2"
           ]
       }
@@ -109,9 +110,8 @@ Unit
           , GenericStatement "endif"
           , LetStatement
               { letLexpr = "l:escaped_spaces_replaced_with_markers"
-              , letValue = "substitute(a:arg,"
+              , letValue = "substitute(a:arg, '\\\\ ', '<!!S!!>', 'g')"
               }
-          , GenericStatement "'\\\\','<!!S!!>','g')"
           , LetStatement
               { letLexpr = "l:split_on_spaces"
               , letValue = "split(l:escaped_spaces_replaced_with_markers)"
@@ -122,8 +122,10 @@ Unit
           , GenericStatement "calladd(l:expanded_args,l:arg)"
           , GenericStatement "elseifexists('g:ferret_lastsearch')"
           , LetStatement
-              { letLexpr = "l:file_args" , letValue = "glob(l:arg," }
-          , GenericStatement "1,1)\"Ignore'wildignore',returnalist."
+              { letLexpr = "l:file_args"
+              , letValue =
+                  "glob(l:arg, 1, 1) \" Ignore 'wildignore', return a list."
+              }
           , GenericStatement "iflen(l:file_args)"
           , GenericStatement "callextend(l:expanded_args,l:file_args)"
           , GenericStatement "else"
@@ -132,17 +134,15 @@ Unit
           , GenericStatement "else"
           , LetStatement
               { letLexpr = "g:ferret_lastsearch"
-              , letValue = "substitute(l:arg,"
+              , letValue = "substitute(l:arg, '<!!S!!>', ' ', 'g')"
               }
-          , GenericStatement "'<!!S!!>','','g')"
           , GenericStatement "calladd(l:expanded_args,l:arg)"
           , GenericStatement "endif"
           , GenericStatement "endfor"
           , LetStatement
               { letLexpr = "l:each_word_shell_escaped"
-              , letValue = "map(l:expanded_args,"
+              , letValue = "map(l:expanded_args, 'shellescape(v:val)')"
               }
-          , GenericStatement "'shellescape(v:val)')"
           , LetStatement
               { letLexpr = "l:joined"
               , letValue = "join(l:each_word_shell_escaped)"
@@ -162,15 +162,23 @@ Unit
           , GenericStatement "augroupEND"
           , GenericStatement "endif"
           , LetStatement
-              { letLexpr = "l:lastsearch " , letValue = "get(g:," }
-          , GenericStatement "'ferret_lastsearch','')"
-          , LetStatement { letLexpr = "l:qflist " , letValue = "a:type" }
-          , GenericStatement "=='qf'?getqflist():getloclist(0)"
-          , LetStatement { letLexpr = "l:tip " , letValue = "'" }
-          , GenericStatement "[see`:helpferret-quotes`]'"
+              { letLexpr = "l:lastsearch "
+              , letValue = "get(g:, 'ferret_lastsearch', '')"
+              }
+          , LetStatement
+              { letLexpr = "l:qflist "
+              , letValue = "a:type == 'qf' ? getqflist() : getloclist(0)"
+              }
+          , LetStatement
+              { letLexpr = "l:tip "
+              , letValue = "' [see `:help ferret-quotes`]'"
+              }
           , GenericStatement "iflen(l:qflist)==0"
-          , LetStatement { letLexpr = "l:base " , letValue = "'No" }
-          , GenericStatement "resultsforsearchpattern`'.l:lastsearch.'`'"
+          , LetStatement
+              { letLexpr = "l:base "
+              , letValue =
+                  "'No results for search pattern `' . l:lastsearch . '`'"
+              }
           , GenericStatement
               "ifl:lastsearch=~'\\v^(['.\"'\".'\"])[^\\1]+\\1$'"
           , GenericStatement "calls:error(l:base.l:tip)"
@@ -179,8 +187,9 @@ Unit
           , GenericStatement "endif"
           , GenericStatement "else"
           , LetStatement
-              { letLexpr = "l:invalid " , letValue = "filter(copy(l:qflist)," }
-          , GenericStatement "'v:val.valid==0')"
+              { letLexpr = "l:invalid "
+              , letValue = "filter(copy(l:qflist), 'v:val.valid == 0')"
+              }
           , GenericStatement "iflen(l:invalid)==len(l:qflist)"
           , GenericStatement "redraw!"
           , GenericStatement "echohlErrorMsg"
@@ -188,11 +197,15 @@ Unit
           , GenericStatement "echomsgl:item.text"
           , GenericStatement "endfor"
           , GenericStatement "echohlNONE"
-          , LetStatement { letLexpr = "l:base " , letValue = "'Search" }
-          , GenericStatement "for`'.l:lastsearch.'`failed'"
-          , LetStatement { letLexpr = "l:suffix " , letValue = "a:type" }
-          , GenericStatement
-              "=='qf'&&s:dispatch()?'(run`:messages`toseedetails)':''"
+          , LetStatement
+              { letLexpr = "l:base "
+              , letValue = "'Search for `' . l:lastsearch . '` failed'"
+              }
+          , LetStatement
+              { letLexpr = "l:suffix "
+              , letValue = "a:type == 'qf' && s:dispatch() ?"
+              }
+          , GenericStatement "\\'(run`:messages`toseedetails)':''"
           , GenericStatement
               "ifl:lastsearch=~'\\v^['.\"'\".'\"].+[^'.\"'\".'\"]$'"
           , GenericStatement "calls:error(l:base.l:tip.l:suffix)"
@@ -230,8 +243,10 @@ Unit
               , letValue = "&l:errorformat"
               }
           , GenericStatement "try"
-          , LetStatement { letLexpr = "&l:makeprg" , letValue = "&grepprg" }
-          , GenericStatement ".''.l:command"
+          , LetStatement
+              { letLexpr = "&l:makeprg"
+              , letValue = "&grepprg . ' ' . l:command"
+              }
           , LetStatement
               { letLexpr = "&l:errorformat" , letValue = "&grepformat" }
           , GenericStatement "Make"
@@ -282,8 +297,10 @@ Unit
       , functionBody =
           [ GenericStatement "ifhas('extra_search')"
           , GenericStatement "\"\""
-          , LetStatement { letLexpr = "l:hlsearch" , letValue = "get(g:," }
-          , GenericStatement "'FerretHlsearch',&hlsearch)"
+          , LetStatement
+              { letLexpr = "l:hlsearch"
+              , letValue = "get(g:, 'FerretHlsearch', &hlsearch)"
+              }
           , GenericStatement "ifl:hlsearch"
           , LetStatement
               { letLexpr = "@/" , letValue = "g:ferret_lastsearch" }

@@ -2862,13 +2862,18 @@ Unit
   , GenericStatement "setcpoptions&vim"
   , GenericStatement
       "ifexecutable('ag')\"TheSilverSearcher:fasterthanack."
-  , LetStatement { letLexpr = "s:ackprg " , letValue = "'ag" }
-  , GenericStatement "--column--nocolor--nogroup'"
+  , LetStatement
+      { letLexpr = "s:ackprg "
+      , letValue = "'ag --column --nocolor --nogroup'"
+      }
   , GenericStatement "elseifexecutable('ack')\"Ack:betterthangrep."
-  , LetStatement { letLexpr = "s:ackprg " , letValue = "'ack" }
-  , GenericStatement "--column'"
+  , LetStatement
+      { letLexpr = "s:ackprg " , letValue = "'ack --column'" }
   , GenericStatement "elseifexecutable('grep')\"Grep:it'sjustgrep."
-  , LetStatement { letLexpr = "s:ackprg " , letValue = "&grepprg" }
+  , LetStatement
+      { letLexpr = "s:ackprg "
+      , letValue = "&grepprg \" default is: grep -n $* /dev/null"
+      }
   , GenericStatement "endif"
   , GenericStatement "if!empty(s:ackprg)"
   , LetStatement { letLexpr = "&grepprg" , letValue = "s:ackprg" }
@@ -3609,8 +3614,8 @@ Unit
           ]
       , Fenced [ "let g:FerretMap=0" ]
       ]
-  , LetStatement { letLexpr = "s:map" , letValue = "get(g:," }
-  , GenericStatement "'FerretMap',1)"
+  , LetStatement
+      { letLexpr = "s:map" , letValue = "get(g:, 'FerretMap', 1)" }
   , GenericStatement "ifs:map"
   , GenericStatement
       "if!hasmapto('<Plug>(FerretAck)')&&maparg('<leader>a','n')==#''"
@@ -4120,8 +4125,10 @@ Unit
           ]
       , Fenced [ "let g:FerretQFCommands=0" ]
       ]
-  , LetStatement { letLexpr = "s:commands" , letValue = "get(g:," }
-  , GenericStatement "'FerretQFCommands',1)"
+  , LetStatement
+      { letLexpr = "s:commands"
+      , letValue = "get(g:, 'FerretQFCommands', 1)"
+      }
   , GenericStatement "ifs:commands"
   , GenericStatement
       "cabbrev<silent><expr>cn((getcmdtype()==':'&&getcmdpos()==3)?'cn<bar>normalzz':'cn')"

@@ -133,8 +133,10 @@ Unit
           ]
       , Fenced [ "let g:FerretQFOptions=0" ]
       ]
-  , LetStatement { letLexpr = "s:options" , letValue = "get(g:," }
-  , GenericStatement "'FerretQFOptions',1)"
+  , LetStatement
+      { letLexpr = "s:options"
+      , letValue = "get(g:, 'FerretQFOptions', 1)"
+      }
   , GenericStatement "ifs:options"
   , GenericStatement "setlocalnolist"
   , GenericStatement "ifexists('+relativenumber')"
@@ -263,8 +265,8 @@ Unit
           ]
       , Fenced [ "let g:FerretQFMap=0" ]
       ]
-  , LetStatement { letLexpr = "s:map" , letValue = "get(g:," }
-  , GenericStatement "'FerretQFMap',1)"
+  , LetStatement
+      { letLexpr = "s:map" , letValue = "get(g:, 'FerretQFMap', 1)" }
   , GenericStatement "ifs:map"
   , GenericStatement
       "nnoremap<buffer><silent>d:setoperatorfunc=ferret#private#qf_delete_motion<CR>g@"

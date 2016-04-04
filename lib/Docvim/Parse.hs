@@ -98,7 +98,6 @@ function =   FunctionDeclaration
     attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
 
 -- Disambiguate `:endf[unction]` and `:endfo[r]`
--- BUG: we parse "endfz" as "endf" + GenericStatement "z"
 endfunction =  lookAhead (string "endf" >> notFollowedBy (string "o"))
             >> command "endf[unction]"
             <* eos
@@ -109,7 +108,6 @@ lStatement =  lookAhead (char 'l')
                      , lexpr
                      ]
 
--- BUG: lwx parses as lw + GenericStatement x
 lwindow = LwindowStatement <$> (lw *> height <* eos)
   where
     lw     = command "l[window]"
@@ -128,7 +126,7 @@ letStatement =   LetStatement
     -- Kludge alert! Until we get a full expression parser, we use this crude
     -- thing.
     lhs = many1 $ noneOf "\"\n="
-    rhs = many1 $ noneOf " \n\t"
+    rhs = many1 $ noneOf "\n\t"
 
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
@@ -227,7 +225,8 @@ listItem =  lookAhead (char '-' >> notFollowedBy (char '-'))
 
 -- | Newline (and slurps up following horizontal whitespace as well).
 newline = (char '\n' >> optional ws) <|> eof
-newlines = many1 (char '\n' >> optional ws)
+newlines =   many1 (char '\n' >> optional ws)
+         <|> (eof >> return [()])
 
 -- | Whitespace (specifically, horizontal whitespace: spaces and tabs).
 ws = many1 (oneOf " \t")
@@ -251,7 +250,7 @@ bang = option False (True <$ char '!')
 -- | End-of-statement.
 -- TODO: see `:h :bar` for a list of commands which see | as an arg instead of a
 -- command separator.
-eos = optional ws >> choice [bar, ws', skipMany comment]
+eos = optional ws >> choice [bar, ws', skipMany1 comment]
   where
     bar = char '|' >> optional wsc
     ws' = newlines >> notFollowedBy wsc
