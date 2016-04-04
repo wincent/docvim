@@ -1,0 +1,9 @@
+Unit
+  [ FunctionDeclaration
+      { functionBang = False
+      , functionName = "this#that#the#other"
+      , functionArguments = ArgumentList []
+      , functionAttributes = []
+      , functionBody = []
+      }
+  ]

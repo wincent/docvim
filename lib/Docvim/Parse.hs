@@ -14,7 +14,7 @@ import Control.Applicative ( (*>)
                            , liftA2
                            )
 import Data.Char (toUpper)
-import Data.List (groupBy)
+import Data.List (groupBy, intercalate)
 import Docvim.AST
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
@@ -80,8 +80,14 @@ function =   FunctionDeclaration
          <*> (skippable *> many node <* (optional ws >> endfunction))
   where
     fu         = command "fu[nction]"
-    -- TODO: handle autoloaded function names with # in them.
-    name       = liftA2 (++) (try (string "s:") <|> many1 upper) (many $ oneOf identifier) <* optional wsc
+    name       = choice [script, normal, autoloaded] <* optional wsc
+    script     = liftA2 (++) (try $ string "s:") (many $ oneOf identifier)
+    normal     = liftA2 (++) (many1 upper) (many $ oneOf identifier)
+    autoloaded = do
+      a <- many1 $ oneOf identifier
+      b <- string "#"
+      c <- sepBy1 (many1 $ oneOf identifier) (string "#")
+      return $ a ++ b ++ intercalate "#" c
     identifier = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ "_"
     arguments  =  (char '(' >> optional wsc)
                *> (ArgumentList <$> argument `sepBy` (char ',' >> optional wsc))
