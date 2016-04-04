@@ -1,0 +1,22 @@
+Controls whether to set up setting overrides for <strong>`quickfix`</strong> windows. These are various settings, such as <strong>`norelativenumber`</strong>, <strong>`nolist`</strong> and <strong>`nowrap`</strong>, that are intended to make the <strong>`quickfix`</strong> window, which is typically very small relative to other windows, more usable.
+
+A full list of overridden settings can be found in <strong>`ferret-overrides`</strong>.
+
+To prevent the custom settings from being applied, set <strong>`g:FerretQFOptions`</strong> to 0:
+
+```
+let g:FerretQFOptions=0
+```
+
+Controls whether to set up mappings in the <strong>`quickfix`</strong> results window for deleting results. The mappings include:
+
+- `d` (<strong>`visual-mode`</strong>): delete visual selection
+- `dd` (<strong>`Normal-mode`</strong>): delete current line
+- `d`{motion} (<strong>`Normal-mode`</strong>): delete range indicated by {motion}
+
+To prevent these mappings from being set up, set to 0:
+
+```
+let g:FerretQFMap=0
+```
+
