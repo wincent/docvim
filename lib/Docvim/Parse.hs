@@ -390,7 +390,7 @@ genericStatement = do
 -- Does not include any trailing whitespace.
 restOfLine :: Parser String
 restOfLine = do
-  rest <- many1 (noneOf "\n")
+  rest <- many (noneOf "\n")
   return $ rstrip rest
 
 -- | Strip trailing and leading whitespace.
