@@ -1,3 +1,6 @@
-"(eval)" (line 4, column 1):
-unexpected '\n'
-expecting quote, "", function, "let", unlet, endfunction or end of input
+Unit
+  [ LetStatement
+      { letLexpr = "s:example" , letValue = "s:myfunction('foo')" }
+  , LetStatement { letLexpr = "l:list[l:line - 1]" , letValue = "0" }
+  , LetStatement { letLexpr = "g:foo " , letValue = "'bar'" }
+  ]
