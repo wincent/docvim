@@ -110,7 +110,7 @@ lStatement =  lookAhead (char 'l')
 
 lwindow = LwindowStatement <$> (lw *> height <* eos)
   where
-    lw     = command "lw[window]"
+    lw     = command "l[window]"
     height = optionMaybe (wsc *> many1 digit)
 
 lexpr = LexprStatement

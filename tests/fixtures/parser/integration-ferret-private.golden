@@ -271,7 +271,6 @@ Unit
               , lexprExpr = "system(&grepprg . ' ' . l:command)"
               }
           , LwindowStatement { lwindowHeight = Nothing }
-          , GenericStatement "indow"
           , GenericStatement "callferret#private#post('location')"
           ]
       }
