@@ -77,7 +77,7 @@ function =   FunctionDeclaration
          <*> (name <* optional wsc)
          <*> arguments
          <*> (attributes <* optional wsc)
-         <*> (newlines *> many node <* (optional ws >> endfunction))
+         <*> (skippable *> many node <* (optional ws >> endfunction))
   where
     fu         = command "fu[nction]"
     -- TODO: handle autoloaded function names with # in them.
@@ -228,10 +228,10 @@ eos = optional ws >> choice [bar, ws', skipMany comment]
     ws' = newlines >> notFollowedBy wsc
 
 node :: Parser Node
-node =  optional comment
-     >> choice [ docBlock
+node =  choice [ docBlock
                , vimL
                ]
+     <* optional skippable
 
 docBlock = lookAhead docBlockStart
          >> (DocBlock <$> many1 blockElement)
@@ -455,11 +455,11 @@ unit :: Parser Node
 unit =   Unit
      <$> (skippable >> many node)
      <*  eof
-  where
-    skippable = many $ choice [ comment
-                              , skipMany1 ws
-                              , skipMany1 (char '\n')
-                              ]
+
+skippable = many $ choice [ comment
+                          , skipMany1 ws
+                          , skipMany1 (char '\n')
+                          ]
 
 parse :: String -> IO Node
 parse fileName = parseFromFile unit fileName >>= either report return
