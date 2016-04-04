@@ -434,7 +434,7 @@ endif
 " The {pattern} is passed through as-is to the underlying search program, and no
 " escaping is required other than preceding spaces by a single backslash. For
 " example, to search for "\bfoo[0-9]{2} bar\b" (ie. using `ag`'s Perl-style
-" regular expression syntax), you could do: >
+" regular expression syntax), you could do:
 "
 " ```
 " :Ack \bfoo[0-9]{2}\ bar\b

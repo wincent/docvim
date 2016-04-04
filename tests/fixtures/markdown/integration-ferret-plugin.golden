@@ -280,7 +280,7 @@ Searches for {pattern} in all the files under the current directory (see <strong
 
 If dispatch.vim is installed the search process will run asynchronously via the <strong>`:Make`</strong> command, otherwise it will be run synchronously via <strong>`:cexpr`</strong>. Asynchronous searches are preferred because they do not block, despite the fact that Vim itself is single threaded. The <strong>`g:FerretDispatch`</strong> option can be used to prevent the use of dispatch.vim.
 
-The {pattern} is passed through as-is to the underlying search program, and no escaping is required other than preceding spaces by a single backslash. For example, to search for "\bfoo[0-9]{2} bar\b" (ie. using `ag`'s Perl-style regular expression syntax), you could do: >
+The {pattern} is passed through as-is to the underlying search program, and no escaping is required other than preceding spaces by a single backslash. For example, to search for "\bfoo[0-9]{2} bar\b" (ie. using `ag`'s Perl-style regular expression syntax), you could do:
 
 ```
 :Ack \bfoo[0-9]{2}\ bar\b

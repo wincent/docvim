@@ -3184,8 +3184,6 @@ Unit
           , Plaintext "could"
           , Whitespace
           , Plaintext "do:"
-          , Whitespace
-          , Plaintext ">"
           ]
       , Fenced [ ":Ack \\bfoo[0-9]{2}\\ bar\\b" ]
       , Paragraph
