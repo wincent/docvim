@@ -95,7 +95,11 @@ function =   FunctionDeclaration
     argument   = Argument <$> (string "..." <|> many1 alphaNum) <* optional wsc
     attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
 
-endfunction = command "endf[unction]" <* eos
+-- Disambiguate `:endf[unction]` and `:endfo[r]`
+-- BUG: we parse "endfz" as "endf" + GenericStatement "z"
+endfunction =  lookAhead (string "endf" >> notFollowedBy (string "o"))
+            >> command "endf[unction]"
+            <* eos
 
 -- "let" is a reserved word in Haskell, so we call this "letStatement" instead.
 letStatement =   LetStatement

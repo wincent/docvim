@@ -1,0 +1,46 @@
+Unit
+  [ FunctionDeclaration
+      { functionBang = True
+      , functionName = "A"
+      , functionArguments = ArgumentList []
+      , functionAttributes = []
+      , functionBody =
+          [ GenericStatement "forl:itemingetqflist()"
+          , GenericStatement "echol:item"
+          , GenericStatement "endfo"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "B"
+      , functionArguments = ArgumentList []
+      , functionAttributes = []
+      , functionBody =
+          [ GenericStatement "forl:itemingetqflist()"
+          , GenericStatement "echol:item"
+          , GenericStatement "endfor"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "C"
+      , functionArguments = ArgumentList []
+      , functionAttributes = []
+      , functionBody =
+          [ GenericStatement "forl:itemingetqflist()"
+          , GenericStatement "echol:item"
+          , GenericStatement "endfo"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "D"
+      , functionArguments = ArgumentList []
+      , functionAttributes = []
+      , functionBody =
+          [ GenericStatement "forl:itemingetqflist()"
+          , GenericStatement "echol:item"
+          , GenericStatement "endfo"
+          ]
+      }
+  ]
