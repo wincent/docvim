@@ -23,6 +23,7 @@ import Text.Parsec ( (<|>)
                    , (<?>)
                    , ParseError
                    , choice
+                   , digit
                    , lookAhead
                    , many
                    , many1
@@ -100,6 +101,21 @@ function =   FunctionDeclaration
 endfunction =  lookAhead (string "endf" >> notFollowedBy (string "o"))
             >> command "endf[unction]"
             <* eos
+
+lStatement =  lookAhead (char 'l')
+           >> choice [ try (lookAhead (string "lw")) >> lwindow
+                     , try (lookAhead (string "let")) >> letStatement
+                     , lexpr
+                     ]
+
+lwindow = LwindowStatement <$> (lw *> height <* eos)
+  where
+    lw     = command "lw[window]"
+    height = optionMaybe (wsc *> many1 digit)
+
+lexpr = LexprStatement
+      <$> (command "lex[pr]" *> bang <* wsc)
+      <*> restOfLine
 
 -- "let" is a reserved word in Haskell, so we call this "letStatement" instead.
 letStatement =   LetStatement
@@ -379,7 +395,7 @@ vimL = choice [ block
               ]
 
 block = choice [ function ]
-statement = choice [ letStatement
+statement = choice [ lStatement
                    , unlet
                    , genericStatement
                    ]

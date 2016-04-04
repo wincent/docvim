@@ -1,0 +1,24 @@
+Unit
+  [ LwindowStatement { lwindowHeight = Nothing }
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "i"
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "in"
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "ind"
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "indo"
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "indow"
+  , LwindowStatement { lwindowHeight = Just "10" }
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "i20"
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "in30"
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "ind40"
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "indo50"
+  , LwindowStatement { lwindowHeight = Nothing }
+  , GenericStatement "indow60"
+  ]

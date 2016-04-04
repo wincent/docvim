@@ -17,6 +17,10 @@ data Node
           | LetStatement { letLexpr :: String
                          , letValue :: String
                          }
+          | LexprStatement { lexprBang :: Bool
+                           , lexprExpr :: String
+                           }
+          | LwindowStatement { lwindowHeight :: Maybe String }
           | UnletStatement { unletBang :: Bool
                            , unletBody :: String
                            }

@@ -1,0 +1,377 @@
+Unit
+  [ FunctionDeclaration
+      { functionBang = True
+      , functionName = "s:delete"
+      , functionArguments =
+          ArgumentList [ Argument "first" , Argument "last" ]
+      , functionAttributes = []
+      , functionBody =
+          [ LetStatement { letLexpr = "l:list" , letValue = "getqflist()" }
+          , LetStatement { letLexpr = "l:line" , letValue = "a:first" }
+          , GenericStatement "whilel:line>=a:first&&l:line<=a:last"
+          , LetStatement { letLexpr = "l:list[l:line - 1]" , letValue = "0" }
+          , LetStatement { letLexpr = "l:line" , letValue = "l:line" }
+          , GenericStatement "+1"
+          , GenericStatement "endwhile"
+          , GenericStatement "callsetqflist(l:list,'r')"
+          , GenericStatement "execute'cc'.a:first"
+          , GenericStatement "execute\"normal\\<C-W>\\<C-P>\""
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "s:dispatch"
+      , functionArguments = ArgumentList []
+      , functionAttributes = []
+      , functionBody =
+          [ DocBlock
+              [ OptionAnnotation "g:FerretDispatch" "boolean" (Just "1")
+              , Paragraph
+                  [ Plaintext "Controls"
+                  , Whitespace
+                  , Plaintext "whether"
+                  , Whitespace
+                  , Plaintext "to"
+                  , Whitespace
+                  , Plaintext "use"
+                  , Whitespace
+                  , Plaintext "vim-dispatch"
+                  , Whitespace
+                  , Plaintext "(and"
+                  , Whitespace
+                  , Plaintext "specifically,"
+                  , Whitespace
+                  , Link ":Make"
+                  , Plaintext ")"
+                  , Whitespace
+                  , Plaintext "to"
+                  , Whitespace
+                  , Plaintext "run"
+                  , Whitespace
+                  , Link ":Ack"
+                  , Whitespace
+                  , Plaintext "searches"
+                  , Whitespace
+                  , Plaintext "asynchronously,"
+                  , Whitespace
+                  , Plaintext "when"
+                  , Whitespace
+                  , Plaintext "available."
+                  , Whitespace
+                  , Plaintext "To"
+                  , Whitespace
+                  , Plaintext "prevent"
+                  , Whitespace
+                  , Plaintext "vim-dispatch"
+                  , Whitespace
+                  , Plaintext "from"
+                  , Whitespace
+                  , Plaintext "being"
+                  , Whitespace
+                  , Plaintext "used,"
+                  , Whitespace
+                  , Plaintext "set"
+                  , Whitespace
+                  , Plaintext "to"
+                  , Whitespace
+                  , Plaintext "0:"
+                  ]
+              , Fenced [ "let g:FerretDispatch=0" ]
+              ]
+          , LetStatement { letLexpr = "l:dispatch" , letValue = "get(g:," }
+          , GenericStatement "'FerretDispatch',1)"
+          , GenericStatement "returnl:dispatch&&exists(':Make')==2"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "s:error"
+      , functionArguments = ArgumentList [ Argument "message" ]
+      , functionAttributes = [ "abort" ]
+      , functionBody =
+          [ GenericStatement "callinputsave()"
+          , GenericStatement "echohlErrorMsg"
+          , GenericStatement "callinput(a:message.':pressENTERtocontinue')"
+          , GenericStatement "echohlNONE"
+          , GenericStatement "callinputrestore()"
+          , GenericStatement "echo"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "s:parse"
+      , functionArguments = ArgumentList [ Argument "arg" ]
+      , functionAttributes = [ "abort" ]
+      , functionBody =
+          [ GenericStatement "ifexists('g:ferret_lastsearch')"
+          , UnletStatement
+              { unletBang = False , unletBody = "g:ferret_lastsearch" }
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "l:escaped_spaces_replaced_with_markers"
+              , letValue = "substitute(a:arg,"
+              }
+          , GenericStatement "'\\\\','<!!S!!>','g')"
+          , LetStatement
+              { letLexpr = "l:split_on_spaces"
+              , letValue = "split(l:escaped_spaces_replaced_with_markers)"
+              }
+          , LetStatement { letLexpr = "l:expanded_args" , letValue = "[]" }
+          , GenericStatement "forl:arginl:split_on_spaces"
+          , GenericStatement "ifl:arg=~#'^-'"
+          , GenericStatement "calladd(l:expanded_args,l:arg)"
+          , GenericStatement "elseifexists('g:ferret_lastsearch')"
+          , LetStatement
+              { letLexpr = "l:file_args" , letValue = "glob(l:arg," }
+          , GenericStatement "1,1)\"Ignore'wildignore',returnalist."
+          , GenericStatement "iflen(l:file_args)"
+          , GenericStatement "callextend(l:expanded_args,l:file_args)"
+          , GenericStatement "else"
+          , GenericStatement "calladd(l:expanded_args,l:arg)"
+          , GenericStatement "endif"
+          , GenericStatement "else"
+          , LetStatement
+              { letLexpr = "g:ferret_lastsearch"
+              , letValue = "substitute(l:arg,"
+              }
+          , GenericStatement "'<!!S!!>','','g')"
+          , GenericStatement "calladd(l:expanded_args,l:arg)"
+          , GenericStatement "endif"
+          , GenericStatement "endfor"
+          , LetStatement
+              { letLexpr = "l:each_word_shell_escaped"
+              , letValue = "map(l:expanded_args,"
+              }
+          , GenericStatement "'shellescape(v:val)')"
+          , LetStatement
+              { letLexpr = "l:joined"
+              , letValue = "join(l:each_word_shell_escaped)"
+              }
+          , GenericStatement "returnsubstitute(l:joined,'<!!S!!>','','g')"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "ferret#private#post"
+      , functionArguments = ArgumentList [ Argument "type" ]
+      , functionAttributes = [ "abort" ]
+      , functionBody =
+          [ GenericStatement "ifhas('autocmd')"
+          , GenericStatement "augroupFerretPostQF"
+          , GenericStatement "autocmd!"
+          , GenericStatement "augroupEND"
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "l:lastsearch " , letValue = "get(g:," }
+          , GenericStatement "'ferret_lastsearch','')"
+          , LetStatement { letLexpr = "l:qflist " , letValue = "a:type" }
+          , GenericStatement "=='qf'?getqflist():getloclist(0)"
+          , LetStatement { letLexpr = "l:tip " , letValue = "'" }
+          , GenericStatement "[see`:helpferret-quotes`]'"
+          , GenericStatement "iflen(l:qflist)==0"
+          , LetStatement { letLexpr = "l:base " , letValue = "'No" }
+          , GenericStatement "resultsforsearchpattern`'.l:lastsearch.'`'"
+          , GenericStatement
+              "ifl:lastsearch=~'\\v^(['.\"'\".'\"])[^\\1]+\\1$'"
+          , GenericStatement "calls:error(l:base.l:tip)"
+          , GenericStatement "else"
+          , GenericStatement "calls:error(l:base)"
+          , GenericStatement "endif"
+          , GenericStatement "else"
+          , LetStatement
+              { letLexpr = "l:invalid " , letValue = "filter(copy(l:qflist)," }
+          , GenericStatement "'v:val.valid==0')"
+          , GenericStatement "iflen(l:invalid)==len(l:qflist)"
+          , GenericStatement "redraw!"
+          , GenericStatement "echohlErrorMsg"
+          , GenericStatement "forl:iteminl:invalid"
+          , GenericStatement "echomsgl:item.text"
+          , GenericStatement "endfor"
+          , GenericStatement "echohlNONE"
+          , LetStatement { letLexpr = "l:base " , letValue = "'Search" }
+          , GenericStatement "for`'.l:lastsearch.'`failed'"
+          , LetStatement { letLexpr = "l:suffix " , letValue = "a:type" }
+          , GenericStatement
+              "=='qf'&&s:dispatch()?'(run`:messages`toseedetails)':''"
+          , GenericStatement
+              "ifl:lastsearch=~'\\v^['.\"'\".'\"].+[^'.\"'\".'\"]$'"
+          , GenericStatement "calls:error(l:base.l:tip.l:suffix)"
+          , GenericStatement "else"
+          , GenericStatement "calls:error(l:base.l:suffix)"
+          , GenericStatement "endif"
+          , GenericStatement "endif"
+          , GenericStatement "endif"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "ferret#private#ack"
+      , functionArguments = ArgumentList [ Argument "command" ]
+      , functionAttributes = [ "abort" ]
+      , functionBody =
+          [ LetStatement
+              { letLexpr = "l:command" , letValue = "s:parse(a:command)" }
+          , GenericStatement "callferret#private#hlsearch()"
+          , GenericStatement "ifempty(&grepprg)"
+          , GenericStatement "return"
+          , GenericStatement "endif"
+          , GenericStatement "ifs:dispatch()"
+          , GenericStatement "ifhas('autocmd')"
+          , GenericStatement "augroupFerretPostQF"
+          , GenericStatement "autocmd!"
+          , GenericStatement
+              "autocmdQuickfixCmdPostcgetfilecallferret#private#post('qf')"
+          , GenericStatement "augroupEND"
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "l:original_makeprg" , letValue = "&l:makeprg" }
+          , LetStatement
+              { letLexpr = "l:original_errorformat"
+              , letValue = "&l:errorformat"
+              }
+          , GenericStatement "try"
+          , LetStatement { letLexpr = "&l:makeprg" , letValue = "&grepprg" }
+          , GenericStatement ".''.l:command"
+          , LetStatement
+              { letLexpr = "&l:errorformat" , letValue = "&grepformat" }
+          , GenericStatement "Make"
+          , GenericStatement "catch"
+          , GenericStatement "ifhas('autocmd')"
+          , GenericStatement "augroup!FerretPostQF"
+          , GenericStatement "endif"
+          , GenericStatement "finally"
+          , LetStatement
+              { letLexpr = "&l:makeprg" , letValue = "l:original_makeprg" }
+          , LetStatement
+              { letLexpr = "&l:errorformat"
+              , letValue = "l:original_errorformat"
+              }
+          , GenericStatement "endtry"
+          , GenericStatement "else"
+          , GenericStatement "cexprsystem(&grepprg.''.l:command)"
+          , GenericStatement "cwindow"
+          , GenericStatement "callferret#private#post('qf')"
+          , GenericStatement "endif"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "ferret#private#lack"
+      , functionArguments = ArgumentList [ Argument "command" ]
+      , functionAttributes = [ "abort" ]
+      , functionBody =
+          [ LetStatement
+              { letLexpr = "l:command" , letValue = "s:parse(a:command)" }
+          , GenericStatement "callferret#private#hlsearch()"
+          , GenericStatement "ifempty(&grepprg)"
+          , GenericStatement "return"
+          , GenericStatement "endif"
+          , LexprStatement
+              { lexprBang = False
+              , lexprExpr = "system(&grepprg . ' ' . l:command)"
+              }
+          , LwindowStatement { lwindowHeight = Nothing }
+          , GenericStatement "indow"
+          , GenericStatement "callferret#private#post('location')"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "ferret#private#hlsearch"
+      , functionArguments = ArgumentList []
+      , functionAttributes = [ "abort" ]
+      , functionBody =
+          [ GenericStatement "ifhas('extra_search')"
+          , GenericStatement "\"\""
+          , LetStatement { letLexpr = "l:hlsearch" , letValue = "get(g:," }
+          , GenericStatement "'FerretHlsearch',&hlsearch)"
+          , GenericStatement "ifl:hlsearch"
+          , LetStatement
+              { letLexpr = "@/" , letValue = "g:ferret_lastsearch" }
+          , GenericStatement
+              "callfeedkeys(\":let&hlsearch=1|echo\\<CR>\",'n')"
+          , GenericStatement "endif"
+          , GenericStatement "endif"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "ferret#private#acks"
+      , functionArguments = ArgumentList [ Argument "command" ]
+      , functionAttributes = [ "abort" ]
+      , functionBody =
+          [ GenericStatement
+              "ifmatch(a:command,'\\v^/.+/.*/$')==-1\"crudesanitycheck"
+          , GenericStatement
+              "echoerr'Ferret:Expectedasubstitutionexpression(/foo/bar/);got:'.a:command"
+          , GenericStatement "return"
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "l:filenames" , letValue = "ferret#private#qargs()" }
+          , GenericStatement "ifl:filenames==#''"
+          , GenericStatement
+              "echoerr'Ferret:Quickfixfilenamesmustbepresent,buttherearenone'"
+          , GenericStatement "return"
+          , GenericStatement "endif"
+          , GenericStatement "execute'args'l:filenames"
+          , GenericStatement
+              "ifv:version>703||v:version==703&&has('patch438')"
+          , GenericStatement "silentdoautocmd<nomodeline>UserFerretWillWrite"
+          , GenericStatement "else"
+          , GenericStatement "silentdoautocmdUserFerretWillWrite"
+          , GenericStatement "endif"
+          , GenericStatement "execute'argdo''%s'.a:command.'ge|update'"
+          , GenericStatement
+              "ifv:version>703||v:version==703&&has('patch438')"
+          , GenericStatement "silentdoautocmd<nomodeline>UserFerretDidWrite"
+          , GenericStatement "else"
+          , GenericStatement "silentdoautocmdUserFerretDidWrite"
+          , GenericStatement "endif"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "ferret#private#qargs"
+      , functionArguments = ArgumentList []
+      , functionAttributes = [ "abort" ]
+      , functionBody =
+          [ LetStatement { letLexpr = "l:buffer_numbers" , letValue = "{}" }
+          , GenericStatement "forl:itemingetqflist()"
+          , LetStatement
+              { letLexpr = "l:buffer_numbers[l:item['bufnr']]"
+              , letValue = "bufname(l:item['bufnr'])"
+              }
+          , GenericStatement "endfor"
+          , GenericStatement
+              "returnjoin(map(values(l:buffer_numbers),'fnameescape(v:val)'))"
+          ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "ferret#private#qf_delete"
+      , functionArguments = ArgumentList []
+      , functionAttributes = [ "range" ]
+      , functionBody =
+          [ GenericStatement "calls:delete(a:firstline,a:lastline)" ]
+      }
+  , FunctionDeclaration
+      { functionBang = True
+      , functionName = "ferret#private#qf_delete_motion"
+      , functionArguments =
+          ArgumentList [ Argument "type" , Argument "..." ]
+      , functionAttributes = []
+      , functionBody =
+          [ LetStatement
+              { letLexpr = "l:selection" , letValue = "&selection" }
+          , LetStatement
+              { letLexpr = "&selection" , letValue = "'inclusive'" }
+          , LetStatement
+              { letLexpr = "l:firstline" , letValue = "line(\"'[\")" }
+          , LetStatement
+              { letLexpr = "l:lastline" , letValue = "line(\"']\")" }
+          , GenericStatement "calls:delete(l:firstline,l:lastline)"
+          , LetStatement
+              { letLexpr = "&selection" , letValue = "l:selection" }
+          ]
+      }
+  ]
