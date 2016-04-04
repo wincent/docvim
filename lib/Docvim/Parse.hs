@@ -92,7 +92,7 @@ function =   FunctionDeclaration
     arguments  =  (char '(' >> optional wsc)
                *> (ArgumentList <$> argument `sepBy` (char ',' >> optional wsc))
                <* (optional wsc >> char ')' >> optional wsc)
-    argument   = Argument <$> many1 alphaNum <* optional wsc
+    argument   = Argument <$> (string "..." <|> many1 alphaNum) <* optional wsc
     attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
 
 endfunction = command "endf[unction]" <* eos
