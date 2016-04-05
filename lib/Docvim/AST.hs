@@ -108,7 +108,7 @@ walk f acc n = foldl (walk f) (acc <> f n) children
       ListItem i             -> i
       Paragraph p            -> p
       Unit u                 -> u
-      _                      -> [] -- no Node children
+      _                      -> mempty -- no Node children
 
 -- | Sanitizes a link target similar to the way that GitHub does:
 --
