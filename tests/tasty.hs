@@ -7,7 +7,7 @@ import Control.Exception (evaluate)
 import Data.ByteString.Lazy.Char8 (pack, unpack)
 import Data.Char (chr)
 import Data.List (isPrefixOf, sort)
-import Data.Monoid ((<>), Sum(..))
+import Data.Monoid (Sum(..))
 import Docvim.AST
 import Docvim.Parse (p, parseUnit)
 import Docvim.Printer.Markdown (pm)
@@ -54,7 +54,7 @@ unitTests = testGroup "Unit tests"
                     , SubheadingAnnotation "baz"
                     ]
           ]
-        counter i _ = i <> 1
+        counter _ = 1
         nodeCount = getSum $ walk counter (Sum 0) tree
       in nodeCount
 
@@ -64,8 +64,8 @@ unitTests = testGroup "Unit tests"
                         , SubheadingAnnotation "bar"
                         , SubheadingAnnotation "baz"
                         ]
-        accumulateSubheadings nodes node@(SubheadingAnnotation _) = nodes <> [node]
-        accumulateSubheadings nodes _ = nodes -- skip everything else
+        accumulateSubheadings node@(SubheadingAnnotation _) = [node]
+        accumulateSubheadings _ = [] -- skip everything else
         selection = walk accumulateSubheadings [] tree
       in selection
 

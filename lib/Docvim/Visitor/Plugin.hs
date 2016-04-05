@@ -1,6 +1,5 @@
 module Docvim.Visitor.Plugin (getPluginName) where
 
-import Data.Monoid ((<>))
 import Docvim.AST
 
 -- | Returns the name of the plug-in or Nothing if none is found.
@@ -14,5 +13,5 @@ getPluginName node = name
            then Nothing
            else Just $ head names
     names = walk getName [] node
-    getName nodes (PluginAnnotation name _) = nodes <> [name]
-    getName nodes _                         = nodes
+    getName (PluginAnnotation name _) = [name]
+    getName _                         = []

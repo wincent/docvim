@@ -2,7 +2,6 @@ module Docvim.Visitor.Symbol (getSymbols) where
 
 import Data.Char (toLower)
 import Data.List (nub, sort)
-import Data.Monoid ((<>))
 import qualified Data.Set as Set
 import Docvim.AST
 import Docvim.Visitor.Plugin (getPluginName)
@@ -14,17 +13,17 @@ getSymbols node = if length symbols == Set.size set
                   then symbols
                   else error $ "Duplicate symbol table entries: " ++ show duplicates
   where
-    set                                           = Set.fromList symbols
-    symbols                                       = walk gatherSymbols [] node
-    gatherSymbols nodes (HeadingAnnotation h)     = nodes <> [titleAnchor h]
-    gatherSymbols nodes (LinkTargets ts)          = nodes <> ts
+    set                                     = Set.fromList symbols
+    symbols                                 = walk gatherSymbols [] node
+    gatherSymbols (HeadingAnnotation h)     = [titleAnchor h]
+    gatherSymbols (LinkTargets ts)          = ts
     -- TODO: probably don't want this target to exist in the symbol table when
     -- emitting Markdown
-    gatherSymbols nodes (PluginAnnotation name _) = nodes <> [name, name ++ ".txt"]
-    gatherSymbols nodes _                         = nodes
-    titleAnchor title                             = titlePrefix ++ sanitizeAnchor title
-    titlePrefix                                   = downcase $ maybe "" (++ "-") $ getPluginName node
-    duplicates                                    = nub $ f (sort symbols)
+    gatherSymbols (PluginAnnotation name _) = [name, name ++ ".txt"]
+    gatherSymbols _                         = []
+    titleAnchor title                       = titlePrefix ++ sanitizeAnchor title
+    titlePrefix                             = downcase $ maybe "" (++ "-") $ getPluginName node
+    duplicates                              = nub $ f (sort symbols)
       where
         f [] = []
         f [x] = []

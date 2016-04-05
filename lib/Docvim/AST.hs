@@ -2,6 +2,7 @@ module Docvim.AST where
 
 import Data.Char (toLower)
 import Data.List (intercalate)
+import Data.Monoid ((<>))
 
 data Node
           -- Root (translation unit)
@@ -87,17 +88,17 @@ type Usage = String
 -- For example, to implement a visitor which counts all nodes:
 --
 -- >  import Data.Monoid
--- >  counter i _ = i <> 1
+-- >  counter _ = 1
 -- >  count = getSum $ walk counter (Sum 0) tree
 --
 -- Another example; accumulating `SubheadingAnnotation` nodes into a list:
 --
--- >  accumulator nodes node@(SubheadingAnnotation _) = nodes <> [node]
--- >  accumulator nodes _ = nodes -- skip everything else
+-- >  accumulator node@(SubheadingAnnotation _) = [node]
+-- >  accumulator _ = [] -- skip everything else
 -- >  nodes = walk accumulator [] tree
 --
-walk :: Monoid a => (a -> Node -> a) -> a -> Node -> a
-walk f acc n = foldl (walk f) (f acc n) children
+walk :: Monoid a => (Node -> a) -> a -> Node -> a
+walk f acc n = foldl (walk f) (acc <> f n) children
   where
     children = case n of
       Blockquote b           -> b
