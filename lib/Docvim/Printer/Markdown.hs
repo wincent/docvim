@@ -31,14 +31,14 @@ nodes ns = concat <$> mapM node ns
 node :: Node -> Env
 node n = case n of
   -- Nodes that depend on (or must propagate) reader context.
-  Blockquote b           -> blockquote b >>= appendNewline >>= appendNewline
-  DocBlock d             -> nodes d
-  FunctionDeclaration {} -> nodes $ functionBody n
-  Paragraph p            -> nodes p >>= appendNewline >>= appendNewline
-  Link l                 -> link l
-  List ls                -> nodes ls >>= appendNewline
-  ListItem l             -> fmap ("- " ++) (nodes l) >>= appendNewline
-  Unit u                 -> nodes u
+  Blockquote b            -> blockquote b >>= appendNewline >>= appendNewline
+  DocBlock d              -> nodes d
+  FunctionDeclaration {}  -> nodes $ functionBody n
+  Paragraph p             -> nodes p >>= appendNewline >>= appendNewline
+  Link l                  -> link l
+  List ls                 -> nodes ls >>= appendNewline
+  ListItem l              -> fmap ("- " ++) (nodes l) >>= appendNewline
+  Unit u                  -> nodes u
 
   -- Nodes that don't depend on reader context.
   BreakTag                -> return "<br />"
