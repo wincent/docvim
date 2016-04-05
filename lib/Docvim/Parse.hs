@@ -126,7 +126,7 @@ letStatement =   LetStatement
     -- Kludge alert! Until we get a full expression parser, we use this crude
     -- thing.
     lhs = many1 $ noneOf "\"\n="
-    rhs = many1 $ noneOf "\n\t"
+    rhs = many1 $ noneOf "\n"
 
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
