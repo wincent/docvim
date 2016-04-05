@@ -31,30 +31,30 @@ nodes ns = concat <$> mapM node ns
 node :: Node -> Env
 node n = case n of
   -- Nodes that depend on (or must propagate) reader context.
-  (Blockquote b)           -> blockquote b >>= appendNewline >>= appendNewline
-  (DocBlock d)             -> nodes d
-  (FunctionDeclaration {}) -> nodes $ functionBody n
-  (Paragraph p)            -> nodes p >>= appendNewline >>= appendNewline
-  (Link l)                 -> link l
-  (List ls)                -> nodes ls >>= appendNewline
-  (ListItem l)             -> fmap ("- " ++) (nodes l) >>= appendNewline
-  (Unit u)                 -> nodes u
+  Blockquote b           -> blockquote b >>= appendNewline >>= appendNewline
+  DocBlock d             -> nodes d
+  FunctionDeclaration {} -> nodes $ functionBody n
+  Paragraph p            -> nodes p >>= appendNewline >>= appendNewline
+  Link l                 -> link l
+  List ls                -> nodes ls >>= appendNewline
+  ListItem l             -> fmap ("- " ++) (nodes l) >>= appendNewline
+  Unit u                 -> nodes u
 
   -- Nodes that don't depend on reader context.
-  BreakTag                  -> return "<br />"
-  (Code c)                  -> return $ "`" ++ c ++ "`"
-  (Fenced f)                -> return $ fenced f ++ "\n\n"
-  (HeadingAnnotation h)     -> return $ "## " ++ h ++ "\n\n"
-  (LinkTargets l)           -> return $ linkTargets l ++ "\n"
+  BreakTag                -> return "<br />"
+  Code c                  -> return $ "`" ++ c ++ "`"
+  Fenced f                -> return $ fenced f ++ "\n\n"
+  HeadingAnnotation h     -> return $ "## " ++ h ++ "\n\n"
+  LinkTargets l           -> return $ linkTargets l ++ "\n"
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
-  (PluginAnnotation name _) -> return $ "# " ++ name ++ "\n\n"
-  (Plaintext p)             -> return p
-  Separator                 -> return $ "---" ++ "\n\n"
-  (SubheadingAnnotation s)  -> return $ "### " ++ s ++ "\n\n"
-  Whitespace                -> return " "
-  _                         -> return ""
+  PluginAnnotation name _ -> return $ "# " ++ name ++ "\n\n"
+  Plaintext p             -> return p
+  Separator               -> return $ "---" ++ "\n\n"
+  SubheadingAnnotation s  -> return $ "### " ++ s ++ "\n\n"
+  Whitespace              -> return " "
+  _                       -> return ""
 
 appendNewline :: String -> Env
 appendNewline = return . (++ "\n")
