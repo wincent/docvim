@@ -100,11 +100,11 @@ walk :: Monoid a => (a -> Node -> a) -> a -> Node -> a
 walk f acc n = foldl (walk f) (f acc n) children
   where
     children = case n of
+      Blockquote b           -> b
       DocBlock d             -> d
       FunctionDeclaration {} -> functionBody n
       List l                 -> l
       ListItem i             -> i
-      Blockquote b           -> b
       Paragraph p            -> p
       Unit u                 -> u
       _                      -> [] -- no Node children
