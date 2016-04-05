@@ -2853,38 +2853,40 @@ Unit
       ]
   , GenericStatement "\"\""
   , GenericStatement
-      "ifexists('g:FerretLoaded')||&compatible||v:version<700"
+      "if exists('g:FerretLoaded') || &compatible || v:version < 700"
   , GenericStatement "finish"
   , GenericStatement "endif"
   , LetStatement { letLexpr = "g:FerretLoaded " , letValue = "1" }
   , LetStatement
       { letLexpr = "s:cpoptions " , letValue = "&cpoptions" }
-  , GenericStatement "setcpoptions&vim"
+  , GenericStatement "set cpoptions&vim"
   , GenericStatement
-      "ifexecutable('ag')\"TheSilverSearcher:fasterthanack."
+      "if executable('ag') \" The Silver Searcher: faster than ack."
   , LetStatement
       { letLexpr = "s:ackprg "
       , letValue = "'ag --column --nocolor --nogroup'"
       }
-  , GenericStatement "elseifexecutable('ack')\"Ack:betterthangrep."
+  , GenericStatement
+      "elseif executable('ack') \" Ack: better than grep."
   , LetStatement
       { letLexpr = "s:ackprg " , letValue = "'ack --column'" }
-  , GenericStatement "elseifexecutable('grep')\"Grep:it'sjustgrep."
+  , GenericStatement
+      "elseif executable('grep') \" Grep: it's just grep."
   , LetStatement
       { letLexpr = "s:ackprg "
       , letValue = "&grepprg \" default is: grep -n $* /dev/null"
       }
   , GenericStatement "endif"
-  , GenericStatement "if!empty(s:ackprg)"
+  , GenericStatement "if !empty(s:ackprg)"
   , LetStatement { letLexpr = "&grepprg" , letValue = "s:ackprg" }
-  , GenericStatement "setgrepformat=%f:%l:%c:%m"
+  , GenericStatement "set grepformat=%f:%l:%c:%m"
   , GenericStatement "endif"
-  , GenericStatement "ifhas('autocmd')"
-  , GenericStatement "augroupFerret"
+  , GenericStatement "if has('autocmd')"
+  , GenericStatement "augroup Ferret"
   , GenericStatement "autocmd!"
-  , GenericStatement "autocmdQuickFixCmdPost[^l]*nestedcwindow"
-  , GenericStatement "autocmdQuickFixCmdPostl*nestedlwindow"
-  , GenericStatement "augroupEND"
+  , GenericStatement "autocmd QuickFixCmdPost [^l]* nested cwindow"
+  , GenericStatement "autocmd QuickFixCmdPost l* nested lwindow"
+  , GenericStatement "augroup END"
   , GenericStatement "endif"
   , DocBlock
       [ CommandAnnotation ":Ack {pattern} {options}"
@@ -3324,7 +3326,7 @@ Unit
           ]
       ]
   , GenericStatement
-      "command!-nargs=+-complete=fileAckcallferret#private#ack(<q-args>)"
+      "command! -nargs=+ -complete=file Ack call ferret#private#ack(<q-args>)"
   , DocBlock
       [ CommandAnnotation ":Lack {pattern} {options}"
       , Paragraph
@@ -3419,7 +3421,7 @@ Unit
           ]
       ]
   , GenericStatement
-      "command!-nargs=+-complete=fileLackcallferret#private#lack(<q-args>)"
+      "command! -nargs=+ -complete=file Lack call ferret#private#lack(<q-args>)"
   , DocBlock
       [ CommandAnnotation ":Acks /{pattern}/{replacement}/"
       , Paragraph
@@ -3552,7 +3554,7 @@ Unit
       , Fenced [ ":Ack foo" , ":Acks /foo/bar/" ]
       ]
   , GenericStatement
-      "command!-nargs=1Ackscallferret#private#acks(<q-args>)"
+      "command! -nargs=1 Acks call ferret#private#acks(<q-args>)"
   , DocBlock
       [ OptionAnnotation "g:FerretMap" "boolean" (Just "1")
       , Paragraph
@@ -3614,9 +3616,9 @@ Unit
       ]
   , LetStatement
       { letLexpr = "s:map" , letValue = "get(g:, 'FerretMap', 1)" }
-  , GenericStatement "ifs:map"
+  , GenericStatement "if s:map"
   , GenericStatement
-      "if!hasmapto('<Plug>(FerretAck)')&&maparg('<leader>a','n')==#''"
+      "if !hasmapto('<Plug>(FerretAck)') && maparg('<leader>a', 'n') ==# ''"
   , DocBlock
       [ MappingAnnotation "<Plug>(FerretAck)"
       , Paragraph
@@ -3679,11 +3681,11 @@ Unit
           , "nmap <leader>x <Plug>(FerretAck)"
           ]
       ]
-  , GenericStatement "nmap<unique><leader>a<Plug>(FerretAck)"
+  , GenericStatement "nmap <unique> <leader>a <Plug>(FerretAck)"
   , GenericStatement "endif"
-  , GenericStatement "nnoremap<Plug>(FerretAck):Ack<space>"
+  , GenericStatement "nnoremap <Plug>(FerretAck) :Ack<space>"
   , GenericStatement
-      "if!hasmapto('<Plug>FerretLack')&&maparg('<leader>l','n')==#''"
+      "if !hasmapto('<Plug>FerretLack') && maparg('<leader>l', 'n') ==# ''"
   , DocBlock
       [ MappingAnnotation "<Plug>(FerretLack)"
       , Paragraph
@@ -3746,11 +3748,11 @@ Unit
           , "nmap <leader>y <Plug>(FerretLack)"
           ]
       ]
-  , GenericStatement "nmap<unique><leader>l<Plug>(FerretLack)"
+  , GenericStatement "nmap <unique> <leader>l <Plug>(FerretLack)"
   , GenericStatement "endif"
-  , GenericStatement "nnoremap<Plug>(FerretLack):Lack<space>"
+  , GenericStatement "nnoremap <Plug>(FerretLack) :Lack<space>"
   , GenericStatement
-      "if!hasmapto('<Plug>(FerretAckWord)')&&maparg('<leader>s','n')==#''"
+      "if !hasmapto('<Plug>(FerretAckWord)') && maparg('<leader>s', 'n') ==# ''"
   , DocBlock
       [ MappingAnnotation "<Plug>(FerretAckWord)"
       , Paragraph
@@ -3831,12 +3833,12 @@ Unit
           , "nmap <leader>z <Plug>(FerretAckWord)"
           ]
       ]
-  , GenericStatement "nmap<unique><leader>s<Plug>(FerretAckWord)"
+  , GenericStatement "nmap <unique> <leader>s <Plug>(FerretAckWord)"
   , GenericStatement "endif"
   , GenericStatement
-      "nnoremap<Plug>(FerretAckWord):Ack<C-r><C-w><CR>"
+      "nnoremap <Plug>(FerretAckWord) :Ack <C-r><C-w><CR>"
   , GenericStatement
-      "if!hasmapto('<Plug>(FerretAcks)')&&maparg('<leader>r','n')==#''"
+      "if !hasmapto('<Plug>(FerretAcks)') && maparg('<leader>r', 'n') ==# ''"
   , DocBlock
       [ MappingAnnotation "*<Plug>(FerretAcks)*"
       , Paragraph
@@ -3925,10 +3927,10 @@ Unit
           , "nmap <leader>u <Plug>(FerretAcks)"
           ]
       ]
-  , GenericStatement "nmap<unique><leader>r<Plug>(FerretAcks)"
+  , GenericStatement "nmap <unique> <leader>r <Plug>(FerretAcks)"
   , GenericStatement "endif"
   , GenericStatement
-      "nnoremap<Plug>(FerretAcks):Acks<c-r>=(exists('g:ferret_lastsearch')?'/'.g:ferret_lastsearch.'//':'')<CR><Left>"
+      "nnoremap <Plug>(FerretAcks) :Acks <c-r>=(exists('g:ferret_lastsearch') ? '/' . g:ferret_lastsearch . '//' : ' ')<CR><Left>"
   , GenericStatement "endif"
   , DocBlock
       [ CommandAnnotation ":Qargs"
@@ -4036,7 +4038,7 @@ Unit
           ]
       ]
   , GenericStatement
-      "command!-barQargsexecute'args'ferret#private#qargs()"
+      "command! -bar Qargs execute 'args' ferret#private#qargs()"
   , DocBlock
       [ OptionAnnotation "g:FerretQFCommands" "boolean" (Just "1")
       , Paragraph
@@ -4127,15 +4129,15 @@ Unit
       { letLexpr = "s:commands"
       , letValue = "get(g:, 'FerretQFCommands', 1)"
       }
-  , GenericStatement "ifs:commands"
+  , GenericStatement "if s:commands"
   , GenericStatement
-      "cabbrev<silent><expr>cn((getcmdtype()==':'&&getcmdpos()==3)?'cn<bar>normalzz':'cn')"
+      "cabbrev <silent> <expr> cn ((getcmdtype() == ':' && getcmdpos() == 3) ? 'cn <bar> normal zz' : 'cn')"
   , GenericStatement
-      "cabbrev<silent><expr>cnf((getcmdtype()==':'&&getcmdpos()==4)?'cnf<bar>normalzz':'cnf')"
+      "cabbrev <silent> <expr> cnf ((getcmdtype() == ':' && getcmdpos() == 4) ? 'cnf <bar> normal zz' : 'cnf')"
   , GenericStatement
-      "cabbrev<silent><expr>cp((getcmdtype()==':'&&getcmdpos()==3)?'cp<bar>normalzz':'cp')"
+      "cabbrev <silent> <expr> cp ((getcmdtype() == ':' && getcmdpos() == 3) ? 'cp <bar> normal zz' : 'cp')"
   , GenericStatement
-      "cabbrev<silent><expr>cpf((getcmdtype()==':'&&getcmdpos()==4)?'cpf<bar>normalzz':'cpf')"
+      "cabbrev <silent> <expr> cpf ((getcmdtype() == ':' && getcmdpos() == 4) ? 'cpf <bar> normal zz' : 'cpf')"
   , GenericStatement "endif"
   , LetStatement
       { letLexpr = "&cpoptions " , letValue = "s:cpoptions" }

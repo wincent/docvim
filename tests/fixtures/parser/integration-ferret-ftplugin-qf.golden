@@ -137,24 +137,24 @@ Unit
       { letLexpr = "s:options"
       , letValue = "get(g:, 'FerretQFOptions', 1)"
       }
-  , GenericStatement "ifs:options"
-  , GenericStatement "setlocalnolist"
-  , GenericStatement "ifexists('+relativenumber')"
-  , GenericStatement "setlocalnorelativenumber"
+  , GenericStatement "if s:options"
+  , GenericStatement "setlocal nolist"
+  , GenericStatement "if exists('+relativenumber')"
+  , GenericStatement "setlocal norelativenumber"
   , GenericStatement "endif"
-  , GenericStatement "setlocalnowrap"
-  , GenericStatement "setlocalnumber"
+  , GenericStatement "setlocal nowrap"
+  , GenericStatement "setlocal number"
   , LetStatement
       { letLexpr = "s:original_scrolloff" , letValue = "&scrolloff" }
-  , GenericStatement "setscrolloff=0"
-  , GenericStatement "ifhas('autocmd')"
-  , GenericStatement "augroupFerretQF"
+  , GenericStatement "set scrolloff=0"
+  , GenericStatement "if has('autocmd')"
+  , GenericStatement "augroup FerretQF"
   , GenericStatement "autocmd!"
   , GenericStatement
-      "autocmdBufLeave<buffer>execute'setscrolloff='.s:original_scrolloff"
+      "autocmd BufLeave <buffer> execute 'set scrolloff=' . s:original_scrolloff"
   , GenericStatement
-      "autocmdBufEnter<buffer>setscrolloff=0|setlocalnocursorline"
-  , GenericStatement "augroupEND"
+      "autocmd BufEnter <buffer> set scrolloff=0 | setlocal nocursorline"
+  , GenericStatement "augroup END"
   , GenericStatement "endif"
   , GenericStatement "endif"
   , DocBlock
@@ -267,12 +267,12 @@ Unit
       ]
   , LetStatement
       { letLexpr = "s:map" , letValue = "get(g:, 'FerretQFMap', 1)" }
-  , GenericStatement "ifs:map"
+  , GenericStatement "if s:map"
   , GenericStatement
-      "nnoremap<buffer><silent>d:setoperatorfunc=ferret#private#qf_delete_motion<CR>g@"
+      "nnoremap <buffer> <silent> d :set operatorfunc=ferret#private#qf_delete_motion<CR>g@"
   , GenericStatement
-      "nnoremap<buffer><silent>dd:callferret#private#qf_delete()<CR>"
+      "nnoremap <buffer> <silent> dd :call ferret#private#qf_delete()<CR>"
   , GenericStatement
-      "vnoremap<buffer><silent>d:callferret#private#qf_delete()<CR>"
+      "vnoremap <buffer> <silent> d :call ferret#private#qf_delete()<CR>"
   , GenericStatement "endif"
   ]

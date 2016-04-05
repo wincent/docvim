@@ -5,8 +5,8 @@ Unit
       , functionArguments = ArgumentList []
       , functionAttributes = []
       , functionBody =
-          [ GenericStatement "forl:itemingetqflist()"
-          , GenericStatement "echol:item"
+          [ GenericStatement "for l:item in getqflist()"
+          , GenericStatement "echo l:item"
           , GenericStatement "endfo"
           ]
       }
@@ -16,8 +16,8 @@ Unit
       , functionArguments = ArgumentList []
       , functionAttributes = []
       , functionBody =
-          [ GenericStatement "forl:itemingetqflist()"
-          , GenericStatement "echol:item"
+          [ GenericStatement "for l:item in getqflist()"
+          , GenericStatement "echo l:item"
           , GenericStatement "endfor"
           ]
       }
@@ -27,8 +27,8 @@ Unit
       , functionArguments = ArgumentList []
       , functionAttributes = []
       , functionBody =
-          [ GenericStatement "forl:itemingetqflist()"
-          , GenericStatement "echol:item"
+          [ GenericStatement "for l:item in getqflist()"
+          , GenericStatement "echo l:item"
           , GenericStatement "endfo"
           ]
       }
@@ -38,8 +38,8 @@ Unit
       , functionArguments = ArgumentList []
       , functionAttributes = []
       , functionBody =
-          [ GenericStatement "forl:itemingetqflist()"
-          , GenericStatement "echol:item"
+          [ GenericStatement "for l:item in getqflist()"
+          , GenericStatement "echo l:item"
           , GenericStatement "endfo"
           ]
       }

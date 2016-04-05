@@ -412,7 +412,7 @@ genericStatement = do
   notFollowedBy endfunction
   atoms <- sepEndBy1 word (optional wsc)
   eos
-  return $ GenericStatement $ concat atoms
+  return $ GenericStatement $ intercalate " " atoms
 
 -- | Remainder of the line up to but not including a newline.
 -- Does not include any trailing whitespace.
