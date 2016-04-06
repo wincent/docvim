@@ -21,48 +21,34 @@ getFooter n = evalState (node n) (False, [])
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
 
+setCapturing :: Bool -> Env
+setCapturing b = do
+  (_, acc) <- get
+  put (b, acc)
+  return $ acc
+
+start :: Env
+start = setCapturing True
+
+stop :: Env
+stop = setCapturing False
+
 node :: Node -> Env
 node n = case n of
-  CommandAnnotation _ -> do
-    (_, acc) <- get
-    put (False, acc)
-    return $ acc
-
-  DocBlock d -> do
-    (_, acc) <- get
-    ns <- nodes d
-    put (False, acc) -- Make sure we reset state on exiting docblock.
+  CommandAnnotation _    -> stop
+  DocBlock d             -> do
+    (_, acc)             <- get
+    ns                   <- nodes d
+    put (False, acc)     -- Make sure we reset state on exiting docblock.
     return $ acc ++ ns
-
-  FooterAnnotation -> do
-    (_, acc) <- get
-    put (True, acc)
-    return $ acc
-
-  MappingAnnotation _ -> do
-    (_, acc) <- get
-    put (False, acc)
-    return $ acc
-
-  MappingsAnnotation -> do
-    (_, acc) <- get
-    put (False, acc)
-    return $ acc
-
-  OptionAnnotation _ _ _ -> do
-    (_, acc) <- get
-    put (False, acc)
-    return $ acc
-
-  PluginAnnotation _ _ -> do
-    (_, acc) <- get
-    put (False, acc)
-    return $ acc
-
-  Unit u -> nodes u
-
-  _ -> do
-    (capture, acc) <- get
+  FooterAnnotation       -> start
+  MappingAnnotation _    -> stop
+  MappingsAnnotation     -> stop
+  OptionAnnotation _ _ _ -> stop
+  PluginAnnotation _ _   -> stop
+  Unit u                 -> nodes u
+  _                      -> do
+    (capture, acc)       <- get
     return $ if capture
              then acc ++ [n]
              else acc
