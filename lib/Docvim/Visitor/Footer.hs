@@ -23,6 +23,11 @@ nodes ns = concat <$> mapM node ns
 
 node :: Node -> Env
 node n = case n of
+  CommandAnnotation _ -> do
+    (_, acc) <- get
+    put (False, acc)
+    return $ acc
+
   DocBlock d -> do
     (_, acc) <- get
     ns <- nodes d
@@ -32,6 +37,26 @@ node n = case n of
   FooterAnnotation -> do
     (_, acc) <- get
     put (True, acc)
+    return $ acc
+
+  MappingAnnotation _ -> do
+    (_, acc) <- get
+    put (False, acc)
+    return $ acc
+
+  MappingsAnnotation -> do
+    (_, acc) <- get
+    put (False, acc)
+    return $ acc
+
+  OptionAnnotation _ _ _ -> do
+    (_, acc) <- get
+    put (False, acc)
+    return $ acc
+
+  PluginAnnotation _ _ -> do
+    (_, acc) <- get
+    put (False, acc)
     return $ acc
 
   Unit u -> nodes u
