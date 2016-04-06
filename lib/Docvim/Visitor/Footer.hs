@@ -1,13 +1,15 @@
-module Docvim.Visitor.Footer (getFooter) where
+module Docvim.Visitor.Footer (partitionFooter) where
 
 import Control.Monad.State
 import Debug.Trace
 import Docvim.AST
 
 -- | State monad where the state is a Bool indicating whether we are
--- accumulating nodes after a `@footer` annotation, and the result is a list of
--- the accumulated nodes.
-type Env = State (Bool, [Node]) [Node]
+-- accumulating nodes after a `@footer` annotation, and the result is a tuple
+-- containing a pair of partitioned lists for the accumulated nodes. In this
+-- case, the lists containg the `@footer` nodes and the non-`@footer` nodes
+-- respectively.
+type Env = State (Bool, [Node], [Node]) ([Node], [Node])
 
 -- | Gets a list of nodes (if any exist) from the `@footer` section of the
 -- source code.
@@ -15,17 +17,21 @@ type Env = State (Bool, [Node]) [Node]
 -- If multiple footers (potentially across multiple translation units) no
 -- guarantees about order but they just get concatenated in the order we see
 -- them
-getFooter :: Node -> [Node]
-getFooter n = evalState (node n) (False, [])
+partitionFooter :: Node -> ([Node], [Node])
+partitionFooter n = evalState (node n) (False, [], [])
 
 nodes :: [Node] -> Env
-nodes ns = concat <$> mapM node ns
+nodes ns = do
+  (_, footer, other) <- get
+  mapped <- mapM node ns
+  let (x, y) = if null mapped then ([],[]) else last mapped
+  return (footer ++ x, other ++ y)
 
 setCapturing :: Bool -> Env
 setCapturing b = do
-  (_, acc) <- get
-  put (b, acc)
-  return $ acc
+  (_, footer, other) <- get
+  put (b, footer, other)
+  return $ (footer, other)
 
 start :: Env
 start = setCapturing True
@@ -37,10 +43,10 @@ node :: Node -> Env
 node n = case n of
   CommandAnnotation _    -> stop
   DocBlock d             -> do
-    (_, acc)             <- get
-    ns                   <- nodes d
-    put (False, acc)     -- Make sure we reset state on exiting docblock.
-    return $ acc ++ ns
+    (_, footer, other)   <- get
+    (footer, other)      <- nodes d
+    put (False, footer, other)     -- Make sure we reset state on exiting docblock.
+    return $ (footer, other)
   FooterAnnotation       -> start
   MappingAnnotation _    -> stop
   MappingsAnnotation     -> stop
@@ -48,7 +54,7 @@ node n = case n of
   PluginAnnotation _ _   -> stop
   Unit u                 -> nodes u
   _                      -> do
-    (capture, acc)       <- get
+    (capture, footer, other) <- get
     return $ if capture
-             then acc ++ [n]
-             else acc
+             then (footer ++ [n], other)
+             else (footer, other ++ [n])
