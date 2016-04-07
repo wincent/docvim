@@ -76,6 +76,7 @@ library
                ,    filepath
 
                     -- Third party
+               ,    lens
                ,    mtl
                ,    optparse-applicative
                ,    parsec
@@ -107,6 +108,7 @@ test-suite tasty
                ,    deepseq
                ,    docvim
                ,    filepath
+               ,    lens
                ,    mtl
                ,    parsec
                ,    pretty-show

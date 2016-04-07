@@ -1,6 +1,13 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Docvim.AST where
 
+import Control.Lens.Fold (foldlOf)
+import Control.Lens.Getter (to)
+import Control.Lens.Plated (Plated(..), cosmosOf)
 import Data.Char (toLower)
+import Data.Data
+import Data.Data.Lens (uniplate)
 import Data.List (intercalate)
 import Data.Monoid ((<>))
 
@@ -56,7 +63,10 @@ data Node
           | OptionAnnotation Name Type (Maybe Default)
           | HeadingAnnotation String
           | SubheadingAnnotation String
-  deriving (Eq, Show)
+  deriving (Data, Eq, Show, Typeable)
+
+instance Plated Node where
+  plate = uniplate
 
 -- The VimScript (VimL) grammar is embodied in the implementation of
 -- https://github.com/vim/vim/blob/master/src/eval.c; there is no formal
@@ -70,10 +80,10 @@ data Node
 -- TODO: validate name = CapitalLetter or s:foo or auto#loaded
 
 data ArgumentList = ArgumentList [Argument]
-  deriving (Eq, Show)
+  deriving (Data, Eq, Show, Typeable)
 
 data Argument = Argument String
-  deriving (Eq, Show)
+  deriving (Data, Eq, Show, Typeable)
 
 type Default = String
 type Description = String
@@ -98,17 +108,7 @@ type Usage = String
 -- >  nodes = walk accumulator [] tree
 --
 walk :: Monoid a => (Node -> a) -> a -> Node -> a
-walk f acc n = foldl (walk f) (acc <> f n) children
-  where
-    children = case n of
-      Blockquote b           -> b
-      DocBlock d             -> d
-      FunctionDeclaration {} -> functionBody n
-      List l                 -> l
-      ListItem i             -> i
-      Paragraph p            -> p
-      Unit u                 -> u
-      _                      -> mempty -- no Node children
+walk f = foldlOf (cosmosOf uniplate . to f) (<>)
 
 -- | Sanitizes a link target similar to the way that GitHub does:
 --
