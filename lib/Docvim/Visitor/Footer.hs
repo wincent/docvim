@@ -25,7 +25,7 @@ setCapturing :: Bool -> Env
 setCapturing b = do
   (_, acc) <- get
   put (b, acc)
-  return $ acc
+  return acc
 
 start :: Env
 start = setCapturing True
@@ -35,20 +35,20 @@ stop = setCapturing False
 
 node :: Node -> Env
 node n = case n of
-  CommandAnnotation _    -> stop
-  DocBlock d             -> do
-    (_, acc)             <- get
-    ns                   <- nodes d
-    put (False, acc)     -- Make sure we reset state on exiting docblock.
+  CommandAnnotation _  -> stop
+  DocBlock d           -> do
+    (_, acc)           <- get
+    ns                 <- nodes d
+    put (False, acc)   -- Make sure we reset state on exiting docblock.
     return $ acc ++ ns
-  FooterAnnotation       -> start
-  MappingAnnotation _    -> stop
-  MappingsAnnotation     -> stop
-  OptionAnnotation _ _ _ -> stop
-  PluginAnnotation _ _   -> stop
-  Unit u                 -> nodes u
-  _                      -> do
-    (capture, acc)       <- get
+  FooterAnnotation     -> start
+  MappingAnnotation _  -> stop
+  MappingsAnnotation   -> stop
+  OptionAnnotation {}  -> stop
+  PluginAnnotation {}  -> stop
+  Unit u               -> nodes u
+  _                    -> do
+    (capture, acc)     <- get
     return $ if capture
              then acc ++ [n]
              else acc
