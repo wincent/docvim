@@ -95,14 +95,29 @@ type Usage = String
 -- For example, to implement a visitor which counts all nodes:
 --
 -- >  import Data.Monoid
--- >  counter _ = 1
--- >  count = getSum $ walk counter (Sum 0) tree
+-- >  count = getSum $ walk (\_ -> 1) (Sum 0) tree
+--
+-- For comparison, here is a (probably inefficient) alternative way using
+-- `Control.Lens.Plated` instead of `walk`:
+--
+-- > import Control.Lens.Operators
+-- > import Control.Lens.Plated
+-- > import Data.Data.Lens
+-- > count = length $ tree ^.. cosmosOf uniplate
 --
 -- Another example; accumulating `SubheadingAnnotation` nodes into a list:
 --
 -- >  accumulator node@(SubheadingAnnotation _) = [node]
 -- >  accumulator _ = [] -- skip everything else
 -- >  nodes = walk accumulator [] tree
+--
+-- Again, for comparison, the same without `walk`, this time using a list
+-- comprehension:
+--
+-- > import Control.Lens.Operators
+-- > import Control.Lens.Plated
+-- > import Data.Data.Lens
+-- > [n | n@(SubheadingAnnotation _) <- tree ^.. cosmosOf uniplate]
 --
 walk :: Monoid a => (Node -> a) -> a -> Node -> a
 walk f = foldlOf (cosmosOf uniplate . to f) (<>)
