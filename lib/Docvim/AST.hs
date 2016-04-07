@@ -4,7 +4,7 @@ module Docvim.AST where
 
 import Control.Lens.Fold (foldlOf)
 import Control.Lens.Getter (to)
-import Control.Lens.Plated (Plated(..), cosmosOf)
+import Control.Lens.Plated (cosmosOf)
 import Data.Char (toLower)
 import Data.Data
 import Data.Data.Lens (uniplate)
@@ -64,9 +64,6 @@ data Node
           | HeadingAnnotation String
           | SubheadingAnnotation String
   deriving (Data, Eq, Show, Typeable)
-
-instance Plated Node where
-  plate = uniplate
 
 -- The VimScript (VimL) grammar is embodied in the implementation of
 -- https://github.com/vim/vim/blob/master/src/eval.c; there is no formal
