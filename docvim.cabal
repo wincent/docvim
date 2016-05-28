@@ -76,11 +76,13 @@ library
                ,    filepath
 
                     -- Third party
+               ,    dlist
                ,    lens
                ,    mtl
                ,    optparse-applicative
                ,    parsec
                ,    pretty-show
+               ,    transformers
   default-language:    Haskell2010
   exposed-modules:  Docvim.AST
                  ,  Docvim.CLI
@@ -89,6 +91,8 @@ library
                  ,  Docvim.Printer.Markdown
                  ,  Docvim.Printer.Vim
                  ,  Docvim.ReadDir
+                 ,  Docvim.Visitor.Footer
+                 ,  Docvim.Visitor.Plugin
                  ,  Docvim.Visitor.Symbol
                  ,  Paths_docvim
   hs-source-dirs:   lib

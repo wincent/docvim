@@ -9,7 +9,8 @@ import Docvim.AST
 import Docvim.Parse (parseUnit)
 
 vimHelp :: Node -> String
-vimHelp (Unit nodes) = concatMap vh nodes
+vimHelp (Project nodes) = concatMap vh nodes
+vimHelp _ = "" -- TODO: figure out what to do here
 
 vh :: Node -> String
 vh (DocBlock d) = concatMap node d
@@ -19,6 +20,12 @@ node :: Node -> String
 -- LinkTarget on the same line; figure out how to handle that; may need to
 -- address it in the Parser
 node (HeadingAnnotation h) = map toUpper h ++ "\n\n"
+
+node (PluginAnnotation name desc) =
+  "*" ++ name ++ ".txt*" ++
+  "    " ++ desc ++ "      " ++
+  "*" ++ name ++ "*"
+
 node (SubheadingAnnotation s) = s ++ " ~\n\n"
 node _ = "[not yet implemented]"
 

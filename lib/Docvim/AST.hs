@@ -12,8 +12,12 @@ import Data.List (intercalate)
 import Data.Monoid ((<>))
 
 data Node
-          -- Root (translation unit)
-          = Unit [Node]
+          -- Roots
+          = Project [Node] -- list of translation units (files)
+          | Unit [Node] -- translation unit (file)
+
+          -- To remove any node from the tree, we can just replace it with this.
+          | Empty
 
           -- VimL nodes
           | FunctionDeclaration { functionBang :: Bool

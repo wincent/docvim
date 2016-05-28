@@ -38,6 +38,7 @@ node n = case n of
   Link l                  -> link l
   List ls                 -> nodes ls >>= nl
   ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
+  Project p               -> nodes p
   Unit u                  -> nodes u
 
   -- Nodes that don't depend on reader context.
