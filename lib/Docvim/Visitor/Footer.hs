@@ -1,7 +1,9 @@
-module Docvim.Visitor.Footer ( getFooter
-                             , example
-                             , extractNodeFooters
+module Docvim.Visitor.Footer ( getFooter -- Manual way.
+                             , example -- Sample data.
+                             , extract -- Canonical extraction method.
+                             , extractNodeFooters -- Uniplate way.
                              , postorder
+                             , preorder
                              ) where
 
 import Control.Applicative (Alternative, (<|>), empty)
@@ -9,6 +11,7 @@ import Control.Monad ((>=>))
 import Control.Monad.State
 import Control.Monad.Trans.Writer
 import qualified Data.DList as DList
+import Data.Data.Lens
 import Debug.Trace
 import Docvim.AST
 
@@ -22,7 +25,7 @@ type Env = State (Bool, [Node]) [Node]
 --
 -- If multiple footers (potentially across multiple translation units) no
 -- guarantees about order but they just get concatenated in the order we see
--- them
+-- them.
 getFooter :: Node -> [Node]
 getFooter n = evalState (node n) (False, [])
 
@@ -102,6 +105,9 @@ extractFooters = extractBlocks f
           then Just endFooter
           else Nothing
 
+-- print . postorder uniplate extractNodeFooters $ example
+extract = postorder uniplate extractNodeFooters
+
 postorder :: Monad m => ((a -> m c) -> (a -> m b)) -> (b -> m c) -> (a -> m c)
 postorder t f = go
   where
@@ -112,7 +118,12 @@ preorder t f = go
   where
     go = f >=> t go
 
-
+-- Order of extracted footer annotations depends on whether we do a postorder
+-- (1, 2, 3) or preorder (A, B, C) traversal. Note also that because postorder
+-- operates on already-transformed nodes, you wind up with more extracted
+-- elements in the list. The surviving part of the AST is the same regardless of
+-- traversal order. In practise, because I don't allow nested DocBlocks, the
+-- traversal order doesn't end up mattering.
 example = Project [
   Unit [
     Code "Unit Code",
@@ -120,20 +131,23 @@ example = Project [
       Code "DocBlock Code",
       DocBlock [
         Code "DocBlock DocBlock Code",
-        FooterAnnotation,
+        FooterAnnotation, -- C, 1
         Code "DocBlock DocBlock FooterAnnotation Code"
       ],
-      FooterAnnotation,
+      FooterAnnotation, -- A, 3
       Code "DocBlock FooterAnnotation Code",
       DocBlock [
         Code "DocBlock FooterAnnotation DocBlock Code",
-        FooterAnnotation,
+        FooterAnnotation, -- B (nested inside A), 2 (not nested).
         Code "DocBlock FooterAnnotation DocBlock FooterAnnotation Code"
       ]
     ],
+    -- Won't be extracted, because it is not a descendant of DocBlock.
     FooterAnnotation,
     Code "Unit FooterAnnotation Code"] ]
 
 -- Test this out with:
 -- import Data.Data.Lens
+-- :l Docvim.Visitor.Footer
 -- print . postorder uniplate extractNodeFooters $ example
+-- print . preorder uniplate extractNodeFooters $ example
