@@ -2,6 +2,7 @@
 module Docvim.CLI (run) where
 
 import Control.Monad (when)
+import Data.Maybe (fromMaybe)
 import Docvim.Options (Options(..), options)
 import Docvim.AST (Node(Project))
 import Docvim.Parse (parse)
@@ -33,11 +34,11 @@ run = do
       parse path
     ) filtered
   let project = Project parsed
-  let targets = maybe [""] id (outfiles opts)
-  mapM_ (\target -> do
+  let targets = fromMaybe [""] (outfiles opts)
+  mapM_ (\target ->
       if target == ""
         then do
-          when (verbose opts) (hPutStrLn stderr ("No output target: defaulting to standard out"))
+          when (verbose opts) (hPutStrLn stderr "No output target: defaulting to standard out")
           putStrLn $ markdown project
         else if isText target
           then do
@@ -47,7 +48,7 @@ run = do
             then do
               when (verbose opts) (hPutStrLn stderr ("Outputting in markdown format to " ++ target))
               putStrLn $ markdown project
-            else do
+            else
               hPutStrLn stderr ("Unrecognized output format for " ++ target)
     ) targets
   return ()
