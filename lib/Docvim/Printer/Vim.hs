@@ -69,7 +69,7 @@ node n = case n of
 plugin name desc =
   "*" ++ name ++ ".txt*" ++
   "    " ++ desc ++ "      " ++
-  "*" ++ name ++ "*"
+  "*" ++ name ++ "*" ++ "\n\n"
 
 -- | Append a newline.
 nl :: String -> Env
