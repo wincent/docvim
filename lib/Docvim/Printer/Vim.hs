@@ -38,8 +38,11 @@ node n = case n of
   ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
   Project p               -> nodes p
   Unit u                  -> nodes u
+  -- TODO deal with hard wrapping: here might be a good place for it...
+  Whitespace              -> whitespace
 
   -- Nodes that don't depend on reader context.
+  -- TODO: (tricky) inside a blockquote, this needs to be "\n    "
   BreakTag                -> return "\n"
   Code c                  -> return $ "`" ++ c ++ "`"
   Fenced f                -> return $ fenced f ++ "\n\n"
@@ -60,8 +63,6 @@ node n = case n of
   Plaintext p             -> return p
   Separator               -> return $ "---" ++ "\n\n"
   SubheadingAnnotation s  -> return $ s ++ " ~\n\n"
-  -- TODO deal with hard wrapping: here might be a good place for it...
-  Whitespace              -> return " "
   _                       -> return ""
 
 -- TODO: right-align trailing link target
@@ -74,6 +75,12 @@ plugin name desc =
 -- | Append a newline.
 nl :: String -> Env
 nl = return . (++ "\n")
+
+whitespace :: Env
+whitespace = do
+  -- if current line > 80 "\n" else " "
+  -- but note, really need to do this BEFORE 80
+  return " "
 
 -- TODO fix 1-line blockquote case
 blockquote :: [Node] -> Env
