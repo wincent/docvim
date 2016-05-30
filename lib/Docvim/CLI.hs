@@ -36,6 +36,9 @@ run = do
   let project = Project parsed
   let targets = fromMaybe [""] (outfiles opts)
   mapM_ (\target ->
+      -- TODO use MultiWayIf here
+      -- https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/guide-to-ghc-extensions/basic-syntax-extensions
+      -- and possibly LambdaCase as well
       if target == ""
         then do
           when (verbose opts) (hPutStrLn stderr "No output target: defaulting to standard out")
@@ -43,7 +46,7 @@ run = do
         else if isText target
           then do
             when (verbose opts) (hPutStrLn stderr ("Outputting in text format to " ++ target))
-            putStrLn "text output [not yet implemented]"
+            putStrLn $ vimHelp project
           else if isMarkdown target
             then do
               when (verbose opts) (hPutStrLn stderr ("Outputting in markdown format to " ++ target))

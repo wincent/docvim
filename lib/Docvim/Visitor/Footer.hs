@@ -33,6 +33,7 @@ endFooter n = case n of
     PluginAnnotation {}    -> True
     _                      -> False
 
+-- TODO: change the name here; not super happy with it
 extractNodeFooters :: Node -> Writer (DList.DList [Node]) Node
 extractNodeFooters (DocBlock nodes) = do
     let (footers, remainder) = extractFooters nodes

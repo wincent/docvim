@@ -4,6 +4,7 @@ module Docvim.Parse ( p
                     , parse
                     , parseUnit
                     , pp
+                    , strip
                     ) where
 
 import Control.Applicative ( (*>)
@@ -424,10 +425,13 @@ restOfLine = do
 -- | Strip trailing and leading whitespace.
 --
 -- Not efficient, but chosen for readablility.
+--
+-- TODO: switch to Data.Text (http://stackoverflow.com/a/6270382/2103996) for
+-- efficiency.
 strip = lstrip . rstrip
 
 -- | Strip leading (left) whitespace.
-lstrip = dropWhile (`elem` " \t")
+lstrip = dropWhile (`elem` " \n\t")
 
 -- | Strip trailing (right) whitespace.
 rstrip = reverse . lstrip . reverse
