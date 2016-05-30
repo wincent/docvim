@@ -2,7 +2,6 @@ module Docvim.Visitor.Footer (extract) where
 
 import Control.Applicative (Alternative, (<|>), empty)
 import Control.Monad ((>=>))
-import Control.Monad.State
 import Control.Monad.Trans.Writer
 import qualified Data.DList as DList
 import Data.Data.Lens
@@ -11,12 +10,16 @@ import Docvim.AST
 -- | Extracts a list of nodes (if any exist) from the `@footer` section(s) of
 -- the source code.
 --
--- If multiple footers (potentially across multiple translation units) no
+-- It is not recommended to have multiple footers in a project. If multiple
+-- footers (potentially across multiple translation units) exist, there are no
 -- guarantees about order but they just get concatenated in the order we see
 -- them.
 extract :: Node -> (Node, [Node])
 extract = toList . runWriter . postorder uniplate extractNodeFooters
   where toList (ast, dlist) = (ast, concat $ DList.toList dlist)
+
+-- TODO: consider making this a pipeline, where we just append the footer to the
+-- end of the AST after extraction.
 
 -- | Returns True if a node marks the end of a @footer region.
 endFooter :: Node -> Bool
