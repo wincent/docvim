@@ -11,6 +11,8 @@ import Docvim.Parse (parse)
 import Docvim.Printer.Markdown (markdown)
 import Docvim.Printer.Vim (vimHelp)
 import Docvim.ReadDir (readDir)
+import qualified Docvim.Visitor.Footer as Footer (extract)
+import qualified Docvim.Visitor.Plugin as Plugin (extract)
 import System.FilePath (takeExtension)
 import System.IO (hPutStrLn, stderr)
 
@@ -35,7 +37,9 @@ run = do
       when (verbose opts) (hPutStrLn stderr ("Parsing " ++ path))
       parse path
     ) filtered
-  let project = Project parsed
+  let (ast, footer) = Footer.extract $ Project parsed
+  let (ast, plugin) = Plugin.extract $ ast
+  let project = Project $ concat [plugin, [ast], footer]
   let targets = fromMaybe [""] (outfiles opts)
   mapM_ (\target ->
       -- TODO use MultiWayIf here
