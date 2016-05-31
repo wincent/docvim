@@ -38,8 +38,8 @@ run = do
       parse path
     ) filtered
   let (ast, footer) = Footer.extract $ Project parsed
-  let (ast, plugin) = Plugin.extract $ ast
-  let project = Project $ concat [plugin, [ast], footer]
+  let (ast2, plugin) = Plugin.extract $ ast
+  let project = Project $ concat [plugin, [ast2], footer]
   let targets = fromMaybe [""] (outfiles opts)
   mapM_ (\target ->
       -- TODO use MultiWayIf here
