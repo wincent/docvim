@@ -1,0 +1,1 @@
+../markdown/integration-pinnacle.vim
