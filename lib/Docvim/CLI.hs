@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiWayIf #-}
+
 -- | The runnable part of the docvim executable.
 module Docvim.CLI (run) where
 
@@ -39,19 +41,15 @@ run = do
       -- TODO use MultiWayIf here
       -- https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/guide-to-ghc-extensions/basic-syntax-extensions
       -- and possibly LambdaCase as well
-      if target == ""
-        then do
-          when (verbose opts) (hPutStrLn stderr "No output target: defaulting to standard out")
-          putStrLn $ markdown project
-        else if isText target
-          then do
+      if | target == "" -> do
+            when (verbose opts) (hPutStrLn stderr "No output target: defaulting to standard out")
+            putStrLn $ markdown project
+         | isText target -> do
             when (verbose opts) (hPutStrLn stderr ("Outputting in text format to " ++ target))
             putStrLn $ vimHelp project
-          else if isMarkdown target
-            then do
-              when (verbose opts) (hPutStrLn stderr ("Outputting in markdown format to " ++ target))
-              putStrLn $ markdown project
-            else
-              hPutStrLn stderr ("Unrecognized output format for " ++ target)
+         | isMarkdown target -> do
+            when (verbose opts) (hPutStrLn stderr ("Outputting in markdown format to " ++ target))
+            putStrLn $ markdown project
+         | otherwise -> hPutStrLn stderr ("Unrecognized output format for " ++ target)
     ) targets
   return ()
