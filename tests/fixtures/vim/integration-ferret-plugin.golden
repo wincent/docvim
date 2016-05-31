@@ -76,7 +76,7 @@ Additionally, Ferret will set up special mappings in quickfix listings, unless p
 
 CUSTOM AUTOCOMMANDS
 
-                                            *FerretWillWrite* *FerretDidWrite*
+                                            *FerretDidWrite* *FerretWillWrite*
 For maximum compatibility with other plug-ins, Ferret runs the following "User" autocommands before and after running the file writing operations during :Acks:
 
 - FerretWillWrite

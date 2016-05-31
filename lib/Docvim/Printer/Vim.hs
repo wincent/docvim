@@ -6,7 +6,7 @@ module Docvim.Printer.Vim
 
 import Control.Monad.Reader
 import Data.Char (toUpper)
-import Data.List (intercalate)
+import Data.List (intercalate, sort)
 import Docvim.AST
 import Docvim.Parse (parseUnit, strip)
 import Docvim.Visitor.Plugin (getPluginName)
@@ -117,7 +117,7 @@ fenced f = ">\n" ++ code ++ "<\n"
 linkTargets :: [String] -> String
 linkTargets ls = rightAlign targets
   where
-    targets = unwords (map linkify ls)
+    targets = unwords (map linkify $ sort ls)
     linkify l = "*" ++ l ++ "*"
     rightAlign ws = replicate (count ws) ' ' ++ ws
     count xs = maximum [78 - length xs, 0]
