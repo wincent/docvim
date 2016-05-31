@@ -24,9 +24,9 @@ tmux send-keys -t docvim:build "stack build --file-watch" Enter
 tmux new-window -t docvim
 
 # 5. vim-docvim plugin
-tmux new-window -t docvim -c "$HOME/.vim/bundle/vim-docvim" -n vim-docvim
+tmux new-window -t docvim -c "$HOME/.vim/pack/bundle/start/vim-docvim" -n vim-docvim
 tmux send-keys -t docvim:vim-docvim "vim -c CommandT" Enter
-tmux split-window -t docvim:vim-docvim -h -c "$HOME/.vim/bundle/vim-docvim"
+tmux split-window -t docvim:vim-docvim -h -c "$HOME/.vim/pack/bundle/start/vim-docvim"
 tmux send-keys -t docvim:vim-docvim.right "git status" Enter
 
 tmux attach -t docvim:vim
