@@ -5,7 +5,7 @@ module Docvim.Printer.Markdown
   ) where
 
 import Control.Monad.Reader
-import Data.List (intercalate)
+import Data.List (intercalate, sort)
 import Docvim.AST
 import Docvim.Parse (parseUnit)
 import Docvim.Visitor.Plugin (getPluginName)
@@ -89,7 +89,7 @@ fenced f = "```\n" ++ code ++ "```"
 
 linkTargets :: [String] -> String
 linkTargets ls =  "<p align=\"right\">"
-               ++ unwords (map linkify ls)
+               ++ unwords (map linkify $ sort ls)
                ++ "</p>"
   where linkify l = a $ Anchor [ Attribute "name" (sanitizeAnchor l)
                                , Attribute "href" (gitHubAnchor l)

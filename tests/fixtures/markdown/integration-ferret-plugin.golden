@@ -72,7 +72,7 @@ Additionally, Ferret will set up special mappings in <strong>`quickfix`</strong>
 
 ## Custom autocommands
 
-<p align="right"><a name="ferretwillwrite" href="#user-content-ferretwillwrite"><code>FerretWillWrite</code></a> <a name="ferretdidwrite" href="#user-content-ferretdidwrite"><code>FerretDidWrite</code></a></p>
+<p align="right"><a name="ferretdidwrite" href="#user-content-ferretdidwrite"><code>FerretDidWrite</code></a> <a name="ferretwillwrite" href="#user-content-ferretwillwrite"><code>FerretWillWrite</code></a></p>
 For maximum compatibility with other plug-ins, Ferret runs the following "User" autocommands before and after running the file writing operations during <strong>`:Acks`</strong>:
 
 - FerretWillWrite
