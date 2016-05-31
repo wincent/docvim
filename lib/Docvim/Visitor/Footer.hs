@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Docvim.Visitor.Footer (extract) where
 
 import Control.Applicative (Alternative, (<|>), empty)
@@ -23,7 +25,7 @@ extract = toList . runWriter . postorder uniplate extractNodeFooters
 
 -- | Returns True if a node marks the end of a @footer region.
 endFooter :: Node -> Bool
-endFooter n = case n of
+endFooter = \case
     CommandAnnotation _    -> True
     FooterAnnotation       -> True
     FunctionAnnotation _   -> True

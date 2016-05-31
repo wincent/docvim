@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Docvim.Visitor.Plugin ( getPluginName
                              , extract
                              ) where
@@ -36,7 +38,7 @@ extract = toList . runWriter . postorder uniplate extractNodePlugins
 
 -- | Returns True if a node marks the end of a plugin region.
 endPlugin :: Node -> Bool
-endPlugin n = case n of
+endPlugin = \case
   CommandAnnotation _ -> True
   FooterAnnotation       -> True
   FunctionAnnotation _   -> True
@@ -71,7 +73,7 @@ extractBlocks start = go
 extractPlugins :: Alternative f => [Node] -> (f [Node], [Node])
 extractPlugins = extractBlocks f
   where
-    f x = case x of
+    f = \case
       PluginAnnotation {} -> Just endPlugin
       _                   -> Nothing
 

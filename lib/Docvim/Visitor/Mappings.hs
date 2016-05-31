@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Docvim.Visitor.Mappings (extract) where
 
 import Control.Applicative (Alternative, (<|>), empty)
@@ -20,7 +22,7 @@ extract = toList . runWriter . postorder uniplate extractNodeMappings
 
 -- | Returns True if a node marks the end of a mappings region.
 endMappings :: Node -> Bool
-endMappings n = case n of
+endMappings = \case
   CommandAnnotation _ -> True
   FooterAnnotation       -> True
   FunctionAnnotation _   -> True
