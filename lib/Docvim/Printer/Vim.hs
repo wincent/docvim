@@ -5,6 +5,7 @@ module Docvim.Printer.Vim
   ) where
 
 import Control.Monad.Reader
+import Control.Monad.State
 import Data.Char (toUpper)
 import Data.List (intercalate, sort)
 import Docvim.AST
@@ -13,15 +14,17 @@ import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
 -- TODO: taken straight out of Markdown.hs; DRY this up
--- TODO: add indentation here (using local)
+-- TODO: add indentation here (using local, or just stick it in Context)
 data Metadata = Metadata { symbols :: [String]
                          , pluginName :: Maybe String
                          }
-type Env = Reader Metadata String
+data Context = Context { line :: String }
+type Env = ReaderT Metadata (State Context) String
 
 vimHelp :: Node -> String
-vimHelp n = strip (runReader (node n) state) ++ "\n"
-  where state = Metadata (getSymbols n) (getPluginName n)
+vimHelp n = strip (fst $ runState (runReaderT (node n) metadata) context) ++ "\n"
+  where metadata = Metadata (getSymbols n) (getPluginName n)
+        context = Context "dummy line"
 
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
@@ -96,8 +99,8 @@ blockquote ps = do
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env
 link l = do
-  state <- ask
-  return $ if l `elem` symbols state
+  metadata <- ask
+  return $ if l `elem` symbols metadata
            -- TODO: beware names with < ` etc in them
            then "|" ++ l ++ "|"
            -- TODO: figure out what to do here

@@ -22,8 +22,8 @@ data Attribute = Attribute { attributeName :: String
                            }
 
 markdown :: Node -> String
-markdown n = strip (runReader (node n) state) ++ "\n"
-  where state = Metadata (getSymbols n) (getPluginName n)
+markdown n = strip (runReader (node n) metadata) ++ "\n"
+  where metadata = Metadata (getSymbols n) (getPluginName n)
 
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
@@ -73,8 +73,8 @@ blockquote ps = do
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env
 link l = do
-  state <- ask
-  return $ if l `elem` symbols state
+  metadata <- ask
+  return $ if l `elem` symbols metadata
            -- TODO: beware names with < ` etc in them
            then "<strong>[`" ++ l ++ "`](" ++ gitHubAnchor l ++ ")</strong>"
            else "<strong>`" ++ l ++ "`</strong>" -- TODO:
