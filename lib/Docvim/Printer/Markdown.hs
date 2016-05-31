@@ -11,10 +11,10 @@ import Docvim.Parse (parseUnit, strip)
 import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
-data State = State { symbols :: [String]
+data Metadata = Metadata { symbols :: [String]
                    , pluginName :: Maybe String
                    }
-type Env = Reader State String
+type Env = Reader Metadata String
 
 data Anchor = Anchor [Attribute] String
 data Attribute = Attribute { attributeName :: String
@@ -23,7 +23,7 @@ data Attribute = Attribute { attributeName :: String
 
 markdown :: Node -> String
 markdown n = strip (runReader (node n) state) ++ "\n"
-  where state = State (getSymbols n) (getPluginName n)
+  where state = Metadata (getSymbols n) (getPluginName n)
 
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns

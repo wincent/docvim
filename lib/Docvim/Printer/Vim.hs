@@ -13,14 +13,15 @@ import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
 -- TODO: taken straight out of Markdown.hs; DRY this up
-data State = State { symbols :: [String]
+-- TODO: add indentation here (using local)
+data Metadata = Metadata { symbols :: [String]
                    , pluginName :: Maybe String
                    }
-type Env = Reader State String
+type Env = Reader Metadata String
 
 vimHelp :: Node -> String
 vimHelp n = strip (runReader (node n) state) ++ "\n"
-  where state = State (getSymbols n) (getPluginName n)
+  where state = Metadata (getSymbols n) (getPluginName n)
 
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
