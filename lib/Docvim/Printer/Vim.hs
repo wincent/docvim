@@ -15,8 +15,8 @@ import Docvim.Visitor.Symbol (getSymbols)
 -- TODO: taken straight out of Markdown.hs; DRY this up
 -- TODO: add indentation here (using local)
 data Metadata = Metadata { symbols :: [String]
-                   , pluginName :: Maybe String
-                   }
+                         , pluginName :: Maybe String
+                         }
 type Env = Reader Metadata String
 
 vimHelp :: Node -> String

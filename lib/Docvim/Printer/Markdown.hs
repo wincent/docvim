@@ -12,8 +12,8 @@ import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
 data Metadata = Metadata { symbols :: [String]
-                   , pluginName :: Maybe String
-                   }
+                         , pluginName :: Maybe String
+                         }
 type Env = Reader Metadata String
 
 data Anchor = Anchor [Attribute] String
