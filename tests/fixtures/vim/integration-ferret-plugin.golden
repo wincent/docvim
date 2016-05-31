@@ -5,7 +5,7 @@ INTRO
     "ferret (verb)
 (ferret something out) search tenaciously for and find something: she had the ability to ferret out the facts."
 
-*ferret-features*
+                                                             *ferret-features*
 Ferret improves Vim's multi-file search in four ways:
 
 1. Powerful multi-file search ~
@@ -76,7 +76,7 @@ Additionally, Ferret will set up special mappings in quickfix listings, unless p
 
 CUSTOM AUTOCOMMANDS
 
-*FerretWillWrite* *FerretDidWrite*
+                                            *FerretWillWrite* *FerretDidWrite*
 For maximum compatibility with other plug-ins, Ferret runs the following "User" autocommands before and after running the file writing operations during :Acks:
 
 - FerretWillWrite
@@ -98,32 +98,32 @@ Ferret overrides the 'grepformat' and 'grepprg' settings, preferentially setting
 
 Additionally, Ferret includes an ftplugin for the quickfix listing that adjusts a number of settings to improve the usability of search results.
 
-*ferret-nolist*
+                                                               *ferret-nolist*
 'nolist'
 
 Turned off to reduce visual clutter in the search results, and because 'list' is most useful in files that are being actively edited, which is not the case for quickfix results.
 
-*ferret-norelativenumber*
+                                                     *ferret-norelativenumber*
 'norelativenumber'
 
 Turned off, because it is more useful to have a sense of absolute progress through the results list than to have the ability to jump to nearby results (especially seeing as the most common operations are moving to the next or previous file, which are both handled nicely by :cnf and :cpf respectively).
 
-*ferret-nowrap*
+                                                               *ferret-nowrap*
 'nowrap'
 
 Turned off to avoid ugly wrapping that makes the results list hard to read, and because in search results, the most relevant information is the filename, which is on the left and is usually visible even without wrapping.
 
-*ferret-number*
+                                                               *ferret-number*
 'number'
 
 Turned on to give a sense of absolute progress through the results.
 
-*ferret-scrolloff*
+                                                            *ferret-scrolloff*
 'scrolloff'
 
 Set to 0 because the quickfix listing is usually small by default, so trying to keep the current line away from the edge of the viewpoint is futile; by definition it is usually near the edge.
 
-*ferret-nocursorline*
+                                                         *ferret-nocursorline*
 'nocursorline'
 
 Turned off to reduce visual clutter.
@@ -137,7 +137,7 @@ To prevent any of these quickfix-specific overrides from being set up, you can s
 
 TROUBLESHOOTING
 
-*ferret-quotes*
+                                                               *ferret-quotes*
 Ferret fails to find patterns containing spaces ~
 
 As described in the documentation for :Ack, the search pattern is passed through as-is to the underlying search command, and no escaping is required other than preceding spaces by a single backslash.

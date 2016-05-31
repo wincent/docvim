@@ -106,17 +106,21 @@ link l = do
 
 -- TODO ideally want to replace preceding blank line with >, not append one
 -- and likewise, replace following blank line with <
--- (but this will be tricky)
+-- (but this will be tricky; could do it as a post-processing step)
 fenced :: [String] -> String
 fenced f = ">\n" ++ code ++ "<\n"
   where code = if null f
                then ""
                else "    " ++ (intercalate "\n    " f ++ "\n")
 
+-- TODO: be prepared to wrap these if there are a lot of them
 linkTargets :: [String] -> String
-linkTargets ls = unwords (map linkify ls)
-  -- TODO: make this actually useful
-  where linkify l = "*" ++ l ++ "*"
+linkTargets ls = rightAlign targets
+  where
+    targets = unwords (map linkify ls)
+    linkify l = "*" ++ l ++ "*"
+    rightAlign ws = replicate (count ws) ' ' ++ ws
+    count xs = maximum [78 - length xs, 0]
 
 -- | For unit testing.
 pv :: String -> String
