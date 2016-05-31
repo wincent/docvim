@@ -46,10 +46,10 @@ run = do
             putStrLn $ markdown project
          | isText target -> do
             when (verbose opts) (hPutStrLn stderr ("Outputting in text format to " ++ target))
-            putStrLn $ vimHelp project
+            writeFile target (vimHelp project)
          | isMarkdown target -> do
             when (verbose opts) (hPutStrLn stderr ("Outputting in markdown format to " ++ target))
-            putStrLn $ markdown project
+            writeFile target (markdown project)
          | otherwise -> hPutStrLn stderr ("Unrecognized output format for " ++ target)
     ) targets
   return ()
