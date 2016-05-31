@@ -7,7 +7,7 @@ module Docvim.Printer.Markdown
 import Control.Monad.Reader
 import Data.List (intercalate, sort)
 import Docvim.AST
-import Docvim.Parse (parseUnit)
+import Docvim.Parse (parseUnit, strip)
 import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
@@ -22,7 +22,7 @@ data Attribute = Attribute { attributeName :: String
                            }
 
 markdown :: Node -> String
-markdown n = runReader (node n) state
+markdown n = strip (runReader (node n) state) ++ "\n"
   where state = State (getSymbols n) (getPluginName n)
 
 nodes :: [Node] -> Env

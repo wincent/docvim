@@ -3,4 +3,3 @@ Controls whether to use vim-dispatch (and specifically, <strong>`:Make`</strong>
 ```
 let g:FerretDispatch=0
 ```
-

@@ -19,7 +19,7 @@ data State = State { symbols :: [String]
 type Env = Reader State String
 
 vimHelp :: Node -> String
-vimHelp n = strip $ runReader (node n) state
+vimHelp n = strip (runReader (node n) state) ++ "\n"
   where state = State (getSymbols n) (getPluginName n)
 
 nodes :: [Node] -> Env
@@ -77,7 +77,7 @@ nl :: String -> Env
 nl = return . (++ "\n")
 
 whitespace :: Env
-whitespace = do
+whitespace =
   -- if current line > 80 "\n" else " "
   -- but note, really need to do this BEFORE 80
   return " "

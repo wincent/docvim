@@ -350,4 +350,3 @@ Controls whether to set up custom versions of the <strong>`quickfix`</strong> co
 ```
 let g:FerretQFCommands=0
 ```
-
