@@ -13,18 +13,30 @@ import Docvim.Parse (parseUnit, rstrip)
 import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
--- TODO: taken straight out of Markdown.hs; DRY this up
 -- TODO: add indentation here (using local, or just stick it in Context)
+
+-- Instead of building up a [Char], we build up a list of operations, which
+-- allows us a mechanism of implementing rollback and therefore hard-wrapping
+-- (eg. append whitespace " ", then on next node, realize that we will exceed
+-- line length limit, so rollback the " " and instead append "\n" etc).
+data Operation = Append String
+               | Delete String -- note that String may not be the right thing
 data Metadata = Metadata { symbols :: [String]
                          , pluginName :: Maybe String
                          }
 data Context = Context { lineBreak :: String }
-type Env = ReaderT Metadata (State Context) String
+type Env = ReaderT Metadata (State Context) [Operation]
 
 vimHelp :: Node -> String
-vimHelp n = rstrip (fst $ runState (runReaderT (node n) metadata) context) ++ "\n"
+vimHelp n = rstrip output ++ "\n"
   where metadata = Metadata (getSymbols n) (getPluginName n)
         context = Context defaultLineBreak
+        operations = (fst $ runState (runReaderT (node n) metadata) context)
+        output = foldl reduce "" operations
+        -- TODO: handle rollbacks as well
+        -- probably need some tuple fanciness for the accumulator
+        -- (accumulatedOutput, lastAtom)
+        reduce acc (Append atom) = acc ++ atom
 
 defaultLineBreak :: String
 defaultLineBreak = "\n"
@@ -41,6 +53,7 @@ node n = case n of
   DocBlock d              -> nodes d
   FunctionDeclaration {}  -> nodes $ functionBody n
   Paragraph p             -> nodes p >>= nl >>= nl
+  Plaintext p             -> plaintext p
   Link l                  -> link l
   List ls                 -> nodes ls >>= nl
   ListItem l              -> listitem l
@@ -50,8 +63,8 @@ node n = case n of
   Whitespace              -> whitespace
 
   -- Nodes that don't depend on reader context.
-  Code c                  -> return $ "`" ++ c ++ "`"
-  Fenced f                -> return $ fenced f ++ "\n\n"
+  Code c                  -> return $ [Append $ "`" ++ c ++ "`"]
+  Fenced f                -> return $ fenced f ++ [Append "\n\n"]
   -- TODO: Vim will only highlight this as a heading if it has a trailing
   -- LinkTarget on the same line; figure out how to handle that; may need to
   -- address it in the Parser
@@ -60,36 +73,38 @@ node n = case n of
   -- to auto-gen the targets based on the plugin name + the heading text.
   --
   -- I could also just make people specify a target explicitly.
-  HeadingAnnotation h     -> return $ map toUpper h ++ "\n\n"
-  LinkTargets l           -> return $ linkTargets l ++ "\n"
+  HeadingAnnotation h     -> return $ [Append $ map toUpper h ++ "\n\n"]
+  LinkTargets l           -> return $ [linkTargets l] ++ [Append "\n"]
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
-  PluginAnnotation name desc -> return $ plugin name desc
-  Plaintext p             -> return p
-  Separator               -> return $ "---" ++ "\n\n"
-  SubheadingAnnotation s  -> return $ s ++ " ~\n\n"
-  _                       -> return ""
+  PluginAnnotation name desc -> plugin name desc
+  Separator               -> return $ [Append $ "---" ++ "\n\n"]
+  SubheadingAnnotation s  -> return $ [Append $ s ++ " ~\n\n"]
+  _                       -> return $ [Append ""]
 
 -- TODO: right-align trailing link target
 -- TODO: add {name}.txt to the symbol table?
-plugin name desc =
-  "*" ++ name ++ ".txt*" ++
-  "    " ++ desc ++ "      " ++
-  "*" ++ name ++ "*" ++ "\n\n"
+plugin :: String -> String -> Env
+plugin name desc = return [ Append $
+    "*" ++ name ++ ".txt*" ++
+    "    " ++ desc ++ "      " ++
+    "*" ++ name ++ "*" ++ "\n\n"
+    ]
 
 -- | Append a newline.
-nl :: String -> Env
-nl = return . (++ "\n")
+nl :: [Operation] -> Env
+nl os = return $ os ++ [Append "\n"]
 
 breaktag :: Env
 breaktag = do
   state <- get
-  return $ lineBreak state
+  return [Append $ lineBreak state]
 
+listitem :: [Node] -> Env
 listitem l = do
   put (Context customLineBreak)
-  item <- fmap ("- " ++) (nodes l) >>= nl
+  item <- fmap ([Append "- "] ++) (nodes l) >>= nl
   put (Context defaultLineBreak)
   return item
   where
@@ -99,45 +114,60 @@ whitespace :: Env
 whitespace =
   -- if current line > 80 "\n" else " "
   -- but note, really need to do this BEFORE 80
-  return " "
+  return [Append " "]
 
--- TODO fix 1-line blockquote case
 blockquote :: [Node] -> Env
 blockquote ps = do
   put (Context customLineBreak)
   ps' <- mapM paragraph ps
   put (Context defaultLineBreak)
-  return $ "    " ++ intercalate customParagraphBreak ps'
+  return $ [Append "    "] ++ intercalate [customParagraphBreak] ps'
   where
     -- Strip off trailing newlines from each paragraph.
     paragraph p = fmap trim (node p)
     trim contents = take (length contents - 2) contents
     customLineBreak = "\n    "
-    customParagraphBreak = "\n\n    "
+    customParagraphBreak = Append "\n\n    "
+
+plaintext :: String -> Env
+plaintext p = do
+  -- TODO: based on current line length, decide whether to override
+  -- linebreak or not
+  -- problem is that we will already have emitted a whitespace by the time we
+  -- get here (which means we will wind up with trailing whitespace in the
+  -- output...)
+  -- and if we instead handle it in the whitespace function, we have no way of
+  -- looking ahead to see the length of the plaintext
+  --
+  -- ways to deal with this... figure out some kind of rollback
+  -- implement pending whitespace and check it everywhere we print something...
+  -- or: instead of appending to a string, append a list of operations eg
+  -- [append "foo"], [append " "], [delete " "] etc...
+  return $ [Append p]
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env
 link l = do
   metadata <- ask
   return $ if l `elem` symbols metadata
-           then "|" ++ l ++ "|"
+           then [Append $ "|" ++ l ++ "|"]
            -- TODO: figure out what to do here
            -- probably want to treat URLs specially
            -- and Vim help links, obviously
-           else l
+           else [Append l]
 
 -- TODO ideally want to replace preceding blank line with >, not append one
 -- and likewise, replace following blank line with <
 -- (but this will be tricky; could do it as a post-processing step)
-fenced :: [String] -> String
-fenced f = ">\n" ++ code ++ "<\n"
+fenced :: [String] -> [Operation]
+fenced f = [Append ">\n"] ++ code ++ [Append "<\n"]
   where code = if null f
-               then ""
-               else "    " ++ (intercalate "\n    " f ++ "\n")
+               then [Append ""]
+               else [Append "    "] ++ [Append $ (intercalate "\n    " f) ++ "\n"]
 
 -- TODO: be prepared to wrap these if there are a lot of them
-linkTargets :: [String] -> String
-linkTargets ls = rightAlign targets
+linkTargets :: [String] -> Operation
+linkTargets ls = Append $ rightAlign targets
   where
     targets = unwords (map linkify $ sort ls)
     linkify l = "*" ++ l ++ "*"
