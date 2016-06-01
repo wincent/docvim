@@ -99,12 +99,13 @@ blockquote ps = do
   put (Context customLineBreak)
   ps' <- mapM paragraph ps
   put (Context defaultLineBreak)
-  return $ "    " ++ intercalate customLineBreak ps'
+  return $ "    " ++ intercalate customParagraphBreak ps'
   where
     -- Strip off trailing newlines from each paragraph.
     paragraph p = fmap trim (node p)
     trim contents = take (length contents - 2) contents
-    customLineBreak = "\n\n    "
+    customLineBreak = "\n    "
+    customParagraphBreak = "\n\n    "
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env
