@@ -5,6 +5,7 @@ module Docvim.Parse ( p
                     , parseUnit
                     , pp
                     , strip
+                    , rstrip
                     ) where
 
 import Control.Applicative ( (*>)

@@ -9,7 +9,7 @@ import Control.Monad.State
 import Data.Char (toUpper)
 import Data.List (intercalate, sort)
 import Docvim.AST
-import Docvim.Parse (parseUnit, strip)
+import Docvim.Parse (parseUnit, rstrip)
 import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
@@ -22,7 +22,7 @@ data Context = Context { lineBreak :: String }
 type Env = ReaderT Metadata (State Context) String
 
 vimHelp :: Node -> String
-vimHelp n = strip (fst $ runState (runReaderT (node n) metadata) context) ++ "\n"
+vimHelp n = rstrip (fst $ runState (runReaderT (node n) metadata) context) ++ "\n"
   where metadata = Metadata (getSymbols n) (getPluginName n)
         context = Context defaultLineBreak
 
