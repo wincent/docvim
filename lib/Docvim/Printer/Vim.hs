@@ -24,13 +24,15 @@ data Operation = Append String
 data Metadata = Metadata { symbols :: [String]
                          , pluginName :: Maybe String
                          }
-data Context = Context { lineBreak :: String }
+data Context = Context { lineBreak :: String
+                       , partialLine :: String
+                       }
 type Env = ReaderT Metadata (State Context) [Operation]
 
 vimHelp :: Node -> String
 vimHelp n = rstrip output ++ "\n"
   where metadata = Metadata (getSymbols n) (getPluginName n)
-        context = Context defaultLineBreak
+        context = Context defaultLineBreak ""
         operations = (fst $ runState (runReaderT (node n) metadata) context)
         output = foldl reduce "" operations
         -- TODO: handle rollbacks as well
@@ -103,9 +105,10 @@ breaktag = do
 
 listitem :: [Node] -> Env
 listitem l = do
-  put (Context customLineBreak)
+  context <- get
+  put (Context customLineBreak (partialLine context))
   item <- fmap ([Append "- "] ++) (nodes l) >>= nl
-  put (Context defaultLineBreak)
+  put (Context defaultLineBreak (partialLine context))
   return item
   where
     customLineBreak = "\n  "
@@ -118,9 +121,10 @@ whitespace =
 
 blockquote :: [Node] -> Env
 blockquote ps = do
-  put (Context customLineBreak)
+  context <- get
+  put (Context customLineBreak (partialLine context))
   ps' <- mapM paragraph ps
-  put (Context defaultLineBreak)
+  put (Context defaultLineBreak (partialLine context))
   return $ [Append "    "] ++ intercalate [customParagraphBreak] ps'
   where
     -- Strip off trailing newlines from each paragraph.
