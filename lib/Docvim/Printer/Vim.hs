@@ -24,7 +24,7 @@ type Env = ReaderT Metadata (State Context) String
 vimHelp :: Node -> String
 vimHelp n = strip (fst $ runState (runReaderT (node n) metadata) context) ++ "\n"
   where metadata = Metadata (getSymbols n) (getPluginName n)
-        context = Context "dummy line"
+        context = Context ""
 
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
@@ -32,7 +32,7 @@ nodes ns = concat <$> mapM node ns
 -- TODO: deal with hard-wrapping
 node :: Node -> Env
 node n = case n of
-  -- Nodes that depend on (or must propagate) reader context.
+  -- Nodes that depend on (or must propagate) reader/state context.
   Blockquote b            -> blockquote b >>= nl >>= nl
   DocBlock d              -> nodes d
   FunctionDeclaration {}  -> nodes $ functionBody n
@@ -100,9 +100,10 @@ blockquote ps = do
 link :: String -> Env
 link l = do
   metadata <- ask
+  state <- get -- proof that these can be intermixed
   return $ if l `elem` symbols metadata
            -- TODO: beware names with < ` etc in them
-           then "|" ++ l ++ "|"
+           then "|" ++ (line state) ++ l ++ "|" -- line state is "", so this doesn't affect the output
            -- TODO: figure out what to do here
            -- probably want to treat URLs specially
            -- and Vim help links, obviously
