@@ -43,7 +43,7 @@ node n = case n of
   Paragraph p             -> nodes p >>= nl >>= nl
   Link l                  -> link l
   List ls                 -> nodes ls >>= nl
-  ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
+  ListItem l              -> listitem l
   Project p               -> nodes p
   Unit u                  -> nodes u
   -- TODO deal with hard wrapping: here might be a good place for it...
@@ -86,6 +86,14 @@ breaktag :: Env
 breaktag = do
   state <- get
   return $ lineBreak state
+
+listitem l = do
+  put (Context customLineBreak)
+  item <- fmap ("- " ++) (nodes l) >>= nl
+  put (Context defaultLineBreak)
+  return item
+  where
+    customLineBreak = "\n  "
 
 whitespace :: Env
 whitespace =
