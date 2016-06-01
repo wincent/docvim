@@ -101,6 +101,7 @@ link :: String -> Env
 link l = do
   metadata <- ask
   state <- get -- proof that these can be intermixed
+  -- put (Context ((line state) ++ ">"))
   return $ if l `elem` symbols metadata
            -- TODO: beware names with < ` etc in them
            then "|" ++ (line state) ++ l ++ "|" -- line state is "", so this doesn't affect the output
