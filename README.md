@@ -1,7 +1,3 @@
-# Beware!
-
-Docvim is a work in progress. It barely does anything useful at this point.
-
 # docvim: a documentation generator for Vim plug-ins
 
 docvim is a documentation generator for Vim plug-ins, written in Haskell.
@@ -34,6 +30,63 @@ Available options:
   -c,--directory DIRECTORY Change to DIRECTORY before processing (default: ".")
   -v,--verbose             Be verbose during processing
 ```
+
+## Syntax
+
+```vim
+""
+" Docblocks start with a pair of double quotes, followed
+" by standard Vim comments (with a double quote prefix)
+" containing Markdown-like text and optional annotations
+" that look like this:
+"
+" ```
+" @command :Ack {pattern} {options}
+" ```
+```
+
+### Supported Markdown features
+
+    # Top-level heading
+
+    ## Sub-heading
+
+    --- (Horizontal dividers)
+
+    > Blockquote
+
+    `inline code`
+
+    ```
+    fenced codeblocks (leading space syntax not supported)
+    ```
+
+    ![alt text](http://example.com/image.jpg)
+    (becomes a link in vimdoc, but an image in markdown)
+
+    - Lists.
+
+### Unsupported Markdown syntax
+
+```
+*foo* (emphasis; turns into Vim doc targets instead)
+
+*,+ (list syntax; just use - instead)
+
+<html> (we don't want ambiguity with things like <leader> and so on)
+```
+
+### Annotations
+
+- `@command`
+- `@dedent`
+- `@footer`
+- `@function`
+- `@indent`
+- `@mapping`
+- `@mappings`
+- `@option`
+- `@plugin`
 
 ## Development
 
