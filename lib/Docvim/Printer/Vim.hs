@@ -18,13 +18,16 @@ import Docvim.Visitor.Symbol (getSymbols)
 data Metadata = Metadata { symbols :: [String]
                          , pluginName :: Maybe String
                          }
-data Context = Context { line :: String }
+data Context = Context { lineBreak :: String }
 type Env = ReaderT Metadata (State Context) String
 
 vimHelp :: Node -> String
 vimHelp n = strip (fst $ runState (runReaderT (node n) metadata) context) ++ "\n"
   where metadata = Metadata (getSymbols n) (getPluginName n)
-        context = Context ""
+        context = Context defaultLineBreak
+
+defaultLineBreak :: String
+defaultLineBreak = "\n"
 
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
@@ -34,6 +37,7 @@ node :: Node -> Env
 node n = case n of
   -- Nodes that depend on (or must propagate) reader/state context.
   Blockquote b            -> blockquote b >>= nl >>= nl
+  BreakTag                -> breaktag
   DocBlock d              -> nodes d
   FunctionDeclaration {}  -> nodes $ functionBody n
   Paragraph p             -> nodes p >>= nl >>= nl
@@ -46,8 +50,6 @@ node n = case n of
   Whitespace              -> whitespace
 
   -- Nodes that don't depend on reader context.
-  -- TODO: (tricky) inside a blockquote, this needs to be "\n    "
-  BreakTag                -> return "\n"
   Code c                  -> return $ "`" ++ c ++ "`"
   Fenced f                -> return $ fenced f ++ "\n\n"
   -- TODO: Vim will only highlight this as a heading if it has a trailing
@@ -80,6 +82,11 @@ plugin name desc =
 nl :: String -> Env
 nl = return . (++ "\n")
 
+breaktag :: Env
+breaktag = do
+  state <- get
+  return $ lineBreak state
+
 whitespace :: Env
 whitespace =
   -- if current line > 80 "\n" else " "
@@ -89,22 +96,22 @@ whitespace =
 -- TODO fix 1-line blockquote case
 blockquote :: [Node] -> Env
 blockquote ps = do
+  put (Context customLineBreak)
   ps' <- mapM paragraph ps
-  return $ "    " ++ intercalate "\n\n    " ps'
+  put (Context defaultLineBreak)
+  return $ "    " ++ intercalate customLineBreak ps'
   where
     -- Strip off trailing newlines from each paragraph.
     paragraph p = fmap trim (node p)
     trim contents = take (length contents - 2) contents
+    customLineBreak = "\n\n    "
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env
 link l = do
   metadata <- ask
-  state <- get -- proof that these can be intermixed
-  -- put (Context ((line state) ++ ">"))
   return $ if l `elem` symbols metadata
-           -- TODO: beware names with < ` etc in them
-           then "|" ++ (line state) ++ l ++ "|" -- line state is "", so this doesn't affect the output
+           then "|" ++ l ++ "|"
            -- TODO: figure out what to do here
            -- probably want to treat URLs specially
            -- and Vim help links, obviously
