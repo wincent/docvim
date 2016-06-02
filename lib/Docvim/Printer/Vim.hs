@@ -78,7 +78,7 @@ node n = case n of
 
   -- Nodes that don't depend on reader context.
   Code c                  -> append $ "`" ++ c ++ "`"
-  Fenced f                -> return $ fenced f
+  Fenced f                -> fenced f
   -- TODO: Vim will only highlight this as a heading if it has a trailing
   -- LinkTarget on the same line; figure out how to handle that; may need to
   -- address it in the Parser
@@ -176,8 +176,8 @@ link l = do
 -- TODO ideally want to replace preceding blank line with >, not append one
 -- and likewise, replace following blank line with <
 -- (but this will be tricky; could do it as a post-processing step)
-fenced :: [String] -> [Operation]
-fenced f = [Append ">\n"] ++ code ++ [Append "<\n"]
+fenced :: [String] -> Env
+fenced f = return $ [Append ">\n"] ++ code ++ [Append "<\n"]
   where code = if null f
                then [Append ""]
                else Append "    " : [Append $ intercalate "\n    " f ++ "\n"]
