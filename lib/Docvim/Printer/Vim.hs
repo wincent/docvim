@@ -177,10 +177,13 @@ link l = do
 -- and likewise, replace following blank line with <
 -- (but this will be tricky; could do it as a post-processing step)
 fenced :: [String] -> Env
-fenced f = return $ [Append ">\n"] ++ code ++ [Append "<\n"]
-  where code = if null f
-               then [Append ""]
-               else Append "    " : [Append $ intercalate "\n    " f ++ "\n"]
+fenced f = do
+  prefix <- append ">\n"
+  body <- if null f
+          then append ""
+          else append $ "    " ++ intercalate "\n    " f ++ "\n"
+  suffix <- append "<\n"
+  return $ concat [prefix, body, suffix]
 
 -- TODO: be prepared to wrap these if there are a lot of them
 linkTargets :: [String] -> Operation
