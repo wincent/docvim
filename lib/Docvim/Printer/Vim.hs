@@ -40,6 +40,18 @@ vimHelp n = rstrip output ++ "\n"
         -- (accumulatedOutput, lastAtom)
         reduce acc (Append atom) = acc ++ atom
 
+-- Helper function that appends and updates `partialLine` context.
+append :: String -> Env
+append string = do
+  context <- get
+  put (Context (lineBreak context) (partial context))
+  return [Append string]
+  where
+    partial context = if length end == length string
+                      then partialLine context ++ end
+                      else end
+    end = reverse $ takeWhile (/= '\n') (reverse string)
+
 defaultLineBreak :: String
 defaultLineBreak = "\n"
 
@@ -65,7 +77,7 @@ node n = case n of
   Whitespace              -> whitespace
 
   -- Nodes that don't depend on reader context.
-  Code c                  -> return [Append $ "`" ++ c ++ "`"]
+  Code c                  -> append $ "`" ++ c ++ "`"
   Fenced f                -> return $ fenced f ++ [Append "\n\n"]
   -- TODO: Vim will only highlight this as a heading if it has a trailing
   -- LinkTarget on the same line; figure out how to handle that; may need to
@@ -75,24 +87,23 @@ node n = case n of
   -- to auto-gen the targets based on the plugin name + the heading text.
   --
   -- I could also just make people specify a target explicitly.
-  HeadingAnnotation h     -> return [Append $ map toUpper h ++ "\n\n"]
+  HeadingAnnotation h     -> append $ map toUpper h ++ "\n\n"
   LinkTargets l           -> return $ linkTargets l : [Append "\n"]
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
   PluginAnnotation name desc -> plugin name desc
-  Separator               -> return [Append $ "---" ++ "\n\n"]
-  SubheadingAnnotation s  -> return [Append $ s ++ " ~\n\n"]
-  _                       -> return [Append ""]
+  Separator               -> append $ "---" ++ "\n\n"
+  SubheadingAnnotation s  -> append $ s ++ " ~\n\n"
+  _                       -> append ""
 
 -- TODO: right-align trailing link target
 -- TODO: add {name}.txt to the symbol table?
 plugin :: String -> String -> Env
-plugin name desc = return [ Append $
-    "*" ++ name ++ ".txt*" ++
-    "    " ++ desc ++ "      " ++
-    "*" ++ name ++ "*" ++ "\n\n"
-    ]
+plugin name desc = append $
+  "*" ++ name ++ ".txt*" ++
+  "    " ++ desc ++ "      " ++
+  "*" ++ name ++ "*" ++ "\n\n"
 
 -- | Append a newline.
 nl :: [Operation] -> Env
@@ -101,7 +112,7 @@ nl os = return $ os ++ [Append "\n"]
 breaktag :: Env
 breaktag = do
   state <- get
-  return [Append $ lineBreak state]
+  append $ lineBreak state
 
 listitem :: [Node] -> Env
 listitem l = do
@@ -118,7 +129,7 @@ whitespace :: Env
 whitespace =
   -- if current line > 80 "\n" else " "
   -- but note, really need to do this BEFORE 80
-  return [Append " "]
+  append " "
 
 blockquote :: [Node] -> Env
 blockquote ps = do
@@ -134,32 +145,31 @@ blockquote ps = do
     customLineBreak = "\n    "
     customParagraphBreak = Append "\n\n    "
 
+-- TODO: based on current line length, decide whether to override
+-- linebreak or not
+-- problem is that we will already have emitted a whitespace by the time we
+-- get here (which means we will wind up with trailing whitespace in the
+-- output...)
+-- and if we instead handle it in the whitespace function, we have no way of
+-- looking ahead to see the length of the plaintext
+--
+-- ways to deal with this... figure out some kind of rollback
+-- implement pending whitespace and check it everywhere we print something...
+-- or: instead of appending to a string, append a list of operations eg
+-- [append "foo"], [append " "], [delete " "] etc...
 plaintext :: String -> Env
-plaintext p =
-  -- TODO: based on current line length, decide whether to override
-  -- linebreak or not
-  -- problem is that we will already have emitted a whitespace by the time we
-  -- get here (which means we will wind up with trailing whitespace in the
-  -- output...)
-  -- and if we instead handle it in the whitespace function, we have no way of
-  -- looking ahead to see the length of the plaintext
-  --
-  -- ways to deal with this... figure out some kind of rollback
-  -- implement pending whitespace and check it everywhere we print something...
-  -- or: instead of appending to a string, append a list of operations eg
-  -- [append "foo"], [append " "], [delete " "] etc...
-  return [Append p]
+plaintext = append
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env
 link l = do
   metadata <- ask
-  return $ if l `elem` symbols metadata
-           then [Append $ "|" ++ l ++ "|"]
-           -- TODO: figure out what to do here
-           -- probably want to treat URLs specially
-           -- and Vim help links, obviously
-           else [Append l]
+  if l `elem` symbols metadata
+  then append $ "|" ++ l ++ "|"
+  -- TODO: figure out what to do here
+  -- probably want to treat URLs specially
+  -- and Vim help links, obviously
+  else append l
 
 -- TODO ideally want to replace preceding blank line with >, not append one
 -- and likewise, replace following blank line with <
