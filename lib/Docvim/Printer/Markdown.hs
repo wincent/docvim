@@ -42,6 +42,7 @@ node n = case n of
   Unit u                  -> nodes u
 
   -- Nodes that don't depend on reader context.
+  -- TODO, for readability, this should be "<br />\n" (custom, context-aware separator; see Vim.hs)
   BreakTag                -> return "<br />"
   Code c                  -> return $ "`" ++ c ++ "`"
   Fenced f                -> return $ fenced f ++ "\n\n"

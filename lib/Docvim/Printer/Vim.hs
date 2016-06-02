@@ -106,6 +106,7 @@ breaktag = do
 listitem :: [Node] -> Env
 listitem l = do
   context <- get
+  -- TODO: consider using lenses to modify records
   put (Context customLineBreak (partialLine context))
   item <- fmap ([Append "- "] ++) (nodes l) >>= nl
   put (Context defaultLineBreak (partialLine context))

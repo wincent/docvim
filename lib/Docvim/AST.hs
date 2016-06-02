@@ -125,6 +125,9 @@ type Usage = String
 --
 walk :: Monoid a => (Node -> a) -> a -> Node -> a
 walk f = foldlOf (cosmosOf uniplate . to f) (<>)
+-- TODO: consider making it possible for `f` to return `Nothing` to
+-- short-circuit traversal, or `Just a` to continue with the current `mappend`
+-- behavior.
 
 -- | Sanitizes a link target similar to the way that GitHub does:
 --
