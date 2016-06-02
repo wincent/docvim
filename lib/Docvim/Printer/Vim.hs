@@ -88,7 +88,7 @@ node n = case n of
   --
   -- I could also just make people specify a target explicitly.
   HeadingAnnotation h     -> append $ map toUpper h ++ "\n\n"
-  LinkTargets l           -> return $ linkTargets l : [Append "\n"]
+  LinkTargets l           -> linkTargets l
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
@@ -107,7 +107,7 @@ plugin name desc = append $
 
 -- | Append a newline.
 nl :: [Operation] -> Env
-nl os = return $ os ++ [Append "\n"]
+nl os = liftM2 (++) (return os) (append "\n")
 
 breaktag :: Env
 breaktag = do
@@ -137,7 +137,7 @@ blockquote ps = do
   put (Context customLineBreak (partialLine context))
   ps' <- mapM paragraph ps
   put (Context defaultLineBreak (partialLine context))
-  return $ Append "    " : intercalate [customParagraphBreak] ps'
+  liftM2 (++) (append "    ") (return $ intercalate [customParagraphBreak] ps')
   where
     -- Strip off trailing newlines from each paragraph.
     paragraph p = fmap trim (node p)
@@ -186,8 +186,8 @@ fenced f = do
   return $ concat [prefix, body, suffix]
 
 -- TODO: be prepared to wrap these if there are a lot of them
-linkTargets :: [String] -> Operation
-linkTargets ls = Append $ rightAlign targets
+linkTargets :: [String] -> Env
+linkTargets ls = append $ rightAlign targets ++ "\n"
   where
     targets = unwords (map linkify $ sort ls)
     linkify l = "*" ++ l ++ "*"
