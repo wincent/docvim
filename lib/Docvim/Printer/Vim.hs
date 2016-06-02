@@ -78,7 +78,7 @@ node n = case n of
 
   -- Nodes that don't depend on reader context.
   Code c                  -> append $ "`" ++ c ++ "`"
-  Fenced f                -> return $ fenced f ++ [Append "\n\n"]
+  Fenced f                -> return $ fenced f
   -- TODO: Vim will only highlight this as a heading if it has a trailing
   -- LinkTarget on the same line; figure out how to handle that; may need to
   -- address it in the Parser
@@ -157,6 +157,8 @@ blockquote ps = do
 -- implement pending whitespace and check it everywhere we print something...
 -- or: instead of appending to a string, append a list of operations eg
 -- [append "foo"], [append " "], [delete " "] etc...
+-- or: post process to strip all trailing whitespace (probably the easiest
+-- thing)
 plaintext :: String -> Env
 plaintext = append
 

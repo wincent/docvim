@@ -5,8 +5,6 @@ Here is some fenced code:
       return 1;
     }
 <
-
-
 That was it. Here's an empty block:
 
 >

@@ -41,23 +41,17 @@ If you don't have a "plug-in management system of choice", I recommend Pathogen 
 >
     git clone https://github.com/wincent/ferret.git ~/.vim/bundle/ferret
 <
-
-
 Alternatively, if you use a Git submodule for each Vim plug-in, you could do the following after `cd`-ing into the top-level of your Git superproject:
 
 >
     git submodule add https://github.com/wincent/ferret.git ~/vim/bundle/ferret
     git submodule init
 <
-
-
 To generate help tags under Pathogen, you can do so from inside Vim with:
 
 >
     :call pathogen#helptags()
 <
-
-
 Circumstances where mappings do not get set up ~
 
 Note that Ferret will not try to set up the <leader> mappings if any of the following are true:
@@ -90,8 +84,6 @@ For example, to call a pair of custom functions in response to these events, you
     autocmd! User FerretDidWrite
     autocmd User FerretDidWrite call CustomDidWrite()
 <
-
-
 OVERRIDES
 
 Ferret overrides the 'grepformat' and 'grepprg' settings, preferentially setting `ag`, `ack` or `grep` as the 'grepprg' (in that order) and configuring a suitable 'grepformat'.
@@ -133,8 +125,6 @@ To prevent any of these quickfix-specific overrides from being set up, you can s
 >
     let g:FerretQFOptions=0
 <
-
-
 TROUBLESHOOTING
 
                                                                *ferret-quotes*
@@ -147,15 +137,11 @@ So, to find "foo bar", you would search like:
 >
     :Ack foo\ bar
 <
-
-
 Unescaped spaces in the search are treated as argument separators, so a command like the following means pass the `-w` option through, search for pattern "foo", and limit search to the "bar" directory:
 
 >
     :Ack -w foo bar
 <
-
-
 Note that including quotes will not do what you intend.
 
 >
@@ -165,15 +151,11 @@ Note that including quotes will not do what you intend.
      " Search for "'foo' in the "bar'" directory:
      :Ack 'foo bar'
 <
-
-
 This approach to escaping is taken in order to make it straightfoward to use powerful Perl-compatible regular expression syntax in an unambiguous way without having to worry about shell escaping rules:
 
 >
     :Ack \blog\((['"]).*?\1\) -i --ignore-dir=src/vendor src dist build
 <
-
-
 FAQ
 
 Why do Ferret commands start with "Ack", "Lack" and so on? ~
@@ -229,30 +211,22 @@ At the moment the release process is manual:
 >
     git status
 <
-
-
 - Tag the release:
 
 >
     git tag -s -m "$VERSION release" $VERSION
 <
-
-
 - Publish the code:
 
 >
     git push origin master --follow-tags
     git push github master --follow-tags
 <
-
-
 - Produce the release archive:
 
 >
     git archive -o ferret-$VERSION.zip HEAD -- .
 <
-
-
 - Upload to http://www.vim.org/scripts/script.php?script_id=5220
 
 AUTHORS
@@ -299,15 +273,11 @@ The {pattern} is passed through as-is to the underlying search program, and no e
 >
     :Ack \bfoo[0-9]{2}\ bar\b
 <
-
-
 Likewise, {options} are passed through. In this example, we pass the `-w` option (to search on word boundaries), and scope the search to the "foo" and "bar" subdirectories: >
 
 >
     :Ack -w something foo bar
 <
-
-
 As a convenience <leader>a is set-up (<Plug>(FerretAck)) as a shortcut to enter Cmdline-mode with `:Ack` inserted on the Cmdline. Likewise <leader>s (<Plug>(FerretAckWord)) is a shortcut for running :Ack with the word currently under the cursor.
 
 Just like :Ack, but instead of using the quickfix listing, which is global across an entire Vim instance, it uses the location-list, which is a per-window construct.
@@ -322,47 +292,35 @@ A typical sequence consists of an :Ack invocation to populate the quickfix listi
     :Ack foo
     :Acks /foo/bar/
 <
-
-
 Controls whether to set up the Ferret mappings, such as <Plug>(FerretAck) (see ferret-mappings for a full list). To prevent any mapping from being configured, set to 0:
 
 >
     let g:FerretMap=0
 <
-
-
 Ferret maps <leader>a to <Plug>(FerretAck), which triggers the :Ack command. To use an alternative mapping instead, create a different one in your .vimrc instead using :nmap:
 
 >
     " Instead of <leader>a, use <leader>x.
     nmap <leader>x <Plug>(FerretAck)
 <
-
-
 Ferret maps <leader>l to <Plug>(FerretLack), which triggers the :Lack command. To use an alternative mapping instead, create a different one in your .vimrc instead using :nmap:
 
 >
     " Instead of <leader>l, use <leader>y.
     nmap <leader>y <Plug>(FerretLack)
 <
-
-
 Ferret maps <leader>s (mnemonix: "selection) to <Plug>(FerretAckWord), which uses :Ack to search for the word currently under the cursor. To use an alternative mapping instead, create a different one in your .vimrc instead using :nmap:
 
 >
     " Instead of <leader>s, use <leader>z.
     nmap <leader>z <Plug>(FerretAckWord)
 <
-
-
 Ferret maps <leader>r (mnemonic: "replace") to <Plug>(FerretAcks), which triggers the :Acks command and fills the prompt with the last search term from Ferret. to use an alternative mapping instead, create a different one in your .vimrc instead using :nmap:
 
 >
     " Instead of <leader>r, use <leader>u.
     nmap <leader>u <Plug>(FerretAcks)
 <
-
-
 This is a utility function that is used by the :Acks command but is also generally useful enough to warrant being exposed publicly.
 
 It takes the files currently in the quickfix listing and sets them as :args so that they can be operated on en masse via the :argdo command.

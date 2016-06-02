@@ -7,8 +7,6 @@ To prevent the custom settings from being applied, set g:FerretQFOptions to 0:
 >
     let g:FerretQFOptions=0
 <
-
-
 Controls whether to set up mappings in the quickfix results window for deleting results. The mappings include:
 
 - `d` (visual-mode): delete visual selection
