@@ -33,7 +33,7 @@ vimHelp :: Node -> String
 vimHelp n = rstrip output ++ "\n"
   where metadata = Metadata (getSymbols n) (getPluginName n)
         context = Context defaultLineBreak ""
-        operations = (fst $ runState (runReaderT (node n) metadata) context)
+        operations = evalState (runReaderT (node n) metadata) context
         output = foldl reduce "" operations
         -- TODO: handle rollbacks as well
         -- probably need some tuple fanciness for the accumulator
@@ -65,7 +65,7 @@ node n = case n of
   Whitespace              -> whitespace
 
   -- Nodes that don't depend on reader context.
-  Code c                  -> return $ [Append $ "`" ++ c ++ "`"]
+  Code c                  -> return [Append $ "`" ++ c ++ "`"]
   Fenced f                -> return $ fenced f ++ [Append "\n\n"]
   -- TODO: Vim will only highlight this as a heading if it has a trailing
   -- LinkTarget on the same line; figure out how to handle that; may need to
@@ -75,15 +75,15 @@ node n = case n of
   -- to auto-gen the targets based on the plugin name + the heading text.
   --
   -- I could also just make people specify a target explicitly.
-  HeadingAnnotation h     -> return $ [Append $ map toUpper h ++ "\n\n"]
-  LinkTargets l           -> return $ [linkTargets l] ++ [Append "\n"]
+  HeadingAnnotation h     -> return [Append $ map toUpper h ++ "\n\n"]
+  LinkTargets l           -> return $ linkTargets l : [Append "\n"]
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
   PluginAnnotation name desc -> plugin name desc
-  Separator               -> return $ [Append $ "---" ++ "\n\n"]
-  SubheadingAnnotation s  -> return $ [Append $ s ++ " ~\n\n"]
-  _                       -> return $ [Append ""]
+  Separator               -> return [Append $ "---" ++ "\n\n"]
+  SubheadingAnnotation s  -> return [Append $ s ++ " ~\n\n"]
+  _                       -> return [Append ""]
 
 -- TODO: right-align trailing link target
 -- TODO: add {name}.txt to the symbol table?
@@ -126,7 +126,7 @@ blockquote ps = do
   put (Context customLineBreak (partialLine context))
   ps' <- mapM paragraph ps
   put (Context defaultLineBreak (partialLine context))
-  return $ [Append "    "] ++ intercalate [customParagraphBreak] ps'
+  return $ Append "    " : intercalate [customParagraphBreak] ps'
   where
     -- Strip off trailing newlines from each paragraph.
     paragraph p = fmap trim (node p)
@@ -135,7 +135,7 @@ blockquote ps = do
     customParagraphBreak = Append "\n\n    "
 
 plaintext :: String -> Env
-plaintext p = do
+plaintext p =
   -- TODO: based on current line length, decide whether to override
   -- linebreak or not
   -- problem is that we will already have emitted a whitespace by the time we
@@ -148,7 +148,7 @@ plaintext p = do
   -- implement pending whitespace and check it everywhere we print something...
   -- or: instead of appending to a string, append a list of operations eg
   -- [append "foo"], [append " "], [delete " "] etc...
-  return $ [Append p]
+  return [Append p]
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env
@@ -168,7 +168,7 @@ fenced :: [String] -> [Operation]
 fenced f = [Append ">\n"] ++ code ++ [Append "<\n"]
   where code = if null f
                then [Append ""]
-               else [Append "    "] ++ [Append $ (intercalate "\n    " f) ++ "\n"]
+               else Append "    " : [Append $ intercalate "\n    " f ++ "\n"]
 
 -- TODO: be prepared to wrap these if there are a lot of them
 linkTargets :: [String] -> Operation
