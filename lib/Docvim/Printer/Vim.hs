@@ -119,7 +119,7 @@ listitem l = do
   context <- get
   -- TODO: consider using lenses to modify records
   put (Context customLineBreak (partialLine context))
-  item <- fmap ([Append "- "] ++) (nodes l) >>= nl
+  item <- liftM2 (++) (append "- ") (nodes l) >>= nl
   put (Context defaultLineBreak (partialLine context))
   return item
   where
