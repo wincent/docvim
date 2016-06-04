@@ -6,7 +6,7 @@ module Docvim.Printer.Vim
 
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Char (toUpper)
+import Data.Char (isSpace, toUpper)
 import Data.List (intercalate, sort)
 import Docvim.AST
 import Docvim.Parse (parseUnit, rstrip)
@@ -20,7 +20,7 @@ import Docvim.Visitor.Symbol (getSymbols)
 -- (eg. append whitespace " ", then on next node, realize that we will exceed
 -- line length limit, so rollback the " " and instead append "\n" etc).
 data Operation = Append String
-               | Delete String -- note that String may not be the right thing
+               | Delete Int
 data Metadata = Metadata { symbols :: [String]
                          , pluginName :: Maybe String
                          }
@@ -35,10 +35,8 @@ vimHelp n = rstrip output ++ "\n"
         context = Context defaultLineBreak ""
         operations = evalState (runReaderT (node n) metadata) context
         output = foldl reduce "" operations
-        -- TODO: handle rollbacks as well
-        -- probably need some tuple fanciness for the accumulator
-        -- (accumulatedOutput, lastAtom)
         reduce acc (Append atom) = acc ++ atom
+        reduce acc (Delete count) = take (length acc - count) acc
 
 -- Helper function that appends and updates `partialLine` context.
 append :: String -> Env
@@ -51,6 +49,16 @@ append string = do
                       then partialLine context ++ end
                       else end
     end = reverse $ takeWhile (/= '\n') (reverse string)
+
+-- Helper function that deletes `count` elements from the end of the
+--`partialLine` context.
+delete :: Int -> Env
+delete count = do
+  context <- get
+  put (Context (lineBreak context) (partial context))
+  return [Delete count]
+  where
+    partial context = take (length (partialLine context) - count) (partialLine context)
 
 defaultLineBreak :: String
 defaultLineBreak = "\n"
@@ -147,12 +155,13 @@ blockquote ps = do
 
 plaintext :: String -> Env
 plaintext p = do
-  -- TODO: actually do this with rollback in whitespace, but this is easy to
-  -- show
   context <- get
   if (length $ partialLine context) + (length p) > 78
-  then append ((lineBreak context) ++ p)
+  -- beware edge case where p + lineBreak > 78 or something`
+  then liftM2 (++) (delete $ trailing $ partialLine context) (append $ lineBreak context ++ p)
   else append p
+  where trailing str = length $ takeWhile isSpace (reverse str)
+
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env
