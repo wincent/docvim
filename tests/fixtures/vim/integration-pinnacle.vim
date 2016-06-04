@@ -1,1 +1,1 @@
-../markdown/integration-pinnacle.vim
+../shared/integration-pinnacle.vim

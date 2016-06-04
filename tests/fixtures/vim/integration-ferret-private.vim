@@ -1,1 +1,1 @@
-../markdown/integration-ferret-private.vim
+../shared/integration-ferret-private.vim

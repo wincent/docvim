@@ -1,1 +1,1 @@
-../markdown/integration-ferret-ftplugin-qf.vim
+../shared/integration-ferret-ftplugin-qf.vim

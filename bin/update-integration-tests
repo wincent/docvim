@@ -1,0 +1,14 @@
+#!/bin/sh
+
+for TYPE in tests/fixtures/*; do
+  if [ $TYPE != "tests/fixtures/shared" ]; then
+    (
+      echo "In $TYPE:"
+      cd $TYPE
+      for TEST in ../shared/integration-*; do
+        echo "Linking: $TEST"
+        ln -sf $TEST
+      done
+    )
+  fi
+done
