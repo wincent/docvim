@@ -30,6 +30,9 @@ data Context = Context { lineBreak :: String
                        }
 type Env = ReaderT Metadata (State Context) [Operation]
 
+hardwrap :: Int
+hardwrap = 78
+
 vimHelp :: Node -> String
 vimHelp n = rstrip output ++ "\n"
   where metadata = Metadata (getSymbols n) (getPluginName n)
@@ -46,15 +49,19 @@ vimHelp n = rstrip output ++ "\n"
 append :: String -> Env
 append string = do
   context <- get
-  put (Context (lineBreak context) (partial context))
-  return [Append string]
+  -- TODO make that >=
+  -- TODO obviously tidy this up
+  let (ops, line) = if length (partialLine context) + length string >= hardwrap
+                    then ([Delete (trailing $ partialLine context), Append (lineBreak context), Append $ slurpWhitespace string], lineBreak context ++ slurpWhitespace string)
+                    else ([Append string], partialLine context ++ string)
+  put (Context (lineBreak context) (end line))
+  return ops
   where
-    -- TODO: see if I can use dropWhileEnd from Data.List here to make things
-    -- simpler
-    partial context = if length end == length string
-                      then partialLine context ++ end
-                      else end
-    end = reverse $ takeWhile (/= '\n') (reverse string)
+    trailing str = length $ takeWhile isSpace (reverse str)
+    end l = reverse $ takeWhile (/= '\n') (reverse l)
+    slurpWhitespace atom = if atom == " "
+                           then ""
+                           else atom
 
 -- Helper function that deletes `count` elements from the end of the
 --`partialLine` context.
@@ -94,7 +101,8 @@ defaultLineBreak = "\n"
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
 
--- TODO: deal with hard-wrapping
+-- TODO: deal with hard-wrapping (still some overlength lines and edge cases to
+-- deal with)
 node :: Node -> Env
 node n = case n of
   Blockquote b            -> blockquote b >>= nl >>= nl
@@ -178,14 +186,7 @@ blockquote ps = do
     customParagraphBreak = append "\n\n    "
 
 plaintext :: String -> Env
-plaintext p = do
-  context <- get
-  if length (partialLine context) + length p > 78
-  -- beware edge case where p + lineBreak > 78 or something`
-  then liftM2 (++) (delete $ trailing $ partialLine context) (append $ lineBreak context ++ p)
-  else append p
-  where trailing str = length $ takeWhile isSpace (reverse str)
-
+plaintext = append
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env
