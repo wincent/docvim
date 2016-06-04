@@ -154,7 +154,7 @@ blockquote ps = do
 plaintext :: String -> Env
 plaintext p = do
   context <- get
-  if (length $ partialLine context) + (length p) > 78
+  if length (partialLine context) + length p > 78
   -- beware edge case where p + lineBreak > 78 or something`
   then liftM2 (++) (delete $ trailing $ partialLine context) (append $ lineBreak context ++ p)
   else append p
@@ -173,7 +173,6 @@ link l = do
   else append l
 
 -- TODO ideally want to replace preceding blank line with >, not append one
--- and likewise, replace following blank line with <
 -- (but this will be tricky; could do it as a post-processing step)
 fenced :: [String] -> Env
 fenced f = do
