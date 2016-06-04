@@ -69,24 +69,13 @@ nodes ns = concat <$> mapM node ns
 -- TODO: deal with hard-wrapping
 node :: Node -> Env
 node n = case n of
-  -- Nodes that depend on (or must propagate) reader/state context.
   Blockquote b            -> blockquote b >>= nl >>= nl
   BreakTag                -> breaktag
-  DocBlock d              -> nodes d
-  FunctionDeclaration {}  -> nodes $ functionBody n
-  Paragraph p             -> nodes p >>= nl >>= nl
-  Plaintext p             -> plaintext p
-  Link l                  -> link l
-  List ls                 -> nodes ls >>= nl
-  ListItem l              -> listitem l
-  Project p               -> nodes p
-  Unit u                  -> nodes u
-  -- TODO deal with hard wrapping: here might be a good place for it...
-  Whitespace              -> whitespace
-
-  -- Nodes that don't depend on reader context.
   Code c                  -> append $ "`" ++ c ++ "`"
+  DocBlock d              -> nodes d
   Fenced f                -> fenced f
+  FunctionDeclaration {}  -> nodes $ functionBody n
+
   -- TODO: Vim will only highlight this as a heading if it has a trailing
   -- LinkTarget on the same line; figure out how to handle that; may need to
   -- address it in the Parser
@@ -96,13 +85,22 @@ node n = case n of
   --
   -- I could also just make people specify a target explicitly.
   HeadingAnnotation h     -> append $ map toUpper h ++ "\n\n"
+  Link l                  -> link l
   LinkTargets l           -> linkTargets l
+  List ls                 -> nodes ls >>= nl
+  ListItem l              -> listitem l
+  Paragraph p             -> nodes p >>= nl >>= nl
+  Plaintext p             -> plaintext p
+
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
   PluginAnnotation name desc -> plugin name desc
+  Project p               -> nodes p
   Separator               -> append $ "---" ++ "\n\n"
   SubheadingAnnotation s  -> append $ s ++ " ~\n\n"
+  Unit u                  -> nodes u
+  Whitespace              -> whitespace
   _                       -> append ""
 
 -- TODO: right-align trailing link target
