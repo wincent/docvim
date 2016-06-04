@@ -137,13 +137,13 @@ blockquote ps = do
   put (Context customLineBreak (partialLine context))
   ps' <- mapM paragraph ps
   put (Context defaultLineBreak (partialLine context))
-  liftM2 (++) (append "    ") (return $ intercalate [customParagraphBreak] ps')
+  liftM2 (++) (append "    ") (liftM2 intercalate customParagraphBreak (return ps'))
   where
     -- Strip off trailing newlines from each paragraph.
     paragraph p = fmap trim (node p)
     trim contents = take (length contents - 2) contents
     customLineBreak = "\n    "
-    customParagraphBreak = Append "\n\n    "
+    customParagraphBreak = append "\n\n    "
 
 -- TODO: based on current line length, decide whether to override
 -- linebreak or not
