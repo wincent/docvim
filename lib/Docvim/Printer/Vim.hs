@@ -145,22 +145,14 @@ blockquote ps = do
     customLineBreak = "\n    "
     customParagraphBreak = append "\n\n    "
 
--- TODO: based on current line length, decide whether to override
--- linebreak or not
--- problem is that we will already have emitted a whitespace by the time we
--- get here (which means we will wind up with trailing whitespace in the
--- output...)
--- and if we instead handle it in the whitespace function, we have no way of
--- looking ahead to see the length of the plaintext
---
--- ways to deal with this... figure out some kind of rollback
--- implement pending whitespace and check it everywhere we print something...
--- or: instead of appending to a string, append a list of operations eg
--- [append "foo"], [append " "], [delete " "] etc...
--- or: post process to strip all trailing whitespace (probably the easiest
--- thing)
 plaintext :: String -> Env
-plaintext = append
+plaintext p = do
+  -- TODO: actually do this with rollback in whitespace, but this is easy to
+  -- show
+  context <- get
+  if (length $ partialLine context) + (length p) > 78
+  then append ((lineBreak context) ++ p)
+  else append p
 
 -- TODO: handle "interesting" link text like containing [, ], "
 link :: String -> Env

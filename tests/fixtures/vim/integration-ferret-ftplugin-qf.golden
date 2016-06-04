@@ -1,4 +1,7 @@
-Controls whether to set up setting overrides for quickfix windows. These are various settings, such as norelativenumber, nolist and nowrap, that are intended to make the quickfix window, which is typically very small relative to other windows, more usable.
+Controls whether to set up setting overrides for quickfix windows. These are 
+various settings, such as norelativenumber, nolist and nowrap, that are 
+intended to make the quickfix window, which is typically very small relative 
+to other windows, more usable.
 
 A full list of overridden settings can be found in ferret-overrides.
 
@@ -7,7 +10,8 @@ To prevent the custom settings from being applied, set g:FerretQFOptions to 0:
 >
     let g:FerretQFOptions=0
 <
-Controls whether to set up mappings in the quickfix results window for deleting results. The mappings include:
+Controls whether to set up mappings in the quickfix results window for 
+deleting results. The mappings include:
 
 - `d` (visual-mode): delete visual selection
 - `dd` (Normal-mode): delete current line
