@@ -6,7 +6,6 @@ to other windows, more usable.
 A full list of overridden settings can be found in ferret-overrides.
 
 To prevent the custom settings from being applied, set g:FerretQFOptions to 0:
-
 >
     let g:FerretQFOptions=0
 <
@@ -18,7 +17,6 @@ deleting results. The mappings include:
 - `d`{motion} (Normal-mode): delete range indicated by {motion}
 
 To prevent these mappings from being set up, set to 0:
-
 >
     let g:FerretQFMap=0
 <

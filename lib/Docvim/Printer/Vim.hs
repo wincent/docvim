@@ -7,7 +7,7 @@ module Docvim.Printer.Vim
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.Char (isSpace, toUpper)
-import Data.List (intercalate, sort)
+import Data.List (intercalate, isSuffixOf, sort)
 import Docvim.AST
 import Docvim.Parse (parseUnit, rstrip)
 import Docvim.Visitor.Plugin (getPluginName)
@@ -20,7 +20,8 @@ import Docvim.Visitor.Symbol (getSymbols)
 -- (eg. append whitespace " ", then on next node, realize that we will exceed
 -- line length limit, so rollback the " " and instead append "\n" etc).
 data Operation = Append String
-               | Delete Int
+               | Delete Int -- unconditional delete a count of Char
+               | Slurp String -- delete string if present
 data Metadata = Metadata { symbols :: [String]
                          , pluginName :: Maybe String
                          }
@@ -37,6 +38,9 @@ vimHelp n = rstrip output ++ "\n"
         output = foldl reduce "" operations
         reduce acc (Append atom) = acc ++ atom
         reduce acc (Delete count) = take (length acc - count) acc
+        reduce acc (Slurp atom) = if isSuffixOf atom acc
+                                  then take (length acc - length atom) acc
+                                  else acc
 
 -- Helper function that appends and updates `partialLine` context.
 append :: String -> Env
@@ -45,6 +49,8 @@ append string = do
   put (Context (lineBreak context) (partial context))
   return [Append string]
   where
+    -- TODO: see if I can use dropWhileEnd from Data.List here to make things
+    -- simpler
     partial context = if length end == length string
                       then partialLine context ++ end
                       else end
@@ -59,6 +65,19 @@ delete count = do
   return [Delete count]
   where
     partial context = take (length (partialLine context) - count) (partialLine context)
+
+-- Helper function to conditionally remove a string if it appears at the end of
+-- the output.
+slurp :: String -> Env
+slurp str = do
+  context <- get
+  put (Context (lineBreak context) (partial context))
+  return [Slurp str]
+  where
+    -- TODO: need to be smart about this and check if partialLine has a suffix
+    -- that matches everything in the str from the end back to the first
+    -- linebreak
+    partial context = ""
 
 defaultLineBreak :: String
 defaultLineBreak = "\n"
@@ -172,16 +191,15 @@ link l = do
   -- and Vim help links, obviously
   else append l
 
--- TODO ideally want to replace preceding blank line with >, not append one
--- (but this will be tricky; could do it as a post-processing step)
 fenced :: [String] -> Env
 fenced f = do
+  cut <- slurp "\n"
   prefix <- append ">\n"
   body <- if null f
           then append ""
           else append $ "    " ++ intercalate "\n    " f ++ "\n"
   suffix <- append "<\n"
-  return $ concat [prefix, body, suffix]
+  return $ concat [cut, prefix, body, suffix]
 
 -- TODO: be prepared to wrap these if there are a lot of them
 linkTargets :: [String] -> Env

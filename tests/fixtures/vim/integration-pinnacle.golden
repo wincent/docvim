@@ -12,19 +12,16 @@ If you don't have a "plug-in management system of choice", I recommend
 Pathogen (https://github.com/tpope/vim-pathogen) due to its simplicity and
 robustness. Assuming that you have Pathogen installed and configured, and that
 you want to install vim-docvim into `~/.vim/bundle`, you can do so with:
-
 >
     git clone https://github.com/wincent/pinnacle.git ~/.vim/bundle/pinnacle
 <
 Alternatively, if you use a Git submodule for each Vim plug-in, you could do
 the following after `cd`-ing into the top-level of your Git superproject:
-
 >
     git submodule add https://github.com/wincent/pinnacle.git ~/vim/bundle/pinnacle
     git submodule init
 <
 To generate help tags under Pathogen, you can do so from inside Vim with:
-
 >
     :call pathogen#helptags()
 <
@@ -80,23 +77,19 @@ At the moment the release process is manual:
 - Perform final sanity checks and manual testing
 - Update the |pinnacle-history| section of the documentation
 - Verify clean work tree:
-
 >
     git status
 <
 - Tag the release:
-
 >
     git tag -s -m "$VERSION release" $VERSION
 <
 - Publish the code:
-
 >
     git push origin master --follow-tags
     git push github master --follow-tags
 <
 - Produce the release archive:
-
 >
     git archive -o vim-docvim-$VERSION.zip HEAD -- .
 <
