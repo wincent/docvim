@@ -30,31 +30,28 @@ nodes ns = concat <$> mapM node ns
 
 node :: Node -> Env
 node n = case n of
-  -- Nodes that depend on (or must propagate) reader context.
   Blockquote b            -> blockquote b >>= nl >>= nl
-  DocBlock d              -> nodes d
-  FunctionDeclaration {}  -> nodes $ functionBody n
-  Paragraph p             -> nodes p >>= nl >>= nl
-  Link l                  -> link l
-  List ls                 -> nodes ls >>= nl
-  ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
-  Project p               -> nodes p
-  Unit u                  -> nodes u
-
-  -- Nodes that don't depend on reader context.
   -- TODO, for readability, this should be "<br />\n" (custom, context-aware separator; see Vim.hs)
   BreakTag                -> return "<br />"
   Code c                  -> return $ "`" ++ c ++ "`"
+  DocBlock d              -> nodes d
   Fenced f                -> return $ fenced f ++ "\n\n"
+  FunctionDeclaration {}  -> nodes $ functionBody n
   HeadingAnnotation h     -> return $ "## " ++ h ++ "\n\n"
+  Link l                  -> link l
   LinkTargets l           -> return $ linkTargets l ++ "\n"
+  List ls                 -> nodes ls >>= nl
+  ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
+  Paragraph p             -> nodes p >>= nl >>= nl
+  Plaintext p             -> return p
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
   PluginAnnotation name _ -> return $ "# " ++ name ++ "\n\n"
-  Plaintext p             -> return p
+  Project p               -> nodes p
   Separator               -> return $ "---" ++ "\n\n"
   SubheadingAnnotation s  -> return $ "### " ++ s ++ "\n\n"
+  Unit u                  -> nodes u
   Whitespace              -> return " "
   _                       -> return ""
 
