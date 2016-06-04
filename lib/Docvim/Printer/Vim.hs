@@ -74,10 +74,19 @@ slurp str = do
   put (Context (lineBreak context) (partial context))
   return [Slurp str]
   where
-    -- TODO: need to be smart about this and check if partialLine has a suffix
-    -- that matches everything in the str from the end back to the first
-    -- linebreak
-    partial context = ""
+    -- eg. (partialLine context) | str        | result
+    --     ----------------------|------------|-------
+    --     ""                    | "\n"       | ""
+    --     "foo"                 | "\n"       | "foo"
+    --     "foo"                 | "bar"      | "foo"
+    --     "abc"                 | "bc"       | "a"
+    --     "abc"                 | "foo\nabc" | ""
+    --
+    -- Note: That last one is unsafe, because we can't guarantee that "foo" is
+    -- there. Caveat emptor!
+    partial context = if isSuffixOf str (partialLine context)
+                      then take (length (partialLine context) - length str) (partialLine context)
+                      else (partialLine context)
 
 defaultLineBreak :: String
 defaultLineBreak = "\n"
