@@ -45,9 +45,6 @@ run = do
   let project = Project $ concat [plugin, [ast2], [ast3], footer]
   let targets = fromMaybe [""] (outfiles opts)
   mapM_ (\target ->
-      -- TODO use MultiWayIf here
-      -- https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/guide-to-ghc-extensions/basic-syntax-extensions
-      -- and possibly LambdaCase as well
       if | target == "" -> do
             when (verbose opts) (hPutStrLn stderr "No output target: defaulting to standard out")
             putStrLn $ markdown project
