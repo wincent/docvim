@@ -11,8 +11,9 @@ import Docvim.Parse (parse)
 import Docvim.Printer.Markdown (markdown)
 import Docvim.Printer.Vim (vimHelp)
 import Docvim.ReadDir (readDir)
-import qualified Docvim.Visitor.Footer as Footer (extract)
+import Docvim.Visitor.Footer (extractFooter)
 import qualified Docvim.Visitor.Plugin as Plugin (extract)
+import Docvim.Visitor (extract)
 import System.FilePath (takeExtension)
 import System.IO (hPutStrLn, stderr)
 
@@ -37,7 +38,7 @@ run = do
       when (verbose opts) (hPutStrLn stderr ("Parsing " ++ path))
       parse path
     ) filtered
-  let (ast, footer) = Footer.extract $ Project parsed
+  let (ast, footer) = extract extractFooter $ Project parsed
   let (ast2, plugin) = Plugin.extract ast
   let project = Project $ concat [plugin, [ast2], footer]
   let targets = fromMaybe [""] (outfiles opts)

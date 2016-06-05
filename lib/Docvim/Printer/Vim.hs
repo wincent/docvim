@@ -110,7 +110,7 @@ slurp str = do
     --
     -- Note: That last one is unsafe, because we can't guarantee that "foo" is
     -- there. Caveat emptor!
-    partial context = if str `isSuffixOf` (partialLine context)
+    partial context = if str `isSuffixOf` partialLine context
                       then take (length (partialLine context) - length str) (partialLine context)
                       else partialLine context
 
