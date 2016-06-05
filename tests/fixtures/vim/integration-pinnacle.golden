@@ -11,8 +11,7 @@ To install Pinnacle, use your plug-in management system of choice.
 If you don't have a "plug-in management system of choice", I recommend
 Pathogen (https://github.com/tpope/vim-pathogen) due to its simplicity and
 robustness. Assuming that you have Pathogen installed and configured, and
-that you want to install vim-docvim into `~/.vim/bundle`, you can do so
-with:
+that you want to install vim-docvim into `~/.vim/bundle`, you can do so with:
 >
     git clone https://github.com/wincent/pinnacle.git ~/.vim/bundle/pinnacle
 <
@@ -88,7 +87,6 @@ At the moment the release process is manual:
 <
 - Publish the code:
 >
-
     git push origin master --follow-tags
     git push github master --follow-tags
 <

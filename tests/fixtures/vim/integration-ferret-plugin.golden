@@ -111,7 +111,6 @@ during |:Acks|:
 For example, to call a pair of custom functions in response to these events,
 you might do:
 >
-
     autocmd! User FerretWillWrite
     autocmd User FerretWillWrite call CustomWillWrite()
     autocmd! User FerretDidWrite
@@ -199,7 +198,6 @@ pattern "foo", and limit search to the "bar" directory:
 <
 Note that including quotes will not do what you intend.
 >
-
      " Search for '"foo' in the 'bar"' directory:
      :Ack "foo bar"
     
@@ -293,7 +291,6 @@ At the moment the release process is manual:
 <
 - Publish the code:
 >
-
     git push origin master --follow-tags
     git push github master --follow-tags
 <
@@ -402,7 +399,6 @@ Ferret maps <leader>a to |<Plug>(FerretAck)|, which triggers the |:Ack|
 command. To use an alternative mapping instead, create a different one in
 your |.vimrc| instead using |:nmap|:
 >
-
     " Instead of <leader>a, use <leader>x.
     nmap <leader>x <Plug>(FerretAck)
 <
@@ -410,7 +406,6 @@ Ferret maps <leader>l to |<Plug>(FerretLack)|, which triggers the |:Lack|
 command. To use an alternative mapping instead, create a different one in
 your |.vimrc| instead using |:nmap|:
 >
-
     " Instead of <leader>l, use <leader>y.
     nmap <leader>y <Plug>(FerretLack)
 <
@@ -419,7 +414,6 @@ which uses |:Ack| to search for the word currently under the cursor. To use
 an alternative mapping instead, create a different one in your |.vimrc|
 instead using |:nmap|:
 >
-
     " Instead of <leader>s, use <leader>z.
     nmap <leader>z <Plug>(FerretAckWord)
 <
@@ -428,7 +422,6 @@ triggers the |:Acks| command and fills the prompt with the last search term
 from Ferret. to use an alternative mapping instead, create a different one
 in your |.vimrc| instead using |:nmap|:
 >
-
     " Instead of <leader>r, use <leader>u.
     nmap <leader>u <Plug>(FerretAcks)
 <

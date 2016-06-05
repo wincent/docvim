@@ -55,12 +55,13 @@ append string = do
   -- TODO obviously tidy this up
   -- TODO: always suppress trailing whitespace (some of it is making it into the
   -- output)
-  let (ops, line) = if length (partialLine context) + length string >= textwidth
+  let (ops, line) = if length (partialLine context) + length leading >= textwidth
                     then ([Delete (length $ snd $ split $ partialLine context), Slurp " ", Append (lineBreak context), Append (snd $ split $ partialLine context), Append $ string], lineBreak context ++ (snd $ split $ partialLine context) ++ string)
                     else ([Append string], partialLine context ++ string)
   put (Context (lineBreak context) (end line))
   return ops
   where
+    leading = takeWhile (/= '\n') string
     trailing str = length $ takeWhile isSpace (reverse str)
     end l = reverse $ takeWhile (/= '\n') (reverse l)
     split str = hardwrap str
