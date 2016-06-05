@@ -10,6 +10,7 @@ import Control.Monad.Reader
 import Control.Monad.State
 import Data.Char (isSpace, toUpper)
 import Data.List (intercalate, isSuffixOf, span, sort)
+import Data.List.Split (splitOn)
 import Data.Tuple (swap)
 import Docvim.AST
 import Docvim.Parse (parseUnit, rstrip)
@@ -37,7 +38,7 @@ textwidth :: Int
 textwidth = 78
 
 vimHelp :: Node -> String
-vimHelp n = rstrip output ++ "\n"
+vimHelp n = suppressTrailingWhitespace output ++ "\n"
   where metadata = Metadata (getSymbols n) (getPluginName n)
         context = Context defaultLineBreak ""
         operations = evalState (runReaderT (node n) metadata) context
@@ -47,16 +48,22 @@ vimHelp n = rstrip output ++ "\n"
         reduce acc (Slurp atom) = if isSuffixOf atom acc
                                   then take (length acc - length atom) acc
                                   else acc
+        suppressTrailingWhitespace str = rstrip $ intercalate "\n" (map rstrip (splitOn "\n" str))
 
 -- Helper function that appends and updates `partialLine` context.
 append :: String -> Env
 append string = do
   context <- get
   -- TODO obviously tidy this up
-  -- TODO: always suppress trailing whitespace (some of it is making it into the
-  -- output)
   let (ops, line) = if length (partialLine context) + length leading >= textwidth
-                    then ([Delete (length $ snd $ split $ partialLine context), Slurp " ", Append (lineBreak context), Append (snd $ split $ partialLine context), Append $ string], lineBreak context ++ (snd $ split $ partialLine context) ++ string)
+                    then ( [ Delete (length $ snd $ split $ partialLine context)
+                           , Slurp " "
+                           , Append (lineBreak context)
+                           , Append (snd $ split $ partialLine context)
+                           , Append $ string
+                           ]
+                          , lineBreak context ++ (snd $ split $ partialLine context) ++ string
+                          )
                     else ([Append string], partialLine context ++ string)
   put (Context (lineBreak context) (end line))
   return ops
