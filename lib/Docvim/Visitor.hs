@@ -1,11 +1,11 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Docvim.Visitor (endBlock, extract, extractBlocks) where
 
 import Control.Applicative (Alternative, (<|>), empty)
 import Control.Monad ((>=>))
--- TODO switch to pure mtl here (reduce dependency footprint)
-import Control.Monad.Trans.Writer (runWriter, tell)
+import Control.Monad.Writer (runWriter, tell)
 import Data.Data.Lens
 import Docvim.AST
 import qualified Data.DList as DList
