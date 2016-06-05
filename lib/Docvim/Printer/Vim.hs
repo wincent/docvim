@@ -121,8 +121,6 @@ defaultLineBreak = "\n"
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
 
--- TODO: deal with hard-wrapping (still some overlength lines and edge cases to
--- deal with)
 node :: Node -> Env
 node n = case n of
   Blockquote b               -> blockquote b >>= nl >>= nl
@@ -157,7 +155,6 @@ node n = case n of
   Whitespace                 -> whitespace
   _                          -> append ""
 
--- TODO: right-align trailing link target
 -- TODO: add {name}.txt to the symbol table?
 plugin :: String -> String -> Env
 plugin name desc = append $
