@@ -45,7 +45,7 @@ vimHelp n = suppressTrailingWhitespace output ++ "\n"
         output = foldl reduce "" operations
         reduce acc (Append atom) = acc ++ atom
         reduce acc (Delete count) = take (length acc - count) acc
-        reduce acc (Slurp atom) = if isSuffixOf atom acc
+        reduce acc (Slurp atom) = if atom `isSuffixOf` acc
                                   then take (length acc - length atom) acc
                                   else acc
         suppressTrailingWhitespace str = rstrip $ intercalate "\n" (map rstrip (splitOn "\n" str))
@@ -56,13 +56,13 @@ append string = do
   context <- get
   -- TODO obviously tidy this up
   let (ops, line) = if length (partialLine context) + length leading >= textwidth
-                    then ( [ Delete (length $ snd $ split $ partialLine context)
+                    then ( [ Delete (length $ snd $ hardwrap $ partialLine context)
                            , Slurp " "
                            , Append (lineBreak context)
-                           , Append (snd $ split $ partialLine context)
-                           , Append $ string
+                           , Append (snd $ hardwrap $ partialLine context)
+                           , Append string
                            ]
-                         , lineBreak context ++ (snd $ split $ partialLine context) ++ string
+                         , lineBreak context ++ snd (hardwrap $ partialLine context) ++ string
                          )
                     else ([Append string], partialLine context ++ string)
   put (Context (lineBreak context) (end line))
@@ -71,7 +71,6 @@ append string = do
     leading = takeWhile (/= '\n') string
     trailing str = length $ takeWhile isSpace (reverse str)
     end l = reverse $ takeWhile (/= '\n') (reverse l)
-    split str = hardwrap str
 
 -- http://stackoverflow.com/a/9723976/2103996
 mapTuple = join (***)
@@ -81,7 +80,7 @@ mapTuple = join (***)
 hardwrap :: String -> (String, String)
 hardwrap str = swap $ mapTuple reverse split
   where
-    split = span (not . isSpace) (reverse str)
+    split = break isSpace (reverse str)
 
 -- Helper function that deletes `count` elements from the end of the
 --`partialLine` context.
@@ -113,7 +112,7 @@ slurp str = do
     -- there. Caveat emptor!
     partial context = if isSuffixOf str (partialLine context)
                       then take (length (partialLine context) - length str) (partialLine context)
-                      else (partialLine context)
+                      else partialLine context
 
 defaultLineBreak :: String
 defaultLineBreak = "\n"
