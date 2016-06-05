@@ -14,14 +14,7 @@ import qualified Docvim.Visitor as Visitor
 -- guarantees about order but they just get concatenated in the order we see
 -- them.
 extract :: Node -> (Node, [Node])
-extract = Visitor.extract extractor
-
-extractor :: Node -> Writer (DList.DList [Node]) Node
-extractor (DocBlock nodes) = do
-  let (footers, remainder) = extractFooters nodes
-  tell (DList.fromList footers)
-  return (DocBlock remainder)
-extractor node = return node
+extract = Visitor.extract extractFooters
 
 extractFooters :: Alternative f => [Node] -> (f [Node], [Node])
 extractFooters = Visitor.extractBlocks f
