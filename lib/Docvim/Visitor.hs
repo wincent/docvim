@@ -5,9 +5,9 @@ import Control.Monad ((>=>))
 -- TODO switch to pure mtl here (reduce dependency footprint)
 import Control.Monad.Trans.Writer (runWriter)
 import Data.Data.Lens
+import Docvim.AST (Node)
 import qualified Data.DList as DList
 
--- extract :: Node -> (Node, [Node])
 extract extractor = toList . runWriter . postorder uniplate extractor
   where toList (ast, dlist) = (ast, concat $ DList.toList dlist)
 
