@@ -41,7 +41,7 @@ run = do
     ) filtered
   let (ast, footer) = extract extractFooter $ Project parsed
   let (ast2, plugin) = extract extractPlugin ast
-  let (ast3, plugin) = extract extractMappings ast2
+  let (ast3, mappings) = extract extractMappings ast2
   let project = Project $ concat [plugin, [ast2], [ast3], footer]
   let targets = fromMaybe [""] (outfiles opts)
   mapM_ (\target ->
