@@ -1,9 +1,7 @@
 module Docvim.Visitor.Footer (extract) where
 
-import Control.Applicative (Alternative, (<|>))
-import Control.Monad.Trans.Writer
-import qualified Data.DList as DList
-import Docvim.AST
+import Control.Applicative (Alternative)
+import Docvim.AST (Node(FooterAnnotation))
 import qualified Docvim.Visitor as Visitor
 
 -- | Extracts a list of nodes (if any exist) from the `@footer` section(s) of
