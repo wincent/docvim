@@ -4,10 +4,13 @@ module Docvim.Printer.Vim
   , pv
   ) where
 
+import Control.Arrow ((***))
+import Control.Monad (join)
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.Char (isSpace, toUpper)
-import Data.List (intercalate, isSuffixOf, sort)
+import Data.List (intercalate, isSuffixOf, span, sort)
+import Data.Tuple (swap)
 import Docvim.AST
 import Docvim.Parse (parseUnit, rstrip)
 import Docvim.Visitor.Plugin (getPluginName)
@@ -49,26 +52,28 @@ vimHelp n = rstrip output ++ "\n"
 append :: String -> Env
 append string = do
   context <- get
-  -- TODO make that >=
   -- TODO obviously tidy this up
-  -- TODO instead of deleting trailing whitespace (might not actually be any)
-  -- delete back to whitespace, then replay non-whitespace bits; should fix bad
-  -- output like this:
-  --     Searches for {pattern} in all the files under the current directory (see :pwd
-  --     ), unless otherwise overridden via {options}, and displays the results in the
   -- TODO: always suppress trailing whitespace (some of it is making it into the
   -- output)
   let (ops, line) = if length (partialLine context) + length string >= textwidth
-                    then ([Delete (trailing $ partialLine context), Append (lineBreak context), Append $ slurpWhitespace string], lineBreak context ++ slurpWhitespace string)
+                    then ([Delete (length $ snd $ split $ partialLine context), Slurp " ", Append (lineBreak context), Append (snd $ split $ partialLine context), Append $ string], lineBreak context ++ (snd $ split $ partialLine context) ++ string)
                     else ([Append string], partialLine context ++ string)
   put (Context (lineBreak context) (end line))
   return ops
   where
     trailing str = length $ takeWhile isSpace (reverse str)
     end l = reverse $ takeWhile (/= '\n') (reverse l)
-    slurpWhitespace atom = if atom == " "
-                           then ""
-                           else atom
+    split str = hardwrap str
+
+-- http://stackoverflow.com/a/9723976/2103996
+mapTuple = join (***)
+
+-- Given a string, hardwraps it into two parts by splitting it at the rightmost
+-- whitespace.
+hardwrap :: String -> (String, String)
+hardwrap str = swap $ mapTuple reverse split
+  where
+    split = span (not . isSpace) (reverse str)
 
 -- Helper function that deletes `count` elements from the end of the
 --`partialLine` context.

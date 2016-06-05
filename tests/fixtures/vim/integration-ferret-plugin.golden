@@ -3,8 +3,8 @@
 INTRO
 
     "ferret (verb)
-    (ferret something out) search tenaciously for and find something: she had
-    the ability to ferret out the facts."
+    (ferret something out) search tenaciously for and find something: she
+    had the ability to ferret out the facts."
 
 
                                                              *ferret-features*
@@ -27,8 +27,8 @@ provides a |:Lack| command that behaves like |:Ack| but uses the
 |location-list| instead, and a <leader>l mapping as a shortcut to |:Lack|.
 
 Finally, Ferret offers integration with dispatch.vim
-(https://github.com/tpope/vim-dispatch), which enables asynchronous searching
-despite the fact that Vim itself is single-threaded.
+(https://github.com/tpope/vim-dispatch), which enables asynchronous
+searching despite the fact that Vim itself is single-threaded.
 
 2. Streamlined multi-file replace ~
 
@@ -130,9 +130,9 @@ adjusts a number of settings to improve the usability of search results.
                                                                *ferret-nolist*
 'nolist'
 
-Turned off to reduce visual clutter in the search results, and because 'list'
-is most useful in files that are being actively edited, which is not the case
-for |quickfix| results.
+Turned off to reduce visual clutter in the search results, and because
+'list' is most useful in files that are being actively edited, which is not
+the case for |quickfix| results.
 
 
                                                      *ferret-norelativenumber*
@@ -149,8 +149,8 @@ respectively).
 'nowrap'
 
 Turned off to avoid ugly wrapping that makes the results list hard to read,
-and because in search results, the most relevant information is the filename,
-which is on the left and is usually visible even without wrapping.
+and because in search results, the most relevant information is the
+filename, which is on the left and is usually visible even without wrapping.
 
 
                                                                *ferret-number*
@@ -307,8 +307,8 @@ AUTHORS
 
 Ferret is written and maintained by Greg Hurrell <greg@hurrell.net>.
 
-The idea for vim-dispatch integration was taken from Miles Sterrett's ack.vim
-plug-in (https://github.com/mileszs/ack.vim).
+The idea for vim-dispatch integration was taken from Miles Sterrett's
+ack.vim plug-in (https://github.com/mileszs/ack.vim).
 
 Other contributors that have submitted patches include (in alphabetical
 order):
@@ -352,13 +352,13 @@ needed.
 If dispatch.vim is installed the search process will run asynchronously via
 the |:Make| command, otherwise it will be run synchronously via |:cexpr|.
 Asynchronous searches are preferred because they do not block, despite the
-fact that Vim itself is single threaded. The |g:FerretDispatch| option can be
-used to prevent the use of dispatch.vim.
+fact that Vim itself is single threaded. The |g:FerretDispatch| option can
+be used to prevent the use of dispatch.vim.
 
 The {pattern} is passed through as-is to the underlying search program, and
 no escaping is required other than preceding spaces by a single backslash.
-For example, to search for "\bfoo[0-9]{2} bar\b" (ie. using `ag`'s Perl-style
-regular expression syntax), you could do:
+For example, to search for "\bfoo[0-9]{2} bar\b" (ie. using `ag`'s
+Perl-style regular expression syntax), you could do:
 >
     :Ack \bfoo[0-9]{2}\ bar\b
 <
@@ -370,12 +370,12 @@ option (to search on word boundaries), and scope the search to the "foo" and
 <
 As a convenience <leader>a is set-up (|<Plug>(FerretAck)|) as a shortcut to
 enter |Cmdline-mode| with `:Ack` inserted on the |Cmdline|. Likewise
-<leader>s (|<Plug>(FerretAckWord)|) is a shortcut for running |:Ack| with the
-word currently under the cursor.
+<leader>s (|<Plug>(FerretAckWord)|) is a shortcut for running |:Ack| with
+the word currently under the cursor.
 
 Just like |:Ack|, but instead of using the |quickfix| listing, which is
-global across an entire Vim instance, it uses the |location-list|, which is a
-per-window construct.
+global across an entire Vim instance, it uses the |location-list|, which is
+a per-window construct.
 
 Note that |:Lack| always runs synchronously via |:cexpr|, because
 dispatch.vim doesn't currently support the |location-list|.
@@ -425,8 +425,8 @@ instead using |:nmap|:
 <
 Ferret maps <leader>r (mnemonic: "replace") to |<Plug>(FerretAcks)|, which
 triggers the |:Acks| command and fills the prompt with the last search term
-from Ferret. to use an alternative mapping instead, create a different one in
-your |.vimrc| instead using |:nmap|:
+from Ferret. to use an alternative mapping instead, create a different one
+in your |.vimrc| instead using |:nmap|:
 >
 
     " Instead of <leader>r, use <leader>u.
@@ -438,9 +438,9 @@ generally useful enough to warrant being exposed publicly.
 It takes the files currently in the |quickfix| listing and sets them as
 |:args| so that they can be operated on en masse via the |:argdo| command.
 
-Controls whether to set up custom versions of the |quickfix| commands, |:cn|,
-|:cnf|, |:cp| an |:cpf|. These overrides vertically center the match within
-the viewport on each jump. To prevent the custom versions from being
+Controls whether to set up custom versions of the |quickfix| commands,
+|:cn|, |:cnf|, |:cp| an |:cpf|. These overrides vertically center the match
+within the viewport on each jump. To prevent the custom versions from being
 configured, set to 0:
 >
     let g:FerretQFCommands=0
