@@ -20,7 +20,7 @@ import Docvim.Visitor.Symbol (getSymbols)
 -- (eg. append whitespace " ", then on next node, realize that we will exceed
 -- line length limit, so rollback the " " and instead append "\n" etc).
 data Operation = Append String
-               | Delete Int -- unconditional delete a count of Char
+               | Delete Int -- unconditional delete count of Char
                | Slurp String -- delete string if present
 data Metadata = Metadata { symbols :: [String]
                          , pluginName :: Maybe String
@@ -30,8 +30,8 @@ data Context = Context { lineBreak :: String
                        }
 type Env = ReaderT Metadata (State Context) [Operation]
 
-hardwrap :: Int
-hardwrap = 78
+textwidth :: Int
+textwidth = 78
 
 vimHelp :: Node -> String
 vimHelp n = rstrip output ++ "\n"
@@ -51,7 +51,14 @@ append string = do
   context <- get
   -- TODO make that >=
   -- TODO obviously tidy this up
-  let (ops, line) = if length (partialLine context) + length string >= hardwrap
+  -- TODO instead of deleting trailing whitespace (might not actually be any)
+  -- delete back to whitespace, then replay non-whitespace bits; should fix bad
+  -- output like this:
+  --     Searches for {pattern} in all the files under the current directory (see :pwd
+  --     ), unless otherwise overridden via {options}, and displays the results in the
+  -- TODO: always suppress trailing whitespace (some of it is making it into the
+  -- output)
+  let (ops, line) = if length (partialLine context) + length string >= textwidth
                     then ([Delete (trailing $ partialLine context), Append (lineBreak context), Append $ slurpWhitespace string], lineBreak context ++ slurpWhitespace string)
                     else ([Append string], partialLine context ++ string)
   put (Context (lineBreak context) (end line))
@@ -205,7 +212,7 @@ linkTargets ls = append $ rightAlign targets ++ "\n"
     targets = unwords (map linkify $ sort ls)
     linkify l = "*" ++ l ++ "*"
     rightAlign ws = replicate (count ws) ' ' ++ ws
-    count xs = maximum [hardwrap - length xs, 0]
+    count xs = maximum [textwidth - length xs, 0]
 
 -- | For unit testing.
 pv :: String -> String
