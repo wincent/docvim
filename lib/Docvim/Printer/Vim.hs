@@ -105,12 +105,12 @@ nodes ns = concat <$> mapM node ns
 -- deal with)
 node :: Node -> Env
 node n = case n of
-  Blockquote b            -> blockquote b >>= nl >>= nl
-  BreakTag                -> breaktag
-  Code c                  -> append $ "`" ++ c ++ "`"
-  DocBlock d              -> nodes d
-  Fenced f                -> fenced f
-  FunctionDeclaration {}  -> nodes $ functionBody n
+  Blockquote b               -> blockquote b >>= nl >>= nl
+  BreakTag                   -> breaktag
+  Code c                     -> append $ "`" ++ c ++ "`"
+  DocBlock d                 -> nodes d
+  Fenced f                   -> fenced f
+  FunctionDeclaration {}     -> nodes $ functionBody n
   -- TODO: Vim will only highlight this as a heading if it has a trailing
   -- LinkTarget on the same line; figure out how to handle that; may need to
   -- address it in the Parser
@@ -119,13 +119,13 @@ node n = case n of
   -- to auto-gen the targets based on the plugin name + the heading text.
   --
   -- I could also just make people specify a target explicitly.
-  HeadingAnnotation h     -> append $ map toUpper h ++ "\n\n"
-  Link l                  -> append $ "|" ++ l ++ "|"
-  LinkTargets l           -> linkTargets l
-  List ls                 -> nodes ls >>= nl
-  ListItem l              -> listitem l
-  Paragraph p             -> nodes p >>= nl >>= nl
-  Plaintext p             -> plaintext p
+  HeadingAnnotation h        -> append $ map toUpper h ++ "\n\n"
+  Link l                     -> append $ "|" ++ l ++ "|"
+  LinkTargets l              -> linkTargets l
+  List ls                    -> nodes ls >>= nl
+  ListItem l                 -> listitem l
+  Paragraph p                -> nodes p >>= nl >>= nl
+  Plaintext p                -> plaintext p
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
