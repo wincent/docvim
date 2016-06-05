@@ -216,7 +216,7 @@ linkTargets ls = append $ rightAlign targets ++ "\n"
     targets = unwords (map linkify $ sort ls)
     linkify l = "*" ++ l ++ "*"
     rightAlign ws = replicate (count ws) ' ' ++ ws
-    count xs = maximum [78 - length xs, 0]
+    count xs = maximum [hardwrap - length xs, 0]
 
 -- | For unit testing.
 pv :: String -> String
