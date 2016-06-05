@@ -1,25 +1,29 @@
-Unit
-  [ FunctionDeclaration
-      { functionBang = True
-      , functionName = "Foo"
-      , functionArguments =
-          ArgumentList [ Argument "varargs" , Argument "..." ]
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = False
-      , functionName = "Bar"
-      , functionArguments = ArgumentList [ Argument "..." ]
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = False
-      , functionName = "Baz"
-      , functionArguments =
-          ArgumentList [ Argument "..." , Argument "other" ]
-      , functionAttributes = []
-      , functionBody = []
-      }
+Project
+  [ Project
+      [ Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "Foo"
+              , functionArguments =
+                  ArgumentList [ Argument "varargs" , Argument "..." ]
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "Bar"
+              , functionArguments = ArgumentList [ Argument "..." ]
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "Baz"
+              , functionArguments =
+                  ArgumentList [ Argument "..." , Argument "other" ]
+              , functionAttributes = []
+              , functionBody = []
+              }
+          ]
+      ]
   ]

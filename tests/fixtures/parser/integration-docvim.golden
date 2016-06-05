@@ -1,928 +1,927 @@
-Unit
-  [ DocBlock
-      [ PluginAnnotation
-          "docvim" "Syntax highlighting for docvim comments"
-      , LinkTargets [ "vim-docvim" ]
-      , HeadingAnnotation "Intro"
-      , Paragraph
-          [ Plaintext "vim-docvim"
+Project
+  [ PluginAnnotation
+      "docvim" "Syntax highlighting for docvim comments"
+  , LinkTargets [ "vim-docvim" ]
+  , HeadingAnnotation "Intro"
+  , Paragraph
+      [ Plaintext "vim-docvim"
+      , Whitespace
+      , Plaintext "provides"
+      , Whitespace
+      , Plaintext "additional"
+      , Whitespace
+      , Plaintext "syntax"
+      , Whitespace
+      , Plaintext "highlighting"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "script"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "contain"
+      , Whitespace
+      , Plaintext "embedded"
+      , Whitespace
+      , Plaintext "docvim"
+      , Whitespace
+      , Plaintext "comments."
+      ]
+  , Paragraph
+      [ Plaintext "docvim"
+      , Whitespace
+      , Plaintext "(the"
+      , Whitespace
+      , Plaintext "tool,"
+      , Whitespace
+      , Plaintext "not"
+      , Whitespace
+      , Plaintext "this"
+      , Whitespace
+      , Plaintext "plug-in)"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "documentation"
+      , Whitespace
+      , Plaintext "generator"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "processes"
+      , Whitespace
+      , Plaintext "those"
+      , Whitespace
+      , Plaintext "embedded"
+      , Whitespace
+      , Plaintext "comments"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "produces"
+      , Whitespace
+      , Plaintext "documentation"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "Markdown"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "\"help\""
+      , Whitespace
+      , Plaintext "formats."
+      , Whitespace
+      , Plaintext "To"
+      , Whitespace
+      , Plaintext "avoid"
+      , Whitespace
+      , Plaintext "confusion,"
+      , Whitespace
+      , Plaintext "this"
+      , Whitespace
+      , Plaintext "document"
+      , Whitespace
+      , Plaintext "refers"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "plug-in"
+      , Whitespace
+      , Plaintext "as"
+      , Whitespace
+      , Plaintext "\"vim-docvim\""
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "separate"
+      , Whitespace
+      , Plaintext "generation"
+      , Whitespace
+      , Plaintext "tool"
+      , Whitespace
+      , Plaintext "as"
+      , Whitespace
+      , Plaintext "\"docvim\"."
+      ]
+  , HeadingAnnotation "Installation"
+  , Paragraph
+      [ Plaintext "To"
+      , Whitespace
+      , Plaintext "install"
+      , Whitespace
+      , Plaintext "vim-docvim,"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Plaintext "your"
+      , Whitespace
+      , Plaintext "plug-in"
+      , Whitespace
+      , Plaintext "management"
+      , Whitespace
+      , Plaintext "system"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "choice."
+      ]
+  , Paragraph
+      [ Plaintext "If"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "don't"
+      , Whitespace
+      , Plaintext "have"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "\"plug-in"
+      , Whitespace
+      , Plaintext "management"
+      , Whitespace
+      , Plaintext "system"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "choice\","
+      , Whitespace
+      , Plaintext "I"
+      , Whitespace
+      , Plaintext "recommend"
+      , Whitespace
+      , Plaintext "Pathogen"
+      , Whitespace
+      , Plaintext "(https://github.com/tpope/vim-pathogen)"
+      , Whitespace
+      , Plaintext "due"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "its"
+      , Whitespace
+      , Plaintext "simplicity"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "robustness."
+      , Whitespace
+      , Plaintext "Assuming"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "have"
+      , Whitespace
+      , Plaintext "Pathogen"
+      , Whitespace
+      , Plaintext "installed"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "configured,"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "want"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "install"
+      , Whitespace
+      , Plaintext "vim-docvim"
+      , Whitespace
+      , Plaintext "into"
+      , Whitespace
+      , Code "~/.vim/bundle"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "do"
+      , Whitespace
+      , Plaintext "so"
+      , Whitespace
+      , Plaintext "with:"
+      ]
+  , Fenced
+      [ "git clone https://github.com/wincent/vim-docvim.git ~/.vim/bundle/vim-docvim"
+      ]
+  , Paragraph
+      [ Plaintext "Alternatively,"
+      , Whitespace
+      , Plaintext "if"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "Git"
+      , Whitespace
+      , Plaintext "submodule"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "each"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "plug-in,"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "could"
+      , Whitespace
+      , Plaintext "do"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "following"
+      , Whitespace
+      , Plaintext "after"
+      , Whitespace
+      , Code "cd"
+      , Plaintext "-ing"
+      , Whitespace
+      , Plaintext "into"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "top-level"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "your"
+      , Whitespace
+      , Plaintext "Git"
+      , Whitespace
+      , Plaintext "superproject:"
+      ]
+  , Fenced
+      [ "git submodule add https://github.com/wincent/vim-docvim.git ~/vim/bundle/vim-docvim"
+      , "git submodule init"
+      ]
+  , Paragraph
+      [ Plaintext "To"
+      , Whitespace
+      , Plaintext "generate"
+      , Whitespace
+      , Plaintext "help"
+      , Whitespace
+      , Plaintext "tags"
+      , Whitespace
+      , Plaintext "under"
+      , Whitespace
+      , Plaintext "Pathogen,"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "do"
+      , Whitespace
+      , Plaintext "so"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "inside"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "with:"
+      ]
+  , Fenced [ ":call pathogen#helptags()" ]
+  , HeadingAnnotation "Related"
+  , Paragraph
+      [ Plaintext "The"
+      , Whitespace
+      , Plaintext "docvim"
+      , Whitespace
+      , Plaintext "tool"
+      , Whitespace
+      , Plaintext "itself"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "Haskell"
+      , Whitespace
+      , Plaintext "module,"
+      , Whitespace
+      , Plaintext "available"
+      , Whitespace
+      , Plaintext "at:"
+      ]
+  , Paragraph
+      [ Plaintext "http://hackage.haskell.org/package/docvim" ]
+  , Paragraph
+      [ Plaintext "The"
+      , Whitespace
+      , Plaintext "official"
+      , Whitespace
+      , Plaintext "source"
+      , Whitespace
+      , Plaintext "code"
+      , Whitespace
+      , Plaintext "repo"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "at:"
+      ]
+  , Paragraph [ Plaintext "http://git.wincent.com/docvim.git" ]
+  , Paragraph
+      [ Plaintext "Mirrors"
+      , Whitespace
+      , Plaintext "exist"
+      , Whitespace
+      , Plaintext "at:"
+      ]
+  , List
+      [ ListItem [ Plaintext "https://github.com/wincent/docvim" ]
+      , ListItem [ Plaintext "https://gitlab.com/wincent/docvim" ]
+      , ListItem [ Plaintext "https://bitbucket.org/ghurrell/docvim" ]
+      ]
+  , HeadingAnnotation "Website"
+  , Paragraph
+      [ Plaintext "The"
+      , Whitespace
+      , Plaintext "official"
+      , Whitespace
+      , Plaintext "vim-docvim"
+      , Whitespace
+      , Plaintext "source"
+      , Whitespace
+      , Plaintext "code"
+      , Whitespace
+      , Plaintext "repo"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "at:"
+      ]
+  , Paragraph [ Plaintext "http://git.wincent.com/vim-docvim.git" ]
+  , Paragraph
+      [ Plaintext "A"
+      , Whitespace
+      , Plaintext "mirror"
+      , Whitespace
+      , Plaintext "exists"
+      , Whitespace
+      , Plaintext "at:"
+      ]
+  , Paragraph [ Plaintext "https://github.com/wincent/vim-docvim" ]
+  , Paragraph
+      [ Plaintext "Official"
+      , Whitespace
+      , Plaintext "releases"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "listed"
+      , Whitespace
+      , Plaintext "at:"
+      ]
+  , Paragraph
+      [ Plaintext
+          "http://www.vim.org/scripts/script.php?script_id=[TODO]"
+      ]
+  , HeadingAnnotation "License"
+  , Paragraph
+      [ Plaintext "Copyright"
+      , Whitespace
+      , Plaintext "(c)"
+      , Whitespace
+      , Plaintext "2015-present"
+      , Whitespace
+      , Plaintext "Greg"
+      , Whitespace
+      , Plaintext "Hurrell"
+      ]
+  , Paragraph
+      [ Plaintext "Permission"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "hereby"
+      , Whitespace
+      , Plaintext "granted,"
+      , Whitespace
+      , Plaintext "free"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "charge,"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "any"
+      , Whitespace
+      , Plaintext "person"
+      , Whitespace
+      , Plaintext "obtaining"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "copy"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "this"
+      , Whitespace
+      , Plaintext "software"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "associated"
+      , Whitespace
+      , Plaintext "documentation"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "(the"
+      , Whitespace
+      , Plaintext "\"Software\"),"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "deal"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "Software"
+      , Whitespace
+      , Plaintext "without"
+      , Whitespace
+      , Plaintext "restriction,"
+      , Whitespace
+      , Plaintext "including"
+      , Whitespace
+      , Plaintext "without"
+      , Whitespace
+      , Plaintext "limitation"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "rights"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "use,"
+      , Whitespace
+      , Plaintext "copy,"
+      , Whitespace
+      , Plaintext "modify,"
+      , Whitespace
+      , Plaintext "merge,"
+      , Whitespace
+      , Plaintext "publish,"
+      , Whitespace
+      , Plaintext "distribute,"
+      , Whitespace
+      , Plaintext "sublicense,"
+      , Whitespace
+      , Plaintext "and/or"
+      , Whitespace
+      , Plaintext "sell"
+      , Whitespace
+      , Plaintext "copies"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "Software,"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "permit"
+      , Whitespace
+      , Plaintext "persons"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "whom"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "Software"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "furnished"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "do"
+      , Whitespace
+      , Plaintext "so,"
+      , Whitespace
+      , Plaintext "subject"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "following"
+      , Whitespace
+      , Plaintext "conditions:"
+      ]
+  , Paragraph
+      [ Plaintext "The"
+      , Whitespace
+      , Plaintext "above"
+      , Whitespace
+      , Plaintext "copyright"
+      , Whitespace
+      , Plaintext "notice"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "this"
+      , Whitespace
+      , Plaintext "permission"
+      , Whitespace
+      , Plaintext "notice"
+      , Whitespace
+      , Plaintext "shall"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "included"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "copies"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "substantial"
+      , Whitespace
+      , Plaintext "portions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "Software."
+      ]
+  , Paragraph
+      [ Plaintext "THE"
+      , Whitespace
+      , Plaintext "SOFTWARE"
+      , Whitespace
+      , Plaintext "IS"
+      , Whitespace
+      , Plaintext "PROVIDED"
+      , Whitespace
+      , Plaintext "\"AS"
+      , Whitespace
+      , Plaintext "IS\","
+      , Whitespace
+      , Plaintext "WITHOUT"
+      , Whitespace
+      , Plaintext "WARRANTY"
+      , Whitespace
+      , Plaintext "OF"
+      , Whitespace
+      , Plaintext "ANY"
+      , Whitespace
+      , Plaintext "KIND,"
+      , Whitespace
+      , Plaintext "EXPRESS"
+      , Whitespace
+      , Plaintext "OR"
+      , Whitespace
+      , Plaintext "IMPLIED,"
+      , Whitespace
+      , Plaintext "INCLUDING"
+      , Whitespace
+      , Plaintext "BUT"
+      , Whitespace
+      , Plaintext "NOT"
+      , Whitespace
+      , Plaintext "LIMITED"
+      , Whitespace
+      , Plaintext "TO"
+      , Whitespace
+      , Plaintext "THE"
+      , Whitespace
+      , Plaintext "WARRANTIES"
+      , Whitespace
+      , Plaintext "OF"
+      , Whitespace
+      , Plaintext "MERCHANTABILITY,"
+      , Whitespace
+      , Plaintext "FITNESS"
+      , Whitespace
+      , Plaintext "FOR"
+      , Whitespace
+      , Plaintext "A"
+      , Whitespace
+      , Plaintext "PARTICULAR"
+      , Whitespace
+      , Plaintext "PURPOSE"
+      , Whitespace
+      , Plaintext "AND"
+      , Whitespace
+      , Plaintext "NONINFRINGEMENT."
+      , Whitespace
+      , Plaintext "IN"
+      , Whitespace
+      , Plaintext "NO"
+      , Whitespace
+      , Plaintext "EVENT"
+      , Whitespace
+      , Plaintext "SHALL"
+      , Whitespace
+      , Plaintext "THE"
+      , Whitespace
+      , Plaintext "AUTHORS"
+      , Whitespace
+      , Plaintext "OR"
+      , Whitespace
+      , Plaintext "COPYRIGHT"
+      , Whitespace
+      , Plaintext "HOLDERS"
+      , Whitespace
+      , Plaintext "BE"
+      , Whitespace
+      , Plaintext "LIABLE"
+      , Whitespace
+      , Plaintext "FOR"
+      , Whitespace
+      , Plaintext "ANY"
+      , Whitespace
+      , Plaintext "CLAIM,"
+      , Whitespace
+      , Plaintext "DAMAGES"
+      , Whitespace
+      , Plaintext "OR"
+      , Whitespace
+      , Plaintext "OTHER"
+      , Whitespace
+      , Plaintext "LIABILITY,"
+      , Whitespace
+      , Plaintext "WHETHER"
+      , Whitespace
+      , Plaintext "IN"
+      , Whitespace
+      , Plaintext "AN"
+      , Whitespace
+      , Plaintext "ACTION"
+      , Whitespace
+      , Plaintext "OF"
+      , Whitespace
+      , Plaintext "CONTRACT,"
+      , Whitespace
+      , Plaintext "TORT"
+      , Whitespace
+      , Plaintext "OR"
+      , Whitespace
+      , Plaintext "OTHERWISE,"
+      , Whitespace
+      , Plaintext "ARISING"
+      , Whitespace
+      , Plaintext "FROM,"
+      , Whitespace
+      , Plaintext "OUT"
+      , Whitespace
+      , Plaintext "OF"
+      , Whitespace
+      , Plaintext "OR"
+      , Whitespace
+      , Plaintext "IN"
+      , Whitespace
+      , Plaintext "CONNECTION"
+      , Whitespace
+      , Plaintext "WITH"
+      , Whitespace
+      , Plaintext "THE"
+      , Whitespace
+      , Plaintext "SOFTWARE"
+      , Whitespace
+      , Plaintext "OR"
+      , Whitespace
+      , Plaintext "THE"
+      , Whitespace
+      , Plaintext "USE"
+      , Whitespace
+      , Plaintext "OR"
+      , Whitespace
+      , Plaintext "OTHER"
+      , Whitespace
+      , Plaintext "DEALINGS"
+      , Whitespace
+      , Plaintext "IN"
+      , Whitespace
+      , Plaintext "THE"
+      , Whitespace
+      , Plaintext "SOFTWARE."
+      ]
+  , HeadingAnnotation "Development"
+  , SubheadingAnnotation "Contributing patches"
+  , Paragraph
+      [ Plaintext "Patches"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "sent"
+      , Whitespace
+      , Plaintext "via"
+      , Whitespace
+      , Plaintext "mail"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "greg@hurrell.net,"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "as"
+      , Whitespace
+      , Plaintext "GitHub"
+      , Whitespace
+      , Plaintext "pull"
+      , Whitespace
+      , Plaintext "requests"
+      , Whitespace
+      , Plaintext "at:"
+      , Whitespace
+      , Plaintext "https://github.com/wincent/vim-docvim/pulls"
+      ]
+  , SubheadingAnnotation "Cutting a new release"
+  , Paragraph
+      [ Plaintext "At"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "moment"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "release"
+      , Whitespace
+      , Plaintext "process"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "manual:"
+      ]
+  , List
+      [ ListItem
+          [ Plaintext "Perform"
           , Whitespace
-          , Plaintext "provides"
+          , Plaintext "final"
           , Whitespace
-          , Plaintext "additional"
+          , Plaintext "sanity"
           , Whitespace
-          , Plaintext "syntax"
+          , Plaintext "checks"
           , Whitespace
-          , Plaintext "highlighting"
+          , Plaintext "and"
           , Whitespace
-          , Plaintext "for"
+          , Plaintext "manual"
           , Whitespace
-          , Plaintext "Vim"
-          , Whitespace
-          , Plaintext "script"
-          , Whitespace
-          , Plaintext "files"
-          , Whitespace
-          , Plaintext "that"
-          , Whitespace
-          , Plaintext "contain"
-          , Whitespace
-          , Plaintext "embedded"
-          , Whitespace
-          , Plaintext "docvim"
-          , Whitespace
-          , Plaintext "comments."
+          , Plaintext "testing"
           ]
-      , Paragraph
-          [ Plaintext "docvim"
+      , ListItem
+          [ Plaintext "Update"
           , Whitespace
-          , Plaintext "(the"
+          , Plaintext "the"
           , Whitespace
-          , Plaintext "tool,"
+          , Link "docvim-history"
           , Whitespace
-          , Plaintext "not"
+          , Plaintext "section"
           , Whitespace
-          , Plaintext "this"
+          , Plaintext "of"
           , Whitespace
-          , Plaintext "plug-in)"
-          , Whitespace
-          , Plaintext "is"
-          , Whitespace
-          , Plaintext "a"
+          , Plaintext "the"
           , Whitespace
           , Plaintext "documentation"
+          ]
+      , ListItem
+          [ Plaintext "Verify"
           , Whitespace
-          , Plaintext "generator"
+          , Plaintext "clean"
           , Whitespace
-          , Plaintext "that"
+          , Plaintext "work"
           , Whitespace
-          , Plaintext "processes"
-          , Whitespace
-          , Plaintext "those"
-          , Whitespace
-          , Plaintext "embedded"
-          , Whitespace
-          , Plaintext "comments"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "produces"
-          , Whitespace
-          , Plaintext "documentation"
-          , Whitespace
-          , Plaintext "in"
-          , Whitespace
-          , Plaintext "Markdown"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "Vim"
-          , Whitespace
-          , Plaintext "\"help\""
-          , Whitespace
-          , Plaintext "formats."
-          , Whitespace
-          , Plaintext "To"
-          , Whitespace
-          , Plaintext "avoid"
-          , Whitespace
-          , Plaintext "confusion,"
-          , Whitespace
-          , Plaintext "this"
-          , Whitespace
-          , Plaintext "document"
-          , Whitespace
-          , Plaintext "refers"
-          , Whitespace
-          , Plaintext "to"
+          , Plaintext "tree:"
+          ]
+      ]
+  , Fenced [ "git status" ]
+  , List
+      [ ListItem
+          [ Plaintext "Tag"
           , Whitespace
           , Plaintext "the"
           , Whitespace
-          , Plaintext "Vim"
-          , Whitespace
-          , Plaintext "plug-in"
-          , Whitespace
-          , Plaintext "as"
-          , Whitespace
-          , Plaintext "\"vim-docvim\""
-          , Whitespace
-          , Plaintext "and"
+          , Plaintext "release:"
+          ]
+      ]
+  , Fenced [ "git tag -s -m \"$VERSION release\" $VERSION" ]
+  , List
+      [ ListItem
+          [ Plaintext "Publish"
           , Whitespace
           , Plaintext "the"
           , Whitespace
-          , Plaintext "separate"
-          , Whitespace
-          , Plaintext "generation"
-          , Whitespace
-          , Plaintext "tool"
-          , Whitespace
-          , Plaintext "as"
-          , Whitespace
-          , Plaintext "\"docvim\"."
+          , Plaintext "code:"
           ]
-      , HeadingAnnotation "Installation"
-      , Paragraph
-          [ Plaintext "To"
-          , Whitespace
-          , Plaintext "install"
-          , Whitespace
-          , Plaintext "vim-docvim,"
-          , Whitespace
-          , Plaintext "use"
-          , Whitespace
-          , Plaintext "your"
-          , Whitespace
-          , Plaintext "plug-in"
-          , Whitespace
-          , Plaintext "management"
-          , Whitespace
-          , Plaintext "system"
-          , Whitespace
-          , Plaintext "of"
-          , Whitespace
-          , Plaintext "choice."
-          ]
-      , Paragraph
-          [ Plaintext "If"
-          , Whitespace
-          , Plaintext "you"
-          , Whitespace
-          , Plaintext "don't"
-          , Whitespace
-          , Plaintext "have"
-          , Whitespace
-          , Plaintext "a"
-          , Whitespace
-          , Plaintext "\"plug-in"
-          , Whitespace
-          , Plaintext "management"
-          , Whitespace
-          , Plaintext "system"
-          , Whitespace
-          , Plaintext "of"
-          , Whitespace
-          , Plaintext "choice\","
-          , Whitespace
-          , Plaintext "I"
-          , Whitespace
-          , Plaintext "recommend"
-          , Whitespace
-          , Plaintext "Pathogen"
-          , Whitespace
-          , Plaintext "(https://github.com/tpope/vim-pathogen)"
-          , Whitespace
-          , Plaintext "due"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "its"
-          , Whitespace
-          , Plaintext "simplicity"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "robustness."
-          , Whitespace
-          , Plaintext "Assuming"
-          , Whitespace
-          , Plaintext "that"
-          , Whitespace
-          , Plaintext "you"
-          , Whitespace
-          , Plaintext "have"
-          , Whitespace
-          , Plaintext "Pathogen"
-          , Whitespace
-          , Plaintext "installed"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "configured,"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "that"
-          , Whitespace
-          , Plaintext "you"
-          , Whitespace
-          , Plaintext "want"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "install"
-          , Whitespace
-          , Plaintext "vim-docvim"
-          , Whitespace
-          , Plaintext "into"
-          , Whitespace
-          , Code "~/.vim/bundle"
-          , Plaintext ","
-          , Whitespace
-          , Plaintext "you"
-          , Whitespace
-          , Plaintext "can"
-          , Whitespace
-          , Plaintext "do"
-          , Whitespace
-          , Plaintext "so"
-          , Whitespace
-          , Plaintext "with:"
-          ]
-      , Fenced
-          [ "git clone https://github.com/wincent/vim-docvim.git ~/.vim/bundle/vim-docvim"
-          ]
-      , Paragraph
-          [ Plaintext "Alternatively,"
-          , Whitespace
-          , Plaintext "if"
-          , Whitespace
-          , Plaintext "you"
-          , Whitespace
-          , Plaintext "use"
-          , Whitespace
-          , Plaintext "a"
-          , Whitespace
-          , Plaintext "Git"
-          , Whitespace
-          , Plaintext "submodule"
-          , Whitespace
-          , Plaintext "for"
-          , Whitespace
-          , Plaintext "each"
-          , Whitespace
-          , Plaintext "Vim"
-          , Whitespace
-          , Plaintext "plug-in,"
-          , Whitespace
-          , Plaintext "you"
-          , Whitespace
-          , Plaintext "could"
-          , Whitespace
-          , Plaintext "do"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "following"
-          , Whitespace
-          , Plaintext "after"
-          , Whitespace
-          , Code "cd"
-          , Plaintext "-ing"
-          , Whitespace
-          , Plaintext "into"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "top-level"
-          , Whitespace
-          , Plaintext "of"
-          , Whitespace
-          , Plaintext "your"
-          , Whitespace
-          , Plaintext "Git"
-          , Whitespace
-          , Plaintext "superproject:"
-          ]
-      , Fenced
-          [ "git submodule add https://github.com/wincent/vim-docvim.git ~/vim/bundle/vim-docvim"
-          , "git submodule init"
-          ]
-      , Paragraph
-          [ Plaintext "To"
-          , Whitespace
-          , Plaintext "generate"
-          , Whitespace
-          , Plaintext "help"
-          , Whitespace
-          , Plaintext "tags"
-          , Whitespace
-          , Plaintext "under"
-          , Whitespace
-          , Plaintext "Pathogen,"
-          , Whitespace
-          , Plaintext "you"
-          , Whitespace
-          , Plaintext "can"
-          , Whitespace
-          , Plaintext "do"
-          , Whitespace
-          , Plaintext "so"
-          , Whitespace
-          , Plaintext "from"
-          , Whitespace
-          , Plaintext "inside"
-          , Whitespace
-          , Plaintext "Vim"
-          , Whitespace
-          , Plaintext "with:"
-          ]
-      , Fenced [ ":call pathogen#helptags()" ]
-      , HeadingAnnotation "Related"
-      , Paragraph
-          [ Plaintext "The"
-          , Whitespace
-          , Plaintext "docvim"
-          , Whitespace
-          , Plaintext "tool"
-          , Whitespace
-          , Plaintext "itself"
-          , Whitespace
-          , Plaintext "is"
-          , Whitespace
-          , Plaintext "a"
-          , Whitespace
-          , Plaintext "Haskell"
-          , Whitespace
-          , Plaintext "module,"
-          , Whitespace
-          , Plaintext "available"
-          , Whitespace
-          , Plaintext "at:"
-          ]
-      , Paragraph
-          [ Plaintext "http://hackage.haskell.org/package/docvim" ]
-      , Paragraph
-          [ Plaintext "The"
-          , Whitespace
-          , Plaintext "official"
-          , Whitespace
-          , Plaintext "source"
-          , Whitespace
-          , Plaintext "code"
-          , Whitespace
-          , Plaintext "repo"
-          , Whitespace
-          , Plaintext "is"
-          , Whitespace
-          , Plaintext "at:"
-          ]
-      , Paragraph [ Plaintext "http://git.wincent.com/docvim.git" ]
-      , Paragraph
-          [ Plaintext "Mirrors"
-          , Whitespace
-          , Plaintext "exist"
-          , Whitespace
-          , Plaintext "at:"
-          ]
-      , List
-          [ ListItem [ Plaintext "https://github.com/wincent/docvim" ]
-          , ListItem [ Plaintext "https://gitlab.com/wincent/docvim" ]
-          , ListItem [ Plaintext "https://bitbucket.org/ghurrell/docvim" ]
-          ]
-      , HeadingAnnotation "Website"
-      , Paragraph
-          [ Plaintext "The"
-          , Whitespace
-          , Plaintext "official"
-          , Whitespace
-          , Plaintext "vim-docvim"
-          , Whitespace
-          , Plaintext "source"
-          , Whitespace
-          , Plaintext "code"
-          , Whitespace
-          , Plaintext "repo"
-          , Whitespace
-          , Plaintext "is"
-          , Whitespace
-          , Plaintext "at:"
-          ]
-      , Paragraph [ Plaintext "http://git.wincent.com/vim-docvim.git" ]
-      , Paragraph
-          [ Plaintext "A"
-          , Whitespace
-          , Plaintext "mirror"
-          , Whitespace
-          , Plaintext "exists"
-          , Whitespace
-          , Plaintext "at:"
-          ]
-      , Paragraph [ Plaintext "https://github.com/wincent/vim-docvim" ]
-      , Paragraph
-          [ Plaintext "Official"
-          , Whitespace
-          , Plaintext "releases"
-          , Whitespace
-          , Plaintext "are"
-          , Whitespace
-          , Plaintext "listed"
-          , Whitespace
-          , Plaintext "at:"
-          ]
-      , Paragraph
-          [ Plaintext
-              "http://www.vim.org/scripts/script.php?script_id=[TODO]"
-          ]
-      , HeadingAnnotation "License"
-      , Paragraph
-          [ Plaintext "Copyright"
-          , Whitespace
-          , Plaintext "(c)"
-          , Whitespace
-          , Plaintext "2015-present"
-          , Whitespace
-          , Plaintext "Greg"
-          , Whitespace
-          , Plaintext "Hurrell"
-          ]
-      , Paragraph
-          [ Plaintext "Permission"
-          , Whitespace
-          , Plaintext "is"
-          , Whitespace
-          , Plaintext "hereby"
-          , Whitespace
-          , Plaintext "granted,"
-          , Whitespace
-          , Plaintext "free"
-          , Whitespace
-          , Plaintext "of"
-          , Whitespace
-          , Plaintext "charge,"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "any"
-          , Whitespace
-          , Plaintext "person"
-          , Whitespace
-          , Plaintext "obtaining"
-          , Whitespace
-          , Plaintext "a"
-          , Whitespace
-          , Plaintext "copy"
-          , Whitespace
-          , Plaintext "of"
-          , Whitespace
-          , Plaintext "this"
-          , Whitespace
-          , Plaintext "software"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "associated"
-          , Whitespace
-          , Plaintext "documentation"
-          , Whitespace
-          , Plaintext "files"
-          , Whitespace
-          , Plaintext "(the"
-          , Whitespace
-          , Plaintext "\"Software\"),"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "deal"
-          , Whitespace
-          , Plaintext "in"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "Software"
-          , Whitespace
-          , Plaintext "without"
-          , Whitespace
-          , Plaintext "restriction,"
-          , Whitespace
-          , Plaintext "including"
-          , Whitespace
-          , Plaintext "without"
-          , Whitespace
-          , Plaintext "limitation"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "rights"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "use,"
-          , Whitespace
-          , Plaintext "copy,"
-          , Whitespace
-          , Plaintext "modify,"
-          , Whitespace
-          , Plaintext "merge,"
-          , Whitespace
-          , Plaintext "publish,"
-          , Whitespace
-          , Plaintext "distribute,"
-          , Whitespace
-          , Plaintext "sublicense,"
-          , Whitespace
-          , Plaintext "and/or"
-          , Whitespace
-          , Plaintext "sell"
-          , Whitespace
-          , Plaintext "copies"
-          , Whitespace
-          , Plaintext "of"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "Software,"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "permit"
-          , Whitespace
-          , Plaintext "persons"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "whom"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "Software"
-          , Whitespace
-          , Plaintext "is"
-          , Whitespace
-          , Plaintext "furnished"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "do"
-          , Whitespace
-          , Plaintext "so,"
-          , Whitespace
-          , Plaintext "subject"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "following"
-          , Whitespace
-          , Plaintext "conditions:"
-          ]
-      , Paragraph
-          [ Plaintext "The"
-          , Whitespace
-          , Plaintext "above"
-          , Whitespace
-          , Plaintext "copyright"
-          , Whitespace
-          , Plaintext "notice"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "this"
-          , Whitespace
-          , Plaintext "permission"
-          , Whitespace
-          , Plaintext "notice"
-          , Whitespace
-          , Plaintext "shall"
-          , Whitespace
-          , Plaintext "be"
-          , Whitespace
-          , Plaintext "included"
-          , Whitespace
-          , Plaintext "in"
-          , Whitespace
-          , Plaintext "all"
-          , Whitespace
-          , Plaintext "copies"
-          , Whitespace
-          , Plaintext "or"
-          , Whitespace
-          , Plaintext "substantial"
-          , Whitespace
-          , Plaintext "portions"
-          , Whitespace
-          , Plaintext "of"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "Software."
-          ]
-      , Paragraph
-          [ Plaintext "THE"
-          , Whitespace
-          , Plaintext "SOFTWARE"
-          , Whitespace
-          , Plaintext "IS"
-          , Whitespace
-          , Plaintext "PROVIDED"
-          , Whitespace
-          , Plaintext "\"AS"
-          , Whitespace
-          , Plaintext "IS\","
-          , Whitespace
-          , Plaintext "WITHOUT"
-          , Whitespace
-          , Plaintext "WARRANTY"
-          , Whitespace
-          , Plaintext "OF"
-          , Whitespace
-          , Plaintext "ANY"
-          , Whitespace
-          , Plaintext "KIND,"
-          , Whitespace
-          , Plaintext "EXPRESS"
-          , Whitespace
-          , Plaintext "OR"
-          , Whitespace
-          , Plaintext "IMPLIED,"
-          , Whitespace
-          , Plaintext "INCLUDING"
-          , Whitespace
-          , Plaintext "BUT"
-          , Whitespace
-          , Plaintext "NOT"
-          , Whitespace
-          , Plaintext "LIMITED"
-          , Whitespace
-          , Plaintext "TO"
-          , Whitespace
-          , Plaintext "THE"
-          , Whitespace
-          , Plaintext "WARRANTIES"
-          , Whitespace
-          , Plaintext "OF"
-          , Whitespace
-          , Plaintext "MERCHANTABILITY,"
-          , Whitespace
-          , Plaintext "FITNESS"
-          , Whitespace
-          , Plaintext "FOR"
-          , Whitespace
-          , Plaintext "A"
-          , Whitespace
-          , Plaintext "PARTICULAR"
-          , Whitespace
-          , Plaintext "PURPOSE"
-          , Whitespace
-          , Plaintext "AND"
-          , Whitespace
-          , Plaintext "NONINFRINGEMENT."
-          , Whitespace
-          , Plaintext "IN"
-          , Whitespace
-          , Plaintext "NO"
-          , Whitespace
-          , Plaintext "EVENT"
-          , Whitespace
-          , Plaintext "SHALL"
-          , Whitespace
-          , Plaintext "THE"
-          , Whitespace
-          , Plaintext "AUTHORS"
-          , Whitespace
-          , Plaintext "OR"
-          , Whitespace
-          , Plaintext "COPYRIGHT"
-          , Whitespace
-          , Plaintext "HOLDERS"
-          , Whitespace
-          , Plaintext "BE"
-          , Whitespace
-          , Plaintext "LIABLE"
-          , Whitespace
-          , Plaintext "FOR"
-          , Whitespace
-          , Plaintext "ANY"
-          , Whitespace
-          , Plaintext "CLAIM,"
-          , Whitespace
-          , Plaintext "DAMAGES"
-          , Whitespace
-          , Plaintext "OR"
-          , Whitespace
-          , Plaintext "OTHER"
-          , Whitespace
-          , Plaintext "LIABILITY,"
-          , Whitespace
-          , Plaintext "WHETHER"
-          , Whitespace
-          , Plaintext "IN"
-          , Whitespace
-          , Plaintext "AN"
-          , Whitespace
-          , Plaintext "ACTION"
-          , Whitespace
-          , Plaintext "OF"
-          , Whitespace
-          , Plaintext "CONTRACT,"
-          , Whitespace
-          , Plaintext "TORT"
-          , Whitespace
-          , Plaintext "OR"
-          , Whitespace
-          , Plaintext "OTHERWISE,"
-          , Whitespace
-          , Plaintext "ARISING"
-          , Whitespace
-          , Plaintext "FROM,"
-          , Whitespace
-          , Plaintext "OUT"
-          , Whitespace
-          , Plaintext "OF"
-          , Whitespace
-          , Plaintext "OR"
-          , Whitespace
-          , Plaintext "IN"
-          , Whitespace
-          , Plaintext "CONNECTION"
-          , Whitespace
-          , Plaintext "WITH"
-          , Whitespace
-          , Plaintext "THE"
-          , Whitespace
-          , Plaintext "SOFTWARE"
-          , Whitespace
-          , Plaintext "OR"
-          , Whitespace
-          , Plaintext "THE"
-          , Whitespace
-          , Plaintext "USE"
-          , Whitespace
-          , Plaintext "OR"
-          , Whitespace
-          , Plaintext "OTHER"
-          , Whitespace
-          , Plaintext "DEALINGS"
-          , Whitespace
-          , Plaintext "IN"
-          , Whitespace
-          , Plaintext "THE"
-          , Whitespace
-          , Plaintext "SOFTWARE."
-          ]
-      , HeadingAnnotation "Development"
-      , SubheadingAnnotation "Contributing patches"
-      , Paragraph
-          [ Plaintext "Patches"
-          , Whitespace
-          , Plaintext "can"
-          , Whitespace
-          , Plaintext "be"
-          , Whitespace
-          , Plaintext "sent"
-          , Whitespace
-          , Plaintext "via"
-          , Whitespace
-          , Plaintext "mail"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "greg@hurrell.net,"
-          , Whitespace
-          , Plaintext "or"
-          , Whitespace
-          , Plaintext "as"
-          , Whitespace
-          , Plaintext "GitHub"
-          , Whitespace
-          , Plaintext "pull"
-          , Whitespace
-          , Plaintext "requests"
-          , Whitespace
-          , Plaintext "at:"
-          , Whitespace
-          , Plaintext "https://github.com/wincent/vim-docvim/pulls"
-          ]
-      , SubheadingAnnotation "Cutting a new release"
-      , Paragraph
-          [ Plaintext "At"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "moment"
+      ]
+  , Fenced
+      [ "git push origin master --follow-tags"
+      , "git push github master --follow-tags"
+      ]
+  , List
+      [ ListItem
+          [ Plaintext "Produce"
           , Whitespace
           , Plaintext "the"
           , Whitespace
           , Plaintext "release"
           , Whitespace
-          , Plaintext "process"
-          , Whitespace
-          , Plaintext "is"
-          , Whitespace
-          , Plaintext "manual:"
-          ]
-      , List
-          [ ListItem
-              [ Plaintext "Perform"
-              , Whitespace
-              , Plaintext "final"
-              , Whitespace
-              , Plaintext "sanity"
-              , Whitespace
-              , Plaintext "checks"
-              , Whitespace
-              , Plaintext "and"
-              , Whitespace
-              , Plaintext "manual"
-              , Whitespace
-              , Plaintext "testing"
-              ]
-          , ListItem
-              [ Plaintext "Update"
-              , Whitespace
-              , Plaintext "the"
-              , Whitespace
-              , Link "docvim-history"
-              , Whitespace
-              , Plaintext "section"
-              , Whitespace
-              , Plaintext "of"
-              , Whitespace
-              , Plaintext "the"
-              , Whitespace
-              , Plaintext "documentation"
-              ]
-          , ListItem
-              [ Plaintext "Verify"
-              , Whitespace
-              , Plaintext "clean"
-              , Whitespace
-              , Plaintext "work"
-              , Whitespace
-              , Plaintext "tree:"
-              ]
-          ]
-      , Fenced [ "git status" ]
-      , List
-          [ ListItem
-              [ Plaintext "Tag"
-              , Whitespace
-              , Plaintext "the"
-              , Whitespace
-              , Plaintext "release:"
-              ]
-          ]
-      , Fenced [ "git tag -s -m \"$VERSION release\" $VERSION" ]
-      , List
-          [ ListItem
-              [ Plaintext "Publish"
-              , Whitespace
-              , Plaintext "the"
-              , Whitespace
-              , Plaintext "code:"
-              ]
-          ]
-      , Fenced
-          [ "git push origin master --follow-tags"
-          , "git push github master --follow-tags"
-          ]
-      , List
-          [ ListItem
-              [ Plaintext "Produce"
-              , Whitespace
-              , Plaintext "the"
-              , Whitespace
-              , Plaintext "release"
-              , Whitespace
-              , Plaintext "archive:"
-              ]
-          ]
-      , Fenced [ "git archive -o vim-docvim-$VERSION.zip HEAD -- ." ]
-      , List
-          [ ListItem
-              [ Plaintext "Upload"
-              , Whitespace
-              , Plaintext "to"
-              , Whitespace
-              , Plaintext
-                  "http://www.vim.org/scripts/script.php?script_id=[TODO]"
-              ]
-          ]
-      , HeadingAnnotation "Authors"
-      , Paragraph
-          [ Plaintext "vim-docvim"
-          , Whitespace
-          , Plaintext "is"
-          , Whitespace
-          , Plaintext "written"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "maintained"
-          , Whitespace
-          , Plaintext "by"
-          , Whitespace
-          , Plaintext "Greg"
-          , Whitespace
-          , Plaintext "Hurrell"
-          , Whitespace
-          , Plaintext "<greg@hurrell.net>."
-          ]
-      , HeadingAnnotation "History"
-      , Paragraph
-          [ Plaintext "0.1"
-          , Whitespace
-          , Plaintext "(not"
-          , Whitespace
-          , Plaintext "yet"
-          , Whitespace
-          , Plaintext "released)"
-          ]
-      , List
-          [ ListItem
-              [ Plaintext "Initial" , Whitespace , Plaintext "release." ]
+          , Plaintext "archive:"
           ]
       ]
+  , Fenced [ "git archive -o vim-docvim-$VERSION.zip HEAD -- ." ]
+  , List
+      [ ListItem
+          [ Plaintext "Upload"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext
+              "http://www.vim.org/scripts/script.php?script_id=[TODO]"
+          ]
+      ]
+  , HeadingAnnotation "Authors"
+  , Paragraph
+      [ Plaintext "vim-docvim"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "written"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "maintained"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Plaintext "Greg"
+      , Whitespace
+      , Plaintext "Hurrell"
+      , Whitespace
+      , Plaintext "<greg@hurrell.net>."
+      ]
+  , HeadingAnnotation "History"
+  , Paragraph
+      [ Plaintext "0.1"
+      , Whitespace
+      , Plaintext "(not"
+      , Whitespace
+      , Plaintext "yet"
+      , Whitespace
+      , Plaintext "released)"
+      ]
+  , List
+      [ ListItem
+          [ Plaintext "Initial" , Whitespace , Plaintext "release." ]
+      ]
+  , Project [ Unit [ DocBlock [] ] ]
   ]

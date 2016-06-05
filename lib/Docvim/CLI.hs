@@ -6,15 +6,11 @@ module Docvim.CLI (run) where
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
 import Docvim.Options (Options(..), options)
-import Docvim.AST (Node(Project))
+import Docvim.Compile (compile)
 import Docvim.Parse (parse)
 import Docvim.Printer.Markdown (markdown)
 import Docvim.Printer.Vim (vimHelp)
 import Docvim.ReadDir (readDir)
-import Docvim.Visitor.Footer (extractFooter)
-import Docvim.Visitor.Mappings (extractMappings)
-import Docvim.Visitor.Plugin (extractPlugin)
-import Docvim.Visitor (extract)
 import System.FilePath (takeExtension)
 import System.IO (hPutStrLn, stderr)
 
@@ -39,10 +35,7 @@ run = do
       when (verbose opts) (hPutStrLn stderr ("Parsing " ++ path))
       parse path
     ) filtered
-  let (ast, footer) = extract extractFooter $ Project parsed
-  let (ast2, plugin) = extract extractPlugin ast
-  let (ast3, mappings) = extract extractMappings ast2
-  let project = Project $ concat [plugin, [ast2], [ast3], footer]
+  let project = compile parsed
   let targets = fromMaybe [""] (outfiles opts)
   mapM_ (\target ->
       if | target == "" -> do

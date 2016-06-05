@@ -1,278 +1,282 @@
-Unit
-  [ DocBlock
-      [ OptionAnnotation "g:FerretQFOptions" "boolean" (Just "1")
-      , Paragraph
-          [ Plaintext "Controls"
-          , Whitespace
-          , Plaintext "whether"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "set"
-          , Whitespace
-          , Plaintext "up"
-          , Whitespace
-          , Plaintext "setting"
-          , Whitespace
-          , Plaintext "overrides"
-          , Whitespace
-          , Plaintext "for"
-          , Whitespace
-          , Link "quickfix"
-          , Whitespace
-          , Plaintext "windows."
-          , Whitespace
-          , Plaintext "These"
-          , Whitespace
-          , Plaintext "are"
-          , Whitespace
-          , Plaintext "various"
-          , Whitespace
-          , Plaintext "settings,"
-          , Whitespace
-          , Plaintext "such"
-          , Whitespace
-          , Plaintext "as"
-          , Whitespace
-          , Link "norelativenumber"
-          , Plaintext ","
-          , Whitespace
-          , Link "nolist"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Link "nowrap"
-          , Plaintext ","
-          , Whitespace
-          , Plaintext "that"
-          , Whitespace
-          , Plaintext "are"
-          , Whitespace
-          , Plaintext "intended"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "make"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Link "quickfix"
-          , Whitespace
-          , Plaintext "window,"
-          , Whitespace
-          , Plaintext "which"
-          , Whitespace
-          , Plaintext "is"
-          , Whitespace
-          , Plaintext "typically"
-          , Whitespace
-          , Plaintext "very"
-          , Whitespace
-          , Plaintext "small"
-          , Whitespace
-          , Plaintext "relative"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "other"
-          , Whitespace
-          , Plaintext "windows,"
-          , Whitespace
-          , Plaintext "more"
-          , Whitespace
-          , Plaintext "usable."
+Project
+  [ Project
+      [ Unit
+          [ DocBlock
+              [ OptionAnnotation "g:FerretQFOptions" "boolean" (Just "1")
+              , Paragraph
+                  [ Plaintext "Controls"
+                  , Whitespace
+                  , Plaintext "whether"
+                  , Whitespace
+                  , Plaintext "to"
+                  , Whitespace
+                  , Plaintext "set"
+                  , Whitespace
+                  , Plaintext "up"
+                  , Whitespace
+                  , Plaintext "setting"
+                  , Whitespace
+                  , Plaintext "overrides"
+                  , Whitespace
+                  , Plaintext "for"
+                  , Whitespace
+                  , Link "quickfix"
+                  , Whitespace
+                  , Plaintext "windows."
+                  , Whitespace
+                  , Plaintext "These"
+                  , Whitespace
+                  , Plaintext "are"
+                  , Whitespace
+                  , Plaintext "various"
+                  , Whitespace
+                  , Plaintext "settings,"
+                  , Whitespace
+                  , Plaintext "such"
+                  , Whitespace
+                  , Plaintext "as"
+                  , Whitespace
+                  , Link "norelativenumber"
+                  , Plaintext ","
+                  , Whitespace
+                  , Link "nolist"
+                  , Whitespace
+                  , Plaintext "and"
+                  , Whitespace
+                  , Link "nowrap"
+                  , Plaintext ","
+                  , Whitespace
+                  , Plaintext "that"
+                  , Whitespace
+                  , Plaintext "are"
+                  , Whitespace
+                  , Plaintext "intended"
+                  , Whitespace
+                  , Plaintext "to"
+                  , Whitespace
+                  , Plaintext "make"
+                  , Whitespace
+                  , Plaintext "the"
+                  , Whitespace
+                  , Link "quickfix"
+                  , Whitespace
+                  , Plaintext "window,"
+                  , Whitespace
+                  , Plaintext "which"
+                  , Whitespace
+                  , Plaintext "is"
+                  , Whitespace
+                  , Plaintext "typically"
+                  , Whitespace
+                  , Plaintext "very"
+                  , Whitespace
+                  , Plaintext "small"
+                  , Whitespace
+                  , Plaintext "relative"
+                  , Whitespace
+                  , Plaintext "to"
+                  , Whitespace
+                  , Plaintext "other"
+                  , Whitespace
+                  , Plaintext "windows,"
+                  , Whitespace
+                  , Plaintext "more"
+                  , Whitespace
+                  , Plaintext "usable."
+                  ]
+              , Paragraph
+                  [ Plaintext "A"
+                  , Whitespace
+                  , Plaintext "full"
+                  , Whitespace
+                  , Plaintext "list"
+                  , Whitespace
+                  , Plaintext "of"
+                  , Whitespace
+                  , Plaintext "overridden"
+                  , Whitespace
+                  , Plaintext "settings"
+                  , Whitespace
+                  , Plaintext "can"
+                  , Whitespace
+                  , Plaintext "be"
+                  , Whitespace
+                  , Plaintext "found"
+                  , Whitespace
+                  , Plaintext "in"
+                  , Whitespace
+                  , Link "ferret-overrides"
+                  , Plaintext "."
+                  ]
+              , Paragraph
+                  [ Plaintext "To"
+                  , Whitespace
+                  , Plaintext "prevent"
+                  , Whitespace
+                  , Plaintext "the"
+                  , Whitespace
+                  , Plaintext "custom"
+                  , Whitespace
+                  , Plaintext "settings"
+                  , Whitespace
+                  , Plaintext "from"
+                  , Whitespace
+                  , Plaintext "being"
+                  , Whitespace
+                  , Plaintext "applied,"
+                  , Whitespace
+                  , Plaintext "set"
+                  , Whitespace
+                  , Link "g:FerretQFOptions"
+                  , Whitespace
+                  , Plaintext "to"
+                  , Whitespace
+                  , Plaintext "0:"
+                  ]
+              , Fenced [ "let g:FerretQFOptions=0" ]
+              ]
+          , LetStatement
+              { letLexpr = "s:options"
+              , letValue = "get(g:, 'FerretQFOptions', 1)"
+              }
+          , GenericStatement "if s:options"
+          , GenericStatement "setlocal nolist"
+          , GenericStatement "if exists('+relativenumber')"
+          , GenericStatement "setlocal norelativenumber"
+          , GenericStatement "endif"
+          , GenericStatement "setlocal nowrap"
+          , GenericStatement "setlocal number"
+          , LetStatement
+              { letLexpr = "s:original_scrolloff" , letValue = "&scrolloff" }
+          , GenericStatement "set scrolloff=0"
+          , GenericStatement "if has('autocmd')"
+          , GenericStatement "augroup FerretQF"
+          , GenericStatement "autocmd!"
+          , GenericStatement
+              "autocmd BufLeave <buffer> execute 'set scrolloff=' . s:original_scrolloff"
+          , GenericStatement
+              "autocmd BufEnter <buffer> set scrolloff=0 | setlocal nocursorline"
+          , GenericStatement "augroup END"
+          , GenericStatement "endif"
+          , GenericStatement "endif"
+          , DocBlock
+              [ OptionAnnotation "g:FerretQFMap" "boolean" (Just "1")
+              , Paragraph
+                  [ Plaintext "Controls"
+                  , Whitespace
+                  , Plaintext "whether"
+                  , Whitespace
+                  , Plaintext "to"
+                  , Whitespace
+                  , Plaintext "set"
+                  , Whitespace
+                  , Plaintext "up"
+                  , Whitespace
+                  , Plaintext "mappings"
+                  , Whitespace
+                  , Plaintext "in"
+                  , Whitespace
+                  , Plaintext "the"
+                  , Whitespace
+                  , Link "quickfix"
+                  , Whitespace
+                  , Plaintext "results"
+                  , Whitespace
+                  , Plaintext "window"
+                  , Whitespace
+                  , Plaintext "for"
+                  , Whitespace
+                  , Plaintext "deleting"
+                  , Whitespace
+                  , Plaintext "results."
+                  , Whitespace
+                  , Plaintext "The"
+                  , Whitespace
+                  , Plaintext "mappings"
+                  , Whitespace
+                  , Plaintext "include:"
+                  ]
+              , List
+                  [ ListItem
+                      [ Code "d"
+                      , Whitespace
+                      , Plaintext "("
+                      , Link "visual-mode"
+                      , Plaintext "):"
+                      , Whitespace
+                      , Plaintext "delete"
+                      , Whitespace
+                      , Plaintext "visual"
+                      , Whitespace
+                      , Plaintext "selection"
+                      ]
+                  , ListItem
+                      [ Code "dd"
+                      , Whitespace
+                      , Plaintext "("
+                      , Link "Normal-mode"
+                      , Plaintext "):"
+                      , Whitespace
+                      , Plaintext "delete"
+                      , Whitespace
+                      , Plaintext "current"
+                      , Whitespace
+                      , Plaintext "line"
+                      ]
+                  , ListItem
+                      [ Code "d"
+                      , Plaintext "{motion}"
+                      , Whitespace
+                      , Plaintext "("
+                      , Link "Normal-mode"
+                      , Plaintext "):"
+                      , Whitespace
+                      , Plaintext "delete"
+                      , Whitespace
+                      , Plaintext "range"
+                      , Whitespace
+                      , Plaintext "indicated"
+                      , Whitespace
+                      , Plaintext "by"
+                      , Whitespace
+                      , Plaintext "{motion}"
+                      ]
+                  ]
+              , Paragraph
+                  [ Plaintext "To"
+                  , Whitespace
+                  , Plaintext "prevent"
+                  , Whitespace
+                  , Plaintext "these"
+                  , Whitespace
+                  , Plaintext "mappings"
+                  , Whitespace
+                  , Plaintext "from"
+                  , Whitespace
+                  , Plaintext "being"
+                  , Whitespace
+                  , Plaintext "set"
+                  , Whitespace
+                  , Plaintext "up,"
+                  , Whitespace
+                  , Plaintext "set"
+                  , Whitespace
+                  , Plaintext "to"
+                  , Whitespace
+                  , Plaintext "0:"
+                  ]
+              , Fenced [ "let g:FerretQFMap=0" ]
+              ]
+          , LetStatement
+              { letLexpr = "s:map" , letValue = "get(g:, 'FerretQFMap', 1)" }
+          , GenericStatement "if s:map"
+          , GenericStatement
+              "nnoremap <buffer> <silent> d :set operatorfunc=ferret#private#qf_delete_motion<CR>g@"
+          , GenericStatement
+              "nnoremap <buffer> <silent> dd :call ferret#private#qf_delete()<CR>"
+          , GenericStatement
+              "vnoremap <buffer> <silent> d :call ferret#private#qf_delete()<CR>"
+          , GenericStatement "endif"
           ]
-      , Paragraph
-          [ Plaintext "A"
-          , Whitespace
-          , Plaintext "full"
-          , Whitespace
-          , Plaintext "list"
-          , Whitespace
-          , Plaintext "of"
-          , Whitespace
-          , Plaintext "overridden"
-          , Whitespace
-          , Plaintext "settings"
-          , Whitespace
-          , Plaintext "can"
-          , Whitespace
-          , Plaintext "be"
-          , Whitespace
-          , Plaintext "found"
-          , Whitespace
-          , Plaintext "in"
-          , Whitespace
-          , Link "ferret-overrides"
-          , Plaintext "."
-          ]
-      , Paragraph
-          [ Plaintext "To"
-          , Whitespace
-          , Plaintext "prevent"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "custom"
-          , Whitespace
-          , Plaintext "settings"
-          , Whitespace
-          , Plaintext "from"
-          , Whitespace
-          , Plaintext "being"
-          , Whitespace
-          , Plaintext "applied,"
-          , Whitespace
-          , Plaintext "set"
-          , Whitespace
-          , Link "g:FerretQFOptions"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "0:"
-          ]
-      , Fenced [ "let g:FerretQFOptions=0" ]
       ]
-  , LetStatement
-      { letLexpr = "s:options"
-      , letValue = "get(g:, 'FerretQFOptions', 1)"
-      }
-  , GenericStatement "if s:options"
-  , GenericStatement "setlocal nolist"
-  , GenericStatement "if exists('+relativenumber')"
-  , GenericStatement "setlocal norelativenumber"
-  , GenericStatement "endif"
-  , GenericStatement "setlocal nowrap"
-  , GenericStatement "setlocal number"
-  , LetStatement
-      { letLexpr = "s:original_scrolloff" , letValue = "&scrolloff" }
-  , GenericStatement "set scrolloff=0"
-  , GenericStatement "if has('autocmd')"
-  , GenericStatement "augroup FerretQF"
-  , GenericStatement "autocmd!"
-  , GenericStatement
-      "autocmd BufLeave <buffer> execute 'set scrolloff=' . s:original_scrolloff"
-  , GenericStatement
-      "autocmd BufEnter <buffer> set scrolloff=0 | setlocal nocursorline"
-  , GenericStatement "augroup END"
-  , GenericStatement "endif"
-  , GenericStatement "endif"
-  , DocBlock
-      [ OptionAnnotation "g:FerretQFMap" "boolean" (Just "1")
-      , Paragraph
-          [ Plaintext "Controls"
-          , Whitespace
-          , Plaintext "whether"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "set"
-          , Whitespace
-          , Plaintext "up"
-          , Whitespace
-          , Plaintext "mappings"
-          , Whitespace
-          , Plaintext "in"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Link "quickfix"
-          , Whitespace
-          , Plaintext "results"
-          , Whitespace
-          , Plaintext "window"
-          , Whitespace
-          , Plaintext "for"
-          , Whitespace
-          , Plaintext "deleting"
-          , Whitespace
-          , Plaintext "results."
-          , Whitespace
-          , Plaintext "The"
-          , Whitespace
-          , Plaintext "mappings"
-          , Whitespace
-          , Plaintext "include:"
-          ]
-      , List
-          [ ListItem
-              [ Code "d"
-              , Whitespace
-              , Plaintext "("
-              , Link "visual-mode"
-              , Plaintext "):"
-              , Whitespace
-              , Plaintext "delete"
-              , Whitespace
-              , Plaintext "visual"
-              , Whitespace
-              , Plaintext "selection"
-              ]
-          , ListItem
-              [ Code "dd"
-              , Whitespace
-              , Plaintext "("
-              , Link "Normal-mode"
-              , Plaintext "):"
-              , Whitespace
-              , Plaintext "delete"
-              , Whitespace
-              , Plaintext "current"
-              , Whitespace
-              , Plaintext "line"
-              ]
-          , ListItem
-              [ Code "d"
-              , Plaintext "{motion}"
-              , Whitespace
-              , Plaintext "("
-              , Link "Normal-mode"
-              , Plaintext "):"
-              , Whitespace
-              , Plaintext "delete"
-              , Whitespace
-              , Plaintext "range"
-              , Whitespace
-              , Plaintext "indicated"
-              , Whitespace
-              , Plaintext "by"
-              , Whitespace
-              , Plaintext "{motion}"
-              ]
-          ]
-      , Paragraph
-          [ Plaintext "To"
-          , Whitespace
-          , Plaintext "prevent"
-          , Whitespace
-          , Plaintext "these"
-          , Whitespace
-          , Plaintext "mappings"
-          , Whitespace
-          , Plaintext "from"
-          , Whitespace
-          , Plaintext "being"
-          , Whitespace
-          , Plaintext "set"
-          , Whitespace
-          , Plaintext "up,"
-          , Whitespace
-          , Plaintext "set"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "0:"
-          ]
-      , Fenced [ "let g:FerretQFMap=0" ]
-      ]
-  , LetStatement
-      { letLexpr = "s:map" , letValue = "get(g:, 'FerretQFMap', 1)" }
-  , GenericStatement "if s:map"
-  , GenericStatement
-      "nnoremap <buffer> <silent> d :set operatorfunc=ferret#private#qf_delete_motion<CR>g@"
-  , GenericStatement
-      "nnoremap <buffer> <silent> dd :call ferret#private#qf_delete()<CR>"
-  , GenericStatement
-      "vnoremap <buffer> <silent> d :call ferret#private#qf_delete()<CR>"
-  , GenericStatement "endif"
   ]

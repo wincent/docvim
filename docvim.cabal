@@ -86,11 +86,13 @@ library
   default-language:    Haskell2010
   exposed-modules:  Docvim.AST
                  ,  Docvim.CLI
+                 ,  Docvim.Compile
                  ,  Docvim.Options
                  ,  Docvim.Parse
                  ,  Docvim.Printer.Markdown
                  ,  Docvim.Printer.Vim
                  ,  Docvim.ReadDir
+                 ,  Docvim.Util
                  ,  Docvim.Visitor
                  ,  Docvim.Visitor.Footer
                  ,  Docvim.Visitor.Mappings

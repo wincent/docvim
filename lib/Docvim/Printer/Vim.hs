@@ -1,8 +1,4 @@
-module Docvim.Printer.Vim
-  ( vimHelp
-  , ppv
-  , pv
-  ) where
+module Docvim.Printer.Vim (vimHelp) where
 
 import Control.Arrow ((***))
 import Control.Monad (join)
@@ -13,7 +9,7 @@ import Data.List (intercalate, isSuffixOf, span, sort)
 import Data.List.Split (splitOn)
 import Data.Tuple (swap)
 import Docvim.AST
-import Docvim.Parse (parseUnit, rstrip)
+import Docvim.Parse (rstrip)
 import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
@@ -222,13 +218,3 @@ linkTargets ls = append $ rightAlign targets ++ "\n"
     linkify l = "*" ++ l ++ "*"
     rightAlign ws = replicate (count ws) ' ' ++ ws
     count xs = maximum [textwidth - length xs, 0]
-
--- | For unit testing.
-pv :: String -> String
-pv input = case parseUnit input of
-            Left error -> show error
-            Right ast -> vimHelp ast
-
--- | For logging in the REPL.
-ppv :: String -> IO ()
-ppv = putStr . pv

@@ -1,6 +1,10 @@
-Unit
-  [ DocBlock
-      [ LinkTargets [ "single-target" ]
-      , LinkTargets [ "multiple" , "targets" ]
+Project
+  [ Project
+      [ Unit
+          [ DocBlock
+              [ LinkTargets [ "single-target" ]
+              , LinkTargets [ "multiple" , "targets" ]
+              ]
+          ]
       ]
   ]

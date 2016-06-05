@@ -1,11 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Docvim.Parse ( p
-                    , parse
-                    , parseUnit
-                    , pp
-                    , strip
+module Docvim.Parse ( parse
                     , rstrip
+                    , strip
+                    , unit
                     ) where
 
 import Control.Applicative ( (*>)
@@ -36,7 +34,6 @@ import Text.Parsec ( (<|>)
                    , optionMaybe
                    , optional
                    , parseTest
-                   , runParser
                    , satisfy
                    , sepBy
                    , sepBy1
@@ -57,9 +54,6 @@ import Text.ParserCombinators.Parsec.Char ( alphaNum
                                           , string
                                           , upper
                                           )
-
--- might want to pull this into a separate, test-only module
-import Text.Show.Pretty (ppShow)
 
 -- | Given a `description` like "fu[nction]", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".
@@ -500,18 +494,3 @@ parse fileName = parseFromFile unit fileName >>= either report return
     report err = do
       hPutStrLn stderr $ "Error: " ++ show err
       exitFailure
-
--- | To facilitate unit-testing.
-parseUnit :: String -> Either ParseError Node
-parseUnit = runParser unit () "(eval)"
-
--- | For unit testing.
-p :: String -> String
-p input = case parseUnit input of
-            Left error -> show error
-            Right ast -> ppShow ast
-
--- | To facilitate quick testing in the console.
--- pp "unlet g:var"
-pp :: String -> IO ()
-pp = putStrLn . p

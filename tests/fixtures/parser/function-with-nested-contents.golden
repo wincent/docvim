@@ -1,10 +1,14 @@
-Unit
-  [ FunctionDeclaration
-      { functionBang = False
-      , functionName = "Foo"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody =
-          [ LetStatement { letLexpr = "g:foo" , letValue = "1" } ]
-      }
+Project
+  [ Project
+      [ Unit
+          [ FunctionDeclaration
+              { functionBang = False
+              , functionName = "Foo"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement { letLexpr = "g:foo" , letValue = "1" } ]
+              }
+          ]
+      ]
   ]

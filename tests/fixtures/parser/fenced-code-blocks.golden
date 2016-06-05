@@ -1,14 +1,18 @@
-Unit
-  [ DocBlock
-      [ Fenced
-          [ "Here is a fenced code block."
-          , "    All internal     whitespace is preserved."
-          , "But not trailing whitespace."
-          ]
-      , Fenced
-          [ "We can do better too."
-          , "  This will be good."
-          , "Adapt to find real indent."
+Project
+  [ Project
+      [ Unit
+          [ DocBlock
+              [ Fenced
+                  [ "Here is a fenced code block."
+                  , "    All internal     whitespace is preserved."
+                  , "But not trailing whitespace."
+                  ]
+              , Fenced
+                  [ "We can do better too."
+                  , "  This will be good."
+                  , "Adapt to find real indent."
+                  ]
+              ]
           ]
       ]
   ]

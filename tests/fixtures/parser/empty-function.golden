@@ -1,9 +1,13 @@
-Unit
-  [ FunctionDeclaration
-      { functionBang = False
-      , functionName = "Foo"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
+Project
+  [ Project
+      [ Unit
+          [ FunctionDeclaration
+              { functionBang = False
+              , functionName = "Foo"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          ]
+      ]
   ]

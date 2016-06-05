@@ -1,12 +1,16 @@
-Unit
-  [ LexprStatement
-      { lexprBang = True
-      , lexprExpr = "system(&grepprg . ' ' . g:command)"
-      }
-  , LexprStatement
-      { lexprBang = False , lexprExpr = "s:MyFancyFunc()" }
-  , LexprStatement
-      { lexprBang = False
-      , lexprExpr = "autoloaded#function(\"blah\")."
-      }
+Project
+  [ Project
+      [ Unit
+          [ LexprStatement
+              { lexprBang = True
+              , lexprExpr = "system(&grepprg . ' ' . g:command)"
+              }
+          , LexprStatement
+              { lexprBang = False , lexprExpr = "s:MyFancyFunc()" }
+          , LexprStatement
+              { lexprBang = False
+              , lexprExpr = "autoloaded#function(\"blah\")."
+              }
+          ]
+      ]
   ]

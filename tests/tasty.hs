@@ -9,9 +9,7 @@ import Data.Char (chr)
 import Data.List (isPrefixOf, sort)
 import Data.Monoid (Sum(..))
 import Docvim.AST
-import Docvim.Parse (p, parseUnit)
-import Docvim.Printer.Markdown (pm)
-import Docvim.Printer.Vim (pv)
+import Docvim.Util (compileUnit, p, pm, pv)
 import Docvim.Visitor.Symbol (getSymbols)
 import System.Exit (ExitCode(ExitSuccess))
 import System.FilePath ((<.>), replaceExtension, takeBaseName, takeFileName)
@@ -38,8 +36,8 @@ parseFailure = not . parseSuccess
 
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
-  [ testCase "Parse empty unit" $ assert $ parseSuccess (parseUnit "")
-  , testCase "Parse whitespace-only unit" $ assert $ parseSuccess (parseUnit "  \n    ")
+  [ testCase "Compile empty unit" $ assert $ parseSuccess (compileUnit "")
+  , testCase "Compile whitespace-only unit" $ assert $ parseSuccess (compileUnit "  \n    ")
 
   , testCase "Counting all nodes" $
     7 @=? let

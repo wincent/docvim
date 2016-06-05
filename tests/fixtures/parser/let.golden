@@ -1,9 +1,13 @@
-Unit
-  [ LetStatement
-      { letLexpr = "s:example" , letValue = "s:myfunction('foo')" }
-  , LetStatement
-      { letLexpr = "l:list[l:line - 1]"
-      , letValue = "0 \" Trailing comment."
-      }
-  , LetStatement { letLexpr = "g:foo " , letValue = "'bar'" }
+Project
+  [ Project
+      [ Unit
+          [ LetStatement
+              { letLexpr = "s:example" , letValue = "s:myfunction('foo')" }
+          , LetStatement
+              { letLexpr = "l:list[l:line - 1]"
+              , letValue = "0 \" Trailing comment."
+              }
+          , LetStatement { letLexpr = "g:foo " , letValue = "'bar'" }
+          ]
+      ]
   ]

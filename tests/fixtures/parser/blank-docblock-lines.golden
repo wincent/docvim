@@ -1,7 +1,11 @@
-Unit
-  [ DocBlock
-      [ LinkTargets [ "leading-blank-lines" ]
-      , LinkTargets [ "trailing-whitespace-is-ok-too" ]
-      , LinkTargets [ "trailing-blank-lines" ]
+Project
+  [ Project
+      [ Unit
+          [ DocBlock
+              [ LinkTargets [ "leading-blank-lines" ]
+              , LinkTargets [ "trailing-whitespace-is-ok-too" ]
+              , LinkTargets [ "trailing-blank-lines" ]
+              ]
+          ]
       ]
   ]

@@ -1,4 +1,4 @@
-Unit
-  [ DocBlock
-      [ PluginAnnotation "Foo" "Description with trailing whitespace" ]
+Project
+  [ PluginAnnotation "Foo" "Description with trailing whitespace"
+  , Project [ Unit [ DocBlock [] ] ]
   ]

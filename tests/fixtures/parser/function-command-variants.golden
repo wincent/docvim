@@ -1,79 +1,83 @@
-Unit
-  [ FunctionDeclaration
-      { functionBang = False
-      , functionName = "Function1"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = False
-      , functionName = "Function2"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = False
-      , functionName = "Function3"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = False
-      , functionName = "Function4"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = False
-      , functionName = "Function5"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = False
-      , functionName = "Function6"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = False
-      , functionName = "Function7"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = False
-      , functionName = "Function8"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = True
-      , functionName = "FunctionWithBang1"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = True
-      , functionName = "FunctionWithBang2"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
-  , FunctionDeclaration
-      { functionBang = True
-      , functionName = "FunctionWithBang3"
-      , functionArguments = ArgumentList []
-      , functionAttributes = []
-      , functionBody = []
-      }
+Project
+  [ Project
+      [ Unit
+          [ FunctionDeclaration
+              { functionBang = False
+              , functionName = "Function1"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "Function2"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "Function3"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "Function4"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "Function5"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "Function6"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "Function7"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "Function8"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "FunctionWithBang1"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "FunctionWithBang2"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "FunctionWithBang3"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = []
+              }
+          ]
+      ]
   ]

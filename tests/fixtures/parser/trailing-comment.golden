@@ -1,6 +1,10 @@
-Unit
-  [ LetStatement
-      { letLexpr = "g:counter"
-      , letValue = "1 \" Set counter to initial value."
-      }
+Project
+  [ Project
+      [ Unit
+          [ LetStatement
+              { letLexpr = "g:counter"
+              , letValue = "1 \" Set counter to initial value."
+              }
+          ]
+      ]
   ]

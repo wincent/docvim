@@ -1,5 +1,11 @@
-Unit
-  [ LetStatement { letLexpr = "g:x" , letValue = "1 \"Unset!" }
-  , DocBlock [ PluginAnnotation "foo" "bar" , DedentAnnotation ]
-  , LetStatement { letLexpr = "g:y" , letValue = "1" }
+Project
+  [ PluginAnnotation "foo" "bar"
+  , DedentAnnotation
+  , Project
+      [ Unit
+          [ LetStatement { letLexpr = "g:x" , letValue = "1 \"Unset!" }
+          , DocBlock []
+          , LetStatement { letLexpr = "g:y" , letValue = "1" }
+          ]
+      ]
   ]

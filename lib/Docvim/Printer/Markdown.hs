@@ -1,13 +1,9 @@
-module Docvim.Printer.Markdown
-  ( markdown
-  , pm
-  , ppm
-  ) where
+module Docvim.Printer.Markdown (markdown) where
 
 import Control.Monad.Reader
 import Data.List (intercalate, sort)
 import Docvim.AST
-import Docvim.Parse (parseUnit, rstrip)
+import Docvim.Parse (rstrip)
 import Docvim.Visitor.Plugin (getPluginName)
 import Docvim.Visitor.Symbol (getSymbols)
 
@@ -107,13 +103,3 @@ attributesString as = unwords (map attributeToString as)
 
 gitHubAnchor :: String -> String
 gitHubAnchor n = "#user-content-" ++ sanitizeAnchor n
-
--- | For unit testing.
-pm :: String -> String
-pm input = case parseUnit input of
-            Left error -> show error
-            Right ast -> markdown ast
-
--- | For logging in the REPL.
-ppm :: String -> IO ()
-ppm = putStr . pm
