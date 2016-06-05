@@ -1,5 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
-
 module Docvim.Visitor.Footer (extract) where
 
 import Control.Applicative (Alternative, (<|>))
@@ -16,30 +14,18 @@ import qualified Docvim.Visitor as Visitor
 -- guarantees about order but they just get concatenated in the order we see
 -- them.
 extract :: Node -> (Node, [Node])
-extract = Visitor.extract extractNodeFooters
+extract = Visitor.extract extractor
 
--- | Returns True if a node marks the end of a @footer region.
-endFooter :: Node -> Bool
-endFooter = \case
-  CommandAnnotation _    -> True
-  FooterAnnotation       -> True
-  FunctionAnnotation _   -> True
-  MappingAnnotation _    -> True
-  MappingsAnnotation     -> True
-  OptionAnnotation {}    -> True
-  PluginAnnotation {}    -> True
-  _                      -> False
-
-extractNodeFooters :: Node -> Writer (DList.DList [Node]) Node
-extractNodeFooters (DocBlock nodes) = do
+extractor :: Node -> Writer (DList.DList [Node]) Node
+extractor (DocBlock nodes) = do
   let (footers, remainder) = extractFooters nodes
   tell (DList.fromList footers)
   return (DocBlock remainder)
-extractNodeFooters node = return node
+extractor node = return node
 
 extractFooters :: Alternative f => [Node] -> (f [Node], [Node])
 extractFooters = Visitor.extractBlocks f
   where
     f x = if x == FooterAnnotation
-          then Just endFooter
+          then Just Visitor.endBlock
           else Nothing

@@ -1,12 +1,26 @@
-module Docvim.Visitor (extract, extractBlocks) where
+{-# LANGUAGE LambdaCase #-}
+
+module Docvim.Visitor (endBlock, extract, extractBlocks) where
 
 import Control.Applicative (Alternative, (<|>), empty)
 import Control.Monad ((>=>))
 -- TODO switch to pure mtl here (reduce dependency footprint)
 import Control.Monad.Trans.Writer (runWriter)
 import Data.Data.Lens
-import Docvim.AST (Node)
+import Docvim.AST
 import qualified Data.DList as DList
+
+-- | Returns True if a node marks the end of a region/block.
+endBlock :: Node -> Bool
+endBlock = \case
+  CommandAnnotation _    -> True
+  FooterAnnotation       -> True
+  FunctionAnnotation _   -> True
+  MappingAnnotation _    -> True
+  MappingsAnnotation     -> True
+  OptionAnnotation {}    -> True
+  PluginAnnotation {}    -> True
+  _                      -> False
 
 extract extractor = toList . runWriter . postorder uniplate extractor
   where toList (ast, dlist) = (ast, concat $ DList.toList dlist)
