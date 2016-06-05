@@ -22,6 +22,7 @@ endBlock = \case
   PluginAnnotation {}    -> True
   _                      -> False
 
+extract :: ([Node] -> ([[a]], [Node])) -> Node -> (Node, [a])
 extract extractNodes = toList . runWriter . postorder uniplate extractor
   where
     toList (ast, dlist) = (ast, concat $ DList.toList dlist)
