@@ -120,7 +120,7 @@ node n = case n of
   --
   -- I could also just make people specify a target explicitly.
   HeadingAnnotation h     -> append $ map toUpper h ++ "\n\n"
-  Link l                  -> link l
+  Link l                  -> append $ "|" ++ l ++ "|"
   LinkTargets l           -> linkTargets l
   List ls                 -> nodes ls >>= nl
   ListItem l              -> listitem l
@@ -187,17 +187,6 @@ blockquote ps = do
 
 plaintext :: String -> Env
 plaintext = append
-
--- TODO: handle "interesting" link text like containing [, ], "
-link :: String -> Env
-link l = do
-  metadata <- ask
-  if l `elem` symbols metadata
-  then append $ "|" ++ l ++ "|"
-  -- TODO: figure out what to do here
-  -- probably want to treat URLs specially
-  -- and Vim help links, obviously
-  else append l
 
 fenced :: [String] -> Env
 fenced f = do
