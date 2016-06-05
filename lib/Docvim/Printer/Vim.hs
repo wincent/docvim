@@ -62,8 +62,8 @@ append string = do
                            , Append (snd $ split $ partialLine context)
                            , Append $ string
                            ]
-                          , lineBreak context ++ (snd $ split $ partialLine context) ++ string
-                          )
+                         , lineBreak context ++ (snd $ split $ partialLine context) ++ string
+                         )
                     else ([Append string], partialLine context ++ string)
   put (Context (lineBreak context) (end line))
   return ops
