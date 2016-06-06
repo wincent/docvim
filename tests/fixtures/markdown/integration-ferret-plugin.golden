@@ -87,7 +87,7 @@ A typical sequence consists of an <strong>`:Ack`</strong> invocation to populate
 :Acks /foo/bar/
 ```
 
-Controls whether to set up the Ferret mappings, such as <strong>`<Plug>(FerretAck)`</strong> (see <strong>`ferret-mappings`</strong> for a full list). To prevent any mapping from being configured, set to 0:
+Controls whether to set up the Ferret mappings, such as <strong>`<Plug>(FerretAck)`</strong> (see <strong>[`ferret-mappings`](#user-content-ferret-mappings)</strong> for a full list). To prevent any mapping from being configured, set to 0:
 
 ```
 let g:FerretMap=0

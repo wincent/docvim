@@ -15,14 +15,19 @@ getSymbols node = if length symbols == Set.size set
   where
     set                                     = Set.fromList symbols
     symbols                                 = walk gatherSymbols [] node
+    gatherSymbols (CommandsAnnotation)      = genHeading "commands"
+    gatherSymbols (FunctionsAnnotation)     = genHeading "functions"
     gatherSymbols (HeadingAnnotation h)     = [titleAnchor h]
     gatherSymbols (LinkTargets ts)          = ts
     -- TODO: probably don't want this target to exist in the symbol table when
     -- emitting Markdown
     gatherSymbols (PluginAnnotation name _) = [name, name ++ ".txt"]
+    gatherSymbols (MappingsAnnotation)      = genHeading "mappings"
+    gatherSymbols (OptionsAnnotation)       = genHeading "options"
     gatherSymbols _                         = []
     titleAnchor title                       = titlePrefix ++ sanitizeAnchor title
     titlePrefix                             = downcase $ maybe "" (++ "-") $ getPluginName node
+    genHeading h                            = maybe [] (\x -> [x ++ "-" ++ h]) (getPluginName node)
     duplicates                              = nub $ f (sort symbols)
       where
         f [] = []
