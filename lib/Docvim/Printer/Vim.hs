@@ -121,8 +121,10 @@ node n = case n of
   Blockquote b               -> blockquote b >>= nl >>= nl
   BreakTag                   -> breaktag
   Code c                     -> append $ "`" ++ c ++ "`"
+  CommandsAnnotation         -> genHeading "commands"
   DocBlock d                 -> nodes d
   Fenced f                   -> fenced f
+  FunctionsAnnotation        -> genHeading "functions"
   FunctionDeclaration {}     -> nodes $ functionBody n
   -- TODO: Vim will only highlight this as a heading if it has a trailing
   -- LinkTarget on the same line; figure out how to handle that; may need to
@@ -132,11 +134,13 @@ node n = case n of
   -- to auto-gen the targets based on the plugin name + the heading text.
   --
   -- I could also just make people specify a target explicitly.
-  HeadingAnnotation h        -> append $ map toUpper h ++ "\n\n"
+  HeadingAnnotation h        -> heading h
   Link l                     -> append $ "|" ++ l ++ "|"
   LinkTargets l              -> linkTargets l
   List ls                    -> nodes ls >>= nl
   ListItem l                 -> listitem l
+  MappingsAnnotation         -> genHeading "mappings"
+  OptionsAnnotation          -> genHeading "options"
   Paragraph p                -> nodes p >>= nl >>= nl
   Plaintext p                -> plaintext p
   -- TODO: this should be order-independent and always appear at the top.
@@ -209,6 +213,17 @@ fenced f = do
           else append $ "    " ++ intercalate "\n    " f ++ "\n"
   suffix <- append "<\n"
   return $ concat [cut, prefix, body, suffix]
+
+heading :: String -> Env
+heading h = append $ map toUpper h ++ "\n\n"
+
+-- | Like `heading`, but auto-generates a link target as well.
+genHeading :: String -> Env
+genHeading h = do
+  metadata <- ask
+  link <- maybe (append "") (\x -> linkTargets [x ++ "-" ++ h]) (pluginName metadata)
+  genHeading' <- heading h
+  return $ link ++ genHeading'
 
 -- TODO: be prepared to wrap these if there are a lot of them
 linkTargets :: [String] -> Env

@@ -177,6 +177,10 @@ configured, set to 0:
 >
     let g:FerretQFCommands=0
 <
+
+                                                             *ferret-mappings*
+MAPPINGS
+
 Circumstances where mappings do not get set up ~
 
 Note that Ferret will not try to set up the <leader> mappings if any of the
