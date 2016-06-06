@@ -54,7 +54,7 @@ append string = append' string textwidth
 -- | Helper function that appends and updates `partialLine` context
 -- uncontitionally (no hard-wrapping).
 appendNoWrap :: String -> Env
-appendNoWrap string = append' string 1000000
+appendNoWrap string = append' string (maxBound :: Int)
 
 append' :: String -> Int -> Env
 append' string width = do
