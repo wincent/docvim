@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Docvim.Visitor (endBlock, extract, extractBlocks) where
+module Docvim.Visitor (endSection, extract, extractBlocks) where
 
 import Control.Applicative (Alternative, (<|>), empty)
 import Control.Monad ((>=>))
@@ -11,8 +11,8 @@ import Docvim.AST
 import qualified Data.DList as DList
 
 -- | Returns True if a node marks the end of a region/block.
-endBlock :: Node -> Bool
-endBlock = \case
+endSection :: Node -> Bool
+endSection = \case
   CommandAnnotation _    -> True
   CommandsAnnotation     -> True
   FooterAnnotation       -> True

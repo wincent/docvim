@@ -2,7 +2,7 @@ module Docvim.Visitor.Functions (extractFunctions) where
 
 import Control.Applicative (Alternative)
 import Docvim.AST (Node(FunctionsAnnotation))
-import Docvim.Visitor (endBlock, extractBlocks)
+import Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) from the `@functions` section(s) of
 -- the source code.
@@ -15,5 +15,5 @@ extractFunctions :: Alternative f => [Node] -> (f [Node], [Node])
 extractFunctions = extractBlocks f
   where
     f x = if x == FunctionsAnnotation
-          then Just endBlock
+          then Just endSection
           else Nothing

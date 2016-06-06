@@ -2,7 +2,7 @@ module Docvim.Visitor.Options (extractOptions) where
 
 import Control.Applicative (Alternative)
 import Docvim.AST (Node(OptionsAnnotation))
-import Docvim.Visitor (endBlock, extractBlocks)
+import Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) from the `@options` section(s) of
 -- the source code.
@@ -15,5 +15,5 @@ extractOptions :: Alternative f => [Node] -> (f [Node], [Node])
 extractOptions = extractBlocks f
   where
     f x = if x == OptionsAnnotation
-          then Just endBlock
+          then Just endSection
           else Nothing

@@ -6,7 +6,7 @@ module Docvim.Visitor.Plugin ( getPluginName
 
 import Control.Applicative (Alternative)
 import Docvim.AST (Node(PluginAnnotation), walk)
-import Docvim.Visitor (endBlock, extractBlocks)
+import Docvim.Visitor (endSection, extractBlocks)
 
 -- | Returns the name of the plug-in or Nothing if none is found.
 --
@@ -33,5 +33,5 @@ extractPlugin :: Alternative f => [Node] -> (f [Node], [Node])
 extractPlugin = extractBlocks f
   where
     f = \case
-      PluginAnnotation {} -> Just endBlock
+      PluginAnnotation {} -> Just endSection
       _                   -> Nothing

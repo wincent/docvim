@@ -2,7 +2,7 @@ module Docvim.Visitor.Commands (extractCommands) where
 
 import Control.Applicative (Alternative)
 import Docvim.AST (Node(CommandsAnnotation))
-import Docvim.Visitor (endBlock, extractBlocks)
+import Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) from the `@commands` section(s) of
 -- the source code.
@@ -15,5 +15,5 @@ extractCommands :: Alternative f => [Node] -> (f [Node], [Node])
 extractCommands = extractBlocks f
   where
     f x = if x == CommandsAnnotation
-          then Just endBlock
+          then Just endSection
           else Nothing

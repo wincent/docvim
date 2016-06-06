@@ -17,7 +17,7 @@ getSymbols node = if length symbols == Set.size set
     symbols                                 = walk gatherSymbols [] node
     gatherSymbols (CommandsAnnotation)      = genHeading "commands"
     gatherSymbols (FunctionsAnnotation)     = genHeading "functions"
-    gatherSymbols (HeadingAnnotation h)     = [titleAnchor h]
+    gatherSymbols (HeadingAnnotation h)     = genHeading h
     gatherSymbols (LinkTargets ts)          = ts
     -- TODO: probably don't want this target to exist in the symbol table when
     -- emitting Markdown
@@ -25,8 +25,6 @@ getSymbols node = if length symbols == Set.size set
     gatherSymbols (MappingsAnnotation)      = genHeading "mappings"
     gatherSymbols (OptionsAnnotation)       = genHeading "options"
     gatherSymbols _                         = []
-    titleAnchor title                       = sanitizeAnchor $ titlePrefix ++ title
-    titlePrefix                             = downcase $ maybe "" (++ "-") $ getPluginName node
     genHeading h                            = maybe [] (\x -> [sanitizeAnchor $ x ++ "-" ++ h]) (getPluginName node)
     duplicates                              = nub $ f (sort symbols)
       where

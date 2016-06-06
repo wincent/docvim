@@ -3,3 +3,9 @@ Controls whether to use vim-dispatch (and specifically, <strong>`:Make`</strong>
 ```
 let g:FerretDispatch=0
 ```
+
+Controls whether to use vim-dispatch (and specifically, <strong>`:Make`</strong>) to run <strong>`:Ack`</strong> searches asynchronously, when available. To prevent vim-dispatch from being used, set to 0:
+
+```
+let g:FerretDispatch=0
+```

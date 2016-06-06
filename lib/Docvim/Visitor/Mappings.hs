@@ -2,7 +2,7 @@ module Docvim.Visitor.Mappings (extractMappings) where
 
 import Control.Applicative (Alternative)
 import Docvim.AST (Node(MappingsAnnotation))
-import Docvim.Visitor (endBlock, extractBlocks)
+import Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) from the `@mappings` section(s) of
 -- the source code.
@@ -15,5 +15,6 @@ extractMappings :: Alternative f => [Node] -> (f [Node], [Node])
 extractMappings = extractBlocks f
   where
     f x = if x == MappingsAnnotation
-          then Just endBlock
+          then Just endSection
           else Nothing
+-- TODO: DRY all these up

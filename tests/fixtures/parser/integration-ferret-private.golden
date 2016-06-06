@@ -399,4 +399,56 @@ Project
               }
           ]
       ]
+  , OptionAnnotation "g:FerretDispatch" "boolean" (Just "1")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "whether"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Plaintext "vim-dispatch"
+      , Whitespace
+      , Plaintext "(and"
+      , Whitespace
+      , Plaintext "specifically,"
+      , Whitespace
+      , Link ":Make"
+      , Plaintext ")"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "run"
+      , Whitespace
+      , Link ":Ack"
+      , Whitespace
+      , Plaintext "searches"
+      , Whitespace
+      , Plaintext "asynchronously,"
+      , Whitespace
+      , Plaintext "when"
+      , Whitespace
+      , Plaintext "available."
+      , Whitespace
+      , Plaintext "To"
+      , Whitespace
+      , Plaintext "prevent"
+      , Whitespace
+      , Plaintext "vim-dispatch"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "being"
+      , Whitespace
+      , Plaintext "used,"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "0:"
+      ]
+  , Fenced [ "let g:FerretDispatch=0" ]
   ]
