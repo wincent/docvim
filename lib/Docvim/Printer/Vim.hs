@@ -46,12 +46,21 @@ vimHelp n = suppressTrailingWhitespace output ++ "\n"
                                   else acc
         suppressTrailingWhitespace str = rstrip $ intercalate "\n" (map rstrip (splitOn "\n" str))
 
--- Helper function that appends and updates `partialLine` context.
+-- | Helper function that appends and updates `partialLine` context,
+-- hard-wrapping if necessary to remain under `textwidth`.
 append :: String -> Env
-append string = do
+append string = append' string textwidth
+
+-- | Helper function that appends and updates `partialLine` context
+-- uncontitionally (no hard-wrapping).
+appendNoWrap :: String -> Env
+appendNoWrap string = append' string 1000000
+
+append' :: String -> Int -> Env
+append' string width = do
   context <- get
   -- TODO obviously tidy this up
-  let (ops, line) = if length (partialLine context) + length leading >= textwidth
+  let (ops, line) = if length (partialLine context) + length leading >= width
                     then ( [ Delete (length $ snd $ hardwrap $ partialLine context)
                            , Slurp " "
                            , Append (lineBreak context)
@@ -136,7 +145,7 @@ node n = case n of
   -- I could also just make people specify a target explicitly.
   HeadingAnnotation h        -> heading h
   Link l                     -> append $ "|" ++ l ++ "|"
-  LinkTargets l              -> linkTargets l
+  LinkTargets l              -> linkTargets l True
   List ls                    -> nodes ls >>= nl
   ListItem l                 -> listitem l
   MappingsAnnotation         -> heading "mappings"
@@ -217,8 +226,8 @@ fenced f = do
 heading :: String -> Env
 heading h = do
   metadata <- ask
-  heading' <- append $ map toUpper h ++ " "
-  link <- maybe (append "\n") (\x -> linkTargets [target x]) (pluginName metadata)
+  heading' <- appendNoWrap $ map toUpper h ++ " "
+  link <- maybe (append "\n") (\x -> linkTargets [target x] False) (pluginName metadata)
   trailing <- append "\n"
   return $ concat [heading', link, trailing]
   where
@@ -226,11 +235,15 @@ heading h = do
     sanitize x = if isSpace x then '-' else x
 
 -- TODO: be prepared to wrap these if there are a lot of them
-linkTargets :: [String] -> Env
-linkTargets ls = do
+-- TODO: fix code smell of passing in `wrap` bool here
+linkTargets :: [String] -> Bool -> Env
+linkTargets ls wrap = do
   context <- get
-  append $ rightAlign (partialLine context) (targets ++ "\n")
+  if wrap
+  then append $ aligned context
+  else appendNoWrap $ aligned context
   where
+    aligned context = rightAlign (partialLine context) (targets ++ "\n")
     targets = unwords (map linkify $ sort ls)
     linkify l = "*" ++ l ++ "*"
     rightAlign currentlyUsed ws = replicate (count currentlyUsed ws) ' ' ++ ws
