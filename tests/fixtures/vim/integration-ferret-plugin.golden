@@ -185,12 +185,18 @@ in your |.vimrc| instead using |:nmap|:
     " Instead of <leader>r, use <leader>u.
     nmap <leader>u <Plug>(FerretAcks)
 <
+                                                                *g:FerretMap*
+ |g:FerretMap|                                          boolean (default: 1)
+
 Controls whether to set up the Ferret mappings, such as |<Plug>(FerretAck)|
 (see |ferret-mappings| for a full list). To prevent any mapping from being
 configured, set to 0:
 >
     let g:FerretMap=0
 <
+                                                         *g:FerretQFCommands*
+ |g:FerretQFCommands|                                   boolean (default: 1)
+
 Controls whether to set up custom versions of the |quickfix| commands,
 |:cn|, |:cnf|, |:cp| an |:cpf|. These overrides vertically center the match
 within the viewport on each jump. To prevent the custom versions from being

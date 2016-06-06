@@ -7,6 +7,7 @@ import Control.Monad.State
 import Data.Char (isSpace, toLower, toUpper)
 import Data.List (intercalate, isSuffixOf, span, sort)
 import Data.List.Split (splitOn)
+import Data.Maybe (fromMaybe)
 import Data.Tuple (swap)
 import Docvim.AST
 import Docvim.Parse (rstrip)
@@ -144,12 +145,16 @@ node n = case n of
   --
   -- I could also just make people specify a target explicitly.
   HeadingAnnotation h        -> heading h
-  Link l                     -> append $ "|" ++ l ++ "|"
+  Link l                     -> append $ link l
   LinkTargets l              -> linkTargets l True
   List ls                    -> nodes ls >>= nl
   ListItem l                 -> listitem l
   MappingsAnnotation         -> heading "mappings"
+  -- TODO: if there is no OptionsAnnotation but there are OptionAnnotations, we
+  -- need to insert a `heading "options"` before the first option (ditto for
+  -- functions, mappings, commands)
   OptionsAnnotation          -> heading "options"
+  OptionAnnotation {}        -> option n
   Paragraph p                -> nodes p >>= nl >>= nl
   Plaintext p                -> plaintext p
   -- TODO: this should be order-independent and always appear at the top.
@@ -190,6 +195,18 @@ listitem l = do
   where
     customLineBreak = "\n  "
 
+option :: Node -> Env
+option (OptionAnnotation n t d) = do
+  targets <- linkTargets [n] True
+  ws <- appendNoWrap " " -- no echoed...
+  opt <- appendNoWrap $ link n
+  context <- get
+  meta <- appendNoWrap $ aligned context
+  return $ concat [targets, ws, opt, meta]
+  where
+    aligned context = rightAlign context rhs
+    rhs = t ++ " (default: " ++ fromMaybe "none" d ++ ")\n\n"
+
 whitespace :: Env
 whitespace =
   -- if current line > 80 "\n" else " "
@@ -227,12 +244,15 @@ heading :: String -> Env
 heading h = do
   metadata <- ask
   heading' <- appendNoWrap $ map toUpper h ++ " "
-  link <- maybe (append "\n") (\x -> linkTargets [target x] False) (pluginName metadata)
+  target <- maybe (append "\n") (\x -> linkTargets [target x] False) (pluginName metadata)
   trailing <- append "\n"
-  return $ concat [heading', link, trailing]
+  return $ concat [heading', target, trailing]
   where
     target x = map (toLower . sanitize) $ x ++ "-" ++ h
     sanitize x = if isSpace x then '-' else x
+
+link :: String -> String
+link l = "|" ++ l ++ "|"
 
 -- TODO: be prepared to wrap these if there are a lot of them
 -- TODO: fix code smell of passing in `wrap` bool here
@@ -243,8 +263,12 @@ linkTargets ls wrap = do
   then append $ aligned context
   else appendNoWrap $ aligned context
   where
-    aligned context = rightAlign (partialLine context) (targets ++ "\n")
+    aligned context = rightAlign context (targets ++ "\n")
     targets = unwords (map linkify $ sort ls)
     linkify l = "*" ++ l ++ "*"
-    rightAlign currentlyUsed ws = replicate (count currentlyUsed ws) ' ' ++ ws
-    count currentlyUsed xs = maximum [textwidth - length xs - length currentlyUsed, 0]
+
+rightAlign :: Context -> String -> String
+rightAlign context string = align (partialLine context)
+  where
+    align used = replicate (count used string) ' ' ++ string
+    count used xs = maximum [textwidth - length xs - length used, 0]

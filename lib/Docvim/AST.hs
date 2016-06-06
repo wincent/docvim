@@ -62,9 +62,13 @@ data Node
           | IndentAnnotation
           | DedentAnnotation
           | CommandsAnnotation
+          -- TODO: may need more here, command name, for example
+          -- :Ack {blah}                        *:Ack*
           | CommandAnnotation Usage
           | FooterAnnotation
           | MappingsAnnotation
+          -- TODO: need more here, like default value?
+          -- ferret just has a link target *<Plug>(FerrtAck)*
           | MappingAnnotation Name
           | OptionsAnnotation
           | OptionAnnotation Name Type (Maybe Default)
