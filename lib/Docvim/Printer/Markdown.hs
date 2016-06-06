@@ -41,6 +41,7 @@ node n = case n of
   List ls                 -> nodes ls >>= nl
   ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
   MappingsAnnotation      -> return "## Mappings\n\n"
+  -- TODO: handle OptionAnnotation
   OptionsAnnotation       -> return "## Options\n\n"
   Paragraph p             -> nodes p >>= nl >>= nl
   Plaintext p             -> return p

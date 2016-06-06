@@ -474,6 +474,7 @@ annotation = char '@' *> annotationName
     option            = string "option" >> ws >> OptionAnnotation <$> optionName <*> optionType <*> optionDefault
     optionName        = many1 (alphaNum <|> char ':') <* ws <?> "option name"
     optionType        = many1 alphaNum <* ws <?> "option type"
+    -- BUG: this is not optional, it would seem (see tests/fixtures/vim/options.vim)
     optionDefault     = optionMaybe word <?> "option default value"
 
     plugin            = string "plugin" >> ws >> PluginAnnotation <$> pluginName <*> plugInDescription
