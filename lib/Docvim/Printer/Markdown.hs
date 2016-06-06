@@ -30,14 +30,18 @@ node n = case n of
   -- TODO, for readability, this should be "<br />\n" (custom, context-aware separator; see Vim.hs)
   BreakTag                -> return "<br />"
   Code c                  -> return $ "`" ++ c ++ "`"
+  CommandsAnnotation      -> return "## Commands\n\n"
   DocBlock d              -> nodes d
   Fenced f                -> return $ fenced f ++ "\n\n"
   FunctionDeclaration {}  -> nodes $ functionBody n
+  FunctionsAnnotation     -> return "## Functions\n\n"
   HeadingAnnotation h     -> return $ "## " ++ h ++ "\n\n"
   Link l                  -> link l
   LinkTargets l           -> return $ linkTargets l ++ "\n"
   List ls                 -> nodes ls >>= nl
   ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
+  MappingsAnnotation      -> return "## Mappings\n\n"
+  OptionsAnnotation       -> return "## Options\n\n"
   Paragraph p             -> nodes p >>= nl >>= nl
   Plaintext p             -> return p
   -- TODO: this should be order-independent and always appear at the top.

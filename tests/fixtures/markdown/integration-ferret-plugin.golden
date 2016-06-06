@@ -131,6 +131,8 @@ Controls whether to set up custom versions of the <strong>`quickfix`</strong> co
 let g:FerretQFCommands=0
 ```
 
+## Mappings
+
 ### Circumstances where mappings do not get set up
 
 Note that Ferret will not try to set up the <leader> mappings if any of the following are true:
