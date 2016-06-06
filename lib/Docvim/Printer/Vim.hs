@@ -199,7 +199,7 @@ option :: Node -> Env
 option (OptionAnnotation n t d) = do
   targets <- linkTargets [n] True
   opt <- appendNoWrap $ link n
-  ws <- appendNoWrap " " -- no echoed...
+  ws <- appendNoWrap " "
   context <- get
   meta <- appendNoWrap $ aligned context
   return $ concat [targets, opt, ws, meta]
