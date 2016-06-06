@@ -450,13 +450,16 @@ annotation :: Parser Node
 annotation = char '@' *> annotationName
   where
     annotationName =
-      choice [ command
+      choice [ try $ string "commands" >> pure CommandsAnnotation -- must come before function
+             , command
              , string "dedent" >> pure DedentAnnotation
              , try $ string "footer" >> pure FooterAnnotation -- must come before function
+             , try $ string "functions" >> pure FunctionsAnnotation -- must come before function
              , function
              , string "indent" >> pure IndentAnnotation
              , try $ string "mappings" >> pure MappingsAnnotation -- must come before mapping
              , mapping
+             , try $ string "options" >> pure OptionsAnnotation -- must come before option
              , option
              , plugin
              ]

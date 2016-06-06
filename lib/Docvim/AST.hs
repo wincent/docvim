@@ -57,13 +57,16 @@ data Node
 
           -- Docvim nodes: annotations
           | PluginAnnotation Name Description
+          | FunctionsAnnotation
           | FunctionAnnotation Name -- not sure if I will want more here
           | IndentAnnotation
           | DedentAnnotation
+          | CommandsAnnotation
           | CommandAnnotation Usage
           | FooterAnnotation
           | MappingsAnnotation
           | MappingAnnotation Name
+          | OptionsAnnotation
           | OptionAnnotation Name Type (Maybe Default)
           | HeadingAnnotation String
           | SubheadingAnnotation String

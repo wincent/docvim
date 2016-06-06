@@ -1,7 +1,25 @@
 ""
+" @options
+"
+" Stuff about options.
+"
+
+""
+" @functions
+"
+" Stuff about functions.
+"
+
+""
 " @mappings
 "
 " Stuff about mappings.
+"
+
+""
+" @commands
+"
+" Stuff about commands.
 "
 
 ""

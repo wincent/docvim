@@ -94,8 +94,11 @@ library
                  ,  Docvim.ReadDir
                  ,  Docvim.Util
                  ,  Docvim.Visitor
+                 ,  Docvim.Visitor.Commands
                  ,  Docvim.Visitor.Footer
+                 ,  Docvim.Visitor.Functions
                  ,  Docvim.Visitor.Mappings
+                 ,  Docvim.Visitor.Options
                  ,  Docvim.Visitor.Plugin
                  ,  Docvim.Visitor.Symbol
                  ,  Paths_docvim

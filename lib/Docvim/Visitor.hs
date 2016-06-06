@@ -14,11 +14,14 @@ import qualified Data.DList as DList
 endBlock :: Node -> Bool
 endBlock = \case
   CommandAnnotation _    -> True
+  CommandsAnnotation     -> True
   FooterAnnotation       -> True
   FunctionAnnotation _   -> True
+  FunctionsAnnotation    -> True
   MappingAnnotation _    -> True
   MappingsAnnotation     -> True
   OptionAnnotation {}    -> True
+  OptionsAnnotation      -> True
   PluginAnnotation {}    -> True
   _                      -> False
 
