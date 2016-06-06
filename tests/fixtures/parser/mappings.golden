@@ -4,32 +4,6 @@ Project
           [ DocBlock
               [ Paragraph
                   [ Plaintext "General" , Whitespace , Plaintext "stuff." ]
-              , MappingsAnnotation
-              , Paragraph
-                  [ Plaintext "Here"
-                  , Whitespace
-                  , Plaintext "is"
-                  , Whitespace
-                  , Plaintext "some"
-                  , Whitespace
-                  , Plaintext "general"
-                  , Whitespace
-                  , Plaintext "commentary"
-                  , Whitespace
-                  , Plaintext "about"
-                  , Whitespace
-                  , Plaintext "the"
-                  , Whitespace
-                  , Plaintext "mappings"
-                  , Whitespace
-                  , Plaintext "provided"
-                  , Whitespace
-                  , Plaintext "by"
-                  , Whitespace
-                  , Plaintext "the"
-                  , Whitespace
-                  , Plaintext "plug-in."
-                  ]
               ]
           ]
       ]

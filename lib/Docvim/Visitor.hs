@@ -10,7 +10,7 @@ import Data.Data.Lens
 import Docvim.AST
 import qualified Data.DList as DList
 
--- | Returns True if a node marks the end of a region/block.
+-- | Returns True if a node marks the end of a region/block/section.
 endSection :: Node -> Bool
 endSection = \case
   CommandAnnotation _    -> True

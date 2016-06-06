@@ -27,7 +27,7 @@ compile ns = do
   let (ast9, options) = extract extractOptions ast8
   let (ast10, option) = extract extractOption ast9
   let project = Project $ concat [ plugin
-                                 , [ast6]
+                                 , [ast10]
                                  , commands
                                  , command
                                  , mappings

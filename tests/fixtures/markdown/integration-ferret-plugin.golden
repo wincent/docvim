@@ -87,11 +87,27 @@ A typical sequence consists of an <strong>`:Ack`</strong> invocation to populate
 :Acks /foo/bar/
 ```
 
-Controls whether to set up the Ferret mappings, such as <strong>`<Plug>(FerretAck)`</strong> (see <strong>[`ferret-mappings`](#user-content-ferret-mappings)</strong> for a full list). To prevent any mapping from being configured, set to 0:
+This is a utility function that is used by the <strong>`:Acks`</strong> command but is also generally useful enough to warrant being exposed publicly.
 
-```
-let g:FerretMap=0
-```
+It takes the files currently in the <strong>`quickfix`</strong> listing and sets them as <strong>`:args`</strong> so that they can be operated on en masse via the <strong>`:argdo`</strong> command.
+
+## Mappings
+
+### Circumstances where mappings do not get set up
+
+Note that Ferret will not try to set up the <leader> mappings if any of the following are true:
+
+- A mapping for already exists.
+- An alternative mapping for the same functionality has already been set up from a <strong>`.vimrc`</strong>.
+- The mapping has been suppressed by setting <strong>`g:FerretMap`</strong> to 1 in your <strong>`.vimrc`</strong>.
+
+### Mappings specific to the quickfix window
+
+Additionally, Ferret will set up special mappings in <strong>`quickfix`</strong> listings, unless prevented from doing so by <strong>`g:FerretQFMap`</strong>:
+
+- `d` (<strong>`visual-mode`</strong>): delete visual selection
+- `dd` (<strong>`Normal-mode`</strong>): delete current line
+- `d`{motion} (<strong>`Normal-mode`</strong>): delete range indicated by {motion}
 
 Ferret maps <leader>a to <strong>`<Plug>(FerretAck)`</strong>, which triggers the <strong>`:Ack`</strong> command. To use an alternative mapping instead, create a different one in your <strong>`.vimrc`</strong> instead using <strong>`:nmap`</strong>:
 
@@ -121,33 +137,17 @@ Ferret maps <leader>r (mnemonic: "replace") to <strong>`<Plug>(FerretAcks)`</str
 nmap <leader>u <Plug>(FerretAcks)
 ```
 
-This is a utility function that is used by the <strong>`:Acks`</strong> command but is also generally useful enough to warrant being exposed publicly.
+Controls whether to set up the Ferret mappings, such as <strong>`<Plug>(FerretAck)`</strong> (see <strong>[`ferret-mappings`](#user-content-ferret-mappings)</strong> for a full list). To prevent any mapping from being configured, set to 0:
 
-It takes the files currently in the <strong>`quickfix`</strong> listing and sets them as <strong>`:args`</strong> so that they can be operated on en masse via the <strong>`:argdo`</strong> command.
+```
+let g:FerretMap=0
+```
 
 Controls whether to set up custom versions of the <strong>`quickfix`</strong> commands, <strong>`:cn`</strong>, <strong>`:cnf`</strong>, <strong>`:cp`</strong> an <strong>`:cpf`</strong>. These overrides vertically center the match within the viewport on each jump. To prevent the custom versions from being configured, set to 0:
 
 ```
 let g:FerretQFCommands=0
 ```
-
-## Mappings
-
-### Circumstances where mappings do not get set up
-
-Note that Ferret will not try to set up the <leader> mappings if any of the following are true:
-
-- A mapping for already exists.
-- An alternative mapping for the same functionality has already been set up from a <strong>`.vimrc`</strong>.
-- The mapping has been suppressed by setting <strong>`g:FerretMap`</strong> to 1 in your <strong>`.vimrc`</strong>.
-
-### Mappings specific to the quickfix window
-
-Additionally, Ferret will set up special mappings in <strong>`quickfix`</strong> listings, unless prevented from doing so by <strong>`g:FerretQFMap`</strong>:
-
-- `d` (<strong>`visual-mode`</strong>): delete visual selection
-- `dd` (<strong>`Normal-mode`</strong>): delete current line
-- `d`{motion} (<strong>`Normal-mode`</strong>): delete range indicated by {motion}
 
 ## Custom autocommands
 
