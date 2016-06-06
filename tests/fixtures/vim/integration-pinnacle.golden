@@ -1,10 +1,10 @@
 *Pinnacle.txt*    Highlight group manipulation for Vim      *Pinnacle*
 
-INTRO
+INTRO                                                        *pinnacle-intro*
 
 Pinnacle provides functions for manipulating |:highlight| groups.
 
-INSTALLATION
+INSTALLATION                                          *pinnacle-installation*
 
 To install Pinnacle, use your plug-in management system of choice.
 
@@ -26,7 +26,7 @@ To generate help tags under Pathogen, you can do so from inside Vim with:
 >
     :call pathogen#helptags()
 <
-WEBSITE
+WEBSITE                                                    *pinnacle-website*
 
 The official Pinnacle source code repo is at:
 
@@ -42,7 +42,7 @@ Official releases are listed at:
 
 http://www.vim.org/scripts/script.php?script_id=[TODO]
 
-LICENSE
+LICENSE                                                    *pinnacle-license*
 
 Copyright (c) 2016-present Greg Hurrell
 
@@ -64,7 +64,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
-DEVELOPMENT
+DEVELOPMENT                                            *pinnacle-development*
 
 Contributing patches ~
 
@@ -96,11 +96,11 @@ At the moment the release process is manual:
 <
 - Upload to http://www.vim.org/scripts/script.php?script_id=[TODO]
 
-AUTHORS
+AUTHORS                                                    *pinnacle-authors*
 
 Pinnacle is written and maintained by Greg Hurrell <greg@hurrell.net>.
 
-HISTORY
+HISTORY                                                    *pinnacle-history*
 
 0.1 (30 March 2016) ~
 

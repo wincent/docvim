@@ -4,7 +4,7 @@ import Control.Arrow ((***))
 import Control.Monad (join)
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Char (isSpace, toUpper)
+import Data.Char (isSpace, toLower, toUpper)
 import Data.List (intercalate, isSuffixOf, span, sort)
 import Data.List.Split (splitOn)
 import Data.Tuple (swap)
@@ -121,10 +121,10 @@ node n = case n of
   Blockquote b               -> blockquote b >>= nl >>= nl
   BreakTag                   -> breaktag
   Code c                     -> append $ "`" ++ c ++ "`"
-  CommandsAnnotation         -> genHeading "commands"
+  CommandsAnnotation         -> heading "commands"
   DocBlock d                 -> nodes d
   Fenced f                   -> fenced f
-  FunctionsAnnotation        -> genHeading "functions"
+  FunctionsAnnotation        -> heading "functions"
   FunctionDeclaration {}     -> nodes $ functionBody n
   -- TODO: Vim will only highlight this as a heading if it has a trailing
   -- LinkTarget on the same line; figure out how to handle that; may need to
@@ -139,8 +139,8 @@ node n = case n of
   LinkTargets l              -> linkTargets l
   List ls                    -> nodes ls >>= nl
   ListItem l                 -> listitem l
-  MappingsAnnotation         -> genHeading "mappings"
-  OptionsAnnotation          -> genHeading "options"
+  MappingsAnnotation         -> heading "mappings"
+  OptionsAnnotation          -> heading "options"
   Paragraph p                -> nodes p >>= nl >>= nl
   Plaintext p                -> plaintext p
   -- TODO: this should be order-independent and always appear at the top.
@@ -215,21 +215,23 @@ fenced f = do
   return $ concat [cut, prefix, body, suffix]
 
 heading :: String -> Env
-heading h = append $ map toUpper h ++ "\n\n"
-
--- | Like `heading`, but auto-generates a link target as well.
-genHeading :: String -> Env
-genHeading h = do
+heading h = do
   metadata <- ask
-  link <- maybe (append "") (\x -> linkTargets [x ++ "-" ++ h]) (pluginName metadata)
-  genHeading' <- heading h
-  return $ link ++ genHeading'
+  heading' <- append $ map toUpper h ++ " "
+  link <- maybe (append "\n") (\x -> linkTargets [target x]) (pluginName metadata)
+  trailing <- append "\n"
+  return $ concat [heading', link, trailing]
+  where
+    target x = map (toLower . sanitize) $ x ++ "-" ++ h
+    sanitize x = if isSpace x then '-' else x
 
 -- TODO: be prepared to wrap these if there are a lot of them
 linkTargets :: [String] -> Env
-linkTargets ls = append $ rightAlign targets ++ "\n"
+linkTargets ls = do
+  context <- get
+  append $ rightAlign (partialLine context) (targets ++ "\n")
   where
     targets = unwords (map linkify $ sort ls)
     linkify l = "*" ++ l ++ "*"
-    rightAlign ws = replicate (count ws) ' ' ++ ws
-    count xs = maximum [textwidth - length xs, 0]
+    rightAlign currentlyUsed ws = replicate (count currentlyUsed ws) ' ' ++ ws
+    count currentlyUsed xs = maximum [textwidth - length xs - length currentlyUsed, 0]

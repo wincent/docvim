@@ -25,9 +25,9 @@ getSymbols node = if length symbols == Set.size set
     gatherSymbols (MappingsAnnotation)      = genHeading "mappings"
     gatherSymbols (OptionsAnnotation)       = genHeading "options"
     gatherSymbols _                         = []
-    titleAnchor title                       = titlePrefix ++ sanitizeAnchor title
+    titleAnchor title                       = sanitizeAnchor $ titlePrefix ++ title
     titlePrefix                             = downcase $ maybe "" (++ "-") $ getPluginName node
-    genHeading h                            = maybe [] (\x -> [x ++ "-" ++ h]) (getPluginName node)
+    genHeading h                            = maybe [] (\x -> [sanitizeAnchor $ x ++ "-" ++ h]) (getPluginName node)
     duplicates                              = nub $ f (sort symbols)
       where
         f [] = []
