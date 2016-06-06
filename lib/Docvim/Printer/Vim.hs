@@ -198,11 +198,11 @@ listitem l = do
 option :: Node -> Env
 option (OptionAnnotation n t d) = do
   targets <- linkTargets [n] True
-  ws <- appendNoWrap " " -- no echoed...
   opt <- appendNoWrap $ link n
+  ws <- appendNoWrap " " -- no echoed...
   context <- get
   meta <- appendNoWrap $ aligned context
-  return $ concat [targets, ws, opt, meta]
+  return $ concat [targets, opt, ws, meta]
   where
     aligned context = rightAlign context rhs
     rhs = t ++ " (default: " ++ fromMaybe "none" d ++ ")\n\n"

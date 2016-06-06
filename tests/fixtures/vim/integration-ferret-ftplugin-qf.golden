@@ -1,5 +1,5 @@
                                                           *g:FerretQFOptions*
- |g:FerretQFOptions|                                    boolean (default: 1)
+|g:FerretQFOptions|                                     boolean (default: 1)
 
 Controls whether to set up setting overrides for |quickfix| windows. These
 are various settings, such as |norelativenumber|, |nolist| and |nowrap|,
@@ -14,7 +14,7 @@ to 0:
     let g:FerretQFOptions=0
 <
                                                               *g:FerretQFMap*
- |g:FerretQFMap|                                        boolean (default: 1)
+|g:FerretQFMap|                                         boolean (default: 1)
 
 Controls whether to set up mappings in the |quickfix| results window for
 deleting results. The mappings include:
