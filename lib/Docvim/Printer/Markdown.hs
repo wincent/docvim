@@ -2,6 +2,7 @@ module Docvim.Printer.Markdown (markdown) where
 
 import Control.Monad.Reader
 import Data.List (intercalate, sort)
+import Data.Maybe (fromMaybe)
 import Docvim.AST
 import Docvim.Parse (rstrip)
 import Docvim.Visitor.Plugin (getPluginName)
@@ -30,6 +31,7 @@ node n = case n of
   -- TODO, for readability, this should be "<br />\n" (custom, context-aware separator; see Vim.hs)
   BreakTag                -> return "<br />"
   Code c                  -> return $ "`" ++ c ++ "`"
+  CommandAnnotation {}    -> return $ command n
   CommandsAnnotation      -> return "## Commands\n\n"
   DocBlock d              -> nodes d
   Fenced f                -> return $ fenced f ++ "\n\n"
@@ -40,6 +42,7 @@ node n = case n of
   LinkTargets l           -> return $ linkTargets l ++ "\n"
   List ls                 -> nodes ls >>= nl
   ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
+  MappingAnnotation m     -> return $ mapping m
   MappingsAnnotation      -> return "## Mappings\n\n"
   -- TODO: handle OptionAnnotation
   OptionsAnnotation       -> return "## Options\n\n"
@@ -108,3 +111,12 @@ attributesString as = unwords (map attributeToString as)
 
 gitHubAnchor :: String -> String
 gitHubAnchor n = "#user-content-" ++ sanitizeAnchor n
+
+-- TODO: make sure symbol table knows about mapping targets and command targets
+-- and option targets
+command :: Node -> String
+command (CommandAnnotation name params) = (rstrip heading) ++ "`\n\n"
+  where heading = "### `:" ++ name ++ " " ++ fromMaybe "" params
+
+mapping :: String -> String
+mapping name = "### `" ++ name ++ "`\n\n"
