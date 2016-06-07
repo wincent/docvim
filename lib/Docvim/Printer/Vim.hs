@@ -61,7 +61,7 @@ append' :: String -> Int -> Env
 append' string width = do
   context <- get
   -- TODO obviously tidy this up
-  let (ops, line) = if length (partialLine context) + length leading >= width
+  let (ops, line) = if renderedWidth (partialLine context) + renderedWidth leading >= width
                     then ( [ Delete (length $ snd $ hardwrap $ partialLine context)
                            , Slurp " "
                            , Append (lineBreak context)
@@ -271,4 +271,13 @@ rightAlign :: Context -> String -> String
 rightAlign context string = align (partialLine context)
   where
     align used = replicate (count used string) ' ' ++ string
-    count used xs = maximum [textwidth - length xs - length used, 0]
+    count used xs = maximum [textwidth - renderedWidth xs - renderedWidth used, 0]
+
+-- Crude approximation for calculating rendered width, that does so by not
+-- counting the relatively rare |, *, ` and "\n" -- all of which usually get
+-- concealed in the rendered output.
+renderedWidth :: String -> Int
+renderedWidth = foldr reduce 0
+  where reduce char acc = if char `elem` "\n|*`"
+                        then acc
+                        else acc + 1

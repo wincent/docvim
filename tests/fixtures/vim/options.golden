@@ -1,14 +1,17 @@
-                                                                      *g:Foo*
-|g:Foo|                                              string (default: "foo")
+
+                                                                         *g:Foo*
+|g:Foo|                                                  string (default: "foo")
 
 Controls the foo factor.
 
-                                                                     *g:Temp*
-|g:Temp|                                                number (default: 10)
+
+                                                                        *g:Temp*
+|g:Temp|                                                    number (default: 10)
 
 Temperature control.
 
-                                                                      *g:Bar*
-|g:Bar|                                               string (default: none)
+
+                                                                         *g:Bar*
+|g:Bar|                                                   string (default: none)
 
 No default on this one.

@@ -1,9 +1,10 @@
-                                                           *g:FerretDispatch*
-|g:FerretDispatch|                                      boolean (default: 1)
 
-Controls whether to use vim-dispatch (and specifically, |:Make|) to run
-|:Ack| searches asynchronously, when available. To prevent vim-dispatch from
-being used, set to 0:
+                                                              *g:FerretDispatch*
+|g:FerretDispatch|                                          boolean (default: 1)
+
+Controls whether to use vim-dispatch (and specifically, |:Make|) to run |:Ack|
+searches asynchronously, when available. To prevent vim-dispatch from being
+used, set to 0:
 >
     let g:FerretDispatch=0
 <
