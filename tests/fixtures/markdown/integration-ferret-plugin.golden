@@ -157,11 +157,17 @@ Ferret maps <leader>r (mnemonic: "replace") to <strong>[`<Plug>(FerretAcks)`](#u
 nmap <leader>u <Plug>(FerretAcks)
 ```
 
+<p align="right"><a name="gferretmap" href="#user-content-gferretmap"><code>g:FerretMap</code></a></p>
+### `g:FerretMap` (boolean, default: 1)
+
 Controls whether to set up the Ferret mappings, such as <strong>[`<Plug>(FerretAck)`](#user-content-plugferretack)</strong> (see <strong>[`ferret-mappings`](#user-content-ferret-mappings)</strong> for a full list). To prevent any mapping from being configured, set to 0:
 
 ```
 let g:FerretMap=0
 ```
+
+<p align="right"><a name="gferretqfcommands" href="#user-content-gferretqfcommands"><code>g:FerretQFCommands</code></a></p>
+### `g:FerretQFCommands` (boolean, default: 1)
 
 Controls whether to set up custom versions of the <strong>`quickfix`</strong> commands, <strong>`:cn`</strong>, <strong>`:cnf`</strong>, <strong>`:cp`</strong> an <strong>`:cpf`</strong>. These overrides vertically center the match within the viewport on each jump. To prevent the custom versions from being configured, set to 0:
 

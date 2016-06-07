@@ -40,12 +40,12 @@ node n = case n of
   -- TODO: add an anchor here
   HeadingAnnotation h     -> return $ h2 h -- TODO link?
   Link l                  -> link l
-  LinkTargets l           -> return $ linkTargets l ++ "\n"
+  LinkTargets l           -> return $ linkTargets l
   List ls                 -> nodes ls >>= nl
   ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
   MappingAnnotation m     -> return $ mapping m
   MappingsAnnotation      -> return $ h2 "Mappings" -- TODO link to foomappings
-  -- TODO: handle OptionAnnotation
+  OptionAnnotation {}     -> return $ option n
   OptionsAnnotation       -> return $ h2 "Options" -- TODO link to foooptions
   Paragraph p             -> nodes p >>= nl >>= nl
   Plaintext p             -> return p
@@ -95,6 +95,7 @@ linkTargets :: [String] -> String
 linkTargets ls =  "<p align=\"right\">"
                ++ unwords (map linkify $ sort ls)
                ++ "</p>"
+               ++ "\n"
   where
     linkify l = a $ Anchor [ Attribute "name" (sanitizeAnchor l)
                            , Attribute "href" (gitHubAnchor l)
@@ -133,8 +134,14 @@ gitHubAnchor :: String -> String
 gitHubAnchor n = "#user-content-" ++ sanitizeAnchor n
 
 -- TODO: make sure symbol table knows about option targets too
+option :: Node -> String
+option (OptionAnnotation n t d) = targets ++ h
+  where targets = linkTargets [n]
+        h = h3 $ "`" ++ n ++ "` (" ++ t ++ ", default: " ++ def ++ ")"
+        def = fromMaybe "none" d
+
 command :: Node -> String
-command (CommandAnnotation name params) = target ++ "\n" ++ content
+command (CommandAnnotation name params) = target ++ content
   where target = linkTargets [":" ++ name]
         content = h3 $ "`:" ++ annotation ++ "`"
         annotation = rstrip $ name ++ " " ++ fromMaybe "" params

@@ -1,3 +1,6 @@
+<p align="right"><a name="gferretdispatch" href="#user-content-gferretdispatch"><code>g:FerretDispatch</code></a></p>
+### `g:FerretDispatch` (boolean, default: 1)
+
 Controls whether to use vim-dispatch (and specifically, <strong>`:Make`</strong>) to run <strong>`:Ack`</strong> searches asynchronously, when available. To prevent vim-dispatch from being used, set to 0:
 
 ```
