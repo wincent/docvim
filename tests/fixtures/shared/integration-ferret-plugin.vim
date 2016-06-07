@@ -549,7 +549,7 @@ if s:map
 
   if !hasmapto('<Plug>(FerretAcks)') && maparg('<leader>r', 'n') ==# ''
     ""
-    " @mapping *<Plug>(FerretAcks)*
+    " @mapping <Plug>(FerretAcks)
     "
     " Ferret maps <leader>r (mnemonic: "replace") to |<Plug>(FerretAcks)|, which
     " triggers the |:Acks| command and fills the prompt with the last search

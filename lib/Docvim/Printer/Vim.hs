@@ -150,6 +150,7 @@ node n = case n of
   LinkTargets l              -> linkTargets l True
   List ls                    -> nodes ls >>= nl
   ListItem l                 -> listitem l
+  MappingAnnotation m        -> mapping m
   MappingsAnnotation         -> heading "mappings"
   -- TODO: if there is no OptionsAnnotation but there are OptionAnnotations, we
   -- need to insert a `heading "options"` before the first option (ditto for
@@ -207,6 +208,9 @@ command (CommandAnnotation name params) = do
 -- will require us to hoist it up inside CommandAnnotation
 -- (and do similar for other sections)
 -- once that is done, drop the extra newline above
+
+mapping :: String -> Env
+mapping name = linkTargets [name] True
 
 option :: Node -> Env
 option (OptionAnnotation n t d) = do

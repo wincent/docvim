@@ -2065,7 +2065,7 @@ Project
       [ "\" Instead of <leader>s, use <leader>z."
       , "nmap <leader>z <Plug>(FerretAckWord)"
       ]
-  , MappingAnnotation "*<Plug>(FerretAcks)*"
+  , MappingAnnotation "<Plug>(FerretAcks)"
   , Paragraph
       [ Plaintext "Ferret"
       , Whitespace

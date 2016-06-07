@@ -65,8 +65,6 @@ data Node
           | CommandAnnotation Name (Maybe Parameters)
           | FooterAnnotation
           | MappingsAnnotation
-          -- TODO: need more here, like default value?
-          -- ferret just has a link target *<Plug>(FerrtAck)*
           | MappingAnnotation Name
           | OptionsAnnotation
           | OptionAnnotation Name Type (Maybe Default)
