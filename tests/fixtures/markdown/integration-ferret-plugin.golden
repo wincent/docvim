@@ -54,7 +54,7 @@ To generate help tags under Pathogen, you can do so from inside Vim with:
 :call pathogen#helptags()
 ```
 
-### <a name="ack-pattern-options" href="#user-content-ack-pattern-options">`:Ack {pattern} {options}`</a>
+### `:Ack {pattern} {options}`
 
 Searches for {pattern} in all the files under the current directory (see <strong>`:pwd`</strong>), unless otherwise overridden via {options}, and displays the results in the <strong>`quickfix`</strong> listing.
 
@@ -76,13 +76,13 @@ Likewise, {options} are passed through. In this example, we pass the `-w` option
 
 As a convenience <leader>a is set-up (<strong>[`<Plug>(FerretAck)`](#user-content-plugferretack)</strong>) as a shortcut to enter <strong>`Cmdline-mode`</strong> with `:Ack` inserted on the <strong>`Cmdline`</strong>. Likewise <leader>s (<strong>[`<Plug>(FerretAckWord)`](#user-content-plugferretackword)</strong>) is a shortcut for running <strong>[`:Ack`](#user-content-ack)</strong> with the word currently under the cursor.
 
-### <a name="lack-pattern-options" href="#user-content-lack-pattern-options">`:Lack {pattern} {options}`</a>
+### `:Lack {pattern} {options}`
 
 Just like <strong>[`:Ack`](#user-content-ack)</strong>, but instead of using the <strong>`quickfix`</strong> listing, which is global across an entire Vim instance, it uses the <strong>`location-list`</strong>, which is a per-window construct.
 
 Note that <strong>[`:Lack`](#user-content-lack)</strong> always runs synchronously via <strong>`:cexpr`</strong>, because dispatch.vim doesn't currently support the <strong>`location-list`</strong>.
 
-### <a name="acks-patternreplacement" href="#user-content-acks-patternreplacement">`:Acks /{pattern}/{replacement}/`</a>
+### `:Acks /{pattern}/{replacement}/`
 
 Takes all of the files currently in the <strong>`quickfix`</strong> listing and performs a substitution of all instances of {pattern} (a standard Vim search <strong>`pattern`</strong>) by {replacement}.
 
@@ -93,7 +93,7 @@ A typical sequence consists of an <strong>[`:Ack`](#user-content-ack)</strong> i
 :Acks /foo/bar/
 ```
 
-### <a name="qargs" href="#user-content-qargs">`:Qargs`</a>
+### `:Qargs`
 
 This is a utility function that is used by the <strong>[`:Acks`](#user-content-acks)</strong> command but is also generally useful enough to warrant being exposed publicly.
 
@@ -117,7 +117,7 @@ Additionally, Ferret will set up special mappings in <strong>`quickfix`</strong>
 - `dd` (<strong>`Normal-mode`</strong>): delete current line
 - `d`{motion} (<strong>`Normal-mode`</strong>): delete range indicated by {motion}
 
-### <a name="plugferretack" href="#user-content-plugferretack">`<Plug>(FerretAck)`</a>
+### `<Plug>(FerretAck)`
 
 Ferret maps <leader>a to <strong>[`<Plug>(FerretAck)`](#user-content-plugferretack)</strong>, which triggers the <strong>[`:Ack`](#user-content-ack)</strong> command. To use an alternative mapping instead, create a different one in your <strong>`.vimrc`</strong> instead using <strong>`:nmap`</strong>:
 
@@ -126,7 +126,7 @@ Ferret maps <leader>a to <strong>[`<Plug>(FerretAck)`](#user-content-plugferreta
 nmap <leader>x <Plug>(FerretAck)
 ```
 
-### <a name="plugferretlack" href="#user-content-plugferretlack">`<Plug>(FerretLack)`</a>
+### `<Plug>(FerretLack)`
 
 Ferret maps <leader>l to <strong>[`<Plug>(FerretLack)`](#user-content-plugferretlack)</strong>, which triggers the <strong>[`:Lack`](#user-content-lack)</strong> command. To use an alternative mapping instead, create a different one in your <strong>`.vimrc`</strong> instead using <strong>`:nmap`</strong>:
 
@@ -135,7 +135,7 @@ Ferret maps <leader>l to <strong>[`<Plug>(FerretLack)`](#user-content-plugferret
 nmap <leader>y <Plug>(FerretLack)
 ```
 
-### <a name="plugferretackword" href="#user-content-plugferretackword">`<Plug>(FerretAckWord)`</a>
+### `<Plug>(FerretAckWord)`
 
 Ferret maps <leader>s (mnemonix: "selection) to <strong>[`<Plug>(FerretAckWord)`](#user-content-plugferretackword)</strong>, which uses <strong>[`:Ack`](#user-content-ack)</strong> to search for the word currently under the cursor. To use an alternative mapping instead, create a different one in your <strong>`.vimrc`</strong> instead using <strong>`:nmap`</strong>:
 
@@ -144,7 +144,7 @@ Ferret maps <leader>s (mnemonix: "selection) to <strong>[`<Plug>(FerretAckWord)`
 nmap <leader>z <Plug>(FerretAckWord)
 ```
 
-### <a name="plugferretacks" href="#user-content-plugferretacks">`<Plug>(FerretAcks)`</a>
+### `<Plug>(FerretAcks)`
 
 Ferret maps <leader>r (mnemonic: "replace") to <strong>[`<Plug>(FerretAcks)`](#user-content-plugferretacks)</strong>, which triggers the <strong>[`:Acks`](#user-content-acks)</strong> command and fills the prompt with the last search term from Ferret. to use an alternative mapping instead, create a different one in your <strong>`.vimrc`</strong> instead using <strong>`:nmap`</strong>:
 

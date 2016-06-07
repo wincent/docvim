@@ -32,30 +32,30 @@ node n = case n of
   BreakTag                -> return "<br />"
   Code c                  -> return $ "`" ++ c ++ "`"
   CommandAnnotation {}    -> return $ command n
-  CommandsAnnotation      -> return "## Commands\n\n" -- TODO link to foocommands
+  CommandsAnnotation      -> return $ h2 "Commands" -- TODO link to foocommands
   DocBlock d              -> nodes d
   Fenced f                -> return $ fenced f ++ "\n\n"
   FunctionDeclaration {}  -> nodes $ functionBody n
-  FunctionsAnnotation     -> return "## Functions\n\n" -- TODO link to foofunctions
+  FunctionsAnnotation     -> return $ h2 "Functions" -- TODO link to foofunctions
   -- TODO: add an anchor here
-  HeadingAnnotation h     -> return $ "## " ++ h ++ "\n\n" -- TODO link?
+  HeadingAnnotation h     -> return $ h2 h -- TODO link?
   Link l                  -> link l
   LinkTargets l           -> return $ linkTargets l ++ "\n"
   List ls                 -> nodes ls >>= nl
   ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
   MappingAnnotation m     -> return $ mapping m
-  MappingsAnnotation      -> return "## Mappings\n\n" -- TODO link to foomappings
+  MappingsAnnotation      -> return $ h2 "Mappings" -- TODO link to foomappings
   -- TODO: handle OptionAnnotation
-  OptionsAnnotation       -> return "## Options\n\n" -- TODO link to foooptions
+  OptionsAnnotation       -> return $ h2 "Options" -- TODO link to foooptions
   Paragraph p             -> nodes p >>= nl >>= nl
   Plaintext p             -> return p
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
-  PluginAnnotation name _ -> return $ "# " ++ name ++ "\n\n"
+  PluginAnnotation name _ -> return $ h1 name
   Project p               -> nodes p
   Separator               -> return $ "---" ++ "\n\n"
-  SubheadingAnnotation s  -> return $ "### " ++ s ++ "\n\n"
+  SubheadingAnnotation s  -> return $ h3 s
   Unit u                  -> nodes u
   Whitespace              -> return " "
   _                       -> return ""
@@ -111,11 +111,7 @@ h3 :: String -> String
 h3 = heading 3
 
 heading :: Int -> String -> String
-heading level string = replicate level '#' ++ " " ++ body ++ "\n\n"
-  where body = a $ Anchor [ Attribute "name" (sanitizeAnchor string)
-                          , Attribute "href" (gitHubAnchor string)
-                          ]
-                          string
+heading level string = replicate level '#' ++ " " ++ string ++ "\n\n"
 
 -- | Wraps a string in `<code>`/`</code>` tags.
 -- TODO: remember why I'm not using backticks here.
