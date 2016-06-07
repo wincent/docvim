@@ -199,7 +199,7 @@ listItem =  lookAhead (char '-' >> notFollowedBy (char '-'))
          <$> body
   where
     body = do
-      first  <- firstLine
+      first  <- char '-' >> optional ws >> many1 (choice [phrasing, whitespace])
       rest   <- many otherLine
       -- Make every line end with whitespace.
       let nodes = concatMap appendWhitespace (first:rest)
@@ -209,9 +209,6 @@ listItem =  lookAhead (char '-' >> notFollowedBy (char '-'))
       return ( if last compressed == Whitespace
                then init compressed
                else compressed )
-    firstLine = char '-'
-              >> optional ws
-              >> many1 (choice [phrasing, whitespace])
     otherLine =  try $ newline
               >> (commentStart <|> docBlockStart)
               -- TODO ^ DRY this up?
