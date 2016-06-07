@@ -32,20 +32,21 @@ node n = case n of
   BreakTag                -> return "<br />"
   Code c                  -> return $ "`" ++ c ++ "`"
   CommandAnnotation {}    -> return $ command n
-  CommandsAnnotation      -> return "## Commands\n\n"
+  CommandsAnnotation      -> return "## Commands\n\n" -- TODO link to foocommands
   DocBlock d              -> nodes d
   Fenced f                -> return $ fenced f ++ "\n\n"
   FunctionDeclaration {}  -> nodes $ functionBody n
-  FunctionsAnnotation     -> return "## Functions\n\n"
-  HeadingAnnotation h     -> return $ "## " ++ h ++ "\n\n"
+  FunctionsAnnotation     -> return "## Functions\n\n" -- TODO link to foofunctions
+  -- TODO: add an anchor here
+  HeadingAnnotation h     -> return $ "## " ++ h ++ "\n\n" -- TODO link?
   Link l                  -> link l
   LinkTargets l           -> return $ linkTargets l ++ "\n"
   List ls                 -> nodes ls >>= nl
   ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
   MappingAnnotation m     -> return $ mapping m
-  MappingsAnnotation      -> return "## Mappings\n\n"
+  MappingsAnnotation      -> return "## Mappings\n\n" -- TODO link to foomappings
   -- TODO: handle OptionAnnotation
-  OptionsAnnotation       -> return "## Options\n\n"
+  OptionsAnnotation       -> return "## Options\n\n" -- TODO link to foooptions
   Paragraph p             -> nodes p >>= nl >>= nl
   Plaintext p             -> return p
   -- TODO: this should be order-independent and always appear at the top.
@@ -78,6 +79,7 @@ link l = do
   metadata <- ask
   return $ if l `elem` symbols metadata
            -- TODO: beware names with < ` etc in them
+           -- TODO: consider not using <strong>
            then "<strong>[`" ++ l ++ "`](" ++ gitHubAnchor l ++ ")</strong>"
            else "<strong>`" ++ l ++ "`</strong>" -- TODO:
                                 -- may want to try producing a link to Vim
@@ -93,10 +95,32 @@ linkTargets :: [String] -> String
 linkTargets ls =  "<p align=\"right\">"
                ++ unwords (map linkify $ sort ls)
                ++ "</p>"
-  where linkify l = a $ Anchor [ Attribute "name" (sanitizeAnchor l)
-                               , Attribute "href" (gitHubAnchor l)
-                               ]
-                               ("<code>" ++ l ++ "</code>")
+  where
+    linkify l = a $ Anchor [ Attribute "name" (sanitizeAnchor l)
+                           , Attribute "href" (gitHubAnchor l)
+                           ]
+                           (codify l)
+
+h1 :: String -> String
+h1 = heading 1
+
+h2 :: String -> String
+h2 = heading 2
+
+h3 :: String -> String
+h3 = heading 3
+
+heading :: Int -> String -> String
+heading level string = replicate level '#' ++ " " ++ body ++ "\n\n"
+  where body = a $ Anchor [ Attribute "name" (sanitizeAnchor string)
+                          , Attribute "href" (gitHubAnchor string)
+                          ]
+                          string
+
+-- | Wraps a string in `<code>`/`</code>` tags.
+-- TODO: remember why I'm not using backticks here.
+codify :: String -> String
+codify s = "<code>" ++ s ++ "</code>"
 
 a :: Anchor -> String
 a (Anchor attributes target) = "<a" ++ attrs ++ ">" ++ target ++ "</a>"
@@ -112,11 +136,11 @@ attributesString as = unwords (map attributeToString as)
 gitHubAnchor :: String -> String
 gitHubAnchor n = "#user-content-" ++ sanitizeAnchor n
 
--- TODO: make sure symbol table knows about mapping targets and command targets
--- and option targets
+-- TODO: make sure symbol table knows about option targets too
 command :: Node -> String
-command (CommandAnnotation name params) = (rstrip heading) ++ "`\n\n"
-  where heading = "### `:" ++ name ++ " " ++ fromMaybe "" params
+command (CommandAnnotation name params) = content
+  where content = h3 $ "`:" ++ annotation ++ "`"
+        annotation = rstrip $ name ++ " " ++ fromMaybe "" params
 
 mapping :: String -> String
-mapping name = "### `" ++ name ++ "`\n\n"
+mapping name = h3 $ "`" ++ name ++ "`"
