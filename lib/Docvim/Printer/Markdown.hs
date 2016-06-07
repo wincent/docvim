@@ -134,8 +134,9 @@ gitHubAnchor n = "#user-content-" ++ sanitizeAnchor n
 
 -- TODO: make sure symbol table knows about option targets too
 command :: Node -> String
-command (CommandAnnotation name params) = content
-  where content = h3 $ "`:" ++ annotation ++ "`"
+command (CommandAnnotation name params) = target ++ "\n" ++ content
+  where target = linkTargets [":" ++ name]
+        content = h3 $ "`:" ++ annotation ++ "`"
         annotation = rstrip $ name ++ " " ++ fromMaybe "" params
 
 mapping :: String -> String

@@ -54,6 +54,7 @@ To generate help tags under Pathogen, you can do so from inside Vim with:
 :call pathogen#helptags()
 ```
 
+<p align="right"><a name="ack" href="#user-content-ack"><code>:Ack</code></a></p>
 ### `:Ack {pattern} {options}`
 
 Searches for {pattern} in all the files under the current directory (see <strong>`:pwd`</strong>), unless otherwise overridden via {options}, and displays the results in the <strong>`quickfix`</strong> listing.
@@ -76,12 +77,14 @@ Likewise, {options} are passed through. In this example, we pass the `-w` option
 
 As a convenience <leader>a is set-up (<strong>[`<Plug>(FerretAck)`](#user-content-plugferretack)</strong>) as a shortcut to enter <strong>`Cmdline-mode`</strong> with `:Ack` inserted on the <strong>`Cmdline`</strong>. Likewise <leader>s (<strong>[`<Plug>(FerretAckWord)`](#user-content-plugferretackword)</strong>) is a shortcut for running <strong>[`:Ack`](#user-content-ack)</strong> with the word currently under the cursor.
 
+<p align="right"><a name="lack" href="#user-content-lack"><code>:Lack</code></a></p>
 ### `:Lack {pattern} {options}`
 
 Just like <strong>[`:Ack`](#user-content-ack)</strong>, but instead of using the <strong>`quickfix`</strong> listing, which is global across an entire Vim instance, it uses the <strong>`location-list`</strong>, which is a per-window construct.
 
 Note that <strong>[`:Lack`](#user-content-lack)</strong> always runs synchronously via <strong>`:cexpr`</strong>, because dispatch.vim doesn't currently support the <strong>`location-list`</strong>.
 
+<p align="right"><a name="acks" href="#user-content-acks"><code>:Acks</code></a></p>
 ### `:Acks /{pattern}/{replacement}/`
 
 Takes all of the files currently in the <strong>`quickfix`</strong> listing and performs a substitution of all instances of {pattern} (a standard Vim search <strong>`pattern`</strong>) by {replacement}.
@@ -93,6 +96,7 @@ A typical sequence consists of an <strong>[`:Ack`](#user-content-ack)</strong> i
 :Acks /foo/bar/
 ```
 
+<p align="right"><a name="qargs" href="#user-content-qargs"><code>:Qargs</code></a></p>
 ### `:Qargs`
 
 This is a utility function that is used by the <strong>[`:Acks`](#user-content-acks)</strong> command but is also generally useful enough to warrant being exposed publicly.
