@@ -911,7 +911,7 @@ Project
           , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
           ]
       ]
-  , CommandAnnotation ":Ack {pattern} {options}"
+  , CommandAnnotation "Ack" (Just "{pattern} {options}")
   , Paragraph
       [ Plaintext "Searches"
       , Whitespace
@@ -1346,7 +1346,7 @@ Project
       , Whitespace
       , Plaintext "cursor."
       ]
-  , CommandAnnotation ":Lack {pattern} {options}"
+  , CommandAnnotation "Lack" (Just "{pattern} {options}")
   , Paragraph
       [ Plaintext "Just"
       , Whitespace
@@ -1437,7 +1437,7 @@ Project
       , Link "location-list"
       , Plaintext "."
       ]
-  , CommandAnnotation ":Acks /{pattern}/{replacement}/"
+  , CommandAnnotation "Acks" (Just "/{pattern}/{replacement}/")
   , Paragraph
       [ Plaintext "Takes"
       , Whitespace
@@ -1566,7 +1566,7 @@ Project
       , Plaintext "directory:"
       ]
   , Fenced [ ":Ack foo" , ":Acks /foo/bar/" ]
-  , CommandAnnotation ":Qargs"
+  , CommandAnnotation "Qargs" Nothing
   , Paragraph
       [ Plaintext "This"
       , Whitespace

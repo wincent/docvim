@@ -13,7 +13,7 @@ import qualified Data.DList as DList
 -- | Returns True if a node marks the end of a region/block/section.
 endSection :: Node -> Bool
 endSection = \case
-  CommandAnnotation _    -> True
+  CommandAnnotation {}   -> True
   CommandsAnnotation     -> True
   FooterAnnotation       -> True
   FunctionAnnotation _   -> True

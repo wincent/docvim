@@ -1,0 +1,34 @@
+Project
+  [ Project [ Unit [ DocBlock [] ] ]
+  , CommandAnnotation "Ack" (Just "{pattern} {options}")
+  , Paragraph [ Plaintext "Info." ]
+  , CommandAnnotation "Qargs" Nothing
+  , Paragraph
+      [ Plaintext "No"
+      , Whitespace
+      , Plaintext "params"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "one."
+      ]
+  , Paragraph
+      [ Plaintext "TODO:"
+      , Whitespace
+      , Plaintext "Infer"
+      , Whitespace
+      , Plaintext "info"
+      , Whitespace
+      , Plaintext "based"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "following"
+      , Whitespace
+      , Plaintext "VimL"
+      , Whitespace
+      , Plaintext "nodes."
+      ]
+  ]

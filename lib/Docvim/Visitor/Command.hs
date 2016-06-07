@@ -12,5 +12,5 @@ extractCommand :: Alternative f => [Node] -> (f [Node], [Node])
 extractCommand = extractBlocks f
   where
     f = \case
-      CommandAnnotation _ -> Just endSection
-      _                   -> Nothing
+      CommandAnnotation {} -> Just endSection
+      _                    -> Nothing

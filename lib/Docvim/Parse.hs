@@ -464,7 +464,9 @@ annotation = char '@' *> annotationName
              , plugin
              ]
 
-    command           = string "command" >> ws >> CommandAnnotation <$> ((:) <$> char ':' <*> many1 (noneOf "\n"))
+    command           = string "command" >> ws >> CommandAnnotation <$> commandName <*> commandParameters
+    commandName       = char ':' *> many1 alphaNum <* optional ws
+    commandParameters = optionMaybe $ many1 (noneOf "\n")
 
     function          = string "function" >> ws >> FunctionAnnotation <$> word <* optional ws
 

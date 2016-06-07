@@ -131,6 +131,7 @@ node n = case n of
   Blockquote b               -> blockquote b >>= nl >>= nl
   BreakTag                   -> breaktag
   Code c                     -> append $ "`" ++ c ++ "`"
+  CommandAnnotation {}       -> command n
   CommandsAnnotation         -> heading "commands"
   DocBlock d                 -> nodes d
   Fenced f                   -> fenced f
@@ -153,8 +154,8 @@ node n = case n of
   -- TODO: if there is no OptionsAnnotation but there are OptionAnnotations, we
   -- need to insert a `heading "options"` before the first option (ditto for
   -- functions, mappings, commands)
-  OptionsAnnotation          -> heading "options"
   OptionAnnotation {}        -> option n
+  OptionsAnnotation          -> heading "options"
   Paragraph p                -> nodes p >>= nl >>= nl
   Plaintext p                -> plaintext p
   -- TODO: this should be order-independent and always appear at the top.
@@ -194,6 +195,18 @@ listitem l = do
   return item
   where
     customLineBreak = "\n  "
+
+command :: Node -> Env
+command (CommandAnnotation name params) = do
+  lhs <- append $ concat [":", name, " ", fromMaybe "" params]
+  ws <- append " "
+  target <- linkTargets [":" ++ name] False
+  trailing <- append "\n"
+  return $ concat [lhs, ws, target, trailing]
+-- TODO indent what follows until next annotation...
+-- will require us to hoist it up inside CommandAnnotation
+-- (and do similar for other sections)
+-- once that is done, drop the extra newline above
 
 option :: Node -> Env
 option (OptionAnnotation n t d) = do

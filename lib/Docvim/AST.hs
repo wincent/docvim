@@ -62,9 +62,7 @@ data Node
           | IndentAnnotation
           | DedentAnnotation
           | CommandsAnnotation
-          -- TODO: may need more here, command name, for example
-          -- :Ack {blah}                        *:Ack*
-          | CommandAnnotation Usage
+          | CommandAnnotation Name (Maybe Parameters)
           | FooterAnnotation
           | MappingsAnnotation
           -- TODO: need more here, like default value?
@@ -97,7 +95,7 @@ type Default = String
 type Description = String
 type Name = String
 type Type = String
-type Usage = String
+type Parameters = String
 
 -- | Walks an AST node calling the supplied visitor function.
 --
