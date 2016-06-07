@@ -104,6 +104,7 @@ library
                  ,  Docvim.Visitor.Option
                  ,  Docvim.Visitor.Options
                  ,  Docvim.Visitor.Plugin
+                 ,  Docvim.Visitor.Section
                  ,  Docvim.Visitor.Symbol
                  ,  Paths_docvim
   hs-source-dirs:   lib
