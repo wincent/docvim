@@ -11,7 +11,11 @@ import Docvim.Visitor.Mappings (extractMappings)
 import Docvim.Visitor.Option (extractOption)
 import Docvim.Visitor.Options (extractOptions)
 import Docvim.Visitor.Plugin (extractPlugin)
-import Docvim.Visitor.Section
+import Docvim.Visitor.Section ( injectCommands
+                              , injectFunctions
+                              , injectMappings
+                              , injectOptions
+                              )
 import Docvim.Visitor (extract)
 
 -- | "Compile" a set of translation units into a project.
