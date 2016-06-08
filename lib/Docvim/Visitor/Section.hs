@@ -60,12 +60,12 @@ defaultSectionInfo = SectionInfo { _hasCommand = False
 getSectionInfo :: Node -> SectionInfo
 getSectionInfo n = execState (mapMOf_ (cosmosOf uniplate) check n) defaultSectionInfo
   where
-    check (CommandAnnotation {}) = hasCommand .= True
+    check CommandAnnotation {}   = hasCommand .= True
     check CommandsAnnotation     = hasCommands .= True
     check (FunctionAnnotation _) = hasFunction .= True
     check FunctionsAnnotation    = hasFunctions .= True
     check (MappingAnnotation _)  = hasMapping .= True
     check MappingsAnnotation     = hasMappings .= True
-    check (OptionAnnotation {})  = hasOption .= True
+    check OptionAnnotation {}    = hasOption .= True
     check OptionsAnnotation      = hasOptions .= True
     check _                      = modify id
