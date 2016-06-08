@@ -203,6 +203,15 @@ in your |.vimrc| instead using |:nmap|:
     nmap <leader>u <Plug>(FerretAcks)
 <
 
+                                                                *g:FerretLoaded*
+|g:FerretLoaded|                                             any (default: none)
+
+To prevent Ferret from being loaded, set |g:FerretLoaded| to any value in your
+|.vimrc|. For example:
+>
+    let g:FerretLoaded=1
+<
+
                                                                    *g:FerretMap*
 |g:FerretMap|                                               boolean (default: 1)
 

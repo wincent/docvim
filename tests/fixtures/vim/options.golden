@@ -16,4 +16,10 @@ Temperature control.
                                                                          *g:Bar*
 |g:Bar|                                                   string (default: none)
 
-No default on this one.
+No default on this one (explicit "none").
+
+
+                                                                         *g:qux*
+|g:qux|                                                   number (default: none)
+
+No default (implicit).

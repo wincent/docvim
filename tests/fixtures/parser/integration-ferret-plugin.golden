@@ -811,7 +811,7 @@ Project
   , Project
       [ Unit
           [ DocBlock []
-          , GenericStatement "\"\""
+          , DocBlock []
           , GenericStatement
               "if exists('g:FerretLoaded') || &compatible || v:version < 700"
           , GenericStatement "finish"
@@ -2153,6 +2153,42 @@ Project
       [ "\" Instead of <leader>r, use <leader>u."
       , "nmap <leader>u <Plug>(FerretAcks)"
       ]
+  , OptionAnnotation "g:FerretLoaded" "any" Nothing
+  , Paragraph
+      [ Plaintext "To"
+      , Whitespace
+      , Plaintext "prevent"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "being"
+      , Whitespace
+      , Plaintext "loaded,"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Link "g:FerretLoaded"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "any"
+      , Whitespace
+      , Plaintext "value"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "your"
+      , Whitespace
+      , Link ".vimrc"
+      , Plaintext "."
+      , Whitespace
+      , Plaintext "For"
+      , Whitespace
+      , Plaintext "example:"
+      ]
+  , Fenced [ "let g:FerretLoaded=1" ]
   , OptionAnnotation "g:FerretMap" "boolean" (Just "1")
   , Paragraph
       [ Plaintext "Controls"

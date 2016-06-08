@@ -247,7 +247,7 @@ Project
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement "if has('extra_search')"
-                  , GenericStatement "\"\""
+                  , DocBlock []
                   , LetStatement
                       { letLexpr = "l:hlsearch"
                       , letValue = "get(g:, 'FerretHlsearch', &hlsearch)"
@@ -399,4 +399,92 @@ Project
       , Plaintext "0:"
       ]
   , Fenced [ "let g:FerretDispatch=0" ]
+  , OptionAnnotation "g:FerretHlsearch" "boolean" Nothing
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "whether"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "should"
+      , Whitespace
+      , Plaintext "attempt"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "highlight"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "pattern"
+      , Whitespace
+      , Plaintext "when"
+      , Whitespace
+      , Plaintext "running"
+      , Whitespace
+      , Link ":Ack"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Link ":Lack"
+      , Plaintext "."
+      , Whitespace
+      , Plaintext "If"
+      , Whitespace
+      , Plaintext "left"
+      , Whitespace
+      , Plaintext "unset,"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "respect"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "current"
+      , Whitespace
+      , Plaintext "'hlsearch'"
+      , Whitespace
+      , Plaintext "setting."
+      , Whitespace
+      , Plaintext "To"
+      , Whitespace
+      , Plaintext "force"
+      , Whitespace
+      , Plaintext "highlighting"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "off"
+      , Whitespace
+      , Plaintext "irrespective"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "'hlsearch',"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Link "g:FerretHlsearch"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "1"
+      , Whitespace
+      , Plaintext "(on)"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "0"
+      , Whitespace
+      , Plaintext "(off):"
+      ]
+  , Fenced [ "let g:FerretHlsearch=0" ]
   ]

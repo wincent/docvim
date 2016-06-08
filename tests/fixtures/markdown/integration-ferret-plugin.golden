@@ -161,6 +161,15 @@ Ferret maps <leader>r (mnemonic: "replace") to <strong>[`<Plug>(FerretAcks)`](#u
 nmap <leader>u <Plug>(FerretAcks)
 ```
 
+<p align="right"><a name="gferretloaded" href="#user-content-gferretloaded"><code>g:FerretLoaded</code></a></p>
+### `g:FerretLoaded` (any, default: none)
+
+To prevent Ferret from being loaded, set <strong>`g:FerretLoaded`</strong> to any value in your <strong>`.vimrc`</strong>. For example:
+
+```
+let g:FerretLoaded=1
+```
+
 <p align="right"><a name="gferretmap" href="#user-content-gferretmap"><code>g:FerretMap</code></a></p>
 ### `g:FerretMap` (boolean, default: 1)
 

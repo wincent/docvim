@@ -8,3 +8,12 @@ Controls whether to use vim-dispatch (and specifically, <strong>`:Make`</strong>
 ```
 let g:FerretDispatch=0
 ```
+
+<p align="right"><a name="gferrethlsearch" href="#user-content-gferrethlsearch"><code>g:FerretHlsearch</code></a></p>
+### `g:FerretHlsearch` (boolean, default: none)
+
+Controls whether Ferret should attempt to highlight the search pattern when running <strong>`:Ack`</strong> or <strong>`:Lack`</strong>. If left unset, Ferret will respect the current 'hlsearch' setting. To force highlighting on or off irrespective of 'hlsearch', set <strong>`g:FerretHlsearch`</strong> to 1 (on) or 0 (off):
+
+```
+let g:FerretHlsearch=0
+```

@@ -9,4 +9,8 @@
 "
 " @option g:Bar string none
 "
-" No default on this one.
+" No default on this one (explicit "none").
+"
+" @option g:qux number
+"
+" No default (implicit).
