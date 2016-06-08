@@ -1,3 +1,5 @@
+OPTIONS
+
 
                                                                          *g:Foo*
 |g:Foo|                                                  string (default: "foo")

@@ -910,6 +910,7 @@ Project
               { letLexpr = "&cpoptions " , letValue = "s:cpoptions" }
           , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
           ]
+      , OptionsAnnotation
       , CommandsAnnotation
       ]
   , CommandAnnotation "Ack" (Just "{pattern} {options}")

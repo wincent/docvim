@@ -17,8 +17,12 @@ import Docvim.Visitor (extract)
 -- | "Compile" a set of translation units into a project.
 compile :: [Node] -> Node
 compile ns = do
-  let (ast, footer) = extract extractFooter $ Project ns
-  let ast2 = injectCommands ast
+  let ast = foldr (\f x -> f x) (Project ns) [ injectCommands
+                                             , injectFunctions
+                                             , injectMappings
+                                             , injectOptions
+                                             ]
+  let (ast2, footer) = extract extractFooter ast
   let (ast3, plugin) = extract extractPlugin ast2
   let (ast4, commands) = extract extractCommands ast3
   let (ast5, command) = extract extractCommand ast4

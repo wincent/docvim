@@ -345,6 +345,7 @@ Project
                   ]
               }
           ]
+      , OptionsAnnotation
       ]
   , OptionAnnotation "g:FerretDispatch" "boolean" (Just "1")
   , Paragraph

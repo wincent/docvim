@@ -54,6 +54,8 @@ To generate help tags under Pathogen, you can do so from inside Vim with:
 :call pathogen#helptags()
 ```
 
+## Options
+
 ## Commands
 
 <p align="right"><a name="ack" href="#user-content-ack"><code>:Ack</code></a></p>

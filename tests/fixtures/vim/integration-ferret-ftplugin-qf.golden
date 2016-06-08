@@ -1,3 +1,5 @@
+OPTIONS
+
 
                                                              *g:FerretQFOptions*
 |g:FerretQFOptions|                                         boolean (default: 1)

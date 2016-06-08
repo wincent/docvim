@@ -75,6 +75,8 @@ To generate help tags under Pathogen, you can do so from inside Vim with:
 >
     :call pathogen#helptags()
 <
+OPTIONS                                                         *ferret-options*
+
 COMMANDS                                                       *ferret-commands*
 
 :Ack {pattern} {options}                                                  *:Ack*

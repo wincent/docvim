@@ -1,3 +1,5 @@
+OPTIONS
+
 
                                                               *g:FerretDispatch*
 |g:FerretDispatch|                                          boolean (default: 1)
