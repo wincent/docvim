@@ -75,42 +75,31 @@ getSectionInfo n = execState (mapMOf_ (cosmosOf uniplate) check n) defaultSectio
     check OptionsAnnotation      = hasOptions .= True
     check _                      = modify id
 
+-- | Appends a node to the end of a Project.
+inject :: Node -> Node -> Node
+inject (Project ns) n = Project $ ns ++ [n]
+inject other _ = other
+
 injectCommands :: Node -> Node
 injectCommands n =
-  if | info ^. hasCommands -> n
-     | info ^. hasCommand -> inject n
+  if | getSectionInfo n ^. hasCommands -> n
+     | getSectionInfo n ^. hasCommand -> inject n CommandsAnnotation
      | otherwise -> n
-  where
-    info = getSectionInfo n
-    inject (Project ns) = Project $ ns ++ [CommandsAnnotation]
-    inject _ = n
 
 injectFunctions :: Node -> Node
 injectFunctions n =
-  if | info ^. hasFunctions -> n
-     | info ^. hasFunction -> inject n
+  if | getSectionInfo n ^. hasFunctions -> n
+     | getSectionInfo n ^. hasFunction -> inject n FunctionsAnnotation
      | otherwise -> n
-  where
-    info = getSectionInfo n
-    inject (Project ns) = Project $ ns ++ [FunctionsAnnotation]
-    inject _ = n
 
 injectMappings :: Node -> Node
 injectMappings n =
-  if | info ^. hasMappings -> n
-     | info ^. hasMapping -> inject n
+  if | getSectionInfo n ^. hasMappings -> n
+     | getSectionInfo n ^. hasMapping -> inject n MappingsAnnotation
      | otherwise -> n
-  where
-    info = getSectionInfo n
-    inject (Project ns) = Project $ ns ++ [MappingsAnnotation]
-    inject _ = n
 
 injectOptions :: Node -> Node
 injectOptions n =
-  if | info ^. hasOptions -> n
-     | info ^. hasOption -> inject n
+  if | getSectionInfo n ^. hasOptions -> n
+     | getSectionInfo n ^. hasOption -> inject n OptionsAnnotation
      | otherwise -> n
-  where
-    info = getSectionInfo n
-    inject (Project ns) = Project $ ns ++ [OptionsAnnotation]
-    inject _ = n
