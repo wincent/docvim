@@ -58,9 +58,8 @@ defaultSectionInfo = SectionInfo { _hasCommand = False
 --   - DON'T we have either? -> do nothing
 --
 getSectionInfo :: Node -> SectionInfo
-getSectionInfo n = execState (mapM_ check nodes) defaultSectionInfo
+getSectionInfo n = execState (mapMOf_ (cosmosOf uniplate) check n) defaultSectionInfo
   where
-    nodes = n ^.. cosmosOf uniplate
     check (CommandAnnotation {}) = hasCommand .= True
     check CommandsAnnotation     = hasCommands .= True
     check (FunctionAnnotation _) = hasFunction .= True
