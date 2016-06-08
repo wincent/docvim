@@ -68,6 +68,4 @@ getSectionInfo n = execState (mapMOf_ (cosmosOf uniplate) check n) defaultSectio
     check MappingsAnnotation     = hasMappings .= True
     check (OptionAnnotation {})  = hasOption .= True
     check OptionsAnnotation      = hasOptions .= True
-    check _                      = do
-      state <- get
-      put state
+    check _                      = modify id
