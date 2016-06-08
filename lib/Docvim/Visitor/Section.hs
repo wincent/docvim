@@ -1,7 +1,12 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Docvim.Visitor.Section (getSectionInfo) where
+module Docvim.Visitor.Section ( injectCommands
+                              , injectFunctions
+                              , injectMappings
+                              , injectOptions
+                              ) where
 
 import Control.Lens
 import Control.Monad.State
@@ -69,3 +74,43 @@ getSectionInfo n = execState (mapMOf_ (cosmosOf uniplate) check n) defaultSectio
     check OptionAnnotation {}    = hasOption .= True
     check OptionsAnnotation      = hasOptions .= True
     check _                      = modify id
+
+injectCommands :: Node -> Node
+injectCommands n =
+  if | info ^. hasCommands -> n
+     | info ^. hasCommand -> inject n
+     | otherwise -> n
+  where
+    info = getSectionInfo n
+    inject (Project ns) = Project $ ns ++ [CommandsAnnotation]
+    inject _ = n
+
+injectFunctions :: Node -> Node
+injectFunctions n =
+  if | info ^. hasFunctions -> n
+     | info ^. hasFunction -> inject n
+     | otherwise -> n
+  where
+    info = getSectionInfo n
+    inject (Project ns) = Project $ ns ++ [FunctionsAnnotation]
+    inject _ = n
+
+injectMappings :: Node -> Node
+injectMappings n =
+  if | info ^. hasMappings -> n
+     | info ^. hasMapping -> inject n
+     | otherwise -> n
+  where
+    info = getSectionInfo n
+    inject (Project ns) = Project $ ns ++ [MappingsAnnotation]
+    inject _ = n
+
+injectOptions :: Node -> Node
+injectOptions n =
+  if | info ^. hasOptions -> n
+     | info ^. hasOption -> inject n
+     | otherwise -> n
+  where
+    info = getSectionInfo n
+    inject (Project ns) = Project $ ns ++ [OptionsAnnotation]
+    inject _ = n

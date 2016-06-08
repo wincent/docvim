@@ -1,5 +1,5 @@
 Project
-  [ Project [ Unit [ DocBlock [] ] ]
+  [ Project [ Unit [ DocBlock [] ] , CommandsAnnotation ]
   , CommandAnnotation "Ack" (Just "{pattern} {options}")
   , Paragraph [ Plaintext "Info." ]
   , CommandAnnotation "Qargs" Nothing
