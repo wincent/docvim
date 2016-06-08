@@ -26,26 +26,25 @@ compile ns = do
                                              , injectMappings
                                              , injectOptions
                                              ]
-  let (ast2, footer) = extract extractFooter ast
-  let (ast3, plugin) = extract extractPlugin ast2
-  let (ast4, commands) = extract extractCommands ast3
-  let (ast5, command) = extract extractCommand ast4
-  let (ast6, functions) = extract extractFunctions ast5
-  let (ast7, function) = extract extractFunction ast6
-  let (ast8, mappings) = extract extractMappings ast7
-  let (ast9, mapping) = extract extractMapping ast8
-  let (ast10, options) = extract extractOptions ast9
-  let (ast11, option) = extract extractOption ast10
-  let project = Project $ concat [ plugin
-                                 , [ast11]
-                                 , commands
-                                 , command
-                                 , mappings
-                                 , mapping
-                                 , options
-                                 , option
-                                 , functions
-                                 , function
-                                 , footer
-                                 ]
-  project
+  let (ast2, plugin) = extract extractPlugin ast
+  let (ast3, commands) = extract extractCommands ast2
+  let (ast4, command) = extract extractCommand ast3
+  let (ast5, functions) = extract extractFunctions ast4
+  let (ast6, function) = extract extractFunction ast5
+  let (ast7, mappings) = extract extractMappings ast6
+  let (ast8, mapping) = extract extractMapping ast7
+  let (ast9, options) = extract extractOptions ast8
+  let (ast10, option) = extract extractOption ast9
+  let (ast11, footer) = extract extractFooter ast10
+  Project $ concat [ plugin
+                   , [ast11]
+                   , commands
+                   , command
+                   , mappings
+                   , mapping
+                   , options
+                   , option
+                   , functions
+                   , function
+                   , footer
+                   ]
