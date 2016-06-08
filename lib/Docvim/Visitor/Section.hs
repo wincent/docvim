@@ -23,8 +23,6 @@ data SectionInfo = SectionInfo { _hasCommand :: Bool
                                , _hasOptions :: Bool
                                } deriving (Show)
 
-type Env = State SectionInfo
-
 -- Could also have written record setters by hand, but too lazy to do this:
 --
 --     setHasCommand :: SectionInfo -> SectionInfo
