@@ -1,8 +1,8 @@
-module Docvim.Visitor.Options (extractOptions) where
+module Text.Docvim.Visitor.Options (extractOptions) where
 
 import Control.Applicative (Alternative)
-import Docvim.AST (Node(OptionsAnnotation))
-import Docvim.Visitor (endSection, extractBlocks)
+import Text.Docvim.AST (Node(OptionsAnnotation))
+import Text.Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) from the `@options` section(s) of
 -- the source code.

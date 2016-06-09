@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module Docvim.AST where
+module Text.Docvim.AST where
 
 import Control.Lens.Fold (foldlOf)
 import Control.Lens.Getter (to)

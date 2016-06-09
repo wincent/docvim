@@ -1,10 +1,10 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Docvim.Visitor.Option (extractOption) where
+module Text.Docvim.Visitor.Option (extractOption) where
 
 import Control.Applicative (Alternative)
-import Docvim.AST (Node(OptionAnnotation))
-import Docvim.Visitor (endSection, extractBlocks)
+import Text.Docvim.AST (Node(OptionAnnotation))
+import Text.Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) identified by the `@option`
 -- annotation of the source code.

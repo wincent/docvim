@@ -1,10 +1,10 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Docvim.Visitor.Mapping (extractMapping) where
+module Text.Docvim.Visitor.Mapping (extractMapping) where
 
 import Control.Applicative (Alternative)
-import Docvim.AST (Node(MappingAnnotation))
-import Docvim.Visitor (endSection, extractBlocks)
+import Text.Docvim.AST (Node(MappingAnnotation))
+import Text.Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) identified by the `@mapping`
 -- annotation of the source code.

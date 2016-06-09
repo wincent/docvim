@@ -92,29 +92,29 @@ library
                ,    pretty-show
                ,    split
   default-language:    Haskell2010
-  exposed-modules:  Docvim.AST
-                 ,  Docvim.CLI
-                 ,  Docvim.Compile
-                 ,  Docvim.Options
-                 ,  Docvim.Parse
-                 ,  Docvim.Printer.Markdown
-                 ,  Docvim.Printer.Vim
-                 ,  Docvim.ReadDir
-                 ,  Docvim.Util
-                 ,  Docvim.Visitor
-                 ,  Docvim.Visitor.Command
-                 ,  Docvim.Visitor.Commands
-                 ,  Docvim.Visitor.Footer
-                 ,  Docvim.Visitor.Function
-                 ,  Docvim.Visitor.Functions
-                 ,  Docvim.Visitor.Heading
-                 ,  Docvim.Visitor.Mapping
-                 ,  Docvim.Visitor.Mappings
-                 ,  Docvim.Visitor.Option
-                 ,  Docvim.Visitor.Options
-                 ,  Docvim.Visitor.Plugin
-                 ,  Docvim.Visitor.Section
-                 ,  Docvim.Visitor.Symbol
+  exposed-modules:  Text.Docvim.AST
+                 ,  Text.Docvim.CLI
+                 ,  Text.Docvim.Compile
+                 ,  Text.Docvim.Options
+                 ,  Text.Docvim.Parse
+                 ,  Text.Docvim.Printer.Markdown
+                 ,  Text.Docvim.Printer.Vim
+                 ,  Text.Docvim.ReadDir
+                 ,  Text.Docvim.Util
+                 ,  Text.Docvim.Visitor
+                 ,  Text.Docvim.Visitor.Command
+                 ,  Text.Docvim.Visitor.Commands
+                 ,  Text.Docvim.Visitor.Footer
+                 ,  Text.Docvim.Visitor.Function
+                 ,  Text.Docvim.Visitor.Functions
+                 ,  Text.Docvim.Visitor.Heading
+                 ,  Text.Docvim.Visitor.Mapping
+                 ,  Text.Docvim.Visitor.Mappings
+                 ,  Text.Docvim.Visitor.Option
+                 ,  Text.Docvim.Visitor.Options
+                 ,  Text.Docvim.Visitor.Plugin
+                 ,  Text.Docvim.Visitor.Section
+                 ,  Text.Docvim.Visitor.Symbol
                  ,  Paths_docvim
   hs-source-dirs:   lib
 

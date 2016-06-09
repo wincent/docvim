@@ -150,7 +150,7 @@ stack repl
 
 # Cabal:
 cabal repl
-> import Docvim.Parse
+> import Text.Docvim.Parse
 > pp "let l:test=1" -- pretty-prints AST
 ```
 

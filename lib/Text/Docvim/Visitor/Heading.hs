@@ -1,11 +1,11 @@
-module Docvim.Visitor.Heading ( getHeadings
-                              , injectTOC
-                              ) where
+module Text.Docvim.Visitor.Heading ( getHeadings
+                                   , injectTOC
+                                   ) where
 
 import Control.Lens
 import Control.Lens.Plated (transform)
 import Data.Data.Lens (uniplate)
-import Docvim.AST
+import Text.Docvim.AST
 
 -- | Returns a list of all headings, in the order in which they appear in the
 -- AST.

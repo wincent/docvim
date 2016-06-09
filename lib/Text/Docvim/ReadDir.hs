@@ -1,7 +1,7 @@
 -- | Recursively read the paths in a directory.
 --
 -- Based on `RecursiveContents` example in chapter 9 of "Real World Haskell".
-module Docvim.ReadDir (readDir) where
+module Text.Docvim.ReadDir (readDir) where
 
 import Control.Monad (forM)
 import System.Directory (doesDirectoryExist, getDirectoryContents)

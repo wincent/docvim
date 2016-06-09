@@ -8,9 +8,9 @@ import Data.ByteString.Lazy.Char8 (pack, unpack)
 import Data.Char (chr)
 import Data.List (isPrefixOf, sort)
 import Data.Monoid (Sum(..))
-import Docvim.AST
-import Docvim.Util (compileUnit, p, pm, pv)
-import Docvim.Visitor.Symbol (getSymbols)
+import Text.Docvim.AST
+import Text.Docvim.Util (compileUnit, p, pm, pv)
+import Text.Docvim.Visitor.Symbol (getSymbols)
 import System.Exit (ExitCode(ExitSuccess))
 import System.FilePath ((<.>), replaceExtension, takeBaseName, takeFileName)
 import System.IO (hFlush, readFile)

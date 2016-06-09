@@ -1,4 +1,4 @@
-module Docvim.Printer.Vim (vimHelp) where
+module Text.Docvim.Printer.Vim (vimHelp) where
 
 import Control.Arrow ((***))
 import Control.Monad (join)
@@ -9,10 +9,10 @@ import Data.List (intercalate, isSuffixOf, span, sort)
 import Data.List.Split (splitOn)
 import Data.Maybe (fromJust, fromMaybe)
 import Data.Tuple (swap)
-import Docvim.AST
-import Docvim.Parse (rstrip)
-import Docvim.Visitor.Plugin (getPluginName)
-import Docvim.Visitor.Symbol (getSymbols)
+import Text.Docvim.AST
+import Text.Docvim.Parse (rstrip)
+import Text.Docvim.Visitor.Plugin (getPluginName)
+import Text.Docvim.Visitor.Symbol (getSymbols)
 
 -- TODO: add indentation here (using local, or just stick it in Context)
 

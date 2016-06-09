@@ -1,10 +1,10 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Docvim.Visitor.Command (extractCommand) where
+module Text.Docvim.Visitor.Command (extractCommand) where
 
 import Control.Applicative (Alternative)
-import Docvim.AST (Node(CommandAnnotation))
-import Docvim.Visitor (endSection, extractBlocks)
+import Text.Docvim.AST (Node(CommandAnnotation))
+import Text.Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) identified by the `@command`
 -- annotation of the source code.

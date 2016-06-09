@@ -2,16 +2,16 @@
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Docvim.Visitor.Section ( injectCommands
-                              , injectFunctions
-                              , injectMappings
-                              , injectOptions
-                              ) where
+module Text.Docvim.Visitor.Section ( injectCommands
+                                   , injectFunctions
+                                   , injectMappings
+                                   , injectOptions
+                                   ) where
 
 import Control.Lens
 import Control.Monad.State
 import Data.Data.Lens (uniplate)
-import Docvim.AST
+import Text.Docvim.AST
 
 data SectionInfo = SectionInfo { _hasCommand :: Bool
                                , _hasCommands :: Bool

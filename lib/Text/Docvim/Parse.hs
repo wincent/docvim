@@ -1,10 +1,10 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Docvim.Parse ( parse
-                    , rstrip
-                    , strip
-                    , unit
-                    ) where
+module Text.Docvim.Parse ( parse
+                         , rstrip
+                         , strip
+                         , unit
+                         ) where
 
 import Control.Applicative ( (*>)
                            , (<$)
@@ -16,7 +16,7 @@ import Control.Applicative ( (*>)
                            )
 import Data.Char (toUpper)
 import Data.List (groupBy, intercalate)
-import Docvim.AST
+import Text.Docvim.AST
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
 -- TODO: custom error messages with <?>

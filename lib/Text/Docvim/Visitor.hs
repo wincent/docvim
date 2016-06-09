@@ -1,13 +1,13 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Docvim.Visitor (endSection, extract, extractBlocks) where
+module Text.Docvim.Visitor (endSection, extract, extractBlocks) where
 
 import Control.Applicative (Alternative, (<|>), empty)
 import Control.Monad ((>=>))
 import Control.Monad.Writer (runWriter, tell)
 import Data.Data.Lens
-import Docvim.AST
+import Text.Docvim.AST
 import qualified Data.DList as DList
 
 -- | Returns True if a node marks the end of a region/block/section.

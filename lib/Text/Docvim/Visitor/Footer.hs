@@ -1,8 +1,8 @@
-module Docvim.Visitor.Footer (extractFooter) where
+module Text.Docvim.Visitor.Footer (extractFooter) where
 
 import Control.Applicative (Alternative)
-import Docvim.AST (Node(FooterAnnotation))
-import Docvim.Visitor (endSection, extractBlocks)
+import Text.Docvim.AST (Node(FooterAnnotation))
+import Text.Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) from the `@footer` section(s) of
 -- the source code.

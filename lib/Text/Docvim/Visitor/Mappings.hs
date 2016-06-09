@@ -1,8 +1,8 @@
-module Docvim.Visitor.Mappings (extractMappings) where
+module Text.Docvim.Visitor.Mappings (extractMappings) where
 
 import Control.Applicative (Alternative)
-import Docvim.AST (Node(MappingsAnnotation))
-import Docvim.Visitor (endSection, extractBlocks)
+import Text.Docvim.AST (Node(MappingsAnnotation))
+import Text.Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) from the `@mappings` section(s) of
 -- the source code.

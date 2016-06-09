@@ -1,10 +1,10 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Docvim.Visitor.Function (extractFunction) where
+module Text.Docvim.Visitor.Function (extractFunction) where
 
 import Control.Applicative (Alternative)
-import Docvim.AST (Node(FunctionAnnotation))
-import Docvim.Visitor (endSection, extractBlocks)
+import Text.Docvim.AST (Node(FunctionAnnotation))
+import Text.Docvim.Visitor (endSection, extractBlocks)
 
 -- | Extracts a list of nodes (if any exist) identified by the `@function`
 -- annotation of the source code.

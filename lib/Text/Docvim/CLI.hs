@@ -1,16 +1,16 @@
 {-# LANGUAGE MultiWayIf #-}
 
 -- | The runnable part of the docvim executable.
-module Docvim.CLI (run) where
+module Text.Docvim.CLI (run) where
 
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
-import Docvim.Options (Options(..), options)
-import Docvim.Compile (compile)
-import Docvim.Parse (parse)
-import Docvim.Printer.Markdown (markdown)
-import Docvim.Printer.Vim (vimHelp)
-import Docvim.ReadDir (readDir)
+import Text.Docvim.Options (Options(..), options)
+import Text.Docvim.Compile (compile)
+import Text.Docvim.Parse (parse)
+import Text.Docvim.Printer.Markdown (markdown)
+import Text.Docvim.Printer.Vim (vimHelp)
+import Text.Docvim.ReadDir (readDir)
 import System.FilePath (takeExtension)
 import System.IO (hPutStrLn, stderr)
 

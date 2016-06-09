@@ -1,18 +1,18 @@
 -- | Functions to facilitate automated and manual testing.
-module Docvim.Util ( compileUnit
-                   , p
-                   , pm
-                   , pp
-                   , ppm
-                   , ppv
-                   , pv
-                   ) where
+module Text.Docvim.Util ( compileUnit
+                        , p
+                        , pm
+                        , pp
+                        , ppm
+                        , ppv
+                        , pv
+                        ) where
 
-import Docvim.AST (Node)
-import Docvim.Compile (compile)
-import Docvim.Parse (unit)
-import Docvim.Printer.Markdown (markdown)
-import Docvim.Printer.Vim (vimHelp)
+import Text.Docvim.AST (Node)
+import Text.Docvim.Compile (compile)
+import Text.Docvim.Parse (unit)
+import Text.Docvim.Printer.Markdown (markdown)
+import Text.Docvim.Printer.Vim (vimHelp)
 import Text.Parsec (ParseError, runParser)
 import Text.Show.Pretty (ppShow)
 

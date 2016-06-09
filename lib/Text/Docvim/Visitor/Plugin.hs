@@ -1,12 +1,12 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Docvim.Visitor.Plugin ( getPluginName
-                             , extractPlugin
-                             ) where
+module Text.Docvim.Visitor.Plugin ( getPluginName
+                                  , extractPlugin
+                                  ) where
 
 import Control.Applicative (Alternative)
-import Docvim.AST (Node(PluginAnnotation), walk)
-import Docvim.Visitor (endSection, extractBlocks)
+import Text.Docvim.AST (Node(PluginAnnotation), walk)
+import Text.Docvim.Visitor (endSection, extractBlocks)
 
 -- | Returns the name of the plug-in or Nothing if none is found.
 --

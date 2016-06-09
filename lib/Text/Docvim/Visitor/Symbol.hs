@@ -1,10 +1,10 @@
-module Docvim.Visitor.Symbol (getSymbols) where
+module Text.Docvim.Visitor.Symbol (getSymbols) where
 
 import Data.Char (toLower)
 import Data.List (nub, sort)
 import qualified Data.Set as Set
-import Docvim.AST
-import Docvim.Visitor.Plugin (getPluginName)
+import Text.Docvim.AST
+import Text.Docvim.Visitor.Plugin (getPluginName)
 
 -- TODO: return Set instead of [String]
 -- TODO: use Either instead of dying unceremoniously with `error`

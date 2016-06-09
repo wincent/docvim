@@ -1,12 +1,12 @@
-module Docvim.Printer.Markdown (markdown) where
+module Text.Docvim.Printer.Markdown (markdown) where
 
 import Control.Monad.Reader
 import Data.List (intercalate, sort)
 import Data.Maybe (fromMaybe)
-import Docvim.AST
-import Docvim.Parse (rstrip)
-import Docvim.Visitor.Plugin (getPluginName)
-import Docvim.Visitor.Symbol (getSymbols)
+import Text.Docvim.AST
+import Text.Docvim.Parse (rstrip)
+import Text.Docvim.Visitor.Plugin (getPluginName)
+import Text.Docvim.Visitor.Symbol (getSymbols)
 
 data Metadata = Metadata { symbols :: [String]
                          , pluginName :: Maybe String
