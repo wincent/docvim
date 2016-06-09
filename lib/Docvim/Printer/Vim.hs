@@ -7,7 +7,7 @@ import Control.Monad.State
 import Data.Char (isSpace, toLower, toUpper)
 import Data.List (intercalate, isSuffixOf, span, sort)
 import Data.List.Split (splitOn)
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromJust, fromMaybe)
 import Data.Tuple (swap)
 import Docvim.AST
 import Docvim.Parse (rstrip)
@@ -152,6 +152,7 @@ node n = case n of
   Project p                  -> nodes p
   Separator                  -> append $ "---" ++ "\n\n"
   SubheadingAnnotation s     -> append $ s ++ " ~\n\n"
+  TOC t                      -> toc t
   Unit u                     -> nodes u
   Whitespace                 -> whitespace
   _                          -> append ""
@@ -182,6 +183,23 @@ listitem l = do
   return item
   where
     customLineBreak = "\n  "
+
+toc :: [String] -> Env
+toc t = do
+  metadata <- ask
+  h <- heading "contents"
+  entries <- append $ intercalate "\n" (format $ fromJust $ pluginName metadata) ++ "\n\n"
+  return $ concat [h, entries]
+  where
+    -- TODO: fix up this mess (very complicated by the need to thread through
+    -- `suffix` everywhere
+    format suffix            = map pad (zip (numbered suffix) (repeat suffix))
+    longest suffix           = maximum (map (\x -> length (snd x)) (numbered suffix))
+    numbered suffix          = map prefix (number suffix)
+    number suffix            = zip3 [1..] t (map (\x -> normalize $ x ++ "-" ++ suffix) t)
+    prefix (num, desc, l)    = (show num ++ ". " ++ desc ++ "  ", l)
+    pad ((lhs, rhs), suffix) = lhs ++ replicate (longest suffix - length lhs) ' ' ++ link rhs
+  -- TODO: consider doing this for markdown format too
 
 command :: Node -> Env
 command (CommandAnnotation name params) = do
@@ -248,8 +266,13 @@ heading h = do
   trailing <- append "\n"
   return $ concat [heading', target, trailing]
   where
-    target x = map (toLower . sanitize) $ x ++ "-" ++ h
-    sanitize x = if isSpace x then '-' else x
+    target x = normalize $ x ++ "-" ++ h
+
+normalize :: String -> String
+normalize = map (toLower . sanitize)
+
+sanitize :: Char -> Char
+sanitize x = if isSpace x then '-' else x
 
 link :: String -> String
 link l = "|" ++ l ++ "|"

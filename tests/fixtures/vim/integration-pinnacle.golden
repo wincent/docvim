@@ -1,5 +1,15 @@
 *Pinnacle.txt*    Highlight group manipulation for Vim      *Pinnacle*
 
+CONTENTS                                                     *pinnacle-contents*
+
+1. Intro             |intro-pinnacle|
+2. Installation      |installation-pinnacle|
+3. Website           |website-pinnacle|
+4. License           |license-pinnacle|
+5. Development       |development-pinnacle|
+6. Authors           |authors-pinnacle|
+7. History           |history-pinnacle|
+
 INTRO                                                           *pinnacle-intro*
 
 Pinnacle provides functions for manipulating |:highlight| groups.

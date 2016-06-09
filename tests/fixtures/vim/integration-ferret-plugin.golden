@@ -1,5 +1,23 @@
 *ferret.txt*    Ferret plug-in for Vim      *ferret*
 
+CONTENTS                                                       *ferret-contents*
+
+1. Intro                  |intro-ferret|
+2. Installation           |installation-ferret|
+3. Options                |options-ferret|
+4. Commands               |commands-ferret|
+5. Mappings               |mappings-ferret|
+6. Custom autocommands    |custom-autocommands-ferret|
+7. Overrides              |overrides-ferret|
+8. Troubleshooting        |troubleshooting-ferret|
+9. FAQ                    |faq-ferret|
+10. Related               |related-ferret|
+11. Website               |website-ferret|
+12. License               |license-ferret|
+13. Development           |development-ferret|
+14. Authors               |authors-ferret|
+15. History               |history-ferret|
+
 INTRO                                                             *ferret-intro*
 
     "ferret (verb)

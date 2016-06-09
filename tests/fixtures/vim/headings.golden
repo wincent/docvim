@@ -1,5 +1,11 @@
 *foo.txt*    We need this because otherwise we don't get link targets      *foo*
 
+CONTENTS                                                          *foo-contents*
+
+
+1. A heading                                                               |a-heading-foo|
+2. An overlength heading when I really should have chose something shorter  |an-overlength-heading-when-i-really-should-have-chose-something-shorter-foo|
+
 A HEADING                                                        *foo-a-heading*
 
 A subheading ~
