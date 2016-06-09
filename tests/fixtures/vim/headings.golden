@@ -3,8 +3,8 @@
 CONTENTS                                                          *foo-contents*
 
 
-1. A heading                                                               |a-heading-foo|
-2. An overlength heading when I really should have chose something shorter  |an-overlength-heading-when-i-really-should-have-chose-something-shorter-foo|
+1. A heading                                                               |foo-a-heading|
+2. An overlength heading when I really should have chose something shorter  |foo-an-overlength-heading-when-i-really-should-have-chose-something-shorter|
 
 A HEADING                                                        *foo-a-heading*
 

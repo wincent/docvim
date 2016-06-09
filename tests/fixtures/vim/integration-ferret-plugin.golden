@@ -2,21 +2,21 @@
 
 CONTENTS                                                       *ferret-contents*
 
-1. Intro                  |intro-ferret|
-2. Installation           |installation-ferret|
-3. Options                |options-ferret|
-4. Commands               |commands-ferret|
-5. Mappings               |mappings-ferret|
-6. Custom autocommands    |custom-autocommands-ferret|
-7. Overrides              |overrides-ferret|
-8. Troubleshooting        |troubleshooting-ferret|
-9. FAQ                    |faq-ferret|
-10. Related               |related-ferret|
-11. Website               |website-ferret|
-12. License               |license-ferret|
-13. Development           |development-ferret|
-14. Authors               |authors-ferret|
-15. History               |history-ferret|
+1. Intro                  |ferret-intro|
+2. Installation           |ferret-installation|
+3. Options                |ferret-options|
+4. Commands               |ferret-commands|
+5. Mappings               |ferret-mappings|
+6. Custom autocommands    |ferret-custom-autocommands|
+7. Overrides              |ferret-overrides|
+8. Troubleshooting        |ferret-troubleshooting|
+9. FAQ                    |ferret-faq|
+10. Related               |ferret-related|
+11. Website               |ferret-website|
+12. License               |ferret-license|
+13. Development           |ferret-development|
+14. Authors               |ferret-authors|
+15. History               |ferret-history|
 
 INTRO                                                             *ferret-intro*
 

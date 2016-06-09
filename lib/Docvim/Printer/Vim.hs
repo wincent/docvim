@@ -197,7 +197,7 @@ toc t = do
         format                = map pad numbered
         longest               = maximum (map (length . snd) numbered )
         numbered              = map prefix number
-        number                = zip3 [1..] t (map (\x -> normalize $ x ++ "-" ++ p) t)
+        number                = zip3 [1..] t (map (\x -> normalize $ p ++ "-" ++ x) t)
         prefix (num, desc, l) = (show num ++ ". " ++ desc ++ "  ", l)
         pad (lhs, rhs)        = lhs ++ replicate (longest - length lhs) ' ' ++ link rhs
   -- TODO: consider doing this for markdown format too
