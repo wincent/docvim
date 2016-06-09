@@ -4,6 +4,9 @@ Project
       , TOC
           [ "Intro"
           , "Installation"
+          , "Options"
+          , "Commands"
+          , "Mappings"
           , "Custom autocommands"
           , "Overrides"
           , "Troubleshooting"
