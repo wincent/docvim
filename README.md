@@ -31,6 +31,12 @@ Available options:
   -v,--verbose             Be verbose during processing
 ```
 
+## Installation
+
+```
+cabal install docvim
+```
+
 ## Syntax
 
 ```vim
@@ -79,13 +85,16 @@ Available options:
 ### Annotations
 
 - `@command`
+- `@commands`
 - `@dedent`
 - `@footer`
 - `@function`
+- `@functions`
 - `@indent`
 - `@mapping`
 - `@mappings`
 - `@option`
+- `@options`
 - `@plugin`
 
 ## Development
@@ -201,6 +210,21 @@ cabal test hlint        # Runs linter alone.
 
 hlint src               # If you have HLint installed under $PATH.
 ```
+
+### Release process
+
+```bash
+vim docvim.cabal # update version number in two places
+git commit -p # git tag, git push --follow-tags etc...
+cabal check
+cabal sdist
+open dist # upload candidate to https://hackage.haskell.org/packages/candidates/upload
+cabal upload dist/docvim-$VERSION.tar.gz
+```
+
+## Links
+
+- [Hackage package](https://hackage.haskell.org/package/docvim)
 
 ## FAQ
 
