@@ -85,7 +85,6 @@ that you want to install Ferret into `~/.vim/bundle`, you can do so with:
 Alternatively, if you use a Git submodule for each Vim plug-in, you could do
 the following after `cd`-ing into the top-level of your Git superproject:
 >
-
     git submodule add https://github.com/wincent/ferret.git ~/vim/bundle/ferret
     git submodule init
 <

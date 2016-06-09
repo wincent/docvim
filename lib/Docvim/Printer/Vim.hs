@@ -255,7 +255,7 @@ fenced f = do
   prefix <- append ">\n"
   body <- if null f
           then append ""
-          else append $ "    " ++ intercalate "\n    " f ++ "\n"
+          else appendNoWrap $ "    " ++ intercalate "\n    " f ++ "\n"
   suffix <- append "<\n"
   return $ concat [cut, prefix, body, suffix]
 
