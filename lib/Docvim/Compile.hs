@@ -6,6 +6,7 @@ import Docvim.Visitor.Commands (extractCommands)
 import Docvim.Visitor.Footer (extractFooter)
 import Docvim.Visitor.Function (extractFunction)
 import Docvim.Visitor.Functions (extractFunctions)
+import Docvim.Visitor.Heading (injectTOC)
 import Docvim.Visitor.Mapping (extractMapping)
 import Docvim.Visitor.Mappings (extractMappings)
 import Docvim.Visitor.Option (extractOption)
@@ -36,15 +37,15 @@ compile ns = do
   let (ast9, options) = extract extractOptions ast8
   let (ast10, option) = extract extractOption ast9
   let (ast11, footer) = extract extractFooter ast10
-  Project $ concat [ plugin
-                   , [ast11]
-                   , commands
-                   , command
-                   , mappings
-                   , mapping
-                   , options
-                   , option
-                   , functions
-                   , function
-                   , footer
-                   ]
+  injectTOC $ Project $ concat [ plugin
+                               , [ast11]
+                               , commands
+                               , command
+                               , mappings
+                               , mapping
+                               , options
+                               , option
+                               , functions
+                               , function
+                               , footer
+                               ]

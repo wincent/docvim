@@ -1,5 +1,5 @@
 Project
-  [ PluginAnnotation "foo" "bar"
+  [ DocBlock [ PluginAnnotation "foo" "bar" , TOC [] ]
   , DedentAnnotation
   , Project
       [ Unit

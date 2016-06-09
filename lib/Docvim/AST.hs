@@ -4,7 +4,7 @@ module Docvim.AST where
 
 import Control.Lens.Fold (foldlOf)
 import Control.Lens.Getter (to)
-import Control.Lens.Plated (cosmosOf)
+import Control.Lens.Plated (Plated, cosmosOf)
 import Data.Char (toLower)
 import Data.Data
 import Data.Data.Lens (uniplate)
@@ -70,6 +70,9 @@ data Node
           | OptionAnnotation Name Type (Maybe Default)
           | HeadingAnnotation String
           | SubheadingAnnotation String
+
+          -- Docvim nodes: synthesized nodes
+          | TOC [String]
   deriving (Data, Eq, Show, Typeable)
 
 -- The VimScript (VimL) grammar is embodied in the implementation of
@@ -88,6 +91,8 @@ data ArgumentList = ArgumentList [Argument]
 
 data Argument = Argument String
   deriving (Data, Eq, Show, Typeable)
+
+instance Plated Node
 
 type Default = String
 type Description = String

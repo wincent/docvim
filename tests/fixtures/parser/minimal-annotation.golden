@@ -1,2 +1,4 @@
 Project
-  [ PluginAnnotation "Foo" "Bar" , Project [ Unit [ DocBlock [] ] ] ]
+  [ DocBlock [ PluginAnnotation "Foo" "Bar" , TOC [] ]
+  , Project [ Unit [ DocBlock [] ] ]
+  ]

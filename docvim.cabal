@@ -99,6 +99,7 @@ library
                  ,  Docvim.Visitor.Footer
                  ,  Docvim.Visitor.Function
                  ,  Docvim.Visitor.Functions
+                 ,  Docvim.Visitor.Heading
                  ,  Docvim.Visitor.Mapping
                  ,  Docvim.Visitor.Mappings
                  ,  Docvim.Visitor.Option

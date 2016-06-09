@@ -1,6 +1,18 @@
 Project
-  [ PluginAnnotation
-      "docvim" "Syntax highlighting for docvim comments"
+  [ DocBlock
+      [ PluginAnnotation
+          "docvim" "Syntax highlighting for docvim comments"
+      , TOC
+          [ "Intro"
+          , "Installation"
+          , "Related"
+          , "Website"
+          , "License"
+          , "Development"
+          , "Authors"
+          , "History"
+          ]
+      ]
   , LinkTargets [ "vim-docvim" ]
   , HeadingAnnotation "Intro"
   , Paragraph

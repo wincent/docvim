@@ -1,6 +1,17 @@
 Project
-  [ PluginAnnotation
-      "Pinnacle" "Highlight group manipulation for Vim"
+  [ DocBlock
+      [ PluginAnnotation
+          "Pinnacle" "Highlight group manipulation for Vim"
+      , TOC
+          [ "Intro"
+          , "Installation"
+          , "Website"
+          , "License"
+          , "Development"
+          , "Authors"
+          , "History"
+          ]
+      ]
   , HeadingAnnotation "Intro"
   , Paragraph
       [ Plaintext "Pinnacle"

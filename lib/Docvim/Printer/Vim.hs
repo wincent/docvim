@@ -137,14 +137,6 @@ node n = case n of
   Fenced f                   -> fenced f
   FunctionsAnnotation        -> heading "functions"
   FunctionDeclaration {}     -> nodes $ functionBody n
-  -- TODO: Vim will only highlight this as a heading if it has a trailing
-  -- LinkTarget on the same line; figure out how to handle that; may need to
-  -- address it in the Parser
-  --
-  -- Looking at the Ferret fixtures, seems like I had an idea for this which was
-  -- to auto-gen the targets based on the plugin name + the heading text.
-  --
-  -- I could also just make people specify a target explicitly.
   HeadingAnnotation h        -> heading h
   Link l                     -> append $ link l
   LinkTargets l              -> linkTargets l True
@@ -152,16 +144,10 @@ node n = case n of
   ListItem l                 -> listitem l
   MappingAnnotation m        -> mapping m
   MappingsAnnotation         -> heading "mappings"
-  -- TODO: if there is no OptionsAnnotation but there are OptionAnnotations, we
-  -- need to insert a `heading "options"` before the first option (ditto for
-  -- functions, mappings, commands)
   OptionAnnotation {}        -> option n
   OptionsAnnotation          -> heading "options"
   Paragraph p                -> nodes p >>= nl >>= nl
   Plaintext p                -> plaintext p
-  -- TODO: this should be order-independent and always appear at the top.
-  -- Note that I don't really have anywhere to put the description; maybe I should
-  -- scrap it (nope: need it in the Vim help version).
   PluginAnnotation name desc -> plugin name desc
   Project p                  -> nodes p
   Separator                  -> append $ "---" ++ "\n\n"
@@ -225,10 +211,7 @@ option (OptionAnnotation n t d) = do
     rhs = t ++ " (default: " ++ fromMaybe "none" d ++ ")\n\n"
 
 whitespace :: Env
-whitespace =
-  -- if current line > 80 "\n" else " "
-  -- but note, really need to do this BEFORE 80
-  append " "
+whitespace = append " "
 
 blockquote :: [Node] -> Env
 blockquote ps = do

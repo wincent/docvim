@@ -1,5 +1,21 @@
 Project
-  [ PluginAnnotation "ferret" "Ferret plug-in for Vim"
+  [ DocBlock
+      [ PluginAnnotation "ferret" "Ferret plug-in for Vim"
+      , TOC
+          [ "Intro"
+          , "Installation"
+          , "Custom autocommands"
+          , "Overrides"
+          , "Troubleshooting"
+          , "FAQ"
+          , "Related"
+          , "Website"
+          , "License"
+          , "Development"
+          , "Authors"
+          , "History"
+          ]
+      ]
   , HeadingAnnotation "Intro"
   , Blockquote
       [ Paragraph
