@@ -187,18 +187,19 @@ listitem l = do
 toc :: [String] -> Env
 toc t = do
   metadata <- ask
-  h <- heading "contents"
-  entries <- append $ intercalate "\n" (format $ fromJust $ pluginName metadata) ++ "\n\n"
-  return $ concat [h, entries]
+  toc' $ fromJust $ pluginName metadata
   where
-    -- TODO: fix up this mess (very complicated by the need to thread through
-    -- `suffix` everywhere
-    format suffix            = map pad (zip (numbered suffix) (repeat suffix))
-    longest suffix           = maximum (map (\x -> length (snd x)) (numbered suffix))
-    numbered suffix          = map prefix (number suffix)
-    number suffix            = zip3 [1..] t (map (\x -> normalize $ x ++ "-" ++ suffix) t)
-    prefix (num, desc, l)    = (show num ++ ". " ++ desc ++ "  ", l)
-    pad ((lhs, rhs), suffix) = lhs ++ replicate (longest suffix - length lhs) ' ' ++ link rhs
+    toc' p = do
+      h <- heading "contents"
+      entries <- append $ intercalate "\n" format ++ "\n\n"
+      return (h ++ entries)
+      where
+        format                = map pad numbered
+        longest               = maximum (map (length . snd) numbered )
+        numbered              = map prefix number
+        number                = zip3 [1..] t (map (\x -> normalize $ x ++ "-" ++ p) t)
+        prefix (num, desc, l) = (show num ++ ". " ++ desc ++ "  ", l)
+        pad (lhs, rhs)        = lhs ++ replicate (longest - length lhs) ' ' ++ link rhs
   -- TODO: consider doing this for markdown format too
 
 command :: Node -> Env
