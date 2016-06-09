@@ -48,6 +48,14 @@ extra-source-files:  README.md
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.10
 
+source-repository head
+  type:     git
+  location: https://github.com/wincent/docvim.git
+
+source-repository this
+  type:     git
+  location: https://github.com/wincent/docvim.git
+  tag:      0.1
 
 executable docvim
   -- .hs or .lhs file containing the Main module.
