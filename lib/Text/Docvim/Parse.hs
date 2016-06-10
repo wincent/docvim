@@ -6,8 +6,6 @@ module Text.Docvim.Parse ( parse
                          , unit
                          ) where
 
-import Data.Functor.Identity
-
 import Control.Applicative hiding ((<|>), many, optional)
 import Data.Char
 import Data.List (groupBy, intercalate)
@@ -25,6 +23,7 @@ import Text.Parsec.String
 --
 -- Requires the FlexibleContexts extension, for reasons that I don't yet fully
 -- understand.
+command :: Stream s m Char => String -> ParsecT s u m ()
 command description =   try (string prefix >> remainder rest)
                     <?> prefix ++ rest
   where prefix           = takeWhile (/= '[') description
@@ -33,6 +32,7 @@ command description =   try (string prefix >> remainder rest)
         remainder (r:rs) = optional (char r >> remainder rs)
         remainder []     = error "Unexpected empty remainder"
 
+function :: Parser Node
 function =   FunctionDeclaration
          <$> (fu *> bang <* wsc)
          <*> (name <* optional wsc)
@@ -57,27 +57,31 @@ function =   FunctionDeclaration
     attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
 
 -- Disambiguate `:endf[unction]` and `:endfo[r]`
+endfunction :: Parser ()
 endfunction =  lookAhead (string "endf" >> notFollowedBy (string "o"))
             >> command "endf[unction]"
             <* eos
 
+lStatement :: Parser Node
 lStatement =  lookAhead (char 'l')
            >> choice [ try (lookAhead (string "lw")) >> lwindow
                      , try (lookAhead (string "let")) >> letStatement
                      , lexpr
                      ]
-
+lwindow :: Parser Node
 lwindow = LwindowStatement <$> (lw *> height <* eos)
   where
     lw     = command "l[window]"
     height = optionMaybe (wsc *> number)
     number = liftA read (many1 digit)
 
+lexpr :: Parser Node
 lexpr = LexprStatement
       <$> (command "lex[pr]" *> bang <* wsc)
       <*> restOfLine
 
 -- "let" is a reserved word in Haskell, so we call this "letStatement" instead.
+letStatement :: Parser Node
 letStatement =   LetStatement
     <$> (string "let" >> wsc >> lhs)
     <*> (optional wsc >> char '=' >> optional wsc *> rhs <* eos)
@@ -87,6 +91,7 @@ letStatement =   LetStatement
     lhs = many1 $ noneOf "\"\n="
     rhs = many1 $ noneOf "\n"
 
+unlet :: Parser Node
 unlet =   UnletStatement
       <$> (unl *> bang <* wsc)
       <*> word
@@ -94,12 +99,19 @@ unlet =   UnletStatement
   where
     unl  = command "unl[et]"
 
+quote :: Parser String
 quote = string "\"" <?> "quote"
+
+commentStart :: Parser String
 commentStart  = quote <* (notFollowedBy quote >> optional ws)
+
+docBlockStart :: Parser String
 docBlockStart = (string "\"\"" <* optional ws) <?> "\"\""
 
+separator :: Parser Node
 separator = Separator <$ (try (string "---") >> optional ws) <?> "wat"
 
+fenced :: Parser Node
 fenced = fence >> newline >> Fenced <$> body
   where
     fence = try $ string "```" >> optional ws
@@ -118,6 +130,7 @@ fenced = fence >> newline >> Fenced <$> body
     commentStart'  = quote <* notFollowedBy quote
     docBlockStart' = string "\"\"" <?> "\"\""
 
+blockquote :: Parser Node
 blockquote =   lookAhead (char '>')
            >>  Blockquote
            <$> paragraph' `sepBy1` blankLine
@@ -147,6 +160,7 @@ blockquote =   lookAhead (char '>')
               >> newline
               >> (commentStart <|> docBlockStart))
 
+list :: Parser Node
 list =  lookAhead (char '-' >> notFollowedBy (char '-'))
      >> List
      <$> listItem `sepBy1` separator'
@@ -157,6 +171,7 @@ list =  lookAhead (char '-' >> notFollowedBy (char '-'))
                >> optional ws
                >> lookAhead (char '-')
 
+listItem :: Parser Node
 listItem =  lookAhead (char '-' >> notFollowedBy (char '-'))
          >> ListItem
          <$> body
@@ -180,20 +195,26 @@ listItem =  lookAhead (char '-' >> notFollowedBy (char '-'))
               >> many1 (choice [phrasing, whitespace])
 
 -- | Newline (and slurps up following horizontal whitespace as well).
+newline :: Parser ()
 newline = (char '\n' >> optional ws) <|> eof
+
+newlines :: Parser [()]
 newlines =   many1 (char '\n' >> optional ws)
          <|> (eof >> return [()])
 
 -- | Whitespace (specifically, horizontal whitespace: spaces and tabs).
+ws :: Parser String
 ws = many1 (oneOf " \t")
 
 -- | Continuation-aware whitespace (\).
+wsc :: Parser String
 wsc = many1 $ choice [whitespace', continuation]
   where
     whitespace'   = oneOf " \t"
     continuation = try $ char '\n' >> ws >> char '\\'
 
 -- TODO: string literals; some nasty lookahead might be required
+comment :: Parser ()
 comment = try
         $ quote
         >> notFollowedBy quote
@@ -201,11 +222,13 @@ comment = try
         >> skipMany (char '\n' >> optional ws)
 
 -- | Optional bang suffix for VimL commands.
+bang :: Parser Bool
 bang = option False (True <$ char '!')
 
 -- | End-of-statement.
 -- TODO: see `:h :bar` for a list of commands which see | as an arg instead of a
 -- command separator.
+eos :: Parser ()
 eos = optional ws >> choice [bar, ws', skipMany1 comment]
   where
     bar = char '|' >> optional wsc
@@ -217,6 +240,7 @@ node =  choice [ docBlock
                ]
      <* optional skippable
 
+docBlock :: Parser Node
 docBlock = lookAhead docBlockStart
          >> (DocBlock <$> many1 blockElement)
          <* trailingBlankCommentLines
@@ -239,6 +263,7 @@ docBlock = lookAhead docBlockStart
     next = optional ws >> newline
     trailingBlankCommentLines = skipMany $ start >> newline
 
+paragraph :: Parser Node
 paragraph = Paragraph <$> body
   where
     body = do
@@ -272,6 +297,7 @@ special = choice [ string "-" <* notFollowedBy (char '-')
                  , string "#"
                  ]
 
+phrasing :: Parser Node
 phrasing = choice [ br
                   , link
                   , code
@@ -300,6 +326,7 @@ compress = map prioritizeBreakTag . group
     hasBreakTag = elem BreakTag
 -- similar to "word"... might end up replacing "word" later on...
 -- something more sophisticated here with satisfy?
+plaintext :: Parser Node
 plaintext = Plaintext <$> wordChars
   where
     wordChars = many1 $ choice [ try $ char '<' <* notFollowedBy (string' "br")
@@ -310,6 +337,7 @@ plaintext = Plaintext <$> wordChars
 --
 -- Based on `caseChar` function in:
 -- https://hackage.haskell.org/package/hsemail-1.3/docs/Text-ParserCombinators-Parsec-Rfc2234.html
+char' :: Stream s m Char => Char -> ParsecT s u m Char
 char' c = satisfy $ \x -> toUpper x == toUpper c
 
 -- | Case-insensitive string match.
@@ -324,20 +352,22 @@ string' s = mapM_ char' s >> pure s <?> s
 -- Most whitespace is insignificant and gets omitted from the AST, but
 -- whitespace inside "phrasing content" is significant so is preserved (in
 -- normalized form) in the AST.
+whitespace :: Parser Node
 whitespace = Whitespace <$ ws
 
-br :: ParsecT String u Identity Node
+br :: Parser Node
 br = BreakTag <$ (try htmlTag <|> try xhtmlTag) <?> "<br />"
   where
     htmlTag = string' "<br>"
     xhtmlTag = string' "<br" >> optional ws >> string "/>"
 
-link :: ParsecT String u Identity Node
+link :: Parser Node
 link = Link <$> (bar *> linkText <* bar)
   where
     bar      = char '|'
     linkText = many1 $ noneOf " \t\n|"
 
+code :: Parser Node
 code = Code <$> (backtick *> codeText <* backtick)
   where
     backtick = char '`'
@@ -346,17 +376,21 @@ code = Code <$> (backtick *> codeText <* backtick)
 -- TODO: record this in symbol table similar to
 -- https://github.com/wincent/docvim/blob/js/src/SymbolVisitor.js
 -- (probably want to make this a post-processing step?)
+linkTargets :: Parser Node
 linkTargets = LinkTargets <$> many1 (star *> target <* (star >> optional ws))
   where
     star = char '*'
     target = many1 $ noneOf " \t\n*"
 
-vimL :: ParsecT String () Identity Node
+vimL :: Parser Node
 vimL = choice [ block
               , statement
               ]
 
+block :: Parser Node
 block = choice [ function ]
+
+statement :: Parser Node
 statement = choice [ lStatement
                    , unlet
                    , genericStatement
@@ -364,6 +398,7 @@ statement = choice [ lStatement
 
 -- | Generic VimL node parser to represent stuff that we haven't built out full parsing
 -- for yet.
+genericStatement :: Parser Node
 genericStatement = do
   -- Make sure we never recognize `endfunction` as a generic statement. This is
   -- necessary because we call `node` recursively inside `function` while
@@ -410,6 +445,7 @@ subheading =  string "##"
            >> SubheadingAnnotation <$> restOfLine
 
 -- | Match a "word" of non-whitespace characters.
+word :: Parser [Char]
 word = many1 (noneOf " \n\t")
 
 -- TODO: only allow these after "" and " at start of line
@@ -455,6 +491,7 @@ unit =   Unit
      <$> (skippable >> many node)
      <*  eof
 
+skippable :: Parser [()]
 skippable = many $ choice [ comment
                           , skipMany1 ws
                           , skipMany1 (char '\n')
