@@ -135,6 +135,7 @@ test-suite tasty
                ,    bytestring
                ,    containers
                ,    deepseq
+               ,    directory
                ,    dlist
                ,    docvim
                ,    filepath

@@ -8,6 +8,7 @@ import Data.ByteString.Lazy.Char8 (pack, unpack)
 import Data.Char
 import Data.List --(isPrefixOf, sort)
 import Data.Monoid
+import System.Directory
 import System.Exit
 import System.FilePath
 import System.IO
@@ -110,6 +111,25 @@ goldenTests description sources transform = testGroup groupName $ do
   where
     groupName = "Golden " ++ description ++ " tests"
 
+integrationTests :: [FilePath] -> TestTree
+integrationTests sources = testGroup "Integration tests" $ do
+  source <- sources -- list monad
+  let
+    markdown = do
+      inputs <- getFixtures $ source </> "input"
+      contents <- mapM readFile inputs
+      return $ pack $ normalize $ pm contents
+    name = takeBaseName source
+    golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/markdown.golden"
+    diff ref new = [ "git"
+                   , "diff"
+                   , "--color"
+                   , "--diff-algorithm=histogram"
+                   , ref
+                   , new
+                   ]
+  return $ goldenVsStringDiff' name diff golden markdown
+
 -- | Normalize a string to always end with a newline, unless zero-length, to
 -- match standard text editor behavior.
 normalize :: String -> String
@@ -151,17 +171,25 @@ goldenVsStringDiff' name diff golden run =
         _ -> Just (strip out)
     update = ByteString.writeFile golden
 
-getFixtures :: String -> IO [FilePath]
+getFixtures :: FilePath -> IO [FilePath]
 getFixtures = findByExtension [".vim"]
+
+getIntegrationFixtures :: FilePath -> IO [FilePath]
+getIntegrationFixtures path = do
+  names <- getDirectoryContents path
+  let filtered = filter (\name -> not $ "." `isPrefixOf` name) names
+  return $ map (\name -> path </> name) filtered
 
 main :: IO ()
 main = do
   parserSources <- getFixtures "tests/fixtures/parser"
   markdownSources <- getFixtures "tests/fixtures/markdown"
   vimHelpSources <- getFixtures "tests/fixtures/vim"
+  integrationSources <- getIntegrationFixtures "tests/fixtures/integration"
   defaultMain $ testGroup "Test suite"
     [ unitTests
     , goldenTests "parser" parserSources p
     , goldenTests "Markdown printer" markdownSources pm
     , goldenTests "Vim help printer" vimHelpSources pv
+    , integrationTests integrationSources
     ]
