@@ -1,6 +1,7 @@
 -- | Functions to facilitate automated and manual testing.
 module Text.Docvim.Util ( compileUnit
                         , p
+                        , parseUnit
                         , pm
                         , pp
                         , ppm
@@ -16,10 +17,14 @@ import Text.Docvim.Printer.Vim
 import Text.Parsec
 import Text.Show.Pretty
 
+-- | Parse a string containing a translation unit.
+parseUnit :: String -> Either ParseError Node
+parseUnit input = runParser unit () "(eval)" input
+
 -- | Parse and compile a string containing a translation unit.
 compileUnit :: String -> Either ParseError Node
 compileUnit input = do
-  parsed <- runParser unit () "(eval)" input
+  parsed <- parseUnit input
   return $ compile [parsed]
 
 -- | Convenience function: Parse and compile a string containing a translation

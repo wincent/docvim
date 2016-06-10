@@ -89,9 +89,10 @@ unitTests = testGroup "Unit tests"
       in symbols
   ]
 
-goldenTests :: String -> [FilePath] -> (String -> String) -> TestTree
+goldenTests :: String -> [[FilePath]] -> (String -> String) -> TestTree
 goldenTests description sources transform = testGroup groupName $ do
-  file <- sources -- list monad
+  files <- sources -- list monad
+  file <- files
   let
     run = do
       input <- readFile file
@@ -161,7 +162,7 @@ main = do
   vimHelpSources <- getFixtures "tests/fixtures/vim"
   defaultMain $ testGroup "Test suite"
     [ unitTests
-    , goldenTests "parser" parserSources p
-    , goldenTests "Markdown printer" markdownSources pm
-    , goldenTests "Vim help printer" vimHelpSources pv
+    , goldenTests "parser" [parserSources] p
+    , goldenTests "Markdown printer" [markdownSources] pm
+    , goldenTests "Vim help printer" [vimHelpSources] pv
     ]
