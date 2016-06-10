@@ -1,5 +1,5 @@
 -- | Functions to facilitate automated and manual testing.
-module Text.Docvim.Util ( compileUnit
+module Text.Docvim.Util ( compileUnits
                         , p
                         , parseUnit
                         , pm
@@ -19,20 +19,20 @@ import Text.Show.Pretty
 
 -- | Parse a string containing a translation unit.
 parseUnit :: String -> Either ParseError Node
-parseUnit input = runParser unit () "(eval)" input
+parseUnit = runParser unit () "(eval)"
 
--- | Parse and compile a string containing a translation unit.
-compileUnit :: String -> Either ParseError Node
-compileUnit input = do
-  parsed <- parseUnit input
-  return $ compile [parsed]
+-- | Parse and compile a list of strings containing a translation units.
+compileUnits :: [String] -> Either ParseError Node
+compileUnits inputs = do
+  parsed <- mapM parseUnit inputs
+  return $ compile parsed
 
--- | Convenience function: Parse and compile a string containing a translation
--- unit, but always returns a string even in the case of an error.
-p :: String -> String
-p input = case compileUnit input of
-            Left err -> show err
-            Right ast -> ppShow ast
+-- | Convenience function: Parse and compile a list of strings containing
+-- translation units, but always returns a string even in the case of an error.
+p :: [String] -> String
+p inputs = case compileUnits inputs of
+    Left err -> show err
+    Right ast -> ppShow ast
 
 -- | Pretty-prints the result of parsing and compiling an input string.
 --
@@ -40,30 +40,30 @@ p input = case compileUnit input of
 --
 --     pp "unlet g:var"
 pp :: String -> IO ()
-pp = putStrLn . p
+pp input = putStrLn $ p [input]
 
--- | Parse and compile an input string into Vim help format.
-pv :: String -> String
-pv input = case compileUnit input of
-            Left err -> show err
-            Right ast -> vimHelp ast
+-- | Parse and compile a list of input strings into Vim help format.
+pv :: [String] -> String
+pv inputs = case compileUnits inputs of
+    Left err -> show err
+    Right ast -> vimHelp ast
 
 -- | Pretty-prints the result of parsing and compiling an input string and
 -- transforming into Vim help format.
 --
 -- For logging in the REPL.
 ppv :: String -> IO ()
-ppv = putStr . pv
+ppv input = putStr $ pv [input]
 
--- | Parse and compile an input string into Markdown help format.
-pm :: String -> String
-pm input = case compileUnit input of
-            Left err -> show err
-            Right ast -> markdown ast
+-- | Parse and compile a list of input strings into Markdown help format.
+pm :: [String] -> String
+pm inputs = case compileUnits inputs of
+    Left err -> show err
+    Right ast -> markdown ast
 
 -- | Pretty-prints the result of parsing and compiling an input string and
 -- transforming into Markdown format.
 --
 -- For logging in the REPL.
 ppm :: String -> IO ()
-ppm = putStr . pm
+ppm input = putStr $ pm [input]

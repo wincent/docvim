@@ -30,8 +30,8 @@ parseSuccess _        = True
 
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
-  [ testCase "Compile empty unit" $ assert $ parseSuccess (compileUnit "")
-  , testCase "Compile whitespace-only unit" $ assert $ parseSuccess (compileUnit "  \n    ")
+  [ testCase "Compile empty unit" $ assert $ parseSuccess (compileUnits [""])
+  , testCase "Compile whitespace-only unit" $ assert $ parseSuccess (compileUnits ["  \n    "])
 
   , testCase "Counting all nodes" $
     7 @=? let
@@ -89,14 +89,13 @@ unitTests = testGroup "Unit tests"
       in symbols
   ]
 
-goldenTests :: String -> [[FilePath]] -> (String -> String) -> TestTree
+goldenTests :: String -> [FilePath] -> ([String] -> String) -> TestTree
 goldenTests description sources transform = testGroup groupName $ do
-  files <- sources -- list monad
-  file <- files
+  file <- sources -- list monad
   let
     run = do
       input <- readFile file
-      let output = normalize $ transform input
+      let output = normalize $ transform [input]
       return $ pack output -- pack because tasty-golden wants a ByteString
     name = takeBaseName file
     golden = replaceExtension file ".golden"
@@ -162,7 +161,7 @@ main = do
   vimHelpSources <- getFixtures "tests/fixtures/vim"
   defaultMain $ testGroup "Test suite"
     [ unitTests
-    , goldenTests "parser" [parserSources] p
-    , goldenTests "Markdown printer" [markdownSources] pm
-    , goldenTests "Vim help printer" [vimHelpSources] pv
+    , goldenTests "parser" parserSources p
+    , goldenTests "Markdown printer" markdownSources pm
+    , goldenTests "Vim help printer" vimHelpSources pv
     ]
