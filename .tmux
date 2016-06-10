@@ -14,11 +14,11 @@ tmux send-keys -t docvim:vim "vim -c CommandT" Enter
 
 # 2. REPL.
 tmux new-window -t docvim -n repl
-tmux send-keys -t docvim:repl "stack repl" Enter
+tmux send-keys -t docvim:repl bin/repl Enter
 
 # 3. Build
 tmux new-window -t docvim -n build
-tmux send-keys -t docvim:build "stack build --file-watch" Enter
+tmux send-keys -t docvim:build bin/build Enter
 
 # 4. General shell use.
 tmux new-window -t docvim
