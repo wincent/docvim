@@ -23,9 +23,7 @@ import Text.Docvim.Visitor.Symbol
 data Operation = Append String
                | Delete Int -- unconditional delete count of Char
                | Slurp String -- delete string if present
-data Metadata = Metadata { symbols :: [String]
-                         , pluginName :: Maybe String
-                         }
+data Metadata = Metadata { pluginName :: Maybe String }
 data Context = Context { lineBreak :: String
                        , partialLine :: String
                        }
@@ -36,7 +34,7 @@ textwidth = 78
 
 vimHelp :: Node -> String
 vimHelp n = suppressTrailingWhitespace output ++ "\n"
-  where metadata = Metadata (getSymbols n) (getPluginName n)
+  where metadata = Metadata (getPluginName n)
         context = Context defaultLineBreak ""
         operations = evalState (runReaderT (node n) metadata) context
         output = foldl reduce "" operations
@@ -75,28 +73,18 @@ append' string width = do
   return ops
   where
     leading = takeWhile (/= '\n') string
-    trailing str = length $ takeWhile isSpace (reverse str)
     end l = reverse $ takeWhile (/= '\n') (reverse l)
 
 -- http://stackoverflow.com/a/9723976/2103996
+mapTuple :: (b -> c) -> (b, b) -> (c, c)
 mapTuple = join (***)
 
 -- Given a string, hardwraps it into two parts by splitting it at the rightmost
 -- whitespace.
 hardwrap :: String -> (String, String)
-hardwrap str = swap $ mapTuple reverse split
+hardwrap str = swap $ mapTuple reverse split'
   where
-    split = break isSpace (reverse str)
-
--- Helper function that deletes `count` elements from the end of the
---`partialLine` context.
-delete :: Int -> Env
-delete count = do
-  context <- get
-  put (Context (lineBreak context) (partial context))
-  return [Delete count]
-  where
-    partial context = take (length (partialLine context) - count) (partialLine context)
+    split' = break isSpace (reverse str)
 
 -- Helper function to conditionally remove a string if it appears at the end of
 -- the output.
@@ -170,8 +158,8 @@ nl os = liftM2 (++) (return os) (append "\n")
 
 breaktag :: Env
 breaktag = do
-  state <- get
-  append $ lineBreak state
+  context <- get
+  append $ lineBreak context
 
 listitem :: [Node] -> Env
 listitem l = do
@@ -197,7 +185,7 @@ toc t = do
         format                = map pad numbered
         longest               = maximum (map (length . snd) numbered )
         numbered              = map prefix number
-        number                = zip3 [1..] t (map (\x -> normalize $ p ++ "-" ++ x) t)
+        number                = zip3 [(1 :: Integer)..] t (map (\x -> normalize $ p ++ "-" ++ x) t)
         prefix (num, desc, l) = (show num ++ ". " ++ desc ++ "  ", l)
         pad (lhs, rhs)        = lhs ++ replicate (longest - length lhs) ' ' ++ link rhs
   -- TODO: consider doing this for markdown format too
@@ -213,6 +201,7 @@ command (CommandAnnotation name params) = do
 -- will require us to hoist it up inside CommandAnnotation
 -- (and do similar for other sections)
 -- once that is done, drop the extra newline above
+command _ = invalidNode
 
 mapping :: String -> Env
 mapping name = linkTargets [name] True
@@ -228,6 +217,7 @@ option (OptionAnnotation n t d) = do
   where
     aligned context = rightAlign context rhs
     rhs = t ++ " (default: " ++ fromMaybe "none" d ++ ")\n\n"
+option _ = invalidNode
 
 whitespace :: Env
 whitespace = append " "
@@ -263,11 +253,11 @@ heading :: String -> Env
 heading h = do
   metadata <- ask
   heading' <- appendNoWrap $ map toUpper h ++ " "
-  target <- maybe (append "\n") (\x -> linkTargets [target x] False) (pluginName metadata)
+  target <- maybe (append "\n") (\x -> linkTargets [target' x] False) (pluginName metadata)
   trailing <- append "\n"
   return $ concat [heading', target, trailing]
   where
-    target x = normalize $ x ++ "-" ++ h
+    target' x = normalize $ x ++ "-" ++ h
 
 normalize :: String -> String
 normalize = map (toLower . sanitize)

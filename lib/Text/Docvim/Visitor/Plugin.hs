@@ -19,7 +19,7 @@ getPluginName node = name
            then Nothing
            else Just $ head names
     names = walk getName [] node
-    getName (PluginAnnotation name _) = [name]
+    getName (PluginAnnotation name' _) = [name']
     getName _                         = []
 
 -- | Extracts a list of nodes (if any exist) from the `@plugin` section(s) of

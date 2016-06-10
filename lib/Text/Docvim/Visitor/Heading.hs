@@ -3,8 +3,6 @@ module Text.Docvim.Visitor.Heading ( getHeadings
                                    ) where
 
 import Control.Lens
-import Control.Lens.Plated
-import Data.Data.Lens
 import Text.Docvim.AST
 
 -- | Returns a list of all headings, in the order in which they appear in the

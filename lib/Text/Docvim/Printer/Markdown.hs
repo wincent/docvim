@@ -8,9 +8,7 @@ import Text.Docvim.Parse
 import Text.Docvim.Visitor.Plugin
 import Text.Docvim.Visitor.Symbol
 
-data Metadata = Metadata { symbols :: [String]
-                         , pluginName :: Maybe String
-                         }
+data Metadata = Metadata { symbols :: [String] }
 type Env = Reader Metadata String
 
 data Anchor = Anchor [Attribute] String
@@ -20,7 +18,7 @@ data Attribute = Attribute { attributeName :: String
 
 markdown :: Node -> String
 markdown n = rstrip (runReader (node n) metadata) ++ "\n"
-  where metadata = Metadata (getSymbols n) (getPluginName n)
+  where metadata = Metadata (getSymbols n)
 
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
@@ -139,12 +137,14 @@ option (OptionAnnotation n t d) = targets ++ h
   where targets = linkTargets [n]
         h = h3 $ "`" ++ n ++ "` (" ++ t ++ ", default: " ++ def ++ ")"
         def = fromMaybe "none" d
+option _ = invalidNode
 
 command :: Node -> String
 command (CommandAnnotation name params) = target ++ content
   where target = linkTargets [":" ++ name]
         content = h3 $ "`:" ++ annotation ++ "`"
         annotation = rstrip $ name ++ " " ++ fromMaybe "" params
+command _ = invalidNode
 
 mapping :: String -> String
 mapping name = h3 $ "`" ++ name ++ "`"

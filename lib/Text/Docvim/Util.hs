@@ -26,7 +26,7 @@ compileUnit input = do
 -- unit, but always returns a string even in the case of an error.
 p :: String -> String
 p input = case compileUnit input of
-            Left error -> show error
+            Left err -> show err
             Right ast -> ppShow ast
 
 -- | Pretty-prints the result of parsing and compiling an input string.
@@ -40,7 +40,7 @@ pp = putStrLn . p
 -- | Parse and compile an input string into Vim help format.
 pv :: String -> String
 pv input = case compileUnit input of
-            Left error -> show error
+            Left err -> show err
             Right ast -> vimHelp ast
 
 -- | Pretty-prints the result of parsing and compiling an input string and
@@ -53,7 +53,7 @@ ppv = putStr . pv
 -- | Parse and compile an input string into Markdown help format.
 pm :: String -> String
 pm input = case compileUnit input of
-            Left error -> show error
+            Left err -> show err
             Right ast -> markdown ast
 
 -- | Pretty-prints the result of parsing and compiling an input string and

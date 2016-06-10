@@ -6,16 +6,16 @@ module Text.Docvim.Parse ( parse
                          , unit
                          ) where
 
+import Data.Functor.Identity
+
 import Control.Applicative hiding ((<|>), many, optional)
 import Data.Char
-import Data.List
+import Data.List (groupBy, intercalate)
 import System.Exit
 import System.IO
 import Text.Docvim.AST
 import Text.Parsec hiding (newline, parse)
-import Text.Parsec.Combinator hiding (optional)
 import Text.Parsec.String
-import Text.ParserCombinators.Parsec.Char hiding (newline)
 
 -- | Given a `description` like "fu[nction]", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".
@@ -31,6 +31,7 @@ command description =   try (string prefix >> remainder rest)
         rest             = init (snd (splitAt (1 + length prefix) description))
         remainder [r]    = optional (char r)
         remainder (r:rs) = optional (char r >> remainder rs)
+        remainder []     = error "Unexpected empty remainder"
 
 function =   FunctionDeclaration
          <$> (fu *> bang <* wsc)
@@ -103,14 +104,14 @@ fenced = fence >> newline >> Fenced <$> body
   where
     fence = try $ string "```" >> optional ws
     body = do
-      lines <- manyTill line (try $ (commentStart <|> docBlockStart) >> optional ws >> fence)
-      let indent = foldr countLeadingSpaces infinity lines
-      return $ map (trimLeadingSpace indent) lines
+      lines' <- manyTill line (try $ (commentStart <|> docBlockStart) >> optional ws >> fence)
+      let indent = foldr countLeadingSpaces infinity lines'
+      return $ map (trimLeadingSpace indent) lines'
       where
         -- Find minimum count of leading spaces.
-        countLeadingSpaces line = min (length (takeWhile (' ' ==) line))
-        trimLeadingSpace count = if count > 0
-                                 then drop count
+        countLeadingSpaces line' = min (length (takeWhile (' ' ==) line'))
+        trimLeadingSpace count' = if count' > 0
+                                 then drop count'
                                  else id
         infinity = maxBound :: Int
     line           = (commentStart' <|> docBlockStart') >> restOfLine <* newline
@@ -119,9 +120,9 @@ fenced = fence >> newline >> Fenced <$> body
 
 blockquote =   lookAhead (char '>')
            >>  Blockquote
-           <$> paragraph `sepBy1` blankLine
+           <$> paragraph' `sepBy1` blankLine
   where
-    paragraph = Paragraph <$> body
+    paragraph' = Paragraph <$> body
     body = do
       first  <- firstLine
       rest   <- many otherLine
@@ -148,13 +149,13 @@ blockquote =   lookAhead (char '>')
 
 list =  lookAhead (char '-' >> notFollowedBy (char '-'))
      >> List
-     <$> listItem `sepBy1` separator
+     <$> listItem `sepBy1` separator'
   where
     -- Yes, this is a bit hideous.
-    separator =  try $ newline
-              >> (commentStart <|> docBlockStart)
-              >> optional ws
-              >> lookAhead (char '-')
+    separator' =  try $ newline
+               >> (commentStart <|> docBlockStart)
+               >> optional ws
+               >> lookAhead (char '-')
 
 listItem =  lookAhead (char '-' >> notFollowedBy (char '-'))
          >> ListItem
@@ -187,9 +188,9 @@ newlines =   many1 (char '\n' >> optional ws)
 ws = many1 (oneOf " \t")
 
 -- | Continuation-aware whitespace (\).
-wsc = many1 $ choice [whitespace, continuation]
+wsc = many1 $ choice [whitespace', continuation]
   where
-    whitespace   = oneOf " \t"
+    whitespace'   = oneOf " \t"
     continuation = try $ char '\n' >> ws >> char '\\'
 
 -- TODO: string literals; some nasty lookahead might be required
@@ -315,6 +316,7 @@ char' c = satisfy $ \x -> toUpper x == toUpper c
 --
 -- Based on `caseString` function in:
 -- https://hackage.haskell.org/package/hsemail-1.3/docs/Text-ParserCombinators-Parsec-Rfc2234.html
+string' :: Stream s m Char => String -> ParsecT s u m String
 string' s = mapM_ char' s >> pure s <?> s
 
 -- | Tokenized whitespace.
@@ -324,11 +326,13 @@ string' s = mapM_ char' s >> pure s <?> s
 -- normalized form) in the AST.
 whitespace = Whitespace <$ ws
 
+br :: ParsecT String u Identity Node
 br = BreakTag <$ (try htmlTag <|> try xhtmlTag) <?> "<br />"
   where
     htmlTag = string' "<br>"
     xhtmlTag = string' "<br" >> optional ws >> string "/>"
 
+link :: ParsecT String u Identity Node
 link = Link <$> (bar *> linkText <* bar)
   where
     bar      = char '|'
@@ -347,6 +351,7 @@ linkTargets = LinkTargets <$> many1 (star *> target <* (star >> optional ws))
     star = char '*'
     target = many1 $ noneOf " \t\n*"
 
+vimL :: ParsecT String () Identity Node
 vimL = choice [ block
               , statement
               ]
@@ -382,12 +387,15 @@ restOfLine = do
 --
 -- TODO: switch to Data.Text (http://stackoverflow.com/a/6270382/2103996) for
 -- efficiency.
+strip :: String -> String
 strip = lstrip . rstrip
 
 -- | Strip leading (left) whitespace.
+lstrip :: String -> String
 lstrip = dropWhile (`elem` " \n\t")
 
 -- | Strip trailing (right) whitespace.
+rstrip :: String -> String
 rstrip = reverse . lstrip . reverse
 
 heading :: Parser Node
@@ -410,29 +418,29 @@ annotation = char '@' *> annotationName
   where
     annotationName =
       choice [ try $ string "commands" >> pure CommandsAnnotation -- must come before function
-             , command
+             , command'
              , string "dedent" >> pure DedentAnnotation
-             , try $ string "footer" >> pure FooterAnnotation -- must come before function
-             , try $ string "functions" >> pure FunctionsAnnotation -- must come before function
-             , function
+             , try $ string "footer" >> pure FooterAnnotation -- must come before function'
+             , try $ string "functions" >> pure FunctionsAnnotation -- must come before function'
+             , function'
              , string "indent" >> pure IndentAnnotation
              , try $ string "mappings" >> pure MappingsAnnotation -- must come before mapping
              , mapping
-             , try $ string "options" >> pure OptionsAnnotation -- must come before option
-             , option
+             , try $ string "options" >> pure OptionsAnnotation -- must come before option'
+             , option'
              , plugin
              ]
 
-    command           = string "command" >> ws >> CommandAnnotation <$> commandName <*> commandParameters
+    command'          = string "command" >> ws >> CommandAnnotation <$> commandName <*> commandParameters
     commandName       = char ':' *> many1 alphaNum <* optional ws
     commandParameters = optionMaybe $ many1 (noneOf "\n")
 
-    function          = string "function" >> ws >> FunctionAnnotation <$> word <* optional ws
+    function'         = string "function" >> ws >> FunctionAnnotation <$> word <* optional ws
 
     mapping           = string "mapping" >> ws >> MappingAnnotation <$> mappingName
     mappingName       = word <* optional ws
 
-    option            = string "option" >> ws >> OptionAnnotation <$> optionName <*> optionType <*> optionDefault
+    option'           = string "option" >> ws >> OptionAnnotation <$> optionName <*> optionType <*> optionDefault
     optionName        = many1 (alphaNum <|> char ':') <* ws <?> "option name"
     optionType        = many1 alphaNum <* optional ws <?> "option type"
     optionDefault     = optionMaybe word <?> "option default value"

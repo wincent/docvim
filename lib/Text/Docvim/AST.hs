@@ -154,3 +154,5 @@ sanitizeAnchor = hyphenate . keepValid . downcase
     spaceToHyphen c = if c == ' ' then '-' else c
     keepValid = filter (`elem` (['a'..'z'] ++ ['0'..'9'] ++ " -"))
     downcase = map toLower
+
+invalidNode = error "Invalid Node type"

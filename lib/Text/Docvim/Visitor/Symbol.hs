@@ -40,10 +40,7 @@ getSymbols node = if length symbols == Set.size set
     duplicates                              = nub $ f (sort symbols)
       where
         f [] = []
-        f [x] = []
+        f [_] = []
         f (x:xs) = if x == head xs
                    then x : f xs
                    else f xs
-
-downcase :: String -> String
-downcase = map toLower
