@@ -112,23 +112,43 @@ goldenTests description sources transform = testGroup groupName $ do
     groupName = "Golden " ++ description ++ " tests"
 
 integrationTests :: [FilePath] -> TestTree
-integrationTests sources = testGroup "Integration tests" $ do
-  source <- sources -- list monad
-  let
-    markdown = do
-      inputs <- getFixtures $ source </> "input"
-      contents <- mapM readFile inputs
-      return $ pack $ normalize $ pm contents
-    name = takeBaseName source
-    golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/markdown.golden"
-    diff ref new = [ "git"
-                   , "diff"
-                   , "--color"
-                   , "--diff-algorithm=histogram"
-                   , ref
-                   , new
-                   ]
-  return $ goldenVsStringDiff' name diff golden markdown
+integrationTests sources = testGroup "Integration tests" $
+    concat [m, v]
+  where
+    m = do
+      source <- sources -- list monad
+      let
+        markdown = do
+          inputs <- getFixtures $ source </> "input"
+          contents <- mapM readFile inputs
+          return $ pack $ normalize $ pm contents
+        name = takeBaseName source
+        golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/markdown.golden"
+        diff ref new = [ "git"
+                      , "diff"
+                      , "--color"
+                      , "--diff-algorithm=histogram"
+                      , ref
+                      , new
+                      ]
+      return $ goldenVsStringDiff' (name ++ " (Markdown)") diff golden markdown
+    v = do
+      source <- sources -- list monad
+      let
+        help = do
+          inputs <- getFixtures $ source </> "input"
+          contents <- mapM readFile inputs
+          return $ pack $ normalize $ pv contents
+        name = takeBaseName source
+        golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/plaintext.golden"
+        diff ref new = [ "git"
+                      , "diff"
+                      , "--color"
+                      , "--diff-algorithm=histogram"
+                      , ref
+                      , new
+                      ]
+      return $ goldenVsStringDiff' (name ++ " (Vim help)") diff golden help
 
 -- | Normalize a string to always end with a newline, unless zero-length, to
 -- match standard text editor behavior.
