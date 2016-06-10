@@ -92,22 +92,22 @@ unitTests = testGroup "Unit tests"
 
 goldenTests :: String -> [FilePath] -> ([String] -> String) -> TestTree
 goldenTests description sources transform = testGroup groupName $ do
-  file <- sources -- list monad
-  let
-    run = do
-      input <- readFile file
-      let output = normalize $ transform [input]
-      return $ pack output -- pack because tasty-golden wants a ByteString
-    name = takeBaseName file
-    golden = replaceExtension file ".golden"
-    diff ref new = [ "git"
-                   , "diff"
-                   , "--color"
-                   , "--diff-algorithm=histogram"
-                   , ref
-                   , new
-                   ]
-  return $ goldenVsStringDiff' name diff golden run
+    file <- sources -- list monad
+    let
+      run = do
+        input <- readFile file
+        let output = normalize $ transform [input]
+        return $ pack output -- pack because tasty-golden wants a ByteString
+      name = takeBaseName file
+      golden = replaceExtension file ".golden"
+      diff ref new = [ "git"
+                    , "diff"
+                    , "--color"
+                    , "--diff-algorithm=histogram"
+                    , ref
+                    , new
+                    ]
+    return $ goldenVsStringDiff' name diff golden run
   where
     groupName = "Golden " ++ description ++ " tests"
 
