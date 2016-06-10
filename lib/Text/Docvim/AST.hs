@@ -11,67 +11,67 @@ import Data.Data.Lens
 import Data.Monoid
 
 data Node
-          -- Roots
-          = Project [Node] -- list of translation units (files)
-          | Unit [Node] -- translation unit (file)
+    -- Roots
+    = Project [Node] -- list of translation units (files)
+    | Unit [Node] -- translation unit (file)
 
-          -- To remove any node from the tree, we can just replace it with this.
-          | Empty
+    -- To remove any node from the tree, we can just replace it with this.
+    | Empty
 
-          -- VimL nodes
-          | FunctionDeclaration { functionBang :: Bool
-                                , functionName :: String
-                                , functionArguments :: ArgumentList
-                                , functionAttributes :: [String]
-                                , functionBody :: [Node]
-                                }
-          | LetStatement { letLexpr :: String
-                         , letValue :: String
-                         }
-          | LexprStatement { lexprBang :: Bool
-                           , lexprExpr :: String
-                           }
-          | LwindowStatement { lwindowHeight :: Maybe Int }
-          | UnletStatement { unletBang :: Bool
-                           , unletBody :: String
-                           }
-          | GenericStatement String -- ^ For the stuff we only crudely parse for now.
+    -- VimL nodes
+    | FunctionDeclaration { functionBang :: Bool
+                          , functionName :: String
+                          , functionArguments :: ArgumentList
+                          , functionAttributes :: [String]
+                          , functionBody :: [Node]
+                          }
+    | LetStatement { letLexpr :: String
+                    , letValue :: String
+                    }
+    | LexprStatement { lexprBang :: Bool
+                      , lexprExpr :: String
+                      }
+    | LwindowStatement { lwindowHeight :: Maybe Int }
+    | UnletStatement { unletBang :: Bool
+                      , unletBody :: String
+                      }
+    | GenericStatement String -- ^ For the stuff we only crudely parse for now.
 
-          -- Docvim nodes: "block-level" elements
-          | DocBlock [Node]
-          | Paragraph [Node]
-          | LinkTargets [String]
-          | List [Node]
-          | ListItem [Node]
-          | Blockquote [Node]
-          | Fenced [String]
-          | Separator
+    -- Docvim nodes: "block-level" elements
+    | DocBlock [Node]
+    | Paragraph [Node]
+    | LinkTargets [String]
+    | List [Node]
+    | ListItem [Node]
+    | Blockquote [Node]
+    | Fenced [String]
+    | Separator
 
-          -- Docvim nodes: "phrasing content" elements
-          | Plaintext String
-          | BreakTag
-          | Link String
-          | Code String
-          | Whitespace
+    -- Docvim nodes: "phrasing content" elements
+    | Plaintext String
+    | BreakTag
+    | Link String
+    | Code String
+    | Whitespace
 
-          -- Docvim nodes: annotations
-          | PluginAnnotation Name Description
-          | FunctionsAnnotation
-          | FunctionAnnotation Name -- not sure if I will want more here
-          | IndentAnnotation
-          | DedentAnnotation
-          | CommandsAnnotation
-          | CommandAnnotation Name (Maybe Parameters)
-          | FooterAnnotation
-          | MappingsAnnotation
-          | MappingAnnotation Name
-          | OptionsAnnotation
-          | OptionAnnotation Name Type (Maybe Default)
-          | HeadingAnnotation String
-          | SubheadingAnnotation String
+    -- Docvim nodes: annotations
+    | PluginAnnotation Name Description
+    | FunctionsAnnotation
+    | FunctionAnnotation Name -- not sure if I will want more here
+    | IndentAnnotation
+    | DedentAnnotation
+    | CommandsAnnotation
+    | CommandAnnotation Name (Maybe Parameters)
+    | FooterAnnotation
+    | MappingsAnnotation
+    | MappingAnnotation Name
+    | OptionsAnnotation
+    | OptionAnnotation Name Type (Maybe Default)
+    | HeadingAnnotation String
+    | SubheadingAnnotation String
 
-          -- Docvim nodes: synthesized nodes
-          | TOC [String]
+    -- Docvim nodes: synthesized nodes
+    | TOC [String]
   deriving (Data, Eq, Show, Typeable)
 
 -- The VimScript (VimL) grammar is embodied in the implementation of
