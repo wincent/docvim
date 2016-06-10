@@ -23,7 +23,7 @@ import Text.Parsec.String
 --
 -- Requires the FlexibleContexts extension, for reasons that I don't yet fully
 -- understand.
-command :: Stream s m Char => String -> ParsecT s u m ()
+command :: String -> Parser ()
 command description =   try (string prefix >> remainder rest)
                     <?> prefix ++ rest
   where prefix           = takeWhile (/= '[') description
@@ -68,6 +68,7 @@ lStatement =  lookAhead (char 'l')
                      , try (lookAhead (string "let")) >> letStatement
                      , lexpr
                      ]
+
 lwindow :: Parser Node
 lwindow = LwindowStatement <$> (lw *> height <* eos)
   where
@@ -337,14 +338,14 @@ plaintext = Plaintext <$> wordChars
 --
 -- Based on `caseChar` function in:
 -- https://hackage.haskell.org/package/hsemail-1.3/docs/Text-ParserCombinators-Parsec-Rfc2234.html
-char' :: Stream s m Char => Char -> ParsecT s u m Char
+char' :: Char -> Parser Char
 char' c = satisfy $ \x -> toUpper x == toUpper c
 
 -- | Case-insensitive string match.
 --
 -- Based on `caseString` function in:
 -- https://hackage.haskell.org/package/hsemail-1.3/docs/Text-ParserCombinators-Parsec-Rfc2234.html
-string' :: Stream s m Char => String -> ParsecT s u m String
+string' :: String -> Parser String
 string' s = mapM_ char' s >> pure s <?> s
 
 -- | Tokenized whitespace.
@@ -445,7 +446,7 @@ subheading =  string "##"
            >> SubheadingAnnotation <$> restOfLine
 
 -- | Match a "word" of non-whitespace characters.
-word :: Parser [Char]
+word :: Parser String
 word = many1 (noneOf " \n\t")
 
 -- TODO: only allow these after "" and " at start of line
