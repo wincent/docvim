@@ -137,17 +137,7 @@ blockquote =   lookAhead (char '>')
            <$> paragraph' `sepBy1` blankLine
   where
     paragraph' = Paragraph <$> body
-    body = do
-      first  <- firstLine
-      rest   <- many otherLine
-      -- Make every line end with whitespace.
-      let nodes = concatMap appendWhitespace (first:rest)
-      -- Collapse consecutive whitespace.
-      let compressed = compress nodes
-      -- Trim final whitespace.
-      return ( if last compressed == Whitespace
-               then init compressed
-               else compressed )
+    body = paragraphBody firstLine otherLine
     firstLine =  char '>'
               >> optional ws
               >> many1 (choice [phrasing, whitespace])
@@ -267,23 +257,26 @@ docBlock = lookAhead docBlockStart
 paragraph :: Parser Node
 paragraph = Paragraph <$> body
   where
-    body = do
-      first <- firstLine
-      rest <- many otherLine
-      -- Make every line end with whitespace
-      let nodes = concatMap appendWhitespace (first:rest)
-      -- Collapse consecutive whitespace
-      let compressed = compress nodes
-      -- Trim final whitespace
-      return ( if last compressed == Whitespace
-               then init compressed
-               else compressed )
+    body = paragraphBody firstLine otherLine
     firstLine = many1 $ choice [phrasing, whitespace]
     otherLine =  try $ newline
               >> (commentStart <|> docBlockStart)
               >> optional ws
               >> notFollowedBy special
               >> firstLine
+
+paragraphBody :: Parser [Node] -> Parser [Node] -> Parser [Node]
+paragraphBody firstLine otherLine = do
+    first  <- firstLine
+    rest   <- many otherLine
+    -- Make every line end with whitespace.
+    let nodes = concatMap appendWhitespace (first:rest)
+    -- Collapse consecutive whitespace.
+    let compressed = compress nodes
+    -- Trim final whitespace.
+    return ( if last compressed == Whitespace
+             then init compressed
+             else compressed )
 
 -- | Used in lookahead rules to make sure that we don't greedily consume special
 -- tokens as if they were just phrasing content.
