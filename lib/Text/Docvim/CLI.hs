@@ -13,6 +13,7 @@ import Text.Docvim.Parse
 import Text.Docvim.Printer.Markdown
 import Text.Docvim.Printer.Vim
 import Text.Docvim.ReadDir
+import Text.Show.Pretty
 
 hasExtension :: String -> FilePath -> Bool
 hasExtension ext fp = takeExtension fp == ext
@@ -36,6 +37,7 @@ run = do
       parse path
     ) filtered
   let project = compile parsed
+  when (debug opts) (hPutStrLn stderr ("Compiled:\n" ++ ppShow project))
   let targets = fromMaybe [""] (outfiles opts)
   mapM_ (\target ->
       if | target == "" -> do
