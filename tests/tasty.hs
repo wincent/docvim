@@ -113,17 +113,19 @@ goldenTests description sources transform = testGroup groupName $ do
 
 integrationTests :: [FilePath] -> TestTree
 integrationTests sources = testGroup "Integration tests" $
-    concat [m, v]
+    concat [ run "markdown" (pm)
+           , run "plaintext" (pv)
+           ]
   where
-    m = do
+    run kind process = do
       source <- sources -- list monad
       let
-        markdown = do
+        output = do
           inputs <- getFixtures $ source </> "input"
           contents <- mapM readFile inputs
-          return $ pack $ normalize $ pm contents
+          return $ pack $ normalize $ process contents
         name = takeBaseName source
-        golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/markdown.golden"
+        golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/" ++ kind ++ ".golden"
         diff ref new = [ "git"
                       , "diff"
                       , "--color"
@@ -131,24 +133,7 @@ integrationTests sources = testGroup "Integration tests" $
                       , ref
                       , new
                       ]
-      return $ goldenVsStringDiff' (name ++ " (Markdown)") diff golden markdown
-    v = do
-      source <- sources -- list monad
-      let
-        help = do
-          inputs <- getFixtures $ source </> "input"
-          contents <- mapM readFile inputs
-          return $ pack $ normalize $ pv contents
-        name = takeBaseName source
-        golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/plaintext.golden"
-        diff ref new = [ "git"
-                      , "diff"
-                      , "--color"
-                      , "--diff-algorithm=histogram"
-                      , ref
-                      , new
-                      ]
-      return $ goldenVsStringDiff' (name ++ " (Vim help)") diff golden help
+      return $ goldenVsStringDiff' (name ++ " (" ++ kind ++ ")") diff golden output
 
 -- | Normalize a string to always end with a newline, unless zero-length, to
 -- match standard text editor behavior.
