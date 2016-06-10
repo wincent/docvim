@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
+
 module Main (main) where
 
 import Control.DeepSeq
@@ -25,9 +27,6 @@ import qualified Data.ByteString.Lazy as LazyByteString
 parseSuccess :: Either a b -> Bool
 parseSuccess (Left _) = False
 parseSuccess _        = True
-
-parseFailure :: Either a b -> Bool
-parseFailure = not . parseSuccess
 
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
@@ -134,13 +133,13 @@ goldenVsStringDiff' name diff golden run =
     name
     (ByteString.readFile golden)
     (LazyByteString.toStrict <$> run)
-    compare
+    cmp
     update
   where
     template = takeFileName golden <.> "actual"
     hunkHeader = map chr [0x1b, 0x5b, 0x33, 0x36, 0x6d] ++ "@@ "
     strip out = unlines $ dropWhile (not . isPrefixOf hunkHeader) (lines $ unpack out)
-    compare _ actBS = withSystemTempFile template $ \tmpFile tmpHandle -> do
+    cmp _ actBS = withSystemTempFile template $ \tmpFile tmpHandle -> do
       ByteString.hPut tmpHandle actBS >> hFlush tmpHandle
       let cmd = diff golden tmpFile
       (_, Just sout, _, pid) <- createProcess (proc (head cmd) (tail cmd)) { std_out = CreatePipe }
