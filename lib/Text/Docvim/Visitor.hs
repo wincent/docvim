@@ -39,12 +39,12 @@ extractBlocks :: Alternative f => (a -> Maybe (a -> Bool)) -> [a] -> (f [a], [a]
 extractBlocks start = go
   where
     go     [] = (empty, [])
-    go (x:xs) = maybe no_extract extract (start x)
+    go (x:xs) = maybe no_extract extract' (start x)
       where
         no_extract = (extracted, x:unextracted)
           where
             ~(extracted, unextracted) = go xs
-        extract stop = (pure (x:block) <|> extracted, unextracted)
+        extract' stop = (pure (x:block) <|> extracted, unextracted)
           where
             ~(block, remainder) = break stop xs
             ~(extracted, unextracted) = go remainder

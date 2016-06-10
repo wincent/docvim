@@ -1,6 +1,5 @@
 module Text.Docvim.Visitor.Symbol (getSymbols) where
 
-import Data.Char
 import Data.List
 import Text.Docvim.AST
 import Text.Docvim.Visitor.Plugin

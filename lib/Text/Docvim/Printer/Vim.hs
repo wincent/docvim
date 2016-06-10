@@ -12,7 +12,6 @@ import Data.Tuple
 import Text.Docvim.AST
 import Text.Docvim.Parse
 import Text.Docvim.Visitor.Plugin
-import Text.Docvim.Visitor.Symbol
 
 -- TODO: add indentation here (using local, or just stick it in Context)
 

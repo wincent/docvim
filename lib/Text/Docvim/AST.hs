@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Text.Docvim.AST where
 
@@ -155,4 +156,5 @@ sanitizeAnchor = hyphenate . keepValid . downcase
     keepValid = filter (`elem` (['a'..'z'] ++ ['0'..'9'] ++ " -"))
     downcase = map toLower
 
+invalidNode :: forall t. t
 invalidNode = error "Invalid Node type"

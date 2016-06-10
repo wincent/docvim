@@ -5,16 +5,13 @@ import Data.List
 import Data.Maybe
 import Text.Docvim.AST
 import Text.Docvim.Parse
-import Text.Docvim.Visitor.Plugin
 import Text.Docvim.Visitor.Symbol
 
 data Metadata = Metadata { symbols :: [String] }
 type Env = Reader Metadata String
 
 data Anchor = Anchor [Attribute] String
-data Attribute = Attribute { attributeName :: String
-                           , attributeValue :: String
-                           }
+data Attribute = Attribute String String
 
 markdown :: Node -> String
 markdown n = rstrip (runReader (node n) metadata) ++ "\n"
