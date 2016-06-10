@@ -358,9 +358,6 @@ code = Code <$> (backtick *> codeText <* backtick)
     backtick = char '`'
     codeText = many $ noneOf "\n`"
 
--- TODO: record this in symbol table similar to
--- https://github.com/wincent/docvim/blob/js/src/SymbolVisitor.js
--- (probably want to make this a post-processing step?)
 linkTargets :: Parser Node
 linkTargets = LinkTargets <$> many1 (star *> target <* (star >> optional ws))
   where
