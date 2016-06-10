@@ -2,8 +2,8 @@
 module Text.Docvim.Options (Options(..), options) where
 
 import Options.Applicative
-import Data.Version (showVersion)
-import qualified Paths_docvim (version)
+import Data.Version
+import qualified Paths_docvim
 
 -- TODO: figure out where (and if!) to expand ~ and such in path options
 data Options = Options

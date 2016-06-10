@@ -3,16 +3,16 @@
 -- | The runnable part of the docvim executable.
 module Text.Docvim.CLI (run) where
 
-import Control.Monad (when)
-import Data.Maybe (fromMaybe)
-import Text.Docvim.Options (Options(..), options)
-import Text.Docvim.Compile (compile)
-import Text.Docvim.Parse (parse)
-import Text.Docvim.Printer.Markdown (markdown)
-import Text.Docvim.Printer.Vim (vimHelp)
-import Text.Docvim.ReadDir (readDir)
-import System.FilePath (takeExtension)
-import System.IO (hPutStrLn, stderr)
+import Control.Monad
+import Data.Maybe
+import System.FilePath hiding (hasExtension)
+import System.IO
+import Text.Docvim.Compile
+import Text.Docvim.Options
+import Text.Docvim.Parse
+import Text.Docvim.Printer.Markdown
+import Text.Docvim.Printer.Vim
+import Text.Docvim.ReadDir
 
 hasExtension :: String -> FilePath -> Bool
 hasExtension ext fp = takeExtension fp == ext

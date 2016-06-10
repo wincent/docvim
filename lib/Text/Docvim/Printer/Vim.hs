@@ -1,18 +1,18 @@
 module Text.Docvim.Printer.Vim (vimHelp) where
 
-import Control.Arrow ((***))
-import Control.Monad (join)
+import Control.Arrow
+import Control.Monad
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Char (isSpace, toLower, toUpper)
-import Data.List (intercalate, isSuffixOf, span, sort)
-import Data.List.Split (splitOn)
-import Data.Maybe (fromJust, fromMaybe)
-import Data.Tuple (swap)
+import Data.Char
+import Data.List
+import Data.List.Split
+import Data.Maybe
+import Data.Tuple
 import Text.Docvim.AST
-import Text.Docvim.Parse (rstrip)
-import Text.Docvim.Visitor.Plugin (getPluginName)
-import Text.Docvim.Visitor.Symbol (getSymbols)
+import Text.Docvim.Parse
+import Text.Docvim.Visitor.Plugin
+import Text.Docvim.Visitor.Symbol
 
 -- TODO: add indentation here (using local, or just stick it in Context)
 

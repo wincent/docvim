@@ -3,9 +3,9 @@
 -- Based on `RecursiveContents` example in chapter 9 of "Real World Haskell".
 module Text.Docvim.ReadDir (readDir) where
 
-import Control.Monad (forM)
-import System.Directory (doesDirectoryExist, getDirectoryContents)
-import System.FilePath ((</>))
+import Control.Monad
+import System.Directory
+import System.FilePath
 
 readDir :: FilePath -> IO [FilePath]
 readDir dir = do

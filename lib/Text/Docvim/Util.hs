@@ -8,13 +8,13 @@ module Text.Docvim.Util ( compileUnit
                         , pv
                         ) where
 
-import Text.Docvim.AST (Node)
-import Text.Docvim.Compile (compile)
-import Text.Docvim.Parse (unit)
-import Text.Docvim.Printer.Markdown (markdown)
-import Text.Docvim.Printer.Vim (vimHelp)
-import Text.Parsec (ParseError, runParser)
-import Text.Show.Pretty (ppShow)
+import Text.Docvim.AST
+import Text.Docvim.Compile
+import Text.Docvim.Parse
+import Text.Docvim.Printer.Markdown
+import Text.Docvim.Printer.Vim
+import Text.Parsec
+import Text.Show.Pretty
 
 -- | Parse and compile a string containing a translation unit.
 compileUnit :: String -> Either ParseError Node

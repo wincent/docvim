@@ -1,23 +1,19 @@
 module Text.Docvim.Compile (compile) where
 
-import Text.Docvim.AST (Node(Project))
-import Text.Docvim.Visitor.Command (extractCommand)
-import Text.Docvim.Visitor.Commands (extractCommands)
-import Text.Docvim.Visitor.Footer (extractFooter)
-import Text.Docvim.Visitor.Function (extractFunction)
-import Text.Docvim.Visitor.Functions (extractFunctions)
-import Text.Docvim.Visitor.Heading (injectTOC)
-import Text.Docvim.Visitor.Mapping (extractMapping)
-import Text.Docvim.Visitor.Mappings (extractMappings)
-import Text.Docvim.Visitor.Option (extractOption)
-import Text.Docvim.Visitor.Options (extractOptions)
-import Text.Docvim.Visitor.Plugin (extractPlugin)
-import Text.Docvim.Visitor.Section ( injectCommands
-                                   , injectFunctions
-                                   , injectMappings
-                                   , injectOptions
-                                   )
-import Text.Docvim.Visitor (extract)
+import Text.Docvim.AST
+import Text.Docvim.Visitor
+import Text.Docvim.Visitor.Command
+import Text.Docvim.Visitor.Commands
+import Text.Docvim.Visitor.Footer
+import Text.Docvim.Visitor.Function
+import Text.Docvim.Visitor.Functions
+import Text.Docvim.Visitor.Heading
+import Text.Docvim.Visitor.Mapping
+import Text.Docvim.Visitor.Mappings
+import Text.Docvim.Visitor.Option
+import Text.Docvim.Visitor.Options
+import Text.Docvim.Visitor.Plugin
+import Text.Docvim.Visitor.Section
 
 -- | "Compile" a set of translation units into a project.
 compile :: [Node] -> Node

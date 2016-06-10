@@ -4,9 +4,9 @@ module Text.Docvim.Visitor.Plugin ( getPluginName
                                   , extractPlugin
                                   ) where
 
-import Control.Applicative (Alternative)
-import Text.Docvim.AST (Node(PluginAnnotation), walk)
-import Text.Docvim.Visitor (endSection, extractBlocks)
+import Control.Applicative
+import Text.Docvim.AST
+import Text.Docvim.Visitor
 
 -- | Returns the name of the plug-in or Nothing if none is found.
 --

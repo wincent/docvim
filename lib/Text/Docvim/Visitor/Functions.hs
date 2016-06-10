@@ -1,8 +1,8 @@
 module Text.Docvim.Visitor.Functions (extractFunctions) where
 
-import Control.Applicative (Alternative)
-import Text.Docvim.AST (Node(FunctionsAnnotation))
-import Text.Docvim.Visitor (endSection, extractBlocks)
+import Control.Applicative
+import Text.Docvim.AST
+import Text.Docvim.Visitor
 
 -- | Extracts a list of nodes (if any exist) from the `@functions` section(s) of
 -- the source code.

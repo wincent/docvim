@@ -6,54 +6,16 @@ module Text.Docvim.Parse ( parse
                          , unit
                          ) where
 
-import Control.Applicative ( (*>)
-                           , (<$)
-                           , (<$>)
-                           , (<*)
-                           , (<*>)
-                           , liftA
-                           , liftA2
-                           )
-import Data.Char (toUpper)
-import Data.List (groupBy, intercalate)
+import Control.Applicative hiding ((<|>), many, optional)
+import Data.Char
+import Data.List
+import System.Exit
+import System.IO
 import Text.Docvim.AST
-import System.Exit (exitFailure)
-import System.IO (hPutStrLn, stderr)
--- TODO: custom error messages with <?>
-import Text.Parsec ( (<|>)
-                   , (<?>)
-                   , ParseError
-                   , choice
-                   , digit
-                   , lookAhead
-                   , many
-                   , many1
-                   , manyTill
-                   , notFollowedBy
-                   , option
-                   , optionMaybe
-                   , optional
-                   , parseTest
-                   , satisfy
-                   , sepBy
-                   , sepBy1
-                   , sepEndBy
-                   , sepEndBy1
-                   , skipMany
-                   , skipMany1
-                   , try
-                   , unexpected
-                   )
-import Text.Parsec.String (Parser, parseFromFile)
-import Text.Parsec.Combinator (eof)
-import Text.ParserCombinators.Parsec.Char ( alphaNum
-                                          , anyChar
-                                          , char
-                                          , noneOf
-                                          , oneOf
-                                          , string
-                                          , upper
-                                          )
+import Text.Parsec hiding (newline, parse)
+import Text.Parsec.Combinator hiding (optional)
+import Text.Parsec.String
+import Text.ParserCombinators.Parsec.Char hiding (newline)
 
 -- | Given a `description` like "fu[nction]", returns a parser that matches
 -- "fu", "fun", "func", "funct", "functi", "functio" and "function".

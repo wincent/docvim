@@ -2,9 +2,9 @@
 
 module Text.Docvim.Visitor.Option (extractOption) where
 
-import Control.Applicative (Alternative)
-import Text.Docvim.AST (Node(OptionAnnotation))
-import Text.Docvim.Visitor (endSection, extractBlocks)
+import Control.Applicative
+import Text.Docvim.AST
+import Text.Docvim.Visitor
 
 -- | Extracts a list of nodes (if any exist) identified by the `@option`
 -- annotation of the source code.

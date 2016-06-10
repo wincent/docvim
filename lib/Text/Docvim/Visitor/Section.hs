@@ -10,7 +10,7 @@ module Text.Docvim.Visitor.Section ( injectCommands
 
 import Control.Lens
 import Control.Monad.State
-import Data.Data.Lens (uniplate)
+import Data.Data.Lens
 import Text.Docvim.AST
 
 data SectionInfo = SectionInfo { _hasCommand :: Bool

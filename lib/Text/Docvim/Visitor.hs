@@ -3,9 +3,9 @@
 
 module Text.Docvim.Visitor (endSection, extract, extractBlocks) where
 
-import Control.Applicative (Alternative, (<|>), empty)
-import Control.Monad ((>=>))
-import Control.Monad.Writer (runWriter, tell)
+import Control.Applicative
+import Control.Monad
+import Control.Monad.Writer
 import Data.Data.Lens
 import Text.Docvim.AST
 import qualified Data.DList as DList

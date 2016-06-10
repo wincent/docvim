@@ -2,14 +2,14 @@
 
 module Text.Docvim.AST where
 
-import Control.Lens.Fold (foldlOf)
-import Control.Lens.Getter (to)
-import Control.Lens.Plated (Plated, cosmosOf)
-import Data.Char (toLower)
+import Control.Lens.Fold
+import Control.Lens.Getter
+import Control.Lens.Plated
+import Data.Char
 import Data.Data
-import Data.Data.Lens (uniplate)
-import Data.List (intercalate)
-import Data.Monoid ((<>))
+import Data.Data.Lens
+import Data.List
+import Data.Monoid
 
 data Node
           -- Roots

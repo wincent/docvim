@@ -1,30 +1,25 @@
 module Main (main) where
 
+import Control.DeepSeq
+import Control.Exception hiding (assert)
+import Data.ByteString.Lazy.Char8 (pack, unpack)
+import Data.Char
+import Data.List --(isPrefixOf, sort)
+import Data.Monoid
+import System.Exit
+import System.FilePath
+import System.IO
+import System.IO.Temp
+import System.Process
+import Test.Tasty
+import Test.Tasty.Golden
+import Test.Tasty.Golden.Advanced
+import Test.Tasty.HUnit
+import Text.Docvim.AST
+import Text.Docvim.Util
+import Text.Docvim.Visitor.Symbol
 import qualified Data.ByteString as ByteString
 import qualified Data.ByteString.Lazy as LazyByteString
-import Control.DeepSeq (rnf)
-import Control.Exception (evaluate)
-import Data.ByteString.Lazy.Char8 (pack, unpack)
-import Data.Char (chr)
-import Data.List (isPrefixOf, sort)
-import Data.Monoid (Sum(..))
-import Text.Docvim.AST
-import Text.Docvim.Util (compileUnit, p, pm, pv)
-import Text.Docvim.Visitor.Symbol (getSymbols)
-import System.Exit (ExitCode(ExitSuccess))
-import System.FilePath ((<.>), replaceExtension, takeBaseName, takeFileName)
-import System.IO (hFlush, readFile)
-import System.IO.Temp (withSystemTempFile)
-import System.Process ( StdStream(CreatePipe)
-                      , createProcess
-                      , proc
-                      , std_out
-                      , waitForProcess
-                      )
-import Test.Tasty (testGroup, TestName, TestTree, defaultMain)
-import Test.Tasty.Golden (findByExtension)
-import Test.Tasty.Golden.Advanced (goldenTest)
-import Test.Tasty.HUnit
 
 -- | Crude check to see if parse worked.
 parseSuccess :: Either a b -> Bool
