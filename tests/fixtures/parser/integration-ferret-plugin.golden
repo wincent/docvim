@@ -4,9 +4,9 @@ Project
       , TOC
           [ "Intro"
           , "Installation"
-          , "Options"
           , "Commands"
           , "Mappings"
+          , "Options"
           , "Custom autocommands"
           , "Overrides"
           , "Troubleshooting"
@@ -929,9 +929,10 @@ Project
               { letLexpr = "&cpoptions " , letValue = "s:cpoptions" }
           , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
           ]
-      , OptionsAnnotation
-      , CommandsAnnotation
+      , DocBlock []
+      , DocBlock []
       ]
+  , CommandsAnnotation
   , CommandAnnotation "Ack" (Just "{pattern} {options}")
   , Paragraph
       [ Plaintext "Searches"
@@ -2172,6 +2173,7 @@ Project
       [ "\" Instead of <leader>r, use <leader>u."
       , "nmap <leader>u <Plug>(FerretAcks)"
       ]
+  , OptionsAnnotation
   , OptionAnnotation "g:FerretLoaded" "any" Nothing
   , Paragraph
       [ Plaintext "To"

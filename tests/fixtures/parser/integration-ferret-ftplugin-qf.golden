@@ -38,8 +38,9 @@ Project
               "vnoremap <buffer> <silent> d :call ferret#private#qf_delete()<CR>"
           , GenericStatement "endif"
           ]
-      , OptionsAnnotation
+      , DocBlock []
       ]
+  , OptionsAnnotation
   , OptionAnnotation "g:FerretQFOptions" "boolean" (Just "1")
   , Paragraph
       [ Plaintext "Controls"

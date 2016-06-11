@@ -73,9 +73,9 @@ getSectionInfo n = execState (mapMOf_ (cosmosOf uniplate) check n) defaultSectio
     check OptionsAnnotation      = hasOptions .= True
     check _                      = modify id
 
--- | Appends a node to the end of a Project.
+-- | Appends a node, wrapped in a DocBlock, to the end of a Project.
 inject :: Node -> Node -> Node
-inject (Project ns) n = Project $ ns ++ [n]
+inject (Project ns) n = Project $ ns ++ [DocBlock [n]]
 inject other _ = other
 
 injectCommands :: Node -> Node

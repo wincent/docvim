@@ -345,8 +345,9 @@ Project
                   ]
               }
           ]
-      , OptionsAnnotation
+      , DocBlock []
       ]
+  , OptionsAnnotation
   , OptionAnnotation "g:FerretDispatch" "boolean" (Just "1")
   , Paragraph
       [ Plaintext "Controls"

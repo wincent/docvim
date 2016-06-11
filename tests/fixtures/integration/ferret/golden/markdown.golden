@@ -54,8 +54,6 @@ To generate help tags under Pathogen, you can do so from inside Vim with:
 :call pathogen#helptags()
 ```
 
-## Options
-
 ## Commands
 
 <p align="right"><a name="ack" href="#user-content-ack"><code>:Ack</code></a></p>
@@ -160,6 +158,8 @@ Ferret maps <leader>r (mnemonic: "replace") to <strong>[`<Plug>(FerretAcks)`](#u
 " Instead of <leader>r, use <leader>u.
 nmap <leader>u <Plug>(FerretAcks)
 ```
+
+## Options
 
 <p align="right"><a name="gferretdispatch" href="#user-content-gferretdispatch"><code>g:FerretDispatch</code></a></p>
 ### `g:FerretDispatch` (boolean, default: 1)
