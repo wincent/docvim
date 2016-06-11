@@ -1,3 +1,11 @@
+# master (not yet released)
+
+- Plug-in link targets  at the top level (eg. `*foo.txt*` and `*foo`) are now downcased.
+- Info extracted from the `@plugin` annotation is now centered in the Vim output.
+- The `-d`/`--debug` flag now causes a dump of the compiled AST to be logged to the standard error.
+- Moved under the `Text.*` namespace, to `Text.Docvim.*`.
+- Fix ordering issues with synthesized headings.
+
 # 0.2.0.0 (9 June 2016)
 
 - New version number (testing release process).
