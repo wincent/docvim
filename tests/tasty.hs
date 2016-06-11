@@ -115,7 +115,8 @@ goldenTests description sources transform = testGroup groupName $ do
 
 integrationTests :: [FilePath] -> TestTree
 integrationTests sources = testGroup "Integration tests" $
-    concat [ run "markdown" (pm)
+    concat [ run "ast" (p)
+           , run "markdown" (pm)
            , run "plaintext" (pv)
            ]
   where
