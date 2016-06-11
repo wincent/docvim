@@ -97,6 +97,7 @@ library
   exposed-modules:  Text.Docvim.AST
                  ,  Text.Docvim.CLI
                  ,  Text.Docvim.Compile
+                 ,  Text.Docvim.Optimize
                  ,  Text.Docvim.Options
                  ,  Text.Docvim.Parse
                  ,  Text.Docvim.Printer.Markdown
@@ -151,6 +152,7 @@ test-suite tasty
                ,    temporary
   other-modules:     Text.Docvim.AST
                ,     Text.Docvim.Compile
+               ,     Text.Docvim.Optimize
                ,     Text.Docvim.Parse
                ,     Text.Docvim.Printer.Markdown
                ,     Text.Docvim.Printer.Vim

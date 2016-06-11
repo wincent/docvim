@@ -829,8 +829,8 @@ Project
   , Fenced [ ":call pathogen#helptags()" ]
   , Project
       [ Unit
-          [ DocBlock []
-          , DocBlock []
+          [ Empty
+          , Empty
           , GenericStatement
               "if exists('g:FerretLoaded') || &compatible || v:version < 700"
           , GenericStatement "finish"
@@ -867,50 +867,50 @@ Project
           , GenericStatement "autocmd QuickFixCmdPost l* nested lwindow"
           , GenericStatement "augroup END"
           , GenericStatement "endif"
-          , DocBlock []
+          , Empty
           , GenericStatement
               "command! -nargs=+ -complete=file Ack call ferret#private#ack(<q-args>)"
-          , DocBlock []
+          , Empty
           , GenericStatement
               "command! -nargs=+ -complete=file Lack call ferret#private#lack(<q-args>)"
-          , DocBlock []
+          , Empty
           , GenericStatement
               "command! -nargs=1 Acks call ferret#private#acks(<q-args>)"
-          , DocBlock []
+          , Empty
           , LetStatement
               { letLexpr = "s:map" , letValue = "get(g:, 'FerretMap', 1)" }
           , GenericStatement "if s:map"
           , GenericStatement
               "if !hasmapto('<Plug>(FerretAck)') && maparg('<leader>a', 'n') ==# ''"
-          , DocBlock []
+          , Empty
           , GenericStatement "nmap <unique> <leader>a <Plug>(FerretAck)"
           , GenericStatement "endif"
           , GenericStatement "nnoremap <Plug>(FerretAck) :Ack<space>"
           , GenericStatement
               "if !hasmapto('<Plug>FerretLack') && maparg('<leader>l', 'n') ==# ''"
-          , DocBlock []
+          , Empty
           , GenericStatement "nmap <unique> <leader>l <Plug>(FerretLack)"
           , GenericStatement "endif"
           , GenericStatement "nnoremap <Plug>(FerretLack) :Lack<space>"
           , GenericStatement
               "if !hasmapto('<Plug>(FerretAckWord)') && maparg('<leader>s', 'n') ==# ''"
-          , DocBlock []
+          , Empty
           , GenericStatement "nmap <unique> <leader>s <Plug>(FerretAckWord)"
           , GenericStatement "endif"
           , GenericStatement
               "nnoremap <Plug>(FerretAckWord) :Ack <C-r><C-w><CR>"
           , GenericStatement
               "if !hasmapto('<Plug>(FerretAcks)') && maparg('<leader>r', 'n') ==# ''"
-          , DocBlock []
+          , Empty
           , GenericStatement "nmap <unique> <leader>r <Plug>(FerretAcks)"
           , GenericStatement "endif"
           , GenericStatement
               "nnoremap <Plug>(FerretAcks) :Acks <c-r>=(exists('g:ferret_lastsearch') ? '/' . g:ferret_lastsearch . '//' : ' ')<CR><Left>"
           , GenericStatement "endif"
-          , DocBlock []
+          , Empty
           , GenericStatement
               "command! -bar Qargs execute 'args' ferret#private#qargs()"
-          , DocBlock []
+          , Empty
           , LetStatement
               { letLexpr = "s:commands"
               , letValue = "get(g:, 'FerretQFCommands', 1)"
@@ -929,8 +929,8 @@ Project
               { letLexpr = "&cpoptions " , letValue = "s:cpoptions" }
           , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
           ]
-      , DocBlock []
-      , DocBlock []
+      , Empty
+      , Empty
       ]
   , CommandsAnnotation
   , CommandAnnotation "Ack" (Just "{pattern} {options}")

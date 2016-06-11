@@ -4,7 +4,7 @@ Project
   , Project
       [ Unit
           [ LetStatement { letLexpr = "g:x" , letValue = "1 \"Unset!" }
-          , DocBlock []
+          , Empty
           , LetStatement { letLexpr = "g:y" , letValue = "1" }
           ]
       ]

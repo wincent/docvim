@@ -25,7 +25,7 @@ Project
               , functionArguments = ArgumentList []
               , functionAttributes = []
               , functionBody =
-                  [ DocBlock []
+                  [ Empty
                   , LetStatement
                       { letLexpr = "l:dispatch"
                       , letValue = "get(g:, 'FerretDispatch', 1)"
@@ -247,7 +247,7 @@ Project
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement "if has('extra_search')"
-                  , DocBlock []
+                  , Empty
                   , LetStatement
                       { letLexpr = "l:hlsearch"
                       , letValue = "get(g:, 'FerretHlsearch', &hlsearch)"
@@ -345,7 +345,7 @@ Project
                   ]
               }
           ]
-      , DocBlock []
+      , Empty
       ]
   , OptionsAnnotation
   , OptionAnnotation "g:FerretDispatch" "boolean" (Just "1")

@@ -1,7 +1,7 @@
 Project
   [ Project
       [ Unit
-          [ DocBlock []
+          [ Empty
           , LetStatement
               { letLexpr = "s:options"
               , letValue = "get(g:, 'FerretQFOptions', 1)"
@@ -26,7 +26,7 @@ Project
           , GenericStatement "augroup END"
           , GenericStatement "endif"
           , GenericStatement "endif"
-          , DocBlock []
+          , Empty
           , LetStatement
               { letLexpr = "s:map" , letValue = "get(g:, 'FerretQFMap', 1)" }
           , GenericStatement "if s:map"
@@ -38,7 +38,7 @@ Project
               "vnoremap <buffer> <silent> d :call ferret#private#qf_delete()<CR>"
           , GenericStatement "endif"
           ]
-      , DocBlock []
+      , Empty
       ]
   , OptionsAnnotation
   , OptionAnnotation "g:FerretQFOptions" "boolean" (Just "1")

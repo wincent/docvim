@@ -1,6 +1,7 @@
 module Text.Docvim.Compile (compile) where
 
 import Text.Docvim.AST
+import Text.Docvim.Optimize
 import Text.Docvim.Visitor
 import Text.Docvim.Visitor.Command
 import Text.Docvim.Visitor.Commands
@@ -33,7 +34,7 @@ compile ns = do
   let (ast9, options) = extract extractOptions ast8
   let (ast10, option) = extract extractOption ast9
   let (ast11, footer) = extract extractFooter ast10
-  injectTOC $ Project $ concat [ plugin
+  optimize $ injectTOC $ Project $ concat [ plugin
                                , [ast11]
                                , commands
                                , command

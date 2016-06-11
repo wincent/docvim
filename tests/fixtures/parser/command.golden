@@ -1,5 +1,5 @@
 Project
-  [ Project [ Unit [ DocBlock [] ] , DocBlock [] ]
+  [ Empty
   , CommandsAnnotation
   , CommandAnnotation "Ack" (Just "{pattern} {options}")
   , Paragraph [ Plaintext "Info." ]

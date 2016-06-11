@@ -774,5 +774,5 @@ Project
       [ ListItem
           [ Plaintext "Initial" , Whitespace , Plaintext "release." ]
       ]
-  , Project [ Unit [ DocBlock [] ] ]
+  , Empty
   ]
