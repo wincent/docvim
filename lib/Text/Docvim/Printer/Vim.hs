@@ -146,12 +146,12 @@ node n = case n of
   Whitespace                 -> whitespace
   _                          -> append ""
 
--- TODO: add {name}.txt to the symbol table?
 plugin :: String -> String -> Env
 plugin name desc = appendNoWrap $
-   (center filename desc (target name) " " " ") ++ "\n\n"
+   (center filename desc (target normalized) " " " ") ++ "\n\n"
   where
-    filename = "*" ++ name ++ ".txt*"
+    filename = "*" ++ normalized ++ ".txt*"
+    normalized = map toLower name
     center a b c s1 s2 =
         if | renderedWidth str >= textwidth -> str
            | odd $ renderedWidth str        -> center a b c (s1 ++ " ") s2
