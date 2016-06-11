@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiWayIf #-}
+
 module Text.Docvim.Printer.Vim (vimHelp) where
 
 import Control.Arrow
@@ -146,10 +148,16 @@ node n = case n of
 
 -- TODO: add {name}.txt to the symbol table?
 plugin :: String -> String -> Env
-plugin name desc = append $
-  "*" ++ name ++ ".txt*" ++
-  "    " ++ desc ++ "      " ++
-  "*" ++ name ++ "*" ++ "\n\n"
+plugin name desc = appendNoWrap $
+   (center filename desc (target name) " " " ") ++ "\n\n"
+  where
+    filename = "*" ++ name ++ ".txt*"
+    center a b c s1 s2 =
+        if | renderedWidth str >= textwidth -> str
+           | odd $ renderedWidth str        -> center a b c (s1 ++ " ") s2
+           | otherwise                      -> center a b c s1 (s2 ++ " ")
+      where
+        str = a ++ s1 ++ b ++ s2 ++ c
 
 -- | Append a newline.
 nl :: [Operation] -> Env
@@ -193,9 +201,9 @@ command :: Node -> Env
 command (CommandAnnotation name params) = do
   lhs <- append $ concat [":", name, " ", fromMaybe "" params]
   ws <- append " "
-  target <- linkTargets [":" ++ name] False
+  target' <- linkTargets [":" ++ name] False
   trailing <- append "\n"
-  return $ concat [lhs, ws, target, trailing]
+  return $ concat [lhs, ws, target', trailing]
 -- TODO indent what follows until next annotation...
 -- will require us to hoist it up inside CommandAnnotation
 -- (and do similar for other sections)
@@ -252,9 +260,9 @@ heading :: String -> Env
 heading h = do
   metadata <- ask
   heading' <- appendNoWrap $ map toUpper h ++ " "
-  target <- maybe (append "\n") (\x -> linkTargets [target' x] False) (pluginName metadata)
+  targ <- maybe (append "\n") (\x -> linkTargets [target' x] False) (pluginName metadata)
   trailing <- append "\n"
-  return $ concat [heading', target, trailing]
+  return $ concat [heading', targ, trailing]
   where
     target' x = normalize $ x ++ "-" ++ h
 
@@ -266,6 +274,9 @@ sanitize x = if isSpace x then '-' else x
 
 link :: String -> String
 link l = "|" ++ l ++ "|"
+
+target :: String -> String
+target t = "*" ++ t ++ "*"
 
 -- TODO: be prepared to wrap these if there are a lot of them
 -- TODO: fix code smell of passing in `wrap` bool here

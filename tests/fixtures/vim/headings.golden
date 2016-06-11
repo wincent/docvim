@@ -1,4 +1,4 @@
-*foo.txt*    We need this because otherwise we don't get link targets      *foo*
+*foo.txt*      We need this because otherwise we don't get link targets      *foo*
 
 CONTENTS                                                          *foo-contents*
 
