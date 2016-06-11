@@ -1,6 +1,5 @@
 Project
-  [ Empty
-  , CommandsAnnotation
+  [ CommandsAnnotation
   , CommandAnnotation "Ack" (Just "{pattern} {options}")
   , Paragraph [ Plaintext "Info." ]
   , CommandAnnotation "Qargs" Nothing

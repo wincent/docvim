@@ -3,5 +3,4 @@ Project
       [ PluginAnnotation "Foo" "Description with trailing whitespace"
       , TOC []
       ]
-  , Empty
   ]

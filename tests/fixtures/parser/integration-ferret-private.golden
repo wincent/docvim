@@ -345,7 +345,6 @@ Project
                   ]
               }
           ]
-      , Empty
       ]
   , OptionsAnnotation
   , OptionAnnotation "g:FerretDispatch" "boolean" (Just "1")

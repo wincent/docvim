@@ -10,9 +10,17 @@ optimize = transform prune
 -- | Marks a node for pruning by returning Empty if it has no non-Empty
 -- children.
 prune :: Node -> Node
-prune n | not (null (children n)) = if all empty (children n) then Empty else n
+prune n | not (null (children n)) = checkChildren
         | container n = Empty
         | otherwise = n
+  where
+    checkChildren | all empty (children n) = Empty
+                  | any empty (children n) = filterChildren n
+                  | otherwise = n
+    filterChildren (Project cs) = Project $ filter (not . empty) cs
+    filterChildren (Unit cs) = Unit $ filter (not . empty) cs
+    filterChildren (DocBlock cs) = DocBlock $ filter (not . empty) cs
+    filterChildren _ = n
 
 -- | Returns True if the supplied node is the Empty node.
 empty :: Node -> Bool

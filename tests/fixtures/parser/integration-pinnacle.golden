@@ -774,5 +774,4 @@ Project
       [ ListItem
           [ Plaintext "Initial" , Whitespace , Plaintext "release." ]
       ]
-  , Empty
   ]
