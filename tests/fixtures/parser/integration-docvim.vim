@@ -1,1 +1,0 @@
-../shared/integration-docvim.vim

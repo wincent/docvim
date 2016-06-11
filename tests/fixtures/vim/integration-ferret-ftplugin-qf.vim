@@ -1,1 +1,0 @@
-../shared/integration-ferret-ftplugin-qf.vim

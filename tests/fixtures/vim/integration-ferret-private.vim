@@ -1,1 +1,0 @@
-../shared/integration-ferret-private.vim
