@@ -148,7 +148,7 @@ node n = case n of
 
 plugin :: String -> String -> Env
 plugin name desc = appendNoWrap $
-   center filename desc (target normalized) " " " " ++ "\n\n"
+    center filename desc (target normalized) " " " " ++ "\n\n"
   where
     filename = "*" ++ normalized ++ ".txt*"
     normalized = map toLower name
