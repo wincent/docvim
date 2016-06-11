@@ -90,6 +90,15 @@ unitTests = testGroup "Unit tests"
       in symbols
   ]
 
+diff :: String -> String -> [String]
+diff ref new = [ "git"
+              , "diff"
+              , "--color"
+              , "--diff-algorithm=histogram"
+              , ref
+              , new
+              ]
+
 goldenTests :: String -> [FilePath] -> ([String] -> String) -> TestTree
 goldenTests description sources transform = testGroup groupName $ do
     file <- sources -- list monad
@@ -100,13 +109,6 @@ goldenTests description sources transform = testGroup groupName $ do
         return $ pack output -- pack because tasty-golden wants a ByteString
       name = takeBaseName file
       golden = replaceExtension file ".golden"
-      diff ref new = [ "git"
-                    , "diff"
-                    , "--color"
-                    , "--diff-algorithm=histogram"
-                    , ref
-                    , new
-                    ]
     return $ goldenVsStringDiff' name diff golden run
   where
     groupName = "Golden " ++ description ++ " tests"
@@ -126,13 +128,6 @@ integrationTests sources = testGroup "Integration tests" $
           return $ pack $ normalize $ process contents
         name = takeBaseName source
         golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/" ++ kind ++ ".golden"
-        diff ref new = [ "git"
-                      , "diff"
-                      , "--color"
-                      , "--diff-algorithm=histogram"
-                      , ref
-                      , new
-                      ]
       return $ goldenVsStringDiff' (name ++ " (" ++ kind ++ ")") diff golden output
 
 -- | Normalize a string to always end with a newline, unless zero-length, to
@@ -153,7 +148,7 @@ normalize s | s == ""   = ""
 --  - Removed an `error` call which I am not worried about needing.
 --
 goldenVsStringDiff' :: TestName -> (FilePath -> FilePath -> [String]) -> FilePath -> IO LazyByteString.ByteString -> TestTree
-goldenVsStringDiff' name diff golden run =
+goldenVsStringDiff' name diff' golden run =
   goldenTest
     name
     (ByteString.readFile golden)
@@ -166,7 +161,7 @@ goldenVsStringDiff' name diff golden run =
     strip out = unlines $ dropWhile (not . isPrefixOf hunkHeader) (lines $ unpack out)
     cmp _ actBS = withSystemTempFile template $ \tmpFile tmpHandle -> do
       ByteString.hPut tmpHandle actBS >> hFlush tmpHandle
-      let cmd = diff golden tmpFile
+      let cmd = diff' golden tmpFile
       (_, Just sout, _, pid) <- createProcess (proc (head cmd) (tail cmd)) { std_out = CreatePipe }
       out <- LazyByteString.hGetContents sout
       evaluate . rnf $ out
