@@ -1,0 +1,57 @@
+Project
+  [ Project
+      [ Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "clipper#private#clip"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if executable('nc') == 1"
+                  , LetStatement
+                      { letLexpr = "l:address "
+                      , letValue = "get(g:, 'ClipperAddress', 'localhost')"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:port "
+                      , letValue =
+                          "+(get(g:, 'ClipperPort', 8377)) \" Co-erce to number."
+                      }
+                  , GenericStatement "if l:port"
+                  , GenericStatement
+                      "call system('nc ' . l:address . ' ' . l:port, @0)"
+                  , GenericStatement "else"
+                  , GenericStatement "call system('nc -U ' . l:address, @0)"
+                  , GenericStatement "endif"
+                  , GenericStatement "else"
+                  , GenericStatement
+                      "echoerr 'Clipper: nc executable does not exist'"
+                  , GenericStatement "endif"
+                  ]
+              }
+          ]
+      , Unit
+          [ GenericStatement
+              "if exists('g:ClipperLoaded') || &compatible || v:version < 700"
+          , GenericStatement "finish"
+          , GenericStatement "endif"
+          , LetStatement { letLexpr = "g:ClipperLoaded" , letValue = "1" }
+          , LetStatement
+              { letLexpr = "s:cpoptions" , letValue = "&cpoptions" }
+          , GenericStatement "set cpoptions&vim"
+          , GenericStatement "command! Clip call clipper#private#clip()"
+          , LetStatement
+              { letLexpr = "s:map" , letValue = "get(g:, 'ClipperMap', 1)" }
+          , GenericStatement "if s:map"
+          , GenericStatement
+              "if !hasmapto('<Plug>(ClipperClip)') && maparg('<leader>y', 'n') ==# ''"
+          , GenericStatement "nmap <unique> <leader>y <Plug>(ClipperClip)"
+          , GenericStatement "endif"
+          , GenericStatement "endif"
+          , GenericStatement "nnoremap <Plug>(ClipperClip) :Clip<CR>"
+          , LetStatement
+              { letLexpr = "&cpoptions" , letValue = "s:cpoptions" }
+          , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
+          ]
+      ]
+  ]
