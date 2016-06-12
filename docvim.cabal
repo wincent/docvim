@@ -118,7 +118,7 @@ library
                  ,  Text.Docvim.Visitor.Plugin
                  ,  Text.Docvim.Visitor.Section
                  ,  Text.Docvim.Visitor.Symbol
-                 ,  Paths_docvim
+  other-modules:    Paths_docvim
   ghc-options:      -W -Wall
   hs-source-dirs:   lib
 
