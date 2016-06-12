@@ -19,30 +19,26 @@ import Text.Docvim.Visitor.Section
 -- | "Compile" a set of translation units into a project.
 compile :: [Node] -> Node
 compile ns = do
-  let ast = foldr ($) (Project ns) [ injectCommands
-                                   , injectFunctions
-                                   , injectMappings
-                                   , injectOptions
-                                   ]
-  let (ast2, plugin) = extract extractPlugin ast
-  let (ast3, commands) = extract extractCommands ast2
-  let (ast4, command) = extract extractCommand ast3
-  let (ast5, functions) = extract extractFunctions ast4
-  let (ast6, function) = extract extractFunction ast5
-  let (ast7, mappings) = extract extractMappings ast6
-  let (ast8, mapping) = extract extractMapping ast7
-  let (ast9, options) = extract extractOptions ast8
-  let (ast10, option) = extract extractOption ast9
-  let (ast11, footer) = extract extractFooter ast10
-  optimize $ injectTOC $ Project $ concat [ plugin
-                               , [ast11]
-                               , commands
-                               , command
-                               , mappings
-                               , mapping
-                               , options
-                               , option
-                               , functions
-                               , function
-                               , footer
-                               ]
+    let ast = foldr ($) (Project ns) [ injectCommands
+                                     , injectFunctions
+                                     , injectMappings
+                                     , injectOptions
+                                     ]
+    let steps = [ extract extractPlugin
+                , extract extractCommands
+                , extract extractCommand
+                , extract extractMappings
+                , extract extractMapping
+                , extract extractOptions
+                , extract extractOption
+                , extract extractFunctions
+                , extract extractFunction
+                , extract extractFooter
+                ]
+    let (remainder, sections) = foldl reduce (ast, []) steps
+    let (beginning, rest) = splitAt 1 sections
+    optimize $ injectTOC $ Project $ (concat . concat) [beginning, [[remainder]], rest]
+  where
+    reduce (remainder', sections') step = do
+      let (r', s') = step remainder'
+      (r', sections' ++ [s'])
