@@ -5,9 +5,12 @@ import Data.List
 import Data.Maybe
 import Text.Docvim.AST
 import Text.Docvim.Parse
+import Text.Docvim.Visitor.Plugin
 import Text.Docvim.Visitor.Symbol
 
-data Metadata = Metadata { symbols :: [String] }
+data Metadata = Metadata { pluginName :: Maybe String
+                         , symbols :: [String]
+                         }
 type Env = Reader Metadata String
 
 data Anchor = Anchor [Attribute] String
@@ -15,7 +18,7 @@ data Attribute = Attribute String String
 
 markdown :: Node -> String
 markdown n = rstrip (runReader (node n) metadata) ++ "\n"
-  where metadata = Metadata (getSymbols n)
+  where metadata = Metadata (getPluginName n) (getSymbols n)
 
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns
@@ -26,31 +29,30 @@ node n = case n of
   -- TODO, for readability, this should be "<br />\n" (custom, context-aware separator; see Vim.hs)
   BreakTag                -> return "<br />"
   Code c                  -> return $ "`" ++ c ++ "`"
-  CommandAnnotation {}    -> return $ command n
-  CommandsAnnotation      -> return $ h2 "Commands" -- TODO link to foocommands
+  CommandAnnotation {}    -> command n
+  CommandsAnnotation      -> h2 "Commands"
   DocBlock d              -> nodes d
   Fenced f                -> return $ fenced f ++ "\n\n"
   FunctionDeclaration {}  -> nodes $ functionBody n
-  FunctionsAnnotation     -> return $ h2 "Functions" -- TODO link to foofunctions
-  -- TODO: add an anchor here
-  HeadingAnnotation h     -> return $ h2 h -- TODO link?
+  FunctionsAnnotation     -> h2 "Functions"
+  HeadingAnnotation h     -> h2 h
   Link l                  -> link l
   LinkTargets l           -> return $ linkTargets l
   List ls                 -> nodes ls >>= nl
   ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
-  MappingAnnotation m     -> return $ mapping m
-  MappingsAnnotation      -> return $ h2 "Mappings" -- TODO link to foomappings
-  OptionAnnotation {}     -> return $ option n
-  OptionsAnnotation       -> return $ h2 "Options" -- TODO link to foooptions
+  MappingAnnotation m     -> mapping m
+  MappingsAnnotation      -> h2 "Mappings"
+  OptionAnnotation {}     -> option n
+  OptionsAnnotation       -> h2 "Options"
   Paragraph p             -> nodes p >>= nl >>= nl
   Plaintext p             -> return p
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
-  PluginAnnotation name _ -> return $ h1 name
+  PluginAnnotation name _ -> h1 name
   Project p               -> nodes p
   Separator               -> return $ "---" ++ "\n\n"
-  SubheadingAnnotation s  -> return $ h3 s
+  SubheadingAnnotation s  -> h3 s
   Unit u                  -> nodes u
   Whitespace              -> return " "
   _                       -> return ""
@@ -97,17 +99,26 @@ linkTargets ls =  "<p align=\"right\">"
                            ]
                            (codify l)
 
-h1 :: String -> String
+h1 :: String -> Env
 h1 = heading 1
 
-h2 :: String -> String
+h2 :: String -> Env
 h2 = heading 2
 
-h3 :: String -> String
+h3 :: String -> Env
 h3 = heading 3
 
-heading :: Int -> String -> String
-heading level string = replicate level '#' ++ " " ++ string ++ "\n\n"
+heading :: Int -> String -> Env
+heading level string = do
+  metadata <- ask
+  return $ replicate level '#' ++ " " ++ string ++ anch (pluginName metadata) ++ "\n\n"
+  where
+    anch name = a $ Anchor [ Attribute "name" (sanitizeAnchor $ pre ++ string)
+                           , Attribute "href" (gitHubAnchor $ pre ++ string)
+                           ]
+                           ""
+      where
+        pre = maybe "" (++ "-") name
 
 -- | Wraps a string in `<code>`/`</code>` tags.
 -- TODO: remember why I'm not using backticks here.
@@ -129,19 +140,21 @@ gitHubAnchor :: String -> String
 gitHubAnchor n = "#user-content-" ++ sanitizeAnchor n
 
 -- TODO: make sure symbol table knows about option targets too
-option :: Node -> String
-option (OptionAnnotation n t d) = targets ++ h
+option :: Node -> Env
+option (OptionAnnotation n t d) = do
+  h <- h3 $ "`" ++ n ++ "` (" ++ t ++ ", default: " ++ def ++ ")"
+  return $ targets ++ h
   where targets = linkTargets [n]
-        h = h3 $ "`" ++ n ++ "` (" ++ t ++ ", default: " ++ def ++ ")"
         def = fromMaybe "none" d
 option _ = invalidNode
 
-command :: Node -> String
-command (CommandAnnotation name params) = target ++ content
+command :: Node -> Env
+command (CommandAnnotation name params) = do
+  content <- h3 $ "`:" ++ annotation ++ "`"
+  return $ target ++ content
   where target = linkTargets [":" ++ name]
-        content = h3 $ "`:" ++ annotation ++ "`"
         annotation = rstrip $ name ++ " " ++ fromMaybe "" params
 command _ = invalidNode
 
-mapping :: String -> String
+mapping :: String -> Env
 mapping name = h3 $ "`" ++ name ++ "`"
