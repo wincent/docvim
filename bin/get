@@ -24,7 +24,7 @@ update() {
   local PROJECT
   PROJECT="$1"
   echo "Updating $PROJECT"
-  git --git-dir "../$PROJECT/.git" archive --prefix="$PROJECT/input/" master \
+  git --git-dir "../$PROJECT/.git" archive --prefix="$PROJECT/input/" HEAD \
     | tar -x -C tests/fixtures/integration -f -
   mkdir -p "tests/fixtures/integration/$PROJECT/golden"
 }
