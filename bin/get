@@ -15,6 +15,7 @@ usage() {
   echo "  bin/get ferret      #"
   echo "  bin/put pinnacle    # freshen a specific downstream"
   echo "  bin/put scalpel     #"
+  echo "  bin/put terminus    #"
   echo "  bin/get vim-docvim  #"
   echo "  ---------------------------------------------------"
   echo "  bin/get all         # freshen all sources"
@@ -42,9 +43,10 @@ else
         update ferret
         update pinnacle
         update scalpel
+        update terminus
         update vim-docvim
         ;;
-      command-t|ferret|pinnacle|scalpel|vim-docvim)
+      command-t|ferret|pinnacle|scalpel|terminus|vim-docvim)
         update "$PROJECT"
         ;;
       *)
