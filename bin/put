@@ -17,10 +17,11 @@ usage() {
   echo
   echo "Usage:"
   echo
-  echo "  bin/put ferret   # freshen a specific downstream"
-  echo "  bin/put scalpel"
-  echo "  ------------------------------------------------"
-  echo "  bin/put all      # freshen all downstreams"
+  echo "  bin/put ferret      #"
+  echo "  bin/put scalpel     # freshen a specific downstream"
+  echo "  bin/put vim-docvim  #"
+  echo "  ---------------------------------------------------"
+  echo "  bin/put all         # freshen all downstreams"
   exit
 }
 
@@ -30,6 +31,7 @@ update() {
   echo "Updating $PROJECT"
   cp "tests/fixtures/integration/$PROJECT/golden/markdown.golden" \
     "../$PROJECT/README.md"
+  mkdir -p "../$PROJECT/doc"
   cp "tests/fixtures/integration/$PROJECT/golden/plaintext.golden" \
     "../$PROJECT/doc/$PROJECT.txt"
 }
@@ -44,8 +46,9 @@ else
       all)
         update "ferret"
         update "scalpel"
+        update "vim-docvim"
         ;;
-      ferret|scalpel)
+      ferret|scalpel|vim-docvim)
         update "$PROJECT"
         ;;
       *)

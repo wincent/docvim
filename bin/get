@@ -11,10 +11,11 @@ usage() {
   echo
   echo "Usage:"
   echo
-  echo "  bin/get ferret   # freshen a specific source"
-  echo "  bin/get scalpel"
-  echo "  --------------------------------------------"
-  echo "  bin/get all      # freshen all sources"
+  echo "  bin/get ferret      #"
+  echo "  bin/put scalpel     # freshen a specific downstream"
+  echo "  bin/get vim-docvim  #"
+  echo "  ---------------------------------------------------"
+  echo "  bin/get all         # freshen all sources"
   exit
 }
 
@@ -24,6 +25,7 @@ update() {
   echo "Updating $PROJECT"
   git --git-dir "../$PROJECT/.git" archive --prefix="$PROJECT/input/" master \
     | tar -x -C tests/fixtures/integration -f -
+  mkdir -p "tests/fixtures/integration/$PROJECT/golden"
 }
 
 if [ $# -eq 0 ]; then
@@ -34,10 +36,11 @@ else
     shift
     case $PROJECT in
       all)
-        update "ferret"
-        update "scalpel"
+        update ferret
+        update scalpel
+        update vim-docvim
         ;;
-      ferret|scalpel)
+      ferret|scalpel|vim-docvim)
         update "$PROJECT"
         ;;
       *)

@@ -226,6 +226,12 @@ cabal upload dist/docvim-$VERSION.tar.gz
 
 - [Hackage package](https://hackage.haskell.org/package/docvim)
 
+### Examples of plug-ins using docvim
+
+- [Ferret](https://github.com/wincent/ferret)
+- [Scalpel](https://github.com/wincent/scalpel)
+- [vim-docvim](https://github.com/wincent/vim-docvim)
+
 ## FAQ
 
 ### Why a new tool and not an existing one like [Vimdoc]?
@@ -235,14 +241,14 @@ cabal upload dist/docvim-$VERSION.tar.gz
 * It's fun to build new things from scratch.
 * The project is a great fit for my learn-me-a-Haskell goal this year.
 
-### Why is it called "Docvim"?
+### Why is it called "docvim"?
 
 "Vimdoc" was the first name that occurred to me when I started this project, but:
 
 * The number one hit for "vimdoc" is [this online copy of Vim's own documentation](http://vimdoc.sourceforge.net/).
 * The name "Vimdoc" is already taken by [a similar project](https://github.com/google/vimdoc).
 
-So, in a remarkable flash of profound creativity, I settled on "Docvim" instead, which right now yields this pleasing search result:
+So, in a remarkable flash of profound creativity, I settled on "docvim" instead, which right now yields this pleasing search result:
 
 > Did you mean: dacvim
 
