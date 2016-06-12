@@ -229,6 +229,7 @@ cabal upload dist/docvim-$VERSION.tar.gz
 ### Examples of plug-ins using docvim
 
 - [Ferret](https://github.com/wincent/ferret)
+- [Pinnacle](https://github.com/wincent/pinnacle)
 - [Scalpel](https://github.com/wincent/scalpel)
 - [vim-docvim](https://github.com/wincent/vim-docvim)
 

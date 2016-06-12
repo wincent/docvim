@@ -18,7 +18,8 @@ usage() {
   echo "Usage:"
   echo
   echo "  bin/put ferret      #"
-  echo "  bin/put scalpel     # freshen a specific downstream"
+  echo "  bin/put pinnacle    # freshen a specific downstream"
+  echo "  bin/put scalpel     #"
   echo "  bin/put vim-docvim  #"
   echo "  ---------------------------------------------------"
   echo "  bin/put all         # freshen all downstreams"
@@ -44,11 +45,12 @@ else
     shift
     case $PROJECT in
       all)
-        update "ferret"
-        update "scalpel"
-        update "vim-docvim"
+        update ferret
+        update pinnacle
+        update scalpel
+        update vim-docvim
         ;;
-      ferret|scalpel|vim-docvim)
+      ferret|pinnacle|scalpel|vim-docvim)
         update "$PROJECT"
         ;;
       *)
