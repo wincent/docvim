@@ -1,3 +1,5 @@
+# master (not yet released)
+
 # 0.3.0.0 (12 June 2016)
 
 - Fix explicit links to headings in GitHub Markdown.
