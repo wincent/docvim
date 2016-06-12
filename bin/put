@@ -1,0 +1,58 @@
+#!/bin/sh
+
+# Put fresh copies of output files into downstream projects based on integration
+# test golden files.
+#
+# Assumes downstreams exist as peers of the current repo.
+#
+# Note: Normally one would update the downstreams from each downstream itself,
+# using the globally installed `docvim` instance, but this script provides a
+# means of conveniently running an arbitary, potentially unreleased, version of
+# `docvim` against a downstream.
+
+set -e
+
+usage() {
+  echo "Install fresh copies of generated files from integration tests."
+  echo
+  echo "Usage:"
+  echo
+  echo "  bin/put ferret   # freshen a specific downstream"
+  echo "  bin/put scalpel"
+  echo "  ------------------------------------------------"
+  echo "  bin/put all      # freshen all downstreams"
+  exit
+}
+
+update() {
+  local PROJECT
+  PROJECT="$1"
+  echo "Updating $PROJECT"
+  cp "tests/fixtures/integration/$PROJECT/golden/markdown.golden" \
+    "../$PROJECT/README.md"
+  cp "tests/fixtures/integration/$PROJECT/golden/plaintext.golden" \
+    "../$PROJECT/doc/$PROJECT.txt"
+}
+
+if [ $# -eq 0 ]; then
+  usage
+else
+  while [ $# -gt 0 ]; do
+    PROJECT=$1
+    shift
+    case $PROJECT in
+      all)
+        update "ferret"
+        update "scalpel"
+        ;;
+      ferret|scalpel)
+        update "$PROJECT"
+        ;;
+      *)
+        echo "Unrecognized project: $PROJECT"
+        echo
+        usage
+        ;;
+    esac
+  done
+fi
