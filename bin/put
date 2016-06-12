@@ -19,8 +19,9 @@ usage() {
   echo
   echo "  bin/put command-t   #"
   echo "  bin/put ferret      #"
-  echo "  bin/put pinnacle    #"
-  echo "  bin/put scalpel     # freshen a specific downstream"
+  echo "  bin/put loupe       #"
+  echo "  bin/put pinnacle    # freshen a specific downstream"
+  echo "  bin/put scalpel     #"
   echo "  bin/put terminus    #"
   echo "  bin/get vim-clipper #"
   echo "  bin/put vim-docvim  #"
@@ -50,13 +51,14 @@ else
       all)
         update command-t
         update ferret
+        update loupe
         update pinnacle
         update scalpel
         update terminus
         update vim-clipper
         update vim-docvim
         ;;
-      command-t|ferret|pinnacle|scalpel|terminus|vim-clipper|vim-docvim)
+      command-t|ferret|loupe|pinnacle|scalpel|terminus|vim-clipper|vim-docvim)
         update "$PROJECT"
         ;;
       *)
