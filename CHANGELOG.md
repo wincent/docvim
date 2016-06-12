@@ -1,5 +1,6 @@
-# master (not yet released)
+# 0.3.0.0 (12 June 2016)
 
+- Fix explicit links to headings in GitHub Markdown.
 - Plug-in link targets  at the top level (eg. `*foo.txt*` and `*foo`) are now downcased.
 - Info extracted from the `@plugin` annotation is now centered in the Vim output.
 - The `-d`/`--debug` flag now causes a dump of the compiled AST to be logged to the standard error.
