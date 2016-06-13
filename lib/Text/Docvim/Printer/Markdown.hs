@@ -17,8 +17,12 @@ data Anchor = Anchor [Attribute] String
 data Attribute = Attribute String String
 
 markdown :: Node -> String
-markdown n = rstrip (runReader (node n) metadata) ++ "\n"
-  where metadata = Metadata (getPluginName n) (getSymbols n)
+markdown n = if null stripped
+             then ""
+             else stripped ++ "\n"
+  where
+    metadata = Metadata (getPluginName n) (getSymbols n)
+    stripped = rstrip (runReader (node n) metadata)
 
 nodes :: [Node] -> Env
 nodes ns = concat <$> mapM node ns

@@ -34,7 +34,9 @@ textwidth :: Int
 textwidth = 78
 
 vimHelp :: Node -> String
-vimHelp n = suppressTrailingWhitespace output ++ "\n"
+vimHelp n = if null suppressTrailingWhitespace
+            then ""
+            else suppressTrailingWhitespace ++ "\n"
   where metadata = Metadata (getPluginName n)
         context = Context defaultLineBreak ""
         operations = evalState (runReaderT (node n) metadata) context
@@ -44,7 +46,7 @@ vimHelp n = suppressTrailingWhitespace output ++ "\n"
         reduce acc (Slurp atom) = if atom `isSuffixOf` acc
                                   then take (length acc - length atom) acc
                                   else acc
-        suppressTrailingWhitespace str = rstrip $ intercalate "\n" (map rstrip (splitOn "\n" str))
+        suppressTrailingWhitespace = rstrip $ intercalate "\n" (map rstrip (splitOn "\n" output))
 
 -- | Helper function that appends and updates `partialLine` context,
 -- hard-wrapping if necessary to remain under `textwidth`.
