@@ -4,6 +4,8 @@ Project
       , TOC
           [ "Intro"
           , "Installation"
+          , "Mappings"
+          , "Options"
           , "Overrides"
           , "Related"
           , "Website"
@@ -11,8 +13,6 @@ Project
           , "Development"
           , "Authors"
           , "History"
-          , "Mappings"
-          , "Options"
           ]
       ]
   , HeadingAnnotation "Intro"
@@ -662,6 +662,725 @@ Project
       , Plaintext "with:"
       ]
   , Fenced [ ":call pathogen#helptags()" ]
+  , Project
+      [ Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#private#very_magic_slash"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if getcmdtype() != ':'"
+                  , GenericStatement "return '/'"
+                  , GenericStatement "endif"
+                  , LetStatement { letLexpr = "l:pos" , letValue = "getcmdpos()" }
+                  , LetStatement { letLexpr = "l:cmd" , letValue = "getcmdline()" }
+                  , GenericStatement "if len(l:cmd) + 1 != l:pos"
+                  , GenericStatement "return '/'"
+                  , GenericStatement "endif"
+                  , GenericStatement "while 1"
+                  , LetStatement
+                      { letLexpr = "l:stripped" , letValue = "s:strip_ranges(l:cmd)" }
+                  , GenericStatement "if l:stripped ==# l:cmd"
+                  , GenericStatement "break"
+                  , GenericStatement "else"
+                  , LetStatement { letLexpr = "l:cmd" , letValue = "l:stripped" }
+                  , GenericStatement "endif"
+                  , GenericStatement "endwhile"
+                  , GenericStatement "if index(['g', 's', 'v'], l:cmd) != -1"
+                  , GenericStatement "return loupe#private#prepare_highlight('/\\v')"
+                  , GenericStatement "endif"
+                  , GenericStatement "return '/'"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:strip_ranges"
+              , functionArguments = ArgumentList [ Argument "cmdline" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement { letLexpr = "l:cmdline" , letValue = "a:cmdline" }
+                  , LetStatement
+                      { letLexpr = "l:modifier" , letValue = "'\\([+-]\\d*\\)*'" }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\d\\+' . l:modifier, '', '') \" line number"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\.' . l:modifier, '', '') \" current line"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^$' . l:modifier, '', '') \" last line in file"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^%' . l:modifier, '', '') \" entire file"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, \"^'[a-z]\\\\c\" . l:modifier, '', '') \" mark t (or T)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, \"^'[<>]\" . l:modifier, '', '') \" visual selection marks"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^/[^/]\\+/' . l:modifier, '', '') \" /{pattern}/"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^?[^?]\\+?' . l:modifier, '', '') \" ?{pattern}?"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\\\/' . l:modifier, '', '') \" \\/ (next match of previous pattern)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\\\?' . l:modifier, '', '') \" \\? (last match of previous pattern)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\\\&' . l:modifier, '', '') \" \\& (last match of previous substitution)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue = "substitute(l:cmdline, '^,', '', '') \" , (separator)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue = "substitute(l:cmdline, '^;', '', '') \" ; (separator)"
+                      }
+                  , GenericStatement "return l:cmdline"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#private#prepare_highlight"
+              , functionArguments = ArgumentList [ Argument "result" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('autocmd')"
+                  , GenericStatement "augroup LoupeHightlightMatch"
+                  , GenericStatement "autocmd!"
+                  , GenericStatement
+                      "autocmd CursorMoved * :call loupe#private#hlmatch()"
+                  , GenericStatement "augroup END"
+                  , GenericStatement "endif"
+                  , GenericStatement "return a:result"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#private#clear_highlight"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if exists('w:loupe_hlmatch')"
+                  , GenericStatement "try"
+                  , GenericStatement "call matchdelete(w:loupe_hlmatch)"
+                  , GenericStatement "catch /\\v<(E802|E803)>/"
+                  , GenericStatement "finally"
+                  , UnletStatement
+                      { unletBang = False , unletBody = "w:loupe_hlmatch" }
+                  , GenericStatement "endtry"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#private#cleanup"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if !v:hlsearch"
+                  , GenericStatement "call loupe#private#clear_highlight()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#private#hlmatch"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ Empty
+                  , LetStatement
+                      { letLexpr = "l:highlight"
+                      , letValue = "get(g:, 'LoupeHighlightGroup', 'IncSearch')"
+                      }
+                  , GenericStatement "if empty(l:highlight)"
+                  , GenericStatement "return"
+                  , GenericStatement "endif"
+                  , GenericStatement "if has('autocmd')"
+                  , GenericStatement "augroup LoupeHightlightMatch"
+                  , GenericStatement "autocmd!"
+                  , GenericStatement "augroup END"
+                  , GenericStatement "endif"
+                  , GenericStatement "call loupe#private#clear_highlight()"
+                  , LetStatement
+                      { letLexpr = "l:pattern" , letValue = "'\\c\\%#' . @/" }
+                  , GenericStatement "if exists('*matchadd')"
+                  , LetStatement
+                      { letLexpr = "w:loupe_hlmatch"
+                      , letValue = "matchadd(l:highlight, l:pattern)"
+                      }
+                  , GenericStatement "endif"
+                  ]
+              }
+          ]
+      , Unit
+          [ GenericStatement
+              "if exists('g:LoupeLoaded') || &compatible || v:version < 700"
+          , GenericStatement "finish"
+          , GenericStatement "endif"
+          , LetStatement { letLexpr = "g:LoupeLoaded" , letValue = "1" }
+          , LetStatement
+              { letLexpr = "s:cpoptions" , letValue = "&cpoptions" }
+          , GenericStatement "set cpoptions&vim"
+          , GenericStatement "if &history < 1000"
+          , GenericStatement
+              "set history=1000 \" Longer search and command history (default is 50)."
+          , GenericStatement "endif"
+          , GenericStatement "if has('extra_search')"
+          , GenericStatement "set hlsearch \" Highlight search strings."
+          , GenericStatement
+              "set incsearch \" Incremental search (\"find as you type\")."
+          , GenericStatement "endif"
+          , GenericStatement "set ignorecase \" Ignore case when searching."
+          , GenericStatement
+              "set shortmess+=s \" Don't echo search wrap messages."
+          , GenericStatement
+              "set smartcase \" Case-sensitive search if search string includes a capital letter."
+          , LetStatement
+              { letLexpr = "s:map"
+              , letValue = "get(g:, 'LoupeClearHighlightMap', 1)"
+              }
+          , GenericStatement "if s:map"
+          , GenericStatement
+              "if !hasmapto('<Plug>(LoupeClearHighlight)') && maparg('<leader>n', 'n') ==# ''"
+          , GenericStatement
+              "nmap <silent> <unique> <leader>n <Plug>(LoupeClearHighlight)"
+          , GenericStatement "endif"
+          , GenericStatement "endif"
+          , GenericStatement
+              "nnoremap <silent> <Plug>(LoupeClearHighlight) :nohlsearch<CR> :call loupe#private#clear_highlight()<CR>"
+          , GenericStatement
+              "cabbrev <silent> <expr> noh (getcmdtype() == ':' && getcmdpos() == 4 ? 'noh <bar> call loupe#private#clear_highlight()<CR>' : 'noh')"
+          , GenericStatement
+              "cabbrev <silent> <expr> nohl (getcmdtype() == ':' && getcmdpos() == 5 ? 'nohl <bar> call loupe#private#clear_highlight()<CR>' : 'nohl')"
+          , GenericStatement
+              "cabbrev <silent> <expr> nohls (getcmdtype() == ':' && getcmdpos() == 6 ? 'nohls <bar> call loupe#private#clear_highlight()<CR>' : 'nohls')"
+          , GenericStatement
+              "cabbrev <silent> <expr> nohlse (getcmdtype() == ':' && getcmdpos() == 7 ? 'nohlse <bar> call loupe#private#clear_highlight()<CR>' : 'nohlse')"
+          , GenericStatement
+              "cabbrev <silent> <expr> nohlsea (getcmdtype() == ':' && getcmdpos() == 8 ? 'nohlsea <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsea')"
+          , GenericStatement
+              "cabbrev <silent> <expr> nohlsear (getcmdtype() == ':' && getcmdpos() == 9 ? 'nohlsear <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsear')"
+          , GenericStatement
+              "cabbrev <silent> <expr> nohlsearc (getcmdtype() == ':' && getcmdpos() == 10 ? 'nohlsearc <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsearc')"
+          , GenericStatement
+              "cabbrev <silent> <expr> nohlsearch (getcmdtype() == ':' && getcmdpos() == 11 ? 'nohlsearch <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsearch')"
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "s:MagicString"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "s:magic"
+                      , letValue = "get(g:, 'LoupeVeryMagic', 1)"
+                      }
+                  , GenericStatement "return s:magic ? '\\v' : ''"
+                  ]
+              }
+          , GenericStatement
+              "nnoremap <expr> / loupe#private#prepare_highlight('/' . <SID>MagicString())"
+          , GenericStatement
+              "nnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())"
+          , GenericStatement
+              "xnoremap <expr> / loupe#private#prepare_highlight('/' . <SID>MagicString())"
+          , GenericStatement
+              "xnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())"
+          , GenericStatement "if !empty(s:MagicString())"
+          , GenericStatement
+              "cnoremap <expr> / loupe#private#very_magic_slash()"
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "s:center"
+              , letValue = "get(g:, 'LoupeCenterResults', 1)"
+              }
+          , LetStatement
+              { letLexpr = "s:center_string"
+              , letValue = "s:center ? 'zz' : ''"
+              }
+          , GenericStatement
+              "execute 'nnoremap <silent> # #' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
+          , GenericStatement
+              "execute 'nnoremap <silent> * *' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
+          , GenericStatement
+              "execute 'nnoremap <silent> N N' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
+          , GenericStatement
+              "execute 'nnoremap <silent> g# g#' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
+          , GenericStatement
+              "execute 'nnoremap <silent> g* g*' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
+          , GenericStatement
+              "execute 'nnoremap <silent> n n' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
+          , GenericStatement "if has('autocmd') && has('extra_search')"
+          , GenericStatement "augroup LoupeCleanUp"
+          , GenericStatement "autocmd!"
+          , GenericStatement
+              "autocmd WinEnter * :call loupe#private#cleanup()"
+          , GenericStatement "augroup END"
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "&cpoptions" , letValue = "s:cpoptions" }
+          , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
+          ]
+      ]
+  , MappingsAnnotation
+  , MappingAnnotation "<Plug>(LoupeClearHighlight)"
+  , Paragraph
+      [ Plaintext "Loupe"
+      , Whitespace
+      , Plaintext "maps"
+      , Whitespace
+      , Plaintext "<leader>n"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Link "<Plug>(LoupeClearHighlight)"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "clears"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "visible"
+      , Whitespace
+      , Plaintext "highlights"
+      , Whitespace
+      , Plaintext "(like"
+      , Whitespace
+      , Link ":nohighlight"
+      , Whitespace
+      , Plaintext "does)."
+      , Whitespace
+      , Plaintext "To"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Plaintext "an"
+      , Whitespace
+      , Plaintext "alternative"
+      , Whitespace
+      , Plaintext "mapping"
+      , Whitespace
+      , Plaintext "instead,"
+      , Whitespace
+      , Plaintext "create"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "different"
+      , Whitespace
+      , Plaintext "one"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "your"
+      , Whitespace
+      , Link ".vimrc"
+      , Whitespace
+      , Plaintext "instead"
+      , Whitespace
+      , Plaintext "using"
+      , Whitespace
+      , Link ":nmap"
+      , Plaintext ":"
+      ]
+  , Fenced
+      [ "\" Instead of <leader>n, use <leader>x."
+      , "nmap <leader>x <Plug>(LoupeClearHighlight)"
+      ]
+  , Paragraph
+      [ Plaintext "Note"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "Loupe"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "not"
+      , Whitespace
+      , Plaintext "try"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "up"
+      , Whitespace
+      , Plaintext "its"
+      , Whitespace
+      , Plaintext "<leader>n"
+      , Whitespace
+      , Plaintext "mapping"
+      , Whitespace
+      , Plaintext "if"
+      , Whitespace
+      , Plaintext "any"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "following"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "true:"
+      ]
+  , List
+      [ ListItem
+          [ Plaintext "A"
+          , Whitespace
+          , Plaintext "mapping"
+          , Whitespace
+          , Plaintext "for"
+          , Whitespace
+          , Plaintext "<leader>n"
+          , Whitespace
+          , Plaintext "already"
+          , Whitespace
+          , Plaintext "exists."
+          ]
+      , ListItem
+          [ Plaintext "An"
+          , Whitespace
+          , Plaintext "alternative"
+          , Whitespace
+          , Plaintext "mapping"
+          , Whitespace
+          , Plaintext "for"
+          , Whitespace
+          , Link "<Plug>(LoupeClearHighlight)"
+          , Whitespace
+          , Plaintext "has"
+          , Whitespace
+          , Plaintext "already"
+          , Whitespace
+          , Plaintext "been"
+          , Whitespace
+          , Plaintext "set"
+          , Whitespace
+          , Plaintext "up"
+          , Whitespace
+          , Plaintext "from"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Link ".vimrc"
+          , Plaintext "."
+          ]
+      , ListItem
+          [ Plaintext "The"
+          , Whitespace
+          , Plaintext "mapping"
+          , Whitespace
+          , Plaintext "has"
+          , Whitespace
+          , Plaintext "been"
+          , Whitespace
+          , Plaintext "suppressed"
+          , Whitespace
+          , Plaintext "by"
+          , Whitespace
+          , Plaintext "setting"
+          , Whitespace
+          , Link "g:LoupeClearHighlightMap"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "1"
+          , Whitespace
+          , Plaintext "in"
+          , Whitespace
+          , Plaintext "your"
+          , Whitespace
+          , Link ".vimrc"
+          , Plaintext "."
+          ]
+      ]
+  , OptionsAnnotation
+  , OptionAnnotation
+      "g:LoupeHighlightGroup" "string" (Just "IncSearch")
+  , Paragraph
+      [ Plaintext "Specifies"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link ":highlight"
+      , Whitespace
+      , Plaintext "group"
+      , Whitespace
+      , Plaintext "used"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "emphasize"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "match"
+      , Whitespace
+      , Plaintext "currently"
+      , Whitespace
+      , Plaintext "under"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "cursor"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "current"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "pattern."
+      , Whitespace
+      , Plaintext "Defaults"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "\"IncSearch\""
+      , Whitespace
+      , Plaintext "(ie."
+      , Whitespace
+      , Link "hl-IncSearch"
+      , Plaintext ")."
+      , Whitespace
+      , Plaintext "For"
+      , Whitespace
+      , Plaintext "example:"
+      ]
+  , Fenced [ "let g:LoupeHighlightGroup='Error'" ]
+  , Paragraph
+      [ Plaintext "To"
+      , Whitespace
+      , Plaintext "prevent"
+      , Whitespace
+      , Plaintext "any"
+      , Whitespace
+      , Plaintext "special"
+      , Whitespace
+      , Plaintext "highlighting"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "being"
+      , Whitespace
+      , Plaintext "applied,"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "this"
+      , Whitespace
+      , Plaintext "option"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "\"\""
+      , Whitespace
+      , Plaintext "(ie."
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "empty"
+      , Whitespace
+      , Plaintext "string)."
+      ]
+  , OptionAnnotation "g:LoupeLoaded" "any" Nothing
+  , Paragraph
+      [ Plaintext "To"
+      , Whitespace
+      , Plaintext "prevent"
+      , Whitespace
+      , Plaintext "Loupe"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "being"
+      , Whitespace
+      , Plaintext "loaded,"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Link "g:LoupeLoaded"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "any"
+      , Whitespace
+      , Plaintext "value"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "your"
+      , Whitespace
+      , Link ".vimrc"
+      , Plaintext "."
+      , Whitespace
+      , Plaintext "For"
+      , Whitespace
+      , Plaintext "example:"
+      ]
+  , Fenced [ "let g:LoupeLoaded=1" ]
+  , OptionAnnotation "g:LoupeClearHighlightMap" "boolean" (Just "1")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "whether"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "up"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "<Plug>(LoupeClearHighlight)"
+      , Whitespace
+      , Plaintext "mapping."
+      , Whitespace
+      , Plaintext "To"
+      , Whitespace
+      , Plaintext "prevent"
+      , Whitespace
+      , Plaintext "any"
+      , Whitespace
+      , Plaintext "mapping"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "being"
+      , Whitespace
+      , Plaintext "configured,"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "0:"
+      ]
+  , Fenced [ "let g:LoupeClearHighlightMap=0" ]
+  , OptionAnnotation "g:LoupeVeryMagic" "boolean" (Just "1")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "whether"
+      , Whitespace
+      , Plaintext "\"very"
+      , Whitespace
+      , Plaintext "magic\""
+      , Whitespace
+      , Plaintext "pattern"
+      , Whitespace
+      , Plaintext "syntax"
+      , Whitespace
+      , Plaintext "("
+      , Link "/\\v"
+      , Plaintext ")"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "applied"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Plaintext "default."
+      , Whitespace
+      , Plaintext "To"
+      , Whitespace
+      , Plaintext "disable,"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "0:"
+      ]
+  , Fenced [ "let g:LoupeVeryMagic=0" ]
+  , OptionAnnotation "g:LoupeCenterResults" "boolean" (Just "1")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "whether"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "match's"
+      , Whitespace
+      , Plaintext "line"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "vertically"
+      , Whitespace
+      , Plaintext "centered"
+      , Whitespace
+      , Plaintext "within"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "window"
+      , Whitespace
+      , Plaintext "when"
+      , Whitespace
+      , Plaintext "jumping"
+      , Whitespace
+      , Plaintext "(via"
+      , Whitespace
+      , Link "n"
+      , Plaintext ","
+      , Whitespace
+      , Link "N"
+      , Whitespace
+      , Plaintext "etc)."
+      , Whitespace
+      , Plaintext "To"
+      , Whitespace
+      , Plaintext "disable,"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "0:"
+      ]
+  , Fenced [ "let g:LoupeCenterResults=0" ]
+  , FooterAnnotation
   , HeadingAnnotation "Overrides"
   , Paragraph
       [ Plaintext "Loupe"
@@ -1716,722 +2435,4 @@ Project
           , Plaintext "(https://github.com/wincent/wincent)."
           ]
       ]
-  , Project
-      [ Unit
-          [ FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#private#very_magic_slash"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if getcmdtype() != ':'"
-                  , GenericStatement "return '/'"
-                  , GenericStatement "endif"
-                  , LetStatement { letLexpr = "l:pos" , letValue = "getcmdpos()" }
-                  , LetStatement { letLexpr = "l:cmd" , letValue = "getcmdline()" }
-                  , GenericStatement "if len(l:cmd) + 1 != l:pos"
-                  , GenericStatement "return '/'"
-                  , GenericStatement "endif"
-                  , GenericStatement "while 1"
-                  , LetStatement
-                      { letLexpr = "l:stripped" , letValue = "s:strip_ranges(l:cmd)" }
-                  , GenericStatement "if l:stripped ==# l:cmd"
-                  , GenericStatement "break"
-                  , GenericStatement "else"
-                  , LetStatement { letLexpr = "l:cmd" , letValue = "l:stripped" }
-                  , GenericStatement "endif"
-                  , GenericStatement "endwhile"
-                  , GenericStatement "if index(['g', 's', 'v'], l:cmd) != -1"
-                  , GenericStatement "return loupe#private#prepare_highlight('/\\v')"
-                  , GenericStatement "endif"
-                  , GenericStatement "return '/'"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:strip_ranges"
-              , functionArguments = ArgumentList [ Argument "cmdline" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ LetStatement { letLexpr = "l:cmdline" , letValue = "a:cmdline" }
-                  , LetStatement
-                      { letLexpr = "l:modifier" , letValue = "'\\([+-]\\d*\\)*'" }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\d\\+' . l:modifier, '', '') \" line number"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\.' . l:modifier, '', '') \" current line"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^$' . l:modifier, '', '') \" last line in file"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^%' . l:modifier, '', '') \" entire file"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, \"^'[a-z]\\\\c\" . l:modifier, '', '') \" mark t (or T)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, \"^'[<>]\" . l:modifier, '', '') \" visual selection marks"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^/[^/]\\+/' . l:modifier, '', '') \" /{pattern}/"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^?[^?]\\+?' . l:modifier, '', '') \" ?{pattern}?"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\\\/' . l:modifier, '', '') \" \\/ (next match of previous pattern)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\\\?' . l:modifier, '', '') \" \\? (last match of previous pattern)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\\\&' . l:modifier, '', '') \" \\& (last match of previous substitution)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue = "substitute(l:cmdline, '^,', '', '') \" , (separator)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue = "substitute(l:cmdline, '^;', '', '') \" ; (separator)"
-                      }
-                  , GenericStatement "return l:cmdline"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#private#prepare_highlight"
-              , functionArguments = ArgumentList [ Argument "result" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if has('autocmd')"
-                  , GenericStatement "augroup LoupeHightlightMatch"
-                  , GenericStatement "autocmd!"
-                  , GenericStatement
-                      "autocmd CursorMoved * :call loupe#private#hlmatch()"
-                  , GenericStatement "augroup END"
-                  , GenericStatement "endif"
-                  , GenericStatement "return a:result"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#private#clear_highlight"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if exists('w:loupe_hlmatch')"
-                  , GenericStatement "try"
-                  , GenericStatement "call matchdelete(w:loupe_hlmatch)"
-                  , GenericStatement "catch /\\v<(E802|E803)>/"
-                  , GenericStatement "finally"
-                  , UnletStatement
-                      { unletBang = False , unletBody = "w:loupe_hlmatch" }
-                  , GenericStatement "endtry"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#private#cleanup"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if !v:hlsearch"
-                  , GenericStatement "call loupe#private#clear_highlight()"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#private#hlmatch"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ Empty
-                  , LetStatement
-                      { letLexpr = "l:highlight"
-                      , letValue = "get(g:, 'LoupeHighlightGroup', 'IncSearch')"
-                      }
-                  , GenericStatement "if empty(l:highlight)"
-                  , GenericStatement "return"
-                  , GenericStatement "endif"
-                  , GenericStatement "if has('autocmd')"
-                  , GenericStatement "augroup LoupeHightlightMatch"
-                  , GenericStatement "autocmd!"
-                  , GenericStatement "augroup END"
-                  , GenericStatement "endif"
-                  , GenericStatement "call loupe#private#clear_highlight()"
-                  , LetStatement
-                      { letLexpr = "l:pattern" , letValue = "'\\c\\%#' . @/" }
-                  , GenericStatement "if exists('*matchadd')"
-                  , LetStatement
-                      { letLexpr = "w:loupe_hlmatch"
-                      , letValue = "matchadd(l:highlight, l:pattern)"
-                      }
-                  , GenericStatement "endif"
-                  ]
-              }
-          ]
-      , Unit
-          [ GenericStatement
-              "if exists('g:LoupeLoaded') || &compatible || v:version < 700"
-          , GenericStatement "finish"
-          , GenericStatement "endif"
-          , LetStatement { letLexpr = "g:LoupeLoaded" , letValue = "1" }
-          , LetStatement
-              { letLexpr = "s:cpoptions" , letValue = "&cpoptions" }
-          , GenericStatement "set cpoptions&vim"
-          , GenericStatement "if &history < 1000"
-          , GenericStatement
-              "set history=1000 \" Longer search and command history (default is 50)."
-          , GenericStatement "endif"
-          , GenericStatement "if has('extra_search')"
-          , GenericStatement "set hlsearch \" Highlight search strings."
-          , GenericStatement
-              "set incsearch \" Incremental search (\"find as you type\")."
-          , GenericStatement "endif"
-          , GenericStatement "set ignorecase \" Ignore case when searching."
-          , GenericStatement
-              "set shortmess+=s \" Don't echo search wrap messages."
-          , GenericStatement
-              "set smartcase \" Case-sensitive search if search string includes a capital letter."
-          , LetStatement
-              { letLexpr = "s:map"
-              , letValue = "get(g:, 'LoupeClearHighlightMap', 1)"
-              }
-          , GenericStatement "if s:map"
-          , GenericStatement
-              "if !hasmapto('<Plug>(LoupeClearHighlight)') && maparg('<leader>n', 'n') ==# ''"
-          , GenericStatement
-              "nmap <silent> <unique> <leader>n <Plug>(LoupeClearHighlight)"
-          , GenericStatement "endif"
-          , GenericStatement "endif"
-          , GenericStatement
-              "nnoremap <silent> <Plug>(LoupeClearHighlight) :nohlsearch<CR> :call loupe#private#clear_highlight()<CR>"
-          , GenericStatement
-              "cabbrev <silent> <expr> noh (getcmdtype() == ':' && getcmdpos() == 4 ? 'noh <bar> call loupe#private#clear_highlight()<CR>' : 'noh')"
-          , GenericStatement
-              "cabbrev <silent> <expr> nohl (getcmdtype() == ':' && getcmdpos() == 5 ? 'nohl <bar> call loupe#private#clear_highlight()<CR>' : 'nohl')"
-          , GenericStatement
-              "cabbrev <silent> <expr> nohls (getcmdtype() == ':' && getcmdpos() == 6 ? 'nohls <bar> call loupe#private#clear_highlight()<CR>' : 'nohls')"
-          , GenericStatement
-              "cabbrev <silent> <expr> nohlse (getcmdtype() == ':' && getcmdpos() == 7 ? 'nohlse <bar> call loupe#private#clear_highlight()<CR>' : 'nohlse')"
-          , GenericStatement
-              "cabbrev <silent> <expr> nohlsea (getcmdtype() == ':' && getcmdpos() == 8 ? 'nohlsea <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsea')"
-          , GenericStatement
-              "cabbrev <silent> <expr> nohlsear (getcmdtype() == ':' && getcmdpos() == 9 ? 'nohlsear <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsear')"
-          , GenericStatement
-              "cabbrev <silent> <expr> nohlsearc (getcmdtype() == ':' && getcmdpos() == 10 ? 'nohlsearc <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsearc')"
-          , GenericStatement
-              "cabbrev <silent> <expr> nohlsearch (getcmdtype() == ':' && getcmdpos() == 11 ? 'nohlsearch <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsearch')"
-          , FunctionDeclaration
-              { functionBang = False
-              , functionName = "s:MagicString"
-              , functionArguments = ArgumentList []
-              , functionAttributes = []
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "s:magic"
-                      , letValue = "get(g:, 'LoupeVeryMagic', 1)"
-                      }
-                  , GenericStatement "return s:magic ? '\\v' : ''"
-                  ]
-              }
-          , GenericStatement
-              "nnoremap <expr> / loupe#private#prepare_highlight('/' . <SID>MagicString())"
-          , GenericStatement
-              "nnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())"
-          , GenericStatement
-              "xnoremap <expr> / loupe#private#prepare_highlight('/' . <SID>MagicString())"
-          , GenericStatement
-              "xnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())"
-          , GenericStatement "if !empty(s:MagicString())"
-          , GenericStatement
-              "cnoremap <expr> / loupe#private#very_magic_slash()"
-          , GenericStatement "endif"
-          , LetStatement
-              { letLexpr = "s:center"
-              , letValue = "get(g:, 'LoupeCenterResults', 1)"
-              }
-          , LetStatement
-              { letLexpr = "s:center_string"
-              , letValue = "s:center ? 'zz' : ''"
-              }
-          , GenericStatement
-              "execute 'nnoremap <silent> # #' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
-          , GenericStatement
-              "execute 'nnoremap <silent> * *' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
-          , GenericStatement
-              "execute 'nnoremap <silent> N N' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
-          , GenericStatement
-              "execute 'nnoremap <silent> g# g#' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
-          , GenericStatement
-              "execute 'nnoremap <silent> g* g*' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
-          , GenericStatement
-              "execute 'nnoremap <silent> n n' . s:center_string . ':call loupe#private#hlmatch()<CR>'"
-          , GenericStatement "if has('autocmd') && has('extra_search')"
-          , GenericStatement "augroup LoupeCleanUp"
-          , GenericStatement "autocmd!"
-          , GenericStatement
-              "autocmd WinEnter * :call loupe#private#cleanup()"
-          , GenericStatement "augroup END"
-          , GenericStatement "endif"
-          , LetStatement
-              { letLexpr = "&cpoptions" , letValue = "s:cpoptions" }
-          , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
-          ]
-      ]
-  , MappingsAnnotation
-  , MappingAnnotation "<Plug>(LoupeClearHighlight)"
-  , Paragraph
-      [ Plaintext "Loupe"
-      , Whitespace
-      , Plaintext "maps"
-      , Whitespace
-      , Plaintext "<leader>n"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Link "<Plug>(LoupeClearHighlight)"
-      , Plaintext ","
-      , Whitespace
-      , Plaintext "which"
-      , Whitespace
-      , Plaintext "clears"
-      , Whitespace
-      , Plaintext "all"
-      , Whitespace
-      , Plaintext "visible"
-      , Whitespace
-      , Plaintext "highlights"
-      , Whitespace
-      , Plaintext "(like"
-      , Whitespace
-      , Link ":nohighlight"
-      , Whitespace
-      , Plaintext "does)."
-      , Whitespace
-      , Plaintext "To"
-      , Whitespace
-      , Plaintext "use"
-      , Whitespace
-      , Plaintext "an"
-      , Whitespace
-      , Plaintext "alternative"
-      , Whitespace
-      , Plaintext "mapping"
-      , Whitespace
-      , Plaintext "instead,"
-      , Whitespace
-      , Plaintext "create"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Plaintext "different"
-      , Whitespace
-      , Plaintext "one"
-      , Whitespace
-      , Plaintext "in"
-      , Whitespace
-      , Plaintext "your"
-      , Whitespace
-      , Link ".vimrc"
-      , Whitespace
-      , Plaintext "instead"
-      , Whitespace
-      , Plaintext "using"
-      , Whitespace
-      , Link ":nmap"
-      , Plaintext ":"
-      ]
-  , Fenced
-      [ "\" Instead of <leader>n, use <leader>x."
-      , "nmap <leader>x <Plug>(LoupeClearHighlight)"
-      ]
-  , Paragraph
-      [ Plaintext "Note"
-      , Whitespace
-      , Plaintext "that"
-      , Whitespace
-      , Plaintext "Loupe"
-      , Whitespace
-      , Plaintext "will"
-      , Whitespace
-      , Plaintext "not"
-      , Whitespace
-      , Plaintext "try"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "set"
-      , Whitespace
-      , Plaintext "up"
-      , Whitespace
-      , Plaintext "its"
-      , Whitespace
-      , Plaintext "<leader>n"
-      , Whitespace
-      , Plaintext "mapping"
-      , Whitespace
-      , Plaintext "if"
-      , Whitespace
-      , Plaintext "any"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "following"
-      , Whitespace
-      , Plaintext "are"
-      , Whitespace
-      , Plaintext "true:"
-      ]
-  , List
-      [ ListItem
-          [ Plaintext "A"
-          , Whitespace
-          , Plaintext "mapping"
-          , Whitespace
-          , Plaintext "for"
-          , Whitespace
-          , Plaintext "<leader>n"
-          , Whitespace
-          , Plaintext "already"
-          , Whitespace
-          , Plaintext "exists."
-          ]
-      , ListItem
-          [ Plaintext "An"
-          , Whitespace
-          , Plaintext "alternative"
-          , Whitespace
-          , Plaintext "mapping"
-          , Whitespace
-          , Plaintext "for"
-          , Whitespace
-          , Link "<Plug>(LoupeClearHighlight)"
-          , Whitespace
-          , Plaintext "has"
-          , Whitespace
-          , Plaintext "already"
-          , Whitespace
-          , Plaintext "been"
-          , Whitespace
-          , Plaintext "set"
-          , Whitespace
-          , Plaintext "up"
-          , Whitespace
-          , Plaintext "from"
-          , Whitespace
-          , Plaintext "a"
-          , Whitespace
-          , Link ".vimrc"
-          , Plaintext "."
-          ]
-      , ListItem
-          [ Plaintext "The"
-          , Whitespace
-          , Plaintext "mapping"
-          , Whitespace
-          , Plaintext "has"
-          , Whitespace
-          , Plaintext "been"
-          , Whitespace
-          , Plaintext "suppressed"
-          , Whitespace
-          , Plaintext "by"
-          , Whitespace
-          , Plaintext "setting"
-          , Whitespace
-          , Link "g:LoupeClearHighlightMap"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "1"
-          , Whitespace
-          , Plaintext "in"
-          , Whitespace
-          , Plaintext "your"
-          , Whitespace
-          , Link ".vimrc"
-          , Plaintext "."
-          ]
-      ]
-  , OptionsAnnotation
-  , OptionAnnotation
-      "g:LoupeHighlightGroup" "string" (Just "IncSearch")
-  , Paragraph
-      [ Plaintext "Specifies"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link ":highlight"
-      , Whitespace
-      , Plaintext "group"
-      , Whitespace
-      , Plaintext "used"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "emphasize"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "match"
-      , Whitespace
-      , Plaintext "currently"
-      , Whitespace
-      , Plaintext "under"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "cursor"
-      , Whitespace
-      , Plaintext "for"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "current"
-      , Whitespace
-      , Plaintext "search"
-      , Whitespace
-      , Plaintext "pattern."
-      , Whitespace
-      , Plaintext "Defaults"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "\"IncSearch\""
-      , Whitespace
-      , Plaintext "(ie."
-      , Whitespace
-      , Link "hl-IncSearch"
-      , Plaintext ")."
-      , Whitespace
-      , Plaintext "For"
-      , Whitespace
-      , Plaintext "example:"
-      ]
-  , Fenced [ "let g:LoupeHighlightGroup='Error'" ]
-  , Paragraph
-      [ Plaintext "To"
-      , Whitespace
-      , Plaintext "prevent"
-      , Whitespace
-      , Plaintext "any"
-      , Whitespace
-      , Plaintext "special"
-      , Whitespace
-      , Plaintext "highlighting"
-      , Whitespace
-      , Plaintext "from"
-      , Whitespace
-      , Plaintext "being"
-      , Whitespace
-      , Plaintext "applied,"
-      , Whitespace
-      , Plaintext "set"
-      , Whitespace
-      , Plaintext "this"
-      , Whitespace
-      , Plaintext "option"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "\"\""
-      , Whitespace
-      , Plaintext "(ie."
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "empty"
-      , Whitespace
-      , Plaintext "string)."
-      ]
-  , OptionAnnotation "g:LoupeLoaded" "any" Nothing
-  , Paragraph
-      [ Plaintext "To"
-      , Whitespace
-      , Plaintext "prevent"
-      , Whitespace
-      , Plaintext "Loupe"
-      , Whitespace
-      , Plaintext "from"
-      , Whitespace
-      , Plaintext "being"
-      , Whitespace
-      , Plaintext "loaded,"
-      , Whitespace
-      , Plaintext "set"
-      , Whitespace
-      , Link "g:LoupeLoaded"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "any"
-      , Whitespace
-      , Plaintext "value"
-      , Whitespace
-      , Plaintext "in"
-      , Whitespace
-      , Plaintext "your"
-      , Whitespace
-      , Link ".vimrc"
-      , Plaintext "."
-      , Whitespace
-      , Plaintext "For"
-      , Whitespace
-      , Plaintext "example:"
-      ]
-  , Fenced [ "let g:LoupeLoaded=1" ]
-  , OptionAnnotation "g:LoupeClearHighlightMap" "boolean" (Just "1")
-  , Paragraph
-      [ Plaintext "Controls"
-      , Whitespace
-      , Plaintext "whether"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "set"
-      , Whitespace
-      , Plaintext "up"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link "<Plug>(LoupeClearHighlight)"
-      , Whitespace
-      , Plaintext "mapping."
-      , Whitespace
-      , Plaintext "To"
-      , Whitespace
-      , Plaintext "prevent"
-      , Whitespace
-      , Plaintext "any"
-      , Whitespace
-      , Plaintext "mapping"
-      , Whitespace
-      , Plaintext "from"
-      , Whitespace
-      , Plaintext "being"
-      , Whitespace
-      , Plaintext "configured,"
-      , Whitespace
-      , Plaintext "set"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "0:"
-      ]
-  , Fenced [ "let g:LoupeClearHighlightMap=0" ]
-  , OptionAnnotation "g:LoupeVeryMagic" "boolean" (Just "1")
-  , Paragraph
-      [ Plaintext "Controls"
-      , Whitespace
-      , Plaintext "whether"
-      , Whitespace
-      , Plaintext "\"very"
-      , Whitespace
-      , Plaintext "magic\""
-      , Whitespace
-      , Plaintext "pattern"
-      , Whitespace
-      , Plaintext "syntax"
-      , Whitespace
-      , Plaintext "("
-      , Link "/\\v"
-      , Plaintext ")"
-      , Whitespace
-      , Plaintext "is"
-      , Whitespace
-      , Plaintext "applied"
-      , Whitespace
-      , Plaintext "by"
-      , Whitespace
-      , Plaintext "default."
-      , Whitespace
-      , Plaintext "To"
-      , Whitespace
-      , Plaintext "disable,"
-      , Whitespace
-      , Plaintext "set"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "0:"
-      ]
-  , Fenced [ "let g:LoupeVeryMagic=0" ]
-  , OptionAnnotation "g:LoupeCenterResults" "boolean" (Just "1")
-  , Paragraph
-      [ Plaintext "Controls"
-      , Whitespace
-      , Plaintext "whether"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "match's"
-      , Whitespace
-      , Plaintext "line"
-      , Whitespace
-      , Plaintext "is"
-      , Whitespace
-      , Plaintext "vertically"
-      , Whitespace
-      , Plaintext "centered"
-      , Whitespace
-      , Plaintext "within"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "window"
-      , Whitespace
-      , Plaintext "when"
-      , Whitespace
-      , Plaintext "jumping"
-      , Whitespace
-      , Plaintext "(via"
-      , Whitespace
-      , Link "n"
-      , Plaintext ","
-      , Whitespace
-      , Link "N"
-      , Whitespace
-      , Plaintext "etc)."
-      , Whitespace
-      , Plaintext "To"
-      , Whitespace
-      , Plaintext "disable,"
-      , Whitespace
-      , Plaintext "set"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "0:"
-      ]
-  , Fenced [ "let g:LoupeCenterResults=0" ]
   ]
