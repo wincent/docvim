@@ -68,7 +68,7 @@ executable docvim
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.8
+  build-depends:       base >=4.8 && <4.10
                ,       docvim
 
   ghc-options:         -W -Wall
