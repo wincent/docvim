@@ -1,5 +1,9 @@
 # master (not yet released)
 
+# 0.3.1.1 (15 June 2016)
+
+- Relax "base" version constraint after verifying compatibility with GHC 8.
+
 # 0.3.1.0 (12 June 2016)
 
 - Squelch warning about exposed `Paths_docvim` module.
