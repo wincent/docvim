@@ -34,6 +34,10 @@ Available options:
 ## Installation
 
 ```
+# Stack:
+stack install docvim
+
+# Cabal:
 cabal install docvim
 ```
 
