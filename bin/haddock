@@ -3,4 +3,4 @@
 # BUG: grep will exit with non-zero exit code if haddock target is already
 # up-to-date (no output)
 # TODO: capture output and echo it only on error
-stack haddock | grep docvim/index.html
+stack haddock --ghc-options -Werror
