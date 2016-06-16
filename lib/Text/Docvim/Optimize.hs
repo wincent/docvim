@@ -1,6 +1,6 @@
 module Text.Docvim.Optimize (optimize) where
 
-import Control.Lens hiding (Empty)
+import Control.Lens (children, transform)
 import Text.Docvim.AST
 
 -- | "Optimize" a Project's AST by eliminating empty paths.
