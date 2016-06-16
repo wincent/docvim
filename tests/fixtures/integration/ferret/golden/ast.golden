@@ -829,328 +829,6 @@ Project
   , Fenced [ ":call pathogen#helptags()" ]
   , Project
       [ Unit
-          [ LetStatement { letLexpr = "s:jobs" , letValue = "{}" }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:channel_id"
-              , functionArguments = ArgumentList [ Argument "channel" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ GenericStatement "return matchstr(a:channel, '\\d\\+')" ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:info_from_channel"
-              , functionArguments = ArgumentList [ Argument "channel" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "l:channel_id"
-                      , letValue = "s:channel_id(a:channel)"
-                      }
-                  , GenericStatement "if has_key(s:jobs, l:channel_id)"
-                  , GenericStatement "return s:jobs[l:channel_id]"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "ferret#private#async#search"
-              , functionArguments =
-                  ArgumentList [ Argument "command" , Argument "ack" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "call ferret#private#async#cancel()"
-                  , GenericStatement
-                      "call ferret#private#autocmd('FerretAsyncStart')"
-                  , LetStatement
-                      { letLexpr = "l:command_and_args "
-                      , letValue = "extend(split(&grepprg), a:command)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:job"
-                      , letValue = "job_start(l:command_and_args, {"
-                      }
-                  , GenericStatement
-                      "\\ 'err_cb': 'ferret#private#async#err_cb', 'out_cb': 'ferret#private#async#out_cb', 'close_cb': 'ferret#private#async#close_cb', 'err_mode': 'raw', 'out_mode': 'raw' })"
-                  , LetStatement
-                      { letLexpr = "l:channel" , letValue = "job_getchannel(l:job)" }
-                  , LetStatement
-                      { letLexpr = "l:channel_id"
-                      , letValue = "s:channel_id(l:channel)"
-                      }
-                  , LetStatement
-                      { letLexpr = "s:jobs[l:channel_id]" , letValue = "{" }
-                  , GenericStatement
-                      "\\ 'channel_id': l:channel_id, 'job': l:job, 'errors': [], 'output': [], 'pending_error': '', 'pending_output': '', 'pending_error_length': 0, 'pending_output_length': 0, 'ack': a:ack, 'window': win_getid() }"
-                  ]
-              }
-          , LetStatement
-              { letLexpr = "s:max_line_length" , letValue = "32768" }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "ferret#private#async#err_cb"
-              , functionArguments =
-                  ArgumentList [ Argument "channel" , Argument "msg" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "l:info"
-                      , letValue = "s:info_from_channel(a:channel)"
-                      }
-                  , GenericStatement "if type(l:info) == 4"
-                  , LetStatement { letLexpr = "l:start" , letValue = "0" }
-                  , GenericStatement "while 1"
-                  , LetStatement
-                      { letLexpr = "l:idx" , letValue = "match(a:msg, '\\n', l:start)" }
-                  , GenericStatement "if l:idx==-1"
-                  , GenericStatement
-                      "if l:info.pending_error_length < s:max_line_length"
-                  , LetStatement
-                      { letLexpr = "l:rest" , letValue = "strpart(a:msg, l:start)" }
-                  , LetStatement
-                      { letLexpr = "l:length" , letValue = "strlen(l:rest)" }
-                  , LetStatement
-                      { letLexpr = "l:info.pending_error." , letValue = "l:rest" }
-                  , LetStatement
-                      { letLexpr = "l:info.pending_error_length+"
-                      , letValue = "l:length"
-                      }
-                  , GenericStatement "endif"
-                  , GenericStatement "break"
-                  , GenericStatement "else"
-                  , GenericStatement
-                      "if l:info.pending_error_length < s:max_line_length"
-                  , LetStatement
-                      { letLexpr = "l:info.pending_error."
-                      , letValue = "strpart(a:msg, l:start, l:idx - l:start)"
-                      }
-                  , GenericStatement "endif"
-                  , GenericStatement "call add(l:info.errors, l:info.pending_error)"
-                  , LetStatement
-                      { letLexpr = "l:info.pending_error" , letValue = "''" }
-                  , LetStatement
-                      { letLexpr = "l:info.pending_error_length" , letValue = "0" }
-                  , GenericStatement "endif"
-                  , LetStatement { letLexpr = "l:start" , letValue = "l:idx + 1" }
-                  , GenericStatement "endwhile"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "ferret#private#async#out_cb"
-              , functionArguments =
-                  ArgumentList [ Argument "channel" , Argument "msg" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "l:info"
-                      , letValue = "s:info_from_channel(a:channel)"
-                      }
-                  , GenericStatement "if type(l:info) == 4"
-                  , LetStatement { letLexpr = "l:start" , letValue = "0" }
-                  , GenericStatement "while 1"
-                  , LetStatement
-                      { letLexpr = "l:idx" , letValue = "match(a:msg, '\\n', l:start)" }
-                  , GenericStatement "if l:idx==-1"
-                  , GenericStatement
-                      "if l:info.pending_output_length < s:max_line_length"
-                  , LetStatement
-                      { letLexpr = "l:rest" , letValue = "strpart(a:msg, l:start)" }
-                  , LetStatement
-                      { letLexpr = "l:length" , letValue = "strlen(l:rest)" }
-                  , LetStatement
-                      { letLexpr = "l:info.pending_output." , letValue = "l:rest" }
-                  , LetStatement
-                      { letLexpr = "l:info.pending_output_length+"
-                      , letValue = "l:length"
-                      }
-                  , GenericStatement "endif"
-                  , GenericStatement "break"
-                  , GenericStatement "else"
-                  , GenericStatement
-                      "if l:info.pending_output_length < s:max_line_length"
-                  , LetStatement
-                      { letLexpr = "l:info.pending_output."
-                      , letValue = "strpart(a:msg, l:start, l:idx - l:start)"
-                      }
-                  , GenericStatement "endif"
-                  , GenericStatement "call add(l:info.output, l:info.pending_output)"
-                  , LetStatement
-                      { letLexpr = "l:info.pending_output" , letValue = "''" }
-                  , LetStatement
-                      { letLexpr = "l:info.pending_output_length" , letValue = "0" }
-                  , GenericStatement "endif"
-                  , LetStatement { letLexpr = "l:start" , letValue = "l:idx + 1" }
-                  , GenericStatement "endwhile"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "ferret#private#async#close_cb"
-              , functionArguments = ArgumentList [ Argument "channel" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "l:info"
-                      , letValue = "s:info_from_channel(a:channel)"
-                      }
-                  , GenericStatement "if type(l:info) == 4"
-                  , GenericStatement "call remove(s:jobs, l:info.channel_id)"
-                  , GenericStatement
-                      "call ferret#private#autocmd('FerretAsyncFinish')"
-                  , GenericStatement "if !l:info.ack"
-                  , GenericStatement "call win_gotoid(l:info.window)"
-                  , GenericStatement "endif"
-                  , GenericStatement
-                      "call s:finalize_search(l:info.output, l:info.ack)"
-                  , GenericStatement "for l:error in l:info.errors"
-                  , GenericStatement "unsilent echomsg l:error"
-                  , GenericStatement "endfor"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "ferret#private#async#pull"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "for l:channel_id in keys(s:jobs)"
-                  , LetStatement
-                      { letLexpr = "l:info" , letValue = "s:jobs[l:channel_id]" }
-                  , GenericStatement
-                      "call s:finalize_search(l:info.output, l:info.ack)"
-                  , GenericStatement "endfor"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "ferret#private#async#cancel"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ LetStatement { letLexpr = "l:canceled" , letValue = "0" }
-                  , GenericStatement "for l:channel_id in keys(s:jobs)"
-                  , LetStatement
-                      { letLexpr = "l:info" , letValue = "s:jobs[l:channel_id]" }
-                  , GenericStatement "call job_stop(l:info.job)"
-                  , GenericStatement "call remove(s:jobs, l:channel_id)"
-                  , LetStatement { letLexpr = "l:canceled" , letValue = "1" }
-                  , GenericStatement "endfor"
-                  , GenericStatement "if l:canceled"
-                  , GenericStatement
-                      "call ferret#private#autocmd('FerretAsyncFinish')"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "ferret#private#async#debug"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody = [ GenericStatement "return s:jobs" ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:finalize_search"
-              , functionArguments =
-                  ArgumentList [ Argument "output" , Argument "ack" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ GenericStatement "if a:ack"
-                  , GenericStatement "cexpr a:output"
-                  , GenericStatement
-                      "execute get(g:, 'FerretQFHandler', 'botright cwindow')"
-                  , GenericStatement "call ferret#private#post('qf')"
-                  , GenericStatement "else"
-                  , LexprStatement { lexprBang = False , lexprExpr = "a:output" }
-                  , GenericStatement "execute get(g:, 'FerretLLHandler', 'lwindow')"
-                  , GenericStatement "call ferret#private#post('location')"
-                  , GenericStatement "endif"
-                  ]
-              }
-          ]
-      , Unit
-          [ FunctionDeclaration
-              { functionBang = True
-              , functionName = "ferret#private#dispatch#search"
-              , functionArguments = ArgumentList [ Argument "command" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if has('autocmd')"
-                  , GenericStatement "augroup FerretPostQF"
-                  , GenericStatement "autocmd!"
-                  , GenericStatement
-                      "autocmd QuickfixCmdPost cgetfile call ferret#private#post('qf')"
-                  , GenericStatement "augroup END"
-                  , GenericStatement "endif"
-                  , LetStatement
-                      { letLexpr = "l:original_makeprg" , letValue = "&l:makeprg" }
-                  , LetStatement
-                      { letLexpr = "l:original_errorformat"
-                      , letValue = "&l:errorformat"
-                      }
-                  , GenericStatement "try"
-                  , LetStatement
-                      { letLexpr = "&l:makeprg"
-                      , letValue = "&grepprg . ' ' . a:command"
-                      }
-                  , LetStatement
-                      { letLexpr = "&l:errorformat" , letValue = "&grepformat" }
-                  , GenericStatement "echomsg &l:makeprg"
-                  , GenericStatement "Make"
-                  , GenericStatement "catch"
-                  , GenericStatement "call ferret#private#clearautocmd()"
-                  , GenericStatement "finally"
-                  , LetStatement
-                      { letLexpr = "&l:makeprg" , letValue = "l:original_makeprg" }
-                  , LetStatement
-                      { letLexpr = "&l:errorformat"
-                      , letValue = "l:original_errorformat"
-                      }
-                  , GenericStatement "endtry"
-                  ]
-              }
-          ]
-      , Unit
-          [ FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:finalize_search"
-              , functionArguments =
-                  ArgumentList [ Argument "output" , Argument "ack" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ GenericStatement "if a:ack"
-                  , GenericStatement "cexpr a:output"
-                  , GenericStatement
-                      "execute get(g:, 'FerretQFHandler', 'botright cwindow')"
-                  , GenericStatement "call ferret#private#post('qf')"
-                  , GenericStatement "else"
-                  , LexprStatement { lexprBang = False , lexprExpr = "a:output" }
-                  , GenericStatement "execute get(g:, 'FerretLLHandler', 'lwindow')"
-                  , GenericStatement "call ferret#private#post('location')"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "ferret#private#vanilla#search"
-              , functionArguments =
-                  ArgumentList [ Argument "command" , Argument "ack" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "l:output"
-                      , letValue = "system(&grepprg . ' ' . a:command)"
-                      }
-                  , GenericStatement "call s:finalize_search(l:output, a:ack)"
-                  ]
-              }
-          ]
-      , Unit
           [ FunctionDeclaration
               { functionBang = True
               , functionName = "s:delete"
@@ -1594,6 +1272,328 @@ Project
                   , GenericStatement "call s:delete(l:firstline, l:lastline)"
                   , LetStatement
                       { letLexpr = "&selection" , letValue = "l:selection" }
+                  ]
+              }
+          ]
+      , Unit
+          [ LetStatement { letLexpr = "s:jobs" , letValue = "{}" }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:channel_id"
+              , functionArguments = ArgumentList [ Argument "channel" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "return matchstr(a:channel, '\\d\\+')" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:info_from_channel"
+              , functionArguments = ArgumentList [ Argument "channel" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:channel_id"
+                      , letValue = "s:channel_id(a:channel)"
+                      }
+                  , GenericStatement "if has_key(s:jobs, l:channel_id)"
+                  , GenericStatement "return s:jobs[l:channel_id]"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#async#search"
+              , functionArguments =
+                  ArgumentList [ Argument "command" , Argument "ack" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "call ferret#private#async#cancel()"
+                  , GenericStatement
+                      "call ferret#private#autocmd('FerretAsyncStart')"
+                  , LetStatement
+                      { letLexpr = "l:command_and_args "
+                      , letValue = "extend(split(&grepprg), a:command)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:job"
+                      , letValue = "job_start(l:command_and_args, {"
+                      }
+                  , GenericStatement
+                      "\\ 'err_cb': 'ferret#private#async#err_cb', 'out_cb': 'ferret#private#async#out_cb', 'close_cb': 'ferret#private#async#close_cb', 'err_mode': 'raw', 'out_mode': 'raw' })"
+                  , LetStatement
+                      { letLexpr = "l:channel" , letValue = "job_getchannel(l:job)" }
+                  , LetStatement
+                      { letLexpr = "l:channel_id"
+                      , letValue = "s:channel_id(l:channel)"
+                      }
+                  , LetStatement
+                      { letLexpr = "s:jobs[l:channel_id]" , letValue = "{" }
+                  , GenericStatement
+                      "\\ 'channel_id': l:channel_id, 'job': l:job, 'errors': [], 'output': [], 'pending_error': '', 'pending_output': '', 'pending_error_length': 0, 'pending_output_length': 0, 'ack': a:ack, 'window': win_getid() }"
+                  ]
+              }
+          , LetStatement
+              { letLexpr = "s:max_line_length" , letValue = "32768" }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#async#err_cb"
+              , functionArguments =
+                  ArgumentList [ Argument "channel" , Argument "msg" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:info"
+                      , letValue = "s:info_from_channel(a:channel)"
+                      }
+                  , GenericStatement "if type(l:info) == 4"
+                  , LetStatement { letLexpr = "l:start" , letValue = "0" }
+                  , GenericStatement "while 1"
+                  , LetStatement
+                      { letLexpr = "l:idx" , letValue = "match(a:msg, '\\n', l:start)" }
+                  , GenericStatement "if l:idx==-1"
+                  , GenericStatement
+                      "if l:info.pending_error_length < s:max_line_length"
+                  , LetStatement
+                      { letLexpr = "l:rest" , letValue = "strpart(a:msg, l:start)" }
+                  , LetStatement
+                      { letLexpr = "l:length" , letValue = "strlen(l:rest)" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_error." , letValue = "l:rest" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_error_length+"
+                      , letValue = "l:length"
+                      }
+                  , GenericStatement "endif"
+                  , GenericStatement "break"
+                  , GenericStatement "else"
+                  , GenericStatement
+                      "if l:info.pending_error_length < s:max_line_length"
+                  , LetStatement
+                      { letLexpr = "l:info.pending_error."
+                      , letValue = "strpart(a:msg, l:start, l:idx - l:start)"
+                      }
+                  , GenericStatement "endif"
+                  , GenericStatement "call add(l:info.errors, l:info.pending_error)"
+                  , LetStatement
+                      { letLexpr = "l:info.pending_error" , letValue = "''" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_error_length" , letValue = "0" }
+                  , GenericStatement "endif"
+                  , LetStatement { letLexpr = "l:start" , letValue = "l:idx + 1" }
+                  , GenericStatement "endwhile"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#async#out_cb"
+              , functionArguments =
+                  ArgumentList [ Argument "channel" , Argument "msg" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:info"
+                      , letValue = "s:info_from_channel(a:channel)"
+                      }
+                  , GenericStatement "if type(l:info) == 4"
+                  , LetStatement { letLexpr = "l:start" , letValue = "0" }
+                  , GenericStatement "while 1"
+                  , LetStatement
+                      { letLexpr = "l:idx" , letValue = "match(a:msg, '\\n', l:start)" }
+                  , GenericStatement "if l:idx==-1"
+                  , GenericStatement
+                      "if l:info.pending_output_length < s:max_line_length"
+                  , LetStatement
+                      { letLexpr = "l:rest" , letValue = "strpart(a:msg, l:start)" }
+                  , LetStatement
+                      { letLexpr = "l:length" , letValue = "strlen(l:rest)" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_output." , letValue = "l:rest" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_output_length+"
+                      , letValue = "l:length"
+                      }
+                  , GenericStatement "endif"
+                  , GenericStatement "break"
+                  , GenericStatement "else"
+                  , GenericStatement
+                      "if l:info.pending_output_length < s:max_line_length"
+                  , LetStatement
+                      { letLexpr = "l:info.pending_output."
+                      , letValue = "strpart(a:msg, l:start, l:idx - l:start)"
+                      }
+                  , GenericStatement "endif"
+                  , GenericStatement "call add(l:info.output, l:info.pending_output)"
+                  , LetStatement
+                      { letLexpr = "l:info.pending_output" , letValue = "''" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_output_length" , letValue = "0" }
+                  , GenericStatement "endif"
+                  , LetStatement { letLexpr = "l:start" , letValue = "l:idx + 1" }
+                  , GenericStatement "endwhile"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#async#close_cb"
+              , functionArguments = ArgumentList [ Argument "channel" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:info"
+                      , letValue = "s:info_from_channel(a:channel)"
+                      }
+                  , GenericStatement "if type(l:info) == 4"
+                  , GenericStatement "call remove(s:jobs, l:info.channel_id)"
+                  , GenericStatement
+                      "call ferret#private#autocmd('FerretAsyncFinish')"
+                  , GenericStatement "if !l:info.ack"
+                  , GenericStatement "call win_gotoid(l:info.window)"
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "call s:finalize_search(l:info.output, l:info.ack)"
+                  , GenericStatement "for l:error in l:info.errors"
+                  , GenericStatement "unsilent echomsg l:error"
+                  , GenericStatement "endfor"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#async#pull"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "for l:channel_id in keys(s:jobs)"
+                  , LetStatement
+                      { letLexpr = "l:info" , letValue = "s:jobs[l:channel_id]" }
+                  , GenericStatement
+                      "call s:finalize_search(l:info.output, l:info.ack)"
+                  , GenericStatement "endfor"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#async#cancel"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ LetStatement { letLexpr = "l:canceled" , letValue = "0" }
+                  , GenericStatement "for l:channel_id in keys(s:jobs)"
+                  , LetStatement
+                      { letLexpr = "l:info" , letValue = "s:jobs[l:channel_id]" }
+                  , GenericStatement "call job_stop(l:info.job)"
+                  , GenericStatement "call remove(s:jobs, l:channel_id)"
+                  , LetStatement { letLexpr = "l:canceled" , letValue = "1" }
+                  , GenericStatement "endfor"
+                  , GenericStatement "if l:canceled"
+                  , GenericStatement
+                      "call ferret#private#autocmd('FerretAsyncFinish')"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#async#debug"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "return s:jobs" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:finalize_search"
+              , functionArguments =
+                  ArgumentList [ Argument "output" , Argument "ack" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "if a:ack"
+                  , GenericStatement "cexpr a:output"
+                  , GenericStatement
+                      "execute get(g:, 'FerretQFHandler', 'botright cwindow')"
+                  , GenericStatement "call ferret#private#post('qf')"
+                  , GenericStatement "else"
+                  , LexprStatement { lexprBang = False , lexprExpr = "a:output" }
+                  , GenericStatement "execute get(g:, 'FerretLLHandler', 'lwindow')"
+                  , GenericStatement "call ferret#private#post('location')"
+                  , GenericStatement "endif"
+                  ]
+              }
+          ]
+      , Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#dispatch#search"
+              , functionArguments = ArgumentList [ Argument "command" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('autocmd')"
+                  , GenericStatement "augroup FerretPostQF"
+                  , GenericStatement "autocmd!"
+                  , GenericStatement
+                      "autocmd QuickfixCmdPost cgetfile call ferret#private#post('qf')"
+                  , GenericStatement "augroup END"
+                  , GenericStatement "endif"
+                  , LetStatement
+                      { letLexpr = "l:original_makeprg" , letValue = "&l:makeprg" }
+                  , LetStatement
+                      { letLexpr = "l:original_errorformat"
+                      , letValue = "&l:errorformat"
+                      }
+                  , GenericStatement "try"
+                  , LetStatement
+                      { letLexpr = "&l:makeprg"
+                      , letValue = "&grepprg . ' ' . a:command"
+                      }
+                  , LetStatement
+                      { letLexpr = "&l:errorformat" , letValue = "&grepformat" }
+                  , GenericStatement "echomsg &l:makeprg"
+                  , GenericStatement "Make"
+                  , GenericStatement "catch"
+                  , GenericStatement "call ferret#private#clearautocmd()"
+                  , GenericStatement "finally"
+                  , LetStatement
+                      { letLexpr = "&l:makeprg" , letValue = "l:original_makeprg" }
+                  , LetStatement
+                      { letLexpr = "&l:errorformat"
+                      , letValue = "l:original_errorformat"
+                      }
+                  , GenericStatement "endtry"
+                  ]
+              }
+          ]
+      , Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:finalize_search"
+              , functionArguments =
+                  ArgumentList [ Argument "output" , Argument "ack" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "if a:ack"
+                  , GenericStatement "cexpr a:output"
+                  , GenericStatement
+                      "execute get(g:, 'FerretQFHandler', 'botright cwindow')"
+                  , GenericStatement "call ferret#private#post('qf')"
+                  , GenericStatement "else"
+                  , LexprStatement { lexprBang = False , lexprExpr = "a:output" }
+                  , GenericStatement "execute get(g:, 'FerretLLHandler', 'lwindow')"
+                  , GenericStatement "call ferret#private#post('location')"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#vanilla#search"
+              , functionArguments =
+                  ArgumentList [ Argument "command" , Argument "ack" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:output"
+                      , letValue = "system(&grepprg . ' ' . a:command)"
+                      }
+                  , GenericStatement "call s:finalize_search(l:output, a:ack)"
                   ]
               }
           ]
