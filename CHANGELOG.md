@@ -1,5 +1,9 @@
 # master (not yet released)
 
+# 0.3.1.2 (16 June 2016)
+
+- Include fixture files so that tests can be run in Travis-CI and Stackage.
+
 # 0.3.1.1 (15 June 2016)
 
 - Relax "base" version constraint after verifying compatibility with GHC 8.
