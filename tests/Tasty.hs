@@ -125,7 +125,7 @@ integrationTests sources = testGroup "Integration tests" $
       let
         output = do
           inputs <- getFixtures $ source </> "input"
-          contents <- mapM readFile inputs
+          contents <- mapM readFile (sort inputs)
           return $ pack $ normalize $ process contents
         name = takeBaseName source
         golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/" ++ kind ++ ".golden"
@@ -189,8 +189,8 @@ main = do
   integrationSources <- getIntegrationFixtures "tests/fixtures/integration"
   defaultMain $ testGroup "Test suite"
     [ unitTests
-    , goldenTests "parser" parserSources p
-    , goldenTests "Markdown printer" markdownSources pm
-    , goldenTests "Vim help printer" vimHelpSources pv
+    , goldenTests "parser" (sort parserSources) p
+    , goldenTests "Markdown printer" (sort markdownSources) pm
+    , goldenTests "Vim help printer" (sort vimHelpSources) pv
     , integrationTests integrationSources
     ]

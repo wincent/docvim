@@ -4,6 +4,7 @@
 module Text.Docvim.CLI (run) where
 
 import Control.Monad
+import Data.List
 import Data.Maybe
 import System.FilePath hiding (hasExtension)
 import System.IO
@@ -31,7 +32,7 @@ run :: IO ()
 run = do
   opts <- options
   paths <- readDir (directory opts)
-  let filtered = filter isVimScript paths
+  let filtered = filter isVimScript $ sort paths
   parsed <- mapM (\path -> do
       when (verbose opts) (hPutStrLn stderr ("Parsing " ++ path))
       parse path
