@@ -1,5 +1,6 @@
 module Text.Docvim.Printer.Markdown (markdown) where
 
+import Control.Applicative ((<$>))
 import Control.Monad.Reader
 import Data.List
 import Data.Maybe
