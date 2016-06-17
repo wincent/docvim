@@ -2,6 +2,7 @@
 
 module Text.Docvim.Printer.Vim (vimHelp) where
 
+import Control.Applicative ((<$>))
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Reader
