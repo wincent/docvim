@@ -1,5 +1,9 @@
 # master (not yet released)
 
+# 0.3.1.3 (16 June 2016)
+
+- More tweaks for the benefit of Travis-CI.
+
 # 0.3.1.2 (16 June 2016)
 
 - Include fixture files so that tests can be run in Travis-CI and Stackage.
