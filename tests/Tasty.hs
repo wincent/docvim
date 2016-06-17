@@ -2,6 +2,7 @@
 
 module Main (main) where
 
+import Control.Applicative ((<$>))
 import Control.DeepSeq
 import Control.Exception hiding (assert)
 import Data.ByteString.Lazy.Char8 (pack, unpack)
