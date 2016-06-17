@@ -49,7 +49,7 @@ extractBlocks start = go
             ~(block, remainder) = break stop xs
             ~(extracted, unextracted) = go remainder
 
-postorder :: Monad m => ((a -> m c) -> (a -> m b)) -> (b -> m c) -> (a -> m c)
+postorder :: Monad m => ((a -> m c) -> a -> m b) -> (b -> m c) -> a -> m c
 postorder t f = go
   where
     go = t go >=> f
