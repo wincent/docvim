@@ -1,3 +1,7 @@
+# 0.3.1.5 (17 June 2016)
+
+- Distribute signed package via Stackage.
+
 # 0.3.1.4 (17 June 2016)
 
 - Add upper and low bounds to version constraints.
