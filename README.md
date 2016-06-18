@@ -222,10 +222,8 @@ hlint src               # If you have HLint installed under $PATH.
 ```bash
 vim docvim.cabal # update version number in two places
 git commit -p # git tag, git push --follow-tags etc...
-cabal check
-cabal sdist
-open dist # upload candidate to https://hackage.haskell.org/packages/candidates/upload
-cabal upload dist/docvim-$VERSION.tar.gz
+stack sdist --pvp-bounds both
+stack upload --pvp-bounds both
 ```
 
 ## Links
