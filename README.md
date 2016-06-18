@@ -220,7 +220,8 @@ hlint src               # If you have HLint installed under $PATH.
 ### Release process
 
 ```bash
-vim docvim.cabal # update version number in two places
+vim docvim.cabal # Update version number in two places.
+vim CHANGELOG.md # Update, er, changelog.
 git commit -p # git tag, git push --follow-tags etc...
 stack sdist --pvp-bounds both
 stack upload --pvp-bounds both
