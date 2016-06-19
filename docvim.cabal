@@ -10,7 +10,7 @@ name:                docvim
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.3.1.5
+version:             0.3.1.6
 
 -- A short (one-line) description of the package.
 synopsis:            Documentation generator for Vim plug-ins
@@ -206,7 +206,7 @@ source-repository head
 source-repository this
   type:     git
   location: https://github.com/wincent/docvim.git
-  tag:      0.3.1.5
+  tag:      0.3.1.6
 
 executable docvim
   -- .hs or .lhs file containing the Main module.

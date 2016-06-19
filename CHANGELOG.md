@@ -1,10 +1,14 @@
+# 0.3.1.6 (18 June 2016)
+
+- Republish using only lower bounds to avoid getting blacklisted from Stackage.
+
 # 0.3.1.5 (17 June 2016)
 
 - Distribute signed package via Stackage.
 
 # 0.3.1.4 (17 June 2016)
 
-- Add upper and low bounds to version constraints.
+- Add upper and lower bounds to version constraints.
 
 # 0.3.1.3 (16 June 2016)
 
