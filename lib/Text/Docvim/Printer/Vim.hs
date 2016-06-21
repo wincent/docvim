@@ -127,8 +127,9 @@ node n = case n of
   CommandsAnnotation         -> heading "commands"
   DocBlock d                 -> nodes d
   Fenced f                   -> fenced f
-  FunctionsAnnotation        -> heading "functions"
+  FunctionAnnotation {}      -> function n
   FunctionDeclaration {}     -> nodes $ functionBody n
+  FunctionsAnnotation        -> heading "functions"
   HeadingAnnotation h        -> heading h
   Link l                     -> append $ link l
   LinkTargets l              -> linkTargets l True
@@ -212,6 +213,16 @@ command (CommandAnnotation name params) = do
 -- (and do similar for other sections)
 -- once that is done, drop the extra newline above
 command _ = invalidNode
+
+function :: Node -> Env
+function (FunctionAnnotation name) = do
+  lhs <- append $ name ++ "()"
+  ws <- append " "
+  target' <- linkTargets [name ++ "()"] False
+  trailing <- append "\n"
+  return $ concat [lhs, ws, target', trailing]
+-- TODO indent what follows
+function _ = invalidNode
 
 mapping :: String -> Env
 mapping name = linkTargets [name] True

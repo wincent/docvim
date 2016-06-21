@@ -6,13 +6,14 @@ CONTENTS                                                        *loupe-contents*
 2. Installation   |loupe-installation|
 3. Mappings       |loupe-mappings|
 4. Options        |loupe-options|
-5. Overrides      |loupe-overrides|
-6. Related        |loupe-related|
-7. Website        |loupe-website|
-8. License        |loupe-license|
-9. Development    |loupe-development|
-10. Authors       |loupe-authors|
-11. History       |loupe-history|
+5. Functions      |loupe-functions|
+6. Overrides      |loupe-overrides|
+7. Related        |loupe-related|
+8. Website        |loupe-website|
+9. License        |loupe-license|
+10. Development   |loupe-development|
+11. Authors       |loupe-authors|
+12. History       |loupe-history|
 
 INTRO                                                              *loupe-intro*
 
@@ -97,6 +98,60 @@ following are true:
 - The mapping has been suppressed by setting |g:LoupeClearHighlightMap| to 1
   in your |.vimrc|.
 
+
+                                                       *<Plug>(LoupeOctothorpe)*
+Loupe maps |#| to |<Plug>(LoupeOctothorpe)| in order to implement custom
+highlighting and line-centering for the current match.
+
+To prevent this from happening, create an alternate mapping in your |.vimrc|:
+>
+    nmap <Nop> <Plug>(LoupeOctothorpe)
+<
+
+                                                             *<Plug>(LoupeStar)*
+Loupe maps |star| to |<Plug>(LoupeStar)| in order to implement custom
+highlighting and line-centering for the current match.
+
+To prevent this from happening, create an alternate mapping in your |.vimrc|:
+>
+    nmap <Nop> <Plug>(LoupeStar)
+<
+
+                                                                *<Plug>(LoupeN)*
+Loupe maps |N| to |<Plug>(LoupeN)| in order to implement custom highlighting and
+line-centering for the current match.
+
+To prevent this from happening, create an alternate mapping in your |.vimrc|:
+>
+    nmap <Nop> <Plug>(LoupeN)
+<
+
+                                                      *<Plug>(LoupeGOctothorpe)*
+Loupe maps |g#| to |<Plug>(LoupeGOctothorpe)| in order to implement custom
+highlighting and line-centering for the current match.
+
+To prevent this from happening, create an alternate mapping in your |.vimrc|:
+>
+    nmap <Nop> <Plug>(LoupeGOctothorpe)
+<
+
+                                                            *<Plug>(LoupeGStar)*
+Loupe maps |gstar| to |<Plug>(LoupeGStar)| in order to implement custom
+highlighting and line-centering for the current match.
+
+To prevent this from happening, create an alternate mapping in your |.vimrc|:
+>
+    nmap <Nop> <Plug>(LoupeGStar)
+<
+
+                                                                *<Plug>(Loupen)*
+Loupe maps |n| to |<Plug>(Loupen)| in order to implement custom highlighting and
+line-centering for the current match.
+
+To prevent this from happening, create an alternate mapping in your |.vimrc|:
+>
+    nmap <Nop> <Plug>(Loupen)
+<
 OPTIONS                                                          *loupe-options*
 
 
@@ -148,10 +203,17 @@ when jumping (via |n|, |N| etc). To disable, set to 0:
 >
     let g:LoupeCenterResults=0
 <
+FUNCTIONS                                                      *loupe-functions*
+
+loupe#hlmatch()                                                *loupe#hlmatch()*
+
+Apply highlighting to the current search match.
+
 OVERRIDES                                                      *loupe-overrides*
 
 Loupe sets a number of search-related Vim settings to reasonable defaults in
-order to provide a good "out of the box" experience:
+order to provide a good "out of the box" experience. The following overrides
+will be set unless suppressed or overridden (see |loupe-suppress-overrides|):
 
 
                                                         *loupe-history-override*
@@ -194,6 +256,10 @@ TOP" and "search hit TOP, continuing at BOTTOM" messages.
 
 Turned on (overrides 'ignorecase', making the search pattern case-sensitive
 whenever it containers uppercase characters).
+
+
+                                                      *loupe-suppress-overrides*
+Preventing Loupe overrides from taking effect ~
 
 To override any of these choices, you can place overrides in an
 |after-directory| (ie. `~/.vim/after/plugin/loupe.vim`). For example:
@@ -303,6 +369,11 @@ Which he discussed in his "More Instantly Better Vim" presentation at OSCON
 - https://www.youtube.com/watch?v=aHm36-na4-4
 
 HISTORY                                                          *loupe-history*
+
+1.1 (15 June 2016)
+
+- Make compatible with older versions of Vim that do not have |v:hlsearch|.
+- Add support for special delimiters with |:substitute| command.
 
 1.0 (28 December 2015) ~
 

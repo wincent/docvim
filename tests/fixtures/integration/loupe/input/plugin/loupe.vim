@@ -79,7 +79,8 @@
 " # Overrides
 "
 " Loupe sets a number of search-related Vim settings to reasonable defaults in
-" order to provide a good "out of the box" experience:
+" order to provide a good "out of the box" experience. The following overrides
+" will be set unless suppressed or overridden (see |loupe-suppress-overrides|):
 "
 " @indent
 "                                                        *loupe-history-override*
@@ -119,6 +120,9 @@
 "   whenever it containers uppercase characters).
 "
 " @dedent
+"
+"                                                      *loupe-suppress-overrides*
+" ## Preventing Loupe overrides from taking effect
 "
 " To override any of these choices, you can place overrides in an
 " |after-directory| (ie. `~/.vim/after/plugin/loupe.vim`). For example:
@@ -239,6 +243,11 @@
 "
 " # History
 "
+" 1.1 (15 June 2016)
+"
+" - Make compatible with older versions of Vim that do not have |v:hlsearch|.
+" - Add support for special delimiters with |:substitute| command.
+"
 " ## 1.0 (28 December 2015)
 "
 " - Renamed the |<Plug>LoupeClearHighlight| mapping to
@@ -288,8 +297,8 @@ set smartcase    " Case-sensitive search if search string includes a capital let
 " ```
 " let g:LoupeClearHighlightMap=0
 " ```
-let s:map=get(g:, 'LoupeClearHighlightMap', 1)
-if s:map
+let s:clear=get(g:, 'LoupeClearHighlightMap', 1)
+if s:clear
   if !hasmapto('<Plug>(LoupeClearHighlight)') && maparg('<leader>n', 'n') ==# ''
     nmap <silent> <unique> <leader>n <Plug>(LoupeClearHighlight)
   endif
@@ -348,27 +357,139 @@ nnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())
 xnoremap <expr> / loupe#private#prepare_highlight('/' . <SID>MagicString())
 xnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())
 if !empty(s:MagicString())
-  cnoremap <expr> / loupe#private#very_magic_slash()
+  " Any single-byte character may be used as a delimiter except \, ", | and
+  " alphanumerics. See `:h E146`.
+  cnoremap <expr> ! loupe#private#very_magic_slash('!')
+  cnoremap <expr> # loupe#private#very_magic_slash('#')
+  cnoremap <expr> $ loupe#private#very_magic_slash('$')
+  cnoremap <expr> % loupe#private#very_magic_slash('%')
+  cnoremap <expr> & loupe#private#very_magic_slash('&')
+  cnoremap <expr> ' loupe#private#very_magic_slash("'")
+  cnoremap <expr> ( loupe#private#very_magic_slash('(')
+  cnoremap <expr> ) loupe#private#very_magic_slash(')')
+  cnoremap <expr> * loupe#private#very_magic_slash('*')
+  cnoremap <expr> + loupe#private#very_magic_slash('+')
+  cnoremap <expr> , loupe#private#very_magic_slash(',')
+  cnoremap <expr> - loupe#private#very_magic_slash('-')
+  cnoremap <expr> . loupe#private#very_magic_slash('.')
+  cnoremap <expr> / loupe#private#very_magic_slash('/')
+  cnoremap <expr> : loupe#private#very_magic_slash(':')
+  cnoremap <expr> ; loupe#private#very_magic_slash(';')
+  cnoremap <expr> < loupe#private#very_magic_slash('<')
+  cnoremap <expr> = loupe#private#very_magic_slash('=')
+  cnoremap <expr> > loupe#private#very_magic_slash('>')
+  cnoremap <expr> ? loupe#private#very_magic_slash('?')
+  cnoremap <expr> @ loupe#private#very_magic_slash('@')
+  cnoremap <expr> [ loupe#private#very_magic_slash('[')
+  cnoremap <expr> ] loupe#private#very_magic_slash(']')
+  cnoremap <expr> ^ loupe#private#very_magic_slash('^')
+  cnoremap <expr> _ loupe#private#very_magic_slash('_')
+  cnoremap <expr> ` loupe#private#very_magic_slash('`')
+  cnoremap <expr> { loupe#private#very_magic_slash('{')
+  cnoremap <expr> } loupe#private#very_magic_slash('}')
+  cnoremap <expr> ~ loupe#private#very_magic_slash('~')
 endif
 
-""
-" @option g:LoupeCenterResults boolean 1
-"
-" Controls whether the match's line is vertically centered within the window
-" when jumping (via |n|, |N| etc). To disable, set to 0:
-"
-" ```
-" let g:LoupeCenterResults=0
-" ```
-let s:center=get(g:, 'LoupeCenterResults', 1)
-let s:center_string=s:center ? 'zz' : ''
+function! s:map(keys, name)
+  ""
+  " @option g:LoupeCenterResults boolean 1
+  "
+  " Controls whether the match's line is vertically centered within the window
+  " when jumping (via |n|, |N| etc). To disable, set to 0:
+  "
+  " ```
+  " let g:LoupeCenterResults=0
+  " ```
+  let s:center=get(g:, 'LoupeCenterResults', 1)
+  let s:center_string=s:center ? 'zz' : ''
 
-execute 'nnoremap <silent> # #' . s:center_string . ':call loupe#private#hlmatch()<CR>'
-execute 'nnoremap <silent> * *' . s:center_string . ':call loupe#private#hlmatch()<CR>'
-execute 'nnoremap <silent> N N' . s:center_string . ':call loupe#private#hlmatch()<CR>'
-execute 'nnoremap <silent> g# g#' . s:center_string . ':call loupe#private#hlmatch()<CR>'
-execute 'nnoremap <silent> g* g*' . s:center_string . ':call loupe#private#hlmatch()<CR>'
-execute 'nnoremap <silent> n n' . s:center_string . ':call loupe#private#hlmatch()<CR>'
+  if !hasmapto('<Plug>(Loupe' . a:name . ')')
+    execute 'nmap <silent> ' . a:keys . ' <Plug>(Loupe' . a:name . ')'
+  endif
+  execute 'nnoremap <silent> <Plug>(Loupe' . a:name . ')' .
+        \ ' ' .
+        \ a:keys .
+        \ s:center_string .
+        \ ':call loupe#hlmatch()<CR>'
+endfunction
+
+""
+" @mapping <Plug>(LoupeOctothorpe)
+"
+" Loupe maps |#| to |<Plug>(LoupeOctothorpe)| in order to implement custom
+" highlighting and line-centering for the current match.
+"
+" To prevent this from happening, create an alternate mapping in your |.vimrc|:
+"
+" ```
+" nmap <Nop> <Plug>(LoupeOctothorpe)
+" ```
+call s:map('#', 'Octothorpe')
+
+""
+" @mapping <Plug>(LoupeStar)
+"
+" Loupe maps |star| to |<Plug>(LoupeStar)| in order to implement custom
+" highlighting and line-centering for the current match.
+"
+" To prevent this from happening, create an alternate mapping in your |.vimrc|:
+"
+" ```
+" nmap <Nop> <Plug>(LoupeStar)
+" ```
+call s:map('*', 'Star')
+
+""
+" @mapping <Plug>(LoupeN)
+"
+" Loupe maps |N| to |<Plug>(LoupeN)| in order to implement custom
+" highlighting and line-centering for the current match.
+"
+" To prevent this from happening, create an alternate mapping in your |.vimrc|:
+"
+" ```
+" nmap <Nop> <Plug>(LoupeN)
+" ```
+call s:map('N', 'N')
+
+""
+" @mapping <Plug>(LoupeGOctothorpe)
+"
+" Loupe maps |g#| to |<Plug>(LoupeGOctothorpe)| in order to implement custom
+" highlighting and line-centering for the current match.
+"
+" To prevent this from happening, create an alternate mapping in your |.vimrc|:
+"
+" ```
+" nmap <Nop> <Plug>(LoupeGOctothorpe)
+" ```
+call s:map('g#', 'GOctothorpe')
+
+""
+" @mapping <Plug>(LoupeGStar)
+"
+" Loupe maps |gstar| to |<Plug>(LoupeGStar)| in order to implement custom
+" highlighting and line-centering for the current match.
+"
+" To prevent this from happening, create an alternate mapping in your |.vimrc|:
+"
+" ```
+" nmap <Nop> <Plug>(LoupeGStar)
+" ```
+call s:map('g*', 'GStar')
+
+""
+" @mapping <Plug>(Loupen)
+"
+" Loupe maps |n| to |<Plug>(Loupen)| in order to implement custom
+" highlighting and line-centering for the current match.
+"
+" To prevent this from happening, create an alternate mapping in your |.vimrc|:
+"
+" ```
+" nmap <Nop> <Plug>(Loupen)
+" ```
+call s:map('n', 'n')
 
 " Clean-up stray `matchadd()` vestiges.
 if has('autocmd') && has('extra_search')

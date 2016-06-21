@@ -38,6 +38,7 @@ node n = case n of
   CommandsAnnotation      -> h2 "Commands"
   DocBlock d              -> nodes d
   Fenced f                -> return $ fenced f ++ "\n\n"
+  FunctionAnnotation {}   -> function n
   FunctionDeclaration {}  -> nodes $ functionBody n
   FunctionsAnnotation     -> h2 "Functions"
   HeadingAnnotation h     -> h2 h
@@ -160,6 +161,13 @@ command (CommandAnnotation name params) = do
   where target = linkTargets [":" ++ name]
         annotation = rstrip $ name ++ " " ++ fromMaybe "" params
 command _ = invalidNode
+
+function :: Node -> Env
+function (FunctionAnnotation name) = do
+  content <- h3 $ "`" ++ name ++ "()`"
+  return $ target ++ content
+  where target = linkTargets [name ++ "()"]
+function _ = invalidNode
 
 mapping :: String -> Env
 mapping name = h3 $ "`" ++ name ++ "`"
