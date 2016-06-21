@@ -1,8 +1,11 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE MultiWayIf #-}
 
 module Text.Docvim.Printer.Vim (vimHelp) where
 
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>))
+#endif
 import Control.Arrow
 import Control.Monad
 import Control.Monad.Reader

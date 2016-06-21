@@ -1,8 +1,11 @@
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 module Main (main) where
 
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>))
+#endif
 import Control.DeepSeq
 import Control.Exception hiding (assert)
 import Data.ByteString.Lazy.Char8 (pack, unpack)

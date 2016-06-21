@@ -1,6 +1,10 @@
+{-# LANGUAGE CPP #-}
+
 module Text.Docvim.Printer.Markdown (markdown) where
 
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>))
+#endif
 import Control.Monad.Reader
 import Data.List
 import Data.Maybe
