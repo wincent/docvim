@@ -1,3 +1,7 @@
+# 0.3.2.0 (21 June 2016)
+
+- Add initial support for processing `@function` annotations.
+
 # 0.3.1.6 (18 June 2016)
 
 - Republish using only lower bounds to avoid getting blacklisted from Stackage.
