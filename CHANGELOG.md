@@ -1,3 +1,7 @@
+# 0.3.2.1 (25 June 2016)
+
+- Add missing fixture file to distribution, to fix Stackage breakage.
+
 # 0.3.2.0 (21 June 2016)
 
 - Add initial support for processing `@function` annotations.
