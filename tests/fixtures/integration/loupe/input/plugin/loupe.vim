@@ -243,7 +243,7 @@
 "
 " # History
 "
-" 1.1 (15 June 2016)
+" ## 1.1 (15 June 2016)
 "
 " - Make compatible with older versions of Vim that do not have |v:hlsearch|.
 " - Add support for special delimiters with |:substitute| command.
@@ -325,18 +325,18 @@ endif
 " - The mapping has been suppressed by setting |g:LoupeClearHighlightMap| to 1
 "   in your |.vimrc|.
 nnoremap <silent> <Plug>(LoupeClearHighlight)
-      \ :nohlsearch<CR>
-      \ :call loupe#private#clear_highlight()<CR>
+      \ :nohlsearch<bar>
+      \ call loupe#private#clear_highlight()<CR>
 
 " Make `:nohlsearch` behave like <Plug>(LoupeClearHighlight).
-cabbrev <silent> <expr> noh (getcmdtype() == ':' && getcmdpos() == 4 ? 'noh <bar> call loupe#private#clear_highlight()<CR>' : 'noh')
-cabbrev <silent> <expr> nohl (getcmdtype() == ':' && getcmdpos() == 5 ? 'nohl <bar> call loupe#private#clear_highlight()<CR>' : 'nohl')
-cabbrev <silent> <expr> nohls (getcmdtype() == ':' && getcmdpos() == 6 ? 'nohls <bar> call loupe#private#clear_highlight()<CR>' : 'nohls')
-cabbrev <silent> <expr> nohlse (getcmdtype() == ':' && getcmdpos() == 7 ? 'nohlse <bar> call loupe#private#clear_highlight()<CR>' : 'nohlse')
-cabbrev <silent> <expr> nohlsea (getcmdtype() == ':' && getcmdpos() == 8 ? 'nohlsea <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsea')
-cabbrev <silent> <expr> nohlsear (getcmdtype() == ':' && getcmdpos() == 9 ? 'nohlsear <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsear')
-cabbrev <silent> <expr> nohlsearc (getcmdtype() == ':' && getcmdpos() == 10 ? 'nohlsearc <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsearc')
-cabbrev <silent> <expr> nohlsearch (getcmdtype() == ':' && getcmdpos() == 11 ? 'nohlsearch <bar> call loupe#private#clear_highlight()<CR>' : 'nohlsearch')
+cnoreabbrev <silent> <expr> noh (getcmdtype() == ':' && getcmdpos() == 4 ? 'noh <bar> call loupe#private#clear_highlight()' : 'noh')
+cnoreabbrev <silent> <expr> nohl (getcmdtype() == ':' && getcmdpos() == 5 ? 'nohl <bar> call loupe#private#clear_highlight()' : 'nohl')
+cnoreabbrev <silent> <expr> nohls (getcmdtype() == ':' && getcmdpos() == 6 ? 'nohls <bar> call loupe#private#clear_highlight()' : 'nohls')
+cnoreabbrev <silent> <expr> nohlse (getcmdtype() == ':' && getcmdpos() == 7 ? 'nohlse <bar> call loupe#private#clear_highlight()' : 'nohlse')
+cnoreabbrev <silent> <expr> nohlsea (getcmdtype() == ':' && getcmdpos() == 8 ? 'nohlsea <bar> call loupe#private#clear_highlight()' : 'nohlsea')
+cnoreabbrev <silent> <expr> nohlsear (getcmdtype() == ':' && getcmdpos() == 9 ? 'nohlsear <bar> call loupe#private#clear_highlight()' : 'nohlsear')
+cnoreabbrev <silent> <expr> nohlsearc (getcmdtype() == ':' && getcmdpos() == 10 ? 'nohlsearc <bar> call loupe#private#clear_highlight()' : 'nohlsearc')
+cnoreabbrev <silent> <expr> nohlsearch (getcmdtype() == ':' && getcmdpos() == 11 ? 'nohlsearch <bar> call loupe#private#clear_highlight()' : 'nohlsearch')
 
 ""
 " @option g:LoupeVeryMagic boolean 1
