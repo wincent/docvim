@@ -65,6 +65,7 @@ extra-source-files:  README.md
                   ,  tests/fixtures/integration/loupe/golden/markdown.golden
                   ,  tests/fixtures/integration/loupe/golden/plaintext.golden
                   ,  tests/fixtures/integration/loupe/input/autoload/loupe/private.vim
+                  ,  tests/fixtures/integration/loupe/input/autoload/loupe.vim
                   ,  tests/fixtures/integration/loupe/input/plugin/loupe.vim
                   ,  tests/fixtures/integration/pinnacle/golden/ast.golden
                   ,  tests/fixtures/integration/pinnacle/golden/markdown.golden
