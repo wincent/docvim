@@ -8,7 +8,7 @@ import Control.Applicative ((<$>))
 #endif
 import Control.DeepSeq
 import Control.Exception hiding (assert)
-import Data.ByteString.Lazy.Char8 (pack, unpack)
+import Data.ByteString.Lazy.UTF8 (fromString, toString)
 import Data.Char
 import Data.List --(isPrefixOf, sort)
 import Data.Monoid
@@ -110,7 +110,7 @@ goldenTests description sources transform = testGroup groupName $ do
       run = do
         input <- readFile file
         let output = normalize $ transform [input]
-        return $ pack output -- pack because tasty-golden wants a ByteString
+        return $ fromString output
       name = takeBaseName file
       golden = replaceExtension file ".golden"
     return $ goldenVsStringDiff' name diff golden run
@@ -130,7 +130,7 @@ integrationTests sources = testGroup "Integration tests" $
         output = do
           inputs <- getFixtures $ source </> "input"
           contents <- mapM readFile (sort inputs)
-          return $ pack $ normalize $ process contents
+          return $ fromString $ normalize $ process contents
         name = takeBaseName source
         golden = "tests/fixtures/integration" </> (takeBaseName source) </> "golden/" ++ kind ++ ".golden"
       return $ goldenVsStringDiff' (name ++ " (" ++ kind ++ ")") diff golden output
@@ -163,7 +163,7 @@ goldenVsStringDiff' name diff' golden run =
   where
     template = takeFileName golden <.> "actual"
     hunkHeader = map chr [0x1b, 0x5b, 0x33, 0x36, 0x6d] ++ "@@ "
-    strip out = unlines $ dropWhile (not . isPrefixOf hunkHeader) (lines $ unpack out)
+    strip out = unlines $ dropWhile (not . isPrefixOf hunkHeader) (lines $ toString out)
     cmp _ actBS = withSystemTempFile template $ \tmpFile tmpHandle -> do
       ByteString.hPut tmpHandle actBS >> hFlush tmpHandle
       let cmd = diff' golden tmpFile

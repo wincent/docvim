@@ -302,6 +302,7 @@ test-suite tasty
                ,    tasty-golden
                ,    tasty-hunit
                ,    temporary
+               ,    utf8-string
   other-modules:     Text.Docvim.AST
                ,     Text.Docvim.Compile
                ,     Text.Docvim.Optimize
