@@ -121,7 +121,7 @@ h3 = heading 3
 heading :: Int -> String -> Env
 heading level string = do
   metadata <- ask
-  return $ replicate level '#' ++ " " ++ string ++ anch (pluginName metadata) ++ "\n\n"
+  return $ "\n" ++ replicate level '#' ++ " " ++ string ++ anch (pluginName metadata) ++ "\n\n"
   where
     anch name = a $ Anchor [ Attribute "name" (sanitizeAnchor $ pre ++ string)
                            , Attribute "href" (gitHubAnchor $ pre ++ string)
