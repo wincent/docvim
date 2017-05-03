@@ -16,11 +16,11 @@
 " ## 1. Powerful multi-file search
 "
 " Ferret provides an |:Ack| command for searching across multiple files using
-" The Silver Searcher (https://github.com/ggreer/the_silver_searcher), Ack
-" (http://beyondgrep.com/), or Grep (http://www.gnu.org/software/grep/). Support
-" for passing options through to the underlying search command exists, along
-" with the ability to use full regular expression syntax without doing special
-" escaping.
+" The Silver Searcher (https://github.com/ggreer/the_silver_searcher), or Ack
+" (http://beyondgrep.com/). Support for passing options through to the
+" underlying search command exists, along with the ability to use full regular
+" expression syntax without doing special escaping. On Vim version 8 or higher,
+" searches are performed asynchronously (without blocking the UI).
 "
 " Shortcut mappings are provided to start an |:Ack| search (<leader>a) or to
 " search for the word currently under the cursor (<leader>s).
@@ -29,15 +29,20 @@
 " provides a |:Lack| command that behaves like |:Ack| but uses the
 " |location-list| instead, and a <leader>l mapping as a shortcut to |:Lack|.
 "
+" |:Back| and |:Black| are analogous to |:Ack| and |:Lack|, but scoped to search
+" within currently open buffers only.
+"
 " Finally, Ferret offers integration with dispatch.vim
 " (https://github.com/tpope/vim-dispatch), which enables asynchronous searching
-" despite the fact that Vim itself is single-threaded.
+" on older versions of Vim (prior to version 8), despite the fact that Vim
+" itself is single-threaded.
 "
 " ## 2. Streamlined multi-file replace
 "
 " The companion to |:Ack| is |:Acks| (mnemonic: "Ack substitute", accessible via
 " shortcut <leader>r), which allows you to run a multi-file replace across all
-" the files placed in the |quickfix| window by a previous invocation of |:Ack|.
+" the files placed in the |quickfix| window by a previous invocation of |:Ack|
+" (or |:Back|).
 "
 " ## 3. Quickfix listing enhancements
 "
@@ -134,8 +139,8 @@
 " # Overrides
 "
 " Ferret overrides the 'grepformat' and 'grepprg' settings, preferentially
-" setting `ag`, `ack` or `grep` as the 'grepprg' (in that order) and configuring
-" a suitable 'grepformat'.
+" setting `rg`, `ag`, `ack` or `ack-grep` as the 'grepprg' (in that order) and
+" configuring a suitable 'grepformat'.
 "
 " Additionally, Ferret includes an |ftplugin| for the |quickfix| listing that
 " adjusts a number of settings to improve the usability of search results.
@@ -232,7 +237,6 @@
 " :Ack \blog\((['"]).*?\1\) -i --ignore-dir=src/vendor src dist build
 " ```
 "
-"
 " # FAQ
 "
 " ## Why do Ferret commands start with "Ack", "Lack" and so on?
@@ -241,10 +245,9 @@
 " |.vimrc|) around `ack`. The earliest traces of it can be seen in the initial
 " commit to my dotfiles repo in May, 2009 (https://wt.pe/h).
 "
-" So, even though Ferret has a new name now and actually prefers `ag` over `ack`
-" when available, I prefer to keep the command names intact and benefit from
-" years of accumulated muscle-memory.
-"
+" So, even though Ferret has a new name now and actually prefers `rg` then `ag`
+" over `ack`/`ack-grep` when available, I prefer to keep the command names
+" intact and benefit from years of accumulated muscle-memory.
 "
 "
 " # Related
@@ -349,12 +352,36 @@
 " order):
 "
 " - Daniel Silva
+" - Filip Szymański
 " - Joe Lencioni
 " - Nelo-Thara Wallus
+" - Tom Dooner
 " - Vaibhav Sagar
 "
 "
 " # History
+"
+" ## master (not yet released)
+"
+" - Added |g:FerretLazyInit|.
+"
+" ## 1.4 (21 January 2017)
+"
+" - Drop broken support for `grep`, printing a prompt to install `rg`, `ag`, or
+"   `ack`/`ack-grep` instead.
+" - If an `ack` executable is not found, search for `ack-grep`, which is the
+"   name used on Debian-derived distros.
+"
+" ## 1.3 (8 January 2017)
+"
+" - Reset |'errorformat'| before each search (fixes issue #31).
+" - Added |:Back| and |:Black| commands, analogous to |:Ack| and |:Lack| but
+"   scoped to search within currently open buffers only.
+" - Change |:Acks| to use |:cfdo| when available rather than |:Qargs| and
+"   |:argdo|, to avoid polluting the |arglist|.
+" - Remove superfluous |QuickFixCmdPost| autocommands, resolving clash with
+"   Neomake plug-in (patch from Tom Dooner, #36).
+" - Add support for searching with ripgrep (`rg`).
 "
 " ## 1.2a (16 May 2016)
 "
@@ -421,25 +448,19 @@ let g:FerretLoaded = 1
 let s:cpoptions = &cpoptions
 set cpoptions&vim
 
-if executable('ag') " The Silver Searcher: faster than ack.
-  let s:ackprg = 'ag --vimgrep'
-elseif executable('ack') " Ack: better than grep.
-  let s:ackprg = 'ack --column --with-filename'
-elseif executable('grep') " Grep: it's just grep.
-  let s:ackprg = &grepprg " default is: grep -n $* /dev/null
-endif
-
-if !empty(s:ackprg)
-  let &grepprg=s:ackprg
-  set grepformat=%f:%l:%c:%m
-endif
-
-if has('autocmd')
-  augroup Ferret
-    autocmd!
-    autocmd QuickFixCmdPost [^l]* nested cwindow
-    autocmd QuickFixCmdPost l* nested lwindow
-  augroup END
+""
+" @option g:FerretLazyInit boolean 1
+"
+" In order to minimize impact on Vim start-up time Ferret will initialize itself
+" lazily on first use by default. If you wish to force immediate initialization
+" (for example, to cause |'grepprg'| and |'grepformat'| to be set as soon as Vim
+" launches), then set |g:FerretLazyInit| to 0 in your |.vimrc|:
+"
+" ```
+" let g:FerrerLazyInit=0
+" ```
+if !get(g:, 'FerretLazyInit', 1)
+  call ferret#private#init()
 endif
 
 ""
@@ -449,14 +470,20 @@ endif
 " |:pwd|), unless otherwise overridden via {options}, and displays the results
 " in the |quickfix| listing.
 "
-" `ag` (The Silver Searcher) will be used preferentially if present on the
-" system, because it is faster, falling back to `ack` and then `grep` as needed.
+" `rg` (ripgrep) then `ag` (The Silver Searcher) will be used preferentially if
+" present on the system, because they are faster, falling back to
+" `ack`/`ack-grep` as needed.
 "
-" If dispatch.vim is installed the search process will run asynchronously via
-" the |:Make| command, otherwise it will be run synchronously via |:cexpr|.
-" Asynchronous searches are preferred because they do not block, despite the
-" fact that Vim itself is single threaded. The |g:FerretDispatch| option can be
+" On newer versions of Vim (version 8 and above), the search process runs
+" asynchronously in the background and does not block the UI.
+"
+" On older Vim versions (prior to version 8), if dispatch.vim is installed the
+" search process will run asynchronously via the |:Make| command, otherwise it
+" will be run synchronously via |:cexpr|. The |g:FerretDispatch| option can be
 " used to prevent the use of dispatch.vim.
+"
+" Asynchronous searches are preferred because they do not block, despite the
+" fact that Vim itself is single threaded.
 "
 " The {pattern} is passed through as-is to the underlying search program, and no
 " escaping is required other than preceding spaces by a single backslash. For
@@ -491,6 +518,26 @@ command! -nargs=+ -complete=customlist,ferret#private#ackcomplete Ack call ferre
 " Note that |:Lack| always runs synchronously via |:cexpr|, because dispatch.vim
 " doesn't currently support the |location-list|.
 command! -nargs=+ -complete=customlist,ferret#private#lackcomplete Lack call ferret#private#lack(<f-args>)
+
+""
+" @command :Back {pattern} {options}
+"
+" Like |:Ack|, but searches only listed buffers. Note that the search is still
+" delegated to the underlying |'grepprg'| (`rg`, `ag`, `ack` or `ack-grep`),
+" which means that only buffers written to disk will be searched. If no buffers
+" are written to disk, then |:Back| behaves exactly like |:Ack| and will search
+" all files in the current directory.
+command! -nargs=+ -complete=customlist,ferret#private#backcomplete Back call ferret#private#back(<f-args>)
+
+""
+" @command :Black {pattern} {options}
+"
+" Like |:Lack|, but searches only listed buffers. As with |:Back|, the search is
+" still delegated to the underlying |'grepprg'| (`rg`, `ag`, `ack` or
+" `ack-grep`), which means that only buffers written to disk will be searched.
+" Likewise, If no buffers are written to disk, then |:Black| behaves exactly
+" like |:Lack| and will search all files in the current directory.
+command! -nargs=+ -complete=customlist,ferret#private#blackcomplete Black call ferret#private#black(<f-args>)
 
 ""
 " @command :Acks /{pattern}/{replacement}/
@@ -596,8 +643,9 @@ endif
 ""
 " @command :Qargs
 "
-" This is a utility function that is used by the |:Acks| command but is also
-" generally useful enough to warrant being exposed publicly.
+" This is a utility function that is used internally when running on older
+" versions of Vim (prior to version 8) but is also generally useful enough to
+" warrant being exposed publicly.
 "
 " It takes the files currently in the |quickfix| listing and sets them as
 " |:args| so that they can be operated on en masse via the |:argdo| command.
@@ -622,6 +670,12 @@ if s:commands
   cabbrev <silent> <expr> cp ((getcmdtype() == ':' && getcmdpos() == 3) ? 'cp <bar> normal zz' : 'cp')
   cabbrev <silent> <expr> cpf ((getcmdtype() == ':' && getcmdpos() == 4) ? 'cpf <bar> normal zz' : 'cpf')
 endif
+
+""
+" @option g:FerretFormat string "%f:%l:%c:%m"
+"
+" Sets the '|grepformat|' used by Ferret.
+let g:FerretFormat=get(g:, 'FerretFormat', '%f:%l:%c:%m')
 
 " Restore 'cpoptions' to its former value.
 let &cpoptions = s:cpoptions

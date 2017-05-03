@@ -101,7 +101,7 @@ function! s:parse(args) abort
       if len(l:file_args)
         call extend(l:expanded_args, l:file_args)
       else
-        " Let through to `ag`/`ack`/`grep`, which will throw ENOENT.
+        " Let through to `rg`/`ag`/`ack`/`ack-grep`, which will throw ENOENT.
         call add(l:expanded_args, l:arg)
       endif
     else
@@ -178,7 +178,9 @@ function! ferret#private#ack(...) abort
   let l:command=s:parse(a:000)
   call ferret#private#hlsearch()
 
-  if empty(&grepprg)
+  let l:executable=ferret#private#executable()
+  if empty(l:executable)
+    call ferret#private#installprompt()
     return
   endif
 
@@ -191,11 +193,33 @@ function! ferret#private#ack(...) abort
   endif
 endfunction
 
+function! ferret#private#buflist() abort
+  let l:buflist=getbufinfo({'buflisted': 1})
+  let l:bufpaths=filter(map(l:buflist, 'v:val.name'), 'v:val !=# ""')
+  return l:bufpaths
+endfunction
+
+function! ferret#private#back(...) abort
+  call call('ferret#private#ack', a:000 + ferret#private#buflist())
+endfunction
+
+function! ferret#private#black(...) abort
+  call call('ferret#private#lack', a:000 + ferret#private#buflist())
+endfunction
+
+function! ferret#private#installprompt() abort
+  call ferret#private#error(
+        \   'Unable to find suitable executable; install rg, ag, ack or ack-grep'
+        \ )
+endfunction
+
 function! ferret#private#lack(...) abort
   let l:command=s:parse(a:000)
   call ferret#private#hlsearch()
 
-  if empty(&grepprg)
+  let l:executable=ferret#private#executable()
+  if empty(l:executable)
+    call ferret#private#installprompt()
     return
   endif
 
@@ -220,7 +244,7 @@ function! ferret#private#hlsearch() abort
     " let g:FerretHlsearch=0
     " ```
     let l:hlsearch=get(g:, 'FerretHlsearch', &hlsearch)
-    if l:hlsearch
+    if l:hlsearch && exists('g:ferret_lastsearch')
       let @/=g:ferret_lastsearch
       call feedkeys(":let &hlsearch=1 | echo \<CR>", 'n')
     endif
@@ -235,11 +259,16 @@ endfunction
 "   :Ack foo
 "   :Acks /foo/bar/
 "
-" is equivalent to:
+" is equivalent to the following prior to Vim 8:
 "
 "   :Ack foo
 "   :Qargs
 "   :argdo %s/foo/bar/ge | update
+"
+" and the following on Vim 8 or after:
+"
+"   :Ack foo
+"   :cfdo %s/foo/bar/ge | update
 "
 " (Note: there's nothing specific to Ack in this function; it's just named this
 " way for mnemonics, as it will most often be preceded by an :Ack invocation.)
@@ -265,19 +294,25 @@ function! ferret#private#acks(command) abort
     let l:options .= 'g'
   endif
 
-  let l:filenames=ferret#private#qargs()
-  if l:filenames ==# ''
-    call ferret#private#error(
-          \ 'Ferret: Quickfix filenames must be present, but there are none ' .
-          \ '(must use :Ack to find files before :Acks can be used)'
-          \ )
-    return
+  let l:cfdo=has('listcmds') && exists(':cfdo') == 2
+  if !l:cfdo
+    let l:filenames=ferret#private#qargs()
+    if l:filenames ==# ''
+      call ferret#private#error(
+            \ 'Ferret: Quickfix filenames must be present, but there are none ' .
+            \ '(must use :Ack to find files before :Acks can be used)'
+            \ )
+      return
+    endif
+    execute 'args' l:filenames
   endif
 
-  execute 'args' l:filenames
-
   call ferret#private#autocmd('FerretWillWrite')
-  execute 'argdo' '%s' . l:pattern . l:options . ' | update'
+  if l:cfdo
+    execute 'cfdo' '%s' . l:pattern . l:options . ' | update'
+  else
+    execute 'argdo' '%s' . l:pattern . l:options . ' | update'
+  endif
   call ferret#private#autocmd('FerretDidWrite')
 endfunction
 
@@ -311,22 +346,26 @@ function! s:split(str) abort
 endfunction
 
 function! ferret#private#ackcomplete(arglead, cmdline, cursorpos) abort
-  return ferret#private#complete('Ack', a:arglead, a:cmdline, a:cursorpos)
+  return ferret#private#complete('Ack', a:arglead, a:cmdline, a:cursorpos, 1)
+endfunction
+
+function! ferret#private#backcomplete(arglead, cmdline, cursorpos) abort
+  return ferret#private#complete('Lack', a:arglead, a:cmdline, a:cursorpos, 0)
+endfunction
+
+function! ferret#private#blackcomplete(arglead, cmdline, cursorpos) abort
+  return ferret#private#complete('Lack', a:arglead, a:cmdline, a:cursorpos, 0)
 endfunction
 
 function! ferret#private#lackcomplete(arglead, cmdline, cursorpos) abort
-  return ferret#private#complete('Lack', a:arglead, a:cmdline, a:cursorpos)
+  return ferret#private#complete('Lack', a:arglead, a:cmdline, a:cursorpos, 1)
 endfunction
 
-if executable('ag')
-  let s:executable='ag'
-elseif executable('ack')
-  let s:executable='ack'
-elseif executable('grep')
-  let s:executable='grep'
-else
-  let s:executable=''
-endif
+" Return first word (the name of the binary) of the executable string.
+function! ferret#private#executable_name()
+  let l:executable=ferret#private#executable()
+  let l:binary=matchstr(l:executable, '\v\w+')
+endfunction
 
 let s:options = {
       \   'ack': [
@@ -376,14 +415,55 @@ let s:options = {
       \     '-u',
       \     '-v',
       \     '-w'
+      \   ],
+      \   'rg': [
+      \     '--case-sensitive',
+      \     '--files-with-matches',
+      \     '--follow',
+      \     '--glob',
+      \     '--hidden',
+      \     '--ignore-case',
+      \     '--invert-match',
+      \     '--max-count',
+      \     '--maxdepth',
+      \     '--mmap',
+      \     '--no-ignore',
+      \     '--no-ignore-parent',
+      \     '--no-ignore-vcs',
+      \     '--no-mmap',
+      \     '--regexp',
+      \     '--smart-case',
+      \     '--text',
+      \     '--threads',
+      \     '--type',
+      \     '--type-not',
+      \     '--unrestricted',
+      \     '--word-regexp',
+      \     '-F',
+      \     '-L',
+      \     '-R',
+      \     '-T',
+      \     '-a',
+      \     '-e',
+      \     '-g',
+      \     '-i',
+      \     '-j',
+      \     '-m',
+      \     '-s',
+      \     '-t',
+      \     '-u',
+      \     '-v',
+      \     '-w'
       \   ]
       \ }
+let s:options['ack-grep']=s:options['ack']
 
 " We provide our own custom command completion because the default
 " -complete=file completion will expand special characters in the pattern (like
 " "#") before we get a chance to see them, breaking the search. As a bonus, this
-" means we can provide option completion for `ack` and `ag` options as well.
-function! ferret#private#complete(cmd, arglead, cmdline, cursorpos) abort
+" means we can provide option completion for `ack`/`ack-grep`/`ag`/`rg` options
+" as well.
+function! ferret#private#complete(cmd, arglead, cmdline, cursorpos, files) abort
   let l:args=s:split(a:cmdline[:a:cursorpos])
 
   let l:command_seen=0
@@ -396,10 +476,10 @@ function! ferret#private#complete(cmd, arglead, cmdline, cursorpos) abort
 
     if ferret#private#option(l:stripped)
       if a:cursorpos <= l:position
-        let l:options=get(s:options, s:executable, [])
+        let l:options=get(s:options, ferret#private#executable_name(), [])
         return filter(l:options, 'match(v:val, l:stripped) == 0')
       endif
-    elseif l:pattern_seen
+    elseif l:pattern_seen && a:files
       if a:cursorpos <= l:position
         " Assume this is a filename, and it's the one we're trying to complete.
         " Do -complete=file style completion.
@@ -452,3 +532,86 @@ function! ferret#private#qf_delete_motion(type, ...)
   " Restore.
   let &selection=l:selection
 endfunction
+
+""
+" @option g:FerretExecutable string "rg,ag,ack,ack-grep"
+"
+" Ferret will preferentially use `rg`, `ag` and finally `ack`/`ack-grep` (in
+" that order, using the first found executable), however you can force your
+" preference for a specific tool to be used by setting an override in your
+" |.vimrc|. Valid values are a comma-separated list of "rg", "ag", "ack" or
+" "ack-grep". If no requested executable exists, Ferret will fall-back to the
+" next in the default list.
+"
+" Example:
+"
+" ```
+" " Prefer `ag` over `rg`.
+" let g:FerretExecutable='ag,rg'
+" ```
+let s:force=get(g:, 'FerretExecutable', 'rg,ag,ack,ack-grep')
+
+let s:executables={
+      \   'rg': 'rg --vimgrep --no-heading',
+      \   'ag': 'ag',
+      \   'ack': 'ack --column --with-filename',
+      \   'ack-grep': 'ack-grep --column --with-filename'
+      \ }
+
+let s:init_done=0
+
+function! ferret#private#init() abort
+  if s:init_done
+    return
+  endif
+
+  if executable('rg') && match(system('rg --help'), '--max-columns') != -1
+    let s:executables['rg'].=' --max-columns 4096'
+  endif
+
+  if executable('ag')
+    let s:ag_help=system('ag --help')
+    if match(s:ag_help, '--vimgrep') != -1
+      let s:executables['ag'].=' --vimgrep'
+    else
+      let s:executables['ag'].=' --column'
+    endif
+    if match(s:ag_help, '--width') != -1
+      let s:executables['ag'].=' --width 4096'
+    endif
+  endif
+
+  let l:executable=ferret#private#executable()
+  if !empty(l:executable)
+    let &grepprg=l:executable
+    let &grepformat=g:FerretFormat
+  endif
+
+  let s:init_done=1
+endfunction
+
+function! ferret#private#executable() abort
+  let l:valid=keys(s:executables)
+  let l:executables=split(s:force, '\v\s*,\s*')
+  let l:executables=filter(l:executables, 'index(l:valid, v:val) != -1')
+  if index(l:executables, 'rg') == -1
+    call add(l:executables, 'rg')
+  endif
+  if index(l:executables, 'ag') == -1
+    call add(l:executables, 'ag')
+  endif
+  if index(l:executables, 'ack') == -1
+    call add(l:executables, 'ack')
+  endif
+  if index(l:executables, 'ack-grep') == -1
+    call add(l:executables, 'ack-grep')
+  endif
+  for l:executable in l:executables
+    if executable(l:executable)
+      return s:executables[l:executable]
+    endif
+  endfor
+  return ''
+endfunction
+
+call ferret#private#init()
