@@ -14,6 +14,18 @@ Project
       , Whitespace
       , Plaintext "one."
       ]
+  , CommandAnnotation "Ack!" (Just "{pattern} {options}")
+  , Paragraph
+      [ Plaintext "Going"
+      , Whitespace
+      , Plaintext "out"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "bang."
+      ]
   , Paragraph
       [ Plaintext "TODO:"
       , Whitespace

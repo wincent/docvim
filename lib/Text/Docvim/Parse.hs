@@ -450,7 +450,7 @@ annotation = char '@' *> annotationName
              ]
 
     command'          = string "command" >> ws >> CommandAnnotation <$> commandName <*> commandParameters
-    commandName       = char ':' *> many1 alphaNum <* optional ws
+    commandName       = char ':' *> many1 (alphaNum <|> char '!') <* optional ws
     commandParameters = optionMaybe $ many1 (noneOf "\n")
 
     function'         = string "function" >> ws >> FunctionAnnotation <$> word <* optional ws
