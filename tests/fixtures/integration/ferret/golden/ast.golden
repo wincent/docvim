@@ -951,7 +951,8 @@ Project
               , functionArguments = ArgumentList []
               , functionAttributes = []
               , functionBody =
-                  [ LetStatement
+                  [ Empty
+                  , LetStatement
                       { letLexpr = "l:async" , letValue = "get(g:, 'FerretJob', 1)" }
                   , GenericStatement "return l:async && has('patch-7-4-1829')"
                   ]
@@ -1096,7 +1097,8 @@ Project
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#ack"
-              , functionArguments = ArgumentList [ Argument "..." ]
+              , functionArguments =
+                  ArgumentList [ Argument "bang" , Argument "..." ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ LetStatement
@@ -1111,7 +1113,8 @@ Project
                   , GenericStatement "return"
                   , GenericStatement "endif"
                   , GenericStatement "if ferret#private#async()"
-                  , GenericStatement "call ferret#private#async#search(l:command, 1)"
+                  , GenericStatement
+                      "call ferret#private#async#search(l:command, 1, a:bang)"
                   , GenericStatement "elseif ferret#private#dispatch()"
                   , GenericStatement "call ferret#private#dispatch#search(l:command)"
                   , GenericStatement "else"
@@ -1141,21 +1144,23 @@ Project
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#back"
-              , functionArguments = ArgumentList [ Argument "..." ]
+              , functionArguments =
+                  ArgumentList [ Argument "bang" , Argument "..." ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement
-                      "call call('ferret#private#ack', a:000 + ferret#private#buflist())"
+                      "call call('ferret#private#ack', a:bang, a:000 + ferret#private#buflist())"
                   ]
               }
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#black"
-              , functionArguments = ArgumentList [ Argument "..." ]
+              , functionArguments =
+                  ArgumentList [ Argument "bang" , Argument "..." ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement
-                      "call call('ferret#private#lack', a:000 + ferret#private#buflist())"
+                      "call call('ferret#private#lack', a:bang, a:000 + ferret#private#buflist())"
                   ]
               }
           , FunctionDeclaration
@@ -1171,7 +1176,8 @@ Project
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#lack"
-              , functionArguments = ArgumentList [ Argument "..." ]
+              , functionArguments =
+                  ArgumentList [ Argument "bang" , Argument "..." ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ LetStatement
@@ -1186,7 +1192,8 @@ Project
                   , GenericStatement "return"
                   , GenericStatement "endif"
                   , GenericStatement "if ferret#private#async()"
-                  , GenericStatement "call ferret#private#async#search(l:command, 0)"
+                  , GenericStatement
+                      "call ferret#private#async#search(l:command, 0, a:bang)"
                   , GenericStatement "else"
                   , GenericStatement
                       "call ferret#private#vanilla#search(l:command, 0)"
@@ -1489,15 +1496,15 @@ Project
                   , GenericStatement "endif"
                   , GenericStatement "if executable('ag')"
                   , LetStatement
-                      { letLexpr = "s:ag_help" , letValue = "system('ag --help')" }
-                  , GenericStatement "if match(s:ag_help, '--vimgrep') != -1"
+                      { letLexpr = "l:ag_help" , letValue = "system('ag --help')" }
+                  , GenericStatement "if match(l:ag_help, '--vimgrep') != -1"
                   , LetStatement
                       { letLexpr = "s:executables['ag']." , letValue = "' --vimgrep'" }
                   , GenericStatement "else"
                   , LetStatement
                       { letLexpr = "s:executables['ag']." , letValue = "' --column'" }
                   , GenericStatement "endif"
-                  , GenericStatement "if match(s:ag_help, '--width') != -1"
+                  , GenericStatement "if match(l:ag_help, '--width') != -1"
                   , LetStatement
                       { letLexpr = "s:executables['ag']."
                       , letValue = "' --width 4096'"
@@ -1576,7 +1583,8 @@ Project
               { functionBang = True
               , functionName = "ferret#private#async#search"
               , functionArguments =
-                  ArgumentList [ Argument "command" , Argument "ack" ]
+                  ArgumentList
+                    [ Argument "command" , Argument "ack" , Argument "bang" ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement "call ferret#private#async#cancel()"
@@ -1602,7 +1610,7 @@ Project
                   , LetStatement
                       { letLexpr = "s:jobs[l:channel_id]" , letValue = "{" }
                   , GenericStatement
-                      "\\ 'channel_id': l:channel_id, 'job': l:job, 'errors': [], 'output': [], 'pending_error': '', 'pending_output': '', 'pending_error_length': 0, 'pending_output_length': 0, 'ack': a:ack, 'window': win_getid() }"
+                      "\\ 'channel_id': l:channel_id, 'job': l:job, 'errors': [], 'output': [], 'pending_error': '', 'pending_output': '', 'pending_error_length': 0, 'pending_output_length': 0, 'result_count': 0, 'ack': a:ack, 'bang': a:bang, 'window': win_getid() }"
                   ]
               }
           , LetStatement
@@ -1653,6 +1661,10 @@ Project
                   , GenericStatement "endif"
                   ]
               }
+          , LetStatement
+              { letLexpr = "s:limit"
+              , letValue = "max([1, +get(g:, 'FerretMaxResults', 100000)]) - 1"
+              }
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#async#out_cb"
@@ -1665,6 +1677,11 @@ Project
                       , letValue = "s:info_from_channel(a:channel)"
                       }
                   , GenericStatement "if type(l:info) == 4"
+                  , GenericStatement
+                      "if !l:info.bang && l:info.result_count > s:limit"
+                  , GenericStatement "call s:MaxResultsExceeded(l:info)"
+                  , GenericStatement "return"
+                  , GenericStatement "endif"
                   , LetStatement
                       { letLexpr = "l:lines" , letValue = "split(a:msg, '\\n', 1)" }
                   , LetStatement { letLexpr = "l:count" , letValue = "len(l:lines)" }
@@ -1686,6 +1703,14 @@ Project
                       { letLexpr = "l:info.pending_output" , letValue = "''" }
                   , LetStatement
                       { letLexpr = "l:info.pending_output_length" , letValue = "0" }
+                  , GenericStatement "if !l:info.bang"
+                  , LetStatement
+                      { letLexpr = "l:info.result_count+" , letValue = "1" }
+                  , GenericStatement "if l:info.result_count > s:limit"
+                  , GenericStatement "call s:MaxResultsExceeded(l:info)"
+                  , GenericStatement "break"
+                  , GenericStatement "endif"
+                  , GenericStatement "endif"
                   , GenericStatement
                       "elseif l:info.pending_output_length < s:max_line_length"
                   , LetStatement
@@ -1756,6 +1781,22 @@ Project
                   , GenericStatement
                       "call ferret#private#autocmd('FerretAsyncFinish')"
                   , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:MaxResultsExceeded"
+              , functionArguments = ArgumentList [ Argument "info" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement
+                      "call ferret#private#shared#finalize_search(a:info.output, a:info.ack)"
+                  , GenericStatement "call job_stop(a:info.job)"
+                  , GenericStatement "call remove(s:jobs, a:info.channel_id)"
+                  , GenericStatement
+                      "call ferret#private#autocmd('FerretAsyncFinish')"
+                  , GenericStatement
+                      "call ferret#private#error( 'Maximum result count exceeded. ' . 'Either increase g:FerretMaxResults or ' . 're-run the search with :Ack!, :Lack! etc.' )"
                   ]
               }
           , FunctionDeclaration
@@ -1921,13 +1962,13 @@ Project
           , GenericStatement "call ferret#private#init()"
           , GenericStatement "endif"
           , GenericStatement
-              "command! -nargs=+ -complete=customlist,ferret#private#ackcomplete Ack call ferret#private#ack(<f-args>)"
+              "command! -bang -nargs=+ -complete=customlist,ferret#private#ackcomplete Ack call ferret#private#ack(<bang>0, <f-args>)"
           , GenericStatement
-              "command! -nargs=+ -complete=customlist,ferret#private#lackcomplete Lack call ferret#private#lack(<f-args>)"
+              "command! -bang -nargs=+ -complete=customlist,ferret#private#lackcomplete Lack call ferret#private#lack(<bang>0, <f-args>)"
           , GenericStatement
-              "command! -nargs=+ -complete=customlist,ferret#private#backcomplete Back call ferret#private#back(<f-args>)"
+              "command! -bang -nargs=+ -complete=customlist,ferret#private#backcomplete Back call ferret#private#back(<bang>0, <f-args>)"
           , GenericStatement
-              "command! -nargs=+ -complete=customlist,ferret#private#blackcomplete Black call ferret#private#black(<f-args>)"
+              "command! -bang -nargs=+ -complete=customlist,ferret#private#blackcomplete Black call ferret#private#black(<bang>0, <f-args>)"
           , GenericStatement
               "command! -nargs=1 Acks call ferret#private#acks(<q-args>)"
           , GenericStatement
@@ -2487,6 +2528,34 @@ Project
       , Whitespace
       , Plaintext "cursor."
       ]
+  , CommandAnnotation "Ack!" (Just "{pattern} {options}")
+  , Paragraph
+      [ Plaintext "Like"
+      , Whitespace
+      , Link ":Ack"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "returns"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "results"
+      , Whitespace
+      , Plaintext "irrespective"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "value"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Link "g:FerretMaxResults"
+      , Plaintext "."
+      ]
   , CommandAnnotation "Lack" (Just "{pattern} {options}")
   , Paragraph
       [ Plaintext "Just"
@@ -2576,6 +2645,34 @@ Project
       , Plaintext "the"
       , Whitespace
       , Link "location-list"
+      , Plaintext "."
+      ]
+  , CommandAnnotation "Lack!" (Just "{pattern} {options}")
+  , Paragraph
+      [ Plaintext "Like"
+      , Whitespace
+      , Link ":Lack"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "returns"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "results"
+      , Whitespace
+      , Plaintext "irrespective"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "value"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Link "g:FerretMaxResults"
       , Plaintext "."
       ]
   , CommandAnnotation "Back" (Just "{pattern} {options}")
@@ -2696,6 +2793,34 @@ Project
       , Plaintext "current"
       , Whitespace
       , Plaintext "directory."
+      ]
+  , CommandAnnotation "Back!" (Just "{pattern} {options}")
+  , Paragraph
+      [ Plaintext "Like"
+      , Whitespace
+      , Link ":Back"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "returns"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "results"
+      , Whitespace
+      , Plaintext "irrespective"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "value"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Link "g:FerretMaxResults"
+      , Plaintext "."
       ]
   , CommandAnnotation "Black" (Just "{pattern} {options}")
   , Paragraph
@@ -2820,6 +2945,34 @@ Project
       , Plaintext "current"
       , Whitespace
       , Plaintext "directory."
+      ]
+  , CommandAnnotation "Black!" (Just "{pattern} {options}")
+  , Paragraph
+      [ Plaintext "Like"
+      , Whitespace
+      , Link ":Black"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "returns"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "results"
+      , Whitespace
+      , Plaintext "irrespective"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "value"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Link "g:FerretMaxResults"
+      , Plaintext "."
       ]
   , CommandAnnotation "Acks" (Just "/{pattern}/{replacement}/")
   , Paragraph
@@ -3604,6 +3757,144 @@ Project
       , Plaintext "0:"
       ]
   , Fenced [ "let g:FerretDispatch=0" ]
+  , Paragraph
+      [ Plaintext "Note"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "sufficiently"
+      , Whitespace
+      , Plaintext "recent"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Link "+job"
+      , Whitespace
+      , Plaintext "support,"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "first"
+      , Whitespace
+      , Plaintext "try"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Link "+job"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "falling"
+      , Whitespace
+      , Plaintext "back"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "vim-dispatch"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "consulting"
+      , Whitespace
+      , Link "g:FerretDispatch"
+      , Whitespace
+      , Plaintext "only"
+      , Whitespace
+      , Plaintext "if"
+      , Whitespace
+      , Link "g:FerretJob"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "0."
+      ]
+  , OptionAnnotation "g:FerretJob" "boolean" (Just "1")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "whether"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Plaintext "Vim's"
+      , Whitespace
+      , Link "+job"
+      , Whitespace
+      , Plaintext "feature,"
+      , Whitespace
+      , Plaintext "when"
+      , Whitespace
+      , Plaintext "available,"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "run"
+      , Whitespace
+      , Plaintext "searches"
+      , Whitespace
+      , Plaintext "asynchronously."
+      , Whitespace
+      , Plaintext "To"
+      , Whitespace
+      , Plaintext "prevent"
+      , Whitespace
+      , Link "+job"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "being"
+      , Whitespace
+      , Plaintext "used,"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "0,"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "case"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "fall"
+      , Whitespace
+      , Plaintext "back"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "vim-dispatch"
+      , Whitespace
+      , Plaintext "(see"
+      , Whitespace
+      , Plaintext "also:"
+      , Whitespace
+      , Link "g:FerretDispatch"
+      , Plaintext "):"
+      ]
+  , Fenced [ "let g:FerretJob=0" ]
   , OptionAnnotation "g:FerretHlsearch" "boolean" Nothing
   , Paragraph
       [ Plaintext "Controls"
@@ -3830,6 +4121,242 @@ Project
   , Paragraph [ Plaintext "Example:" ]
   , Fenced
       [ "\" Prefer `ag` over `rg`." , "let g:FerretExecutable='ag,rg'" ]
+  , OptionAnnotation "g:FerretMaxResults" "number" (Just "100000")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "maximum"
+      , Whitespace
+      , Plaintext "number"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "results"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "attempt"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "gather"
+      , Whitespace
+      , Plaintext "before"
+      , Whitespace
+      , Plaintext "displaying"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "results."
+      , Whitespace
+      , Plaintext "Note"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "this"
+      , Whitespace
+      , Plaintext "only"
+      , Whitespace
+      , Plaintext "applies"
+      , Whitespace
+      , Plaintext "when"
+      , Whitespace
+      , Plaintext "searching"
+      , Whitespace
+      , Plaintext "asynchronously;"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "is,"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "recent"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Link "+job"
+      , Whitespace
+      , Plaintext "support"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "when"
+      , Whitespace
+      , Link "g:FerretJob"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "not"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "0."
+      ]
+  , Paragraph
+      [ Plaintext "The"
+      , Whitespace
+      , Plaintext "intent"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "this"
+      , Whitespace
+      , Plaintext "option"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "prevent"
+      , Whitespace
+      , Plaintext "runaway"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "processes"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "produce"
+      , Whitespace
+      , Plaintext "huge"
+      , Whitespace
+      , Plaintext "volumes"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "output"
+      , Whitespace
+      , Plaintext "(for"
+      , Whitespace
+      , Plaintext "example,"
+      , Whitespace
+      , Plaintext "searching"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "common"
+      , Whitespace
+      , Plaintext "string"
+      , Whitespace
+      , Plaintext "like"
+      , Whitespace
+      , Plaintext "\"test\""
+      , Whitespace
+      , Plaintext "inside"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Link "$HOME"
+      , Whitespace
+      , Plaintext "directory"
+      , Whitespace
+      , Plaintext "containing"
+      , Whitespace
+      , Plaintext "millions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "files)"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "locking"
+      , Whitespace
+      , Plaintext "up"
+      , Whitespace
+      , Plaintext "Vim."
+      ]
+  , Paragraph
+      [ Plaintext "In"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "event"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "aborts"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "has"
+      , Whitespace
+      , Plaintext "hit"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "g:FerretMaxResults"
+      , Whitespace
+      , Plaintext "limit,"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "message"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "printed"
+      , Whitespace
+      , Plaintext "prompting"
+      , Whitespace
+      , Plaintext "users"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "run"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "again"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Link ":Ack!"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Link ":Lack!"
+      , Whitespace
+      , Plaintext "if"
+      , Whitespace
+      , Plaintext "they"
+      , Whitespace
+      , Plaintext "want"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "bypass"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "limit."
+      ]
   , OptionAnnotation "g:FerretQFOptions" "boolean" (Just "1")
   , Paragraph
       [ Plaintext "Controls"
@@ -6067,10 +6594,113 @@ Project
   , SubheadingAnnotation "master (not yet released)"
   , List
       [ ListItem
+          [ Plaintext "Improvements"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "handling"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Plaintext "very"
+          , Whitespace
+          , Plaintext "large"
+          , Whitespace
+          , Plaintext "result"
+          , Whitespace
+          , Plaintext "sets"
+          , Whitespace
+          , Plaintext "(due"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "wide"
+          , Whitespace
+          , Plaintext "lines"
+          , Whitespace
+          , Plaintext "or"
+          , Whitespace
+          , Plaintext "many"
+          , Whitespace
+          , Plaintext "results)."
+          ]
+      , ListItem
           [ Plaintext "Added"
           , Whitespace
           , Link "g:FerretLazyInit"
           , Plaintext "."
+          ]
+      , ListItem
+          [ Plaintext "Added"
+          , Whitespace
+          , Plaintext "missing"
+          , Whitespace
+          , Plaintext "documentation"
+          , Whitespace
+          , Plaintext "for"
+          , Whitespace
+          , Link "g:FerretJob"
+          , Plaintext "."
+          ]
+      , ListItem
+          [ Plaintext "Added"
+          , Whitespace
+          , Link "g:FerretMaxResults"
+          , Plaintext "."
+          ]
+      , ListItem
+          [ Plaintext "Added"
+          , Whitespace
+          , Plaintext "feature-detection"
+          , Whitespace
+          , Plaintext "for"
+          , Whitespace
+          , Code "rg"
+          , Whitespace
+          , Plaintext "and"
+          , Whitespace
+          , Code "ag"
+          , Plaintext ","
+          , Whitespace
+          , Plaintext "allowing"
+          , Whitespace
+          , Plaintext "Ferret"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "gracefully"
+          , Whitespace
+          , Plaintext "work"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "older"
+          , Whitespace
+          , Plaintext "versions"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Plaintext "those"
+          , Whitespace
+          , Plaintext "tools"
+          , Whitespace
+          , Plaintext "that"
+          , Whitespace
+          , Plaintext "do"
+          , Whitespace
+          , Plaintext "not"
+          , Whitespace
+          , Plaintext "support"
+          , Whitespace
+          , Plaintext "all"
+          , Whitespace
+          , Plaintext "desired"
+          , Whitespace
+          , Plaintext "command-line"
+          , Whitespace
+          , Plaintext "switches."
           ]
       ]
   , SubheadingAnnotation "1.4 (21 January 2017)"
