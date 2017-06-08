@@ -7,7 +7,7 @@ if tmux has-session -t docvim 2> /dev/null; then
   exit
 fi
 
-tmux new-session -d -s docvim -n vim
+tmux new-session -d -s docvim -n vim  -x $(tput cols) -y $(tput lines)
 
 # 1. Main window: vim.
 tmux send-keys -t docvim:vim "vim -c CommandT" Enter
