@@ -464,7 +464,7 @@ annotation = char '@' *> annotationName
     optionDefault     = optionMaybe word <?> "option default value"
 
     plugin            = string "plugin" >> ws >> PluginAnnotation <$> pluginName <*> plugInDescription
-    pluginName        = many1 alphaNum <* ws
+    pluginName        = many1 (alphaNum <|> char '-') <* ws
     plugInDescription = restOfLine
 
 -- | Parses a translation unit (file contents) into an AST.

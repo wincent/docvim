@@ -1,0 +1,76 @@
+Project
+  [ DocBlock
+      [ PluginAnnotation "vcs-jump" "vcs-jump plug-in for Vim"
+      , TOC [ "Intro" ]
+      ]
+  , HeadingAnnotation "Intro"
+  , Paragraph
+      [ Plaintext "This"
+      , Whitespace
+      , Plaintext "plug-in"
+      , Whitespace
+      , Plaintext "allows"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "jump"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "useful"
+      , Whitespace
+      , Plaintext "places"
+      , Whitespace
+      , Plaintext "within"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "Git"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "Mercurial"
+      , Whitespace
+      , Plaintext "repository."
+      ]
+  , Project
+      [ Unit
+          [ LetStatement
+              { letLexpr = "s:jump_path"
+              , letValue =
+                  "shellescape(simplify(fnamemodify(resolve(expand('<sfile>:p')), ':h') . '/../bin/vcs-jump'))"
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "vcsjump#jump"
+              , functionArguments = ArgumentList [ Argument "command" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement
+                      "cexpr system(s:jump_path . ' ' . a:command . ' 2> /dev/null')"
+                  , GenericStatement "cwindow"
+                  ]
+              }
+          ]
+      , Unit
+          [ GenericStatement
+              "if exists('g:VcsJumpLoaded') || &compatible || v:version < 700"
+          , GenericStatement "finish"
+          , GenericStatement "endif"
+          , LetStatement { letLexpr = "g:VcsJumpLoaded " , letValue = "1" }
+          , LetStatement
+              { letLexpr = "s:cpoptions " , letValue = "&cpoptions" }
+          , GenericStatement "set cpoptions&vim"
+          , GenericStatement
+              "command! -nargs=+ -complete=file VcsJump call vcsjump#jump(<q-args>)"
+          , GenericStatement
+              "if !hasmapto('<Plug>(VcsJump)') && maparg('<Leader>d', 'n') ==# ''"
+          , GenericStatement "\"\""
+          , GenericStatement "nmap <unique> <Leader>d <Plug>(VcsJump)"
+          , GenericStatement "endif"
+          , GenericStatement "nnoremap <Plug>(VcsJump) :VcsJump diff<space>"
+          ]
+      ]
+  ]
