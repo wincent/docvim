@@ -23,7 +23,7 @@ usage() {
   echo "  bin/put pinnacle    # freshen a specific downstream"
   echo "  bin/put scalpel     #"
   echo "  bin/put terminus    #"
-  echo "  bin/get vim-clipper #"
+  echo "  bin/put vim-clipper #"
   echo "  bin/put vim-docvim  #"
   echo "  ---------------------------------------------------"
   echo "  bin/put all         # freshen all downstreams"
