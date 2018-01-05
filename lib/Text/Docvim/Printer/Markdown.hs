@@ -55,7 +55,7 @@ node n = case n of
   OptionAnnotation {}     -> option n
   OptionsAnnotation       -> h2 "Options"
   Paragraph p             -> nodes p >>= nl >>= nl
-  Plaintext p             -> return p
+  Plaintext p             -> return $ sanitize p
   -- TODO: this should be order-independent and always appear at the top.
   -- Note that I don't really have anywhere to put the description; maybe I should
   -- scrap it (nope: need it in the Vim help version).
@@ -66,6 +66,22 @@ node n = case n of
   Unit u                  -> nodes u
   Whitespace              -> return " "
   _                       -> return ""
+
+-- | Split a string into a list of strings, each containing a single character.
+split :: String -> [String]
+split [] = []
+split (s:xs) = ([s]:rest) where rest = split xs
+
+-- | Sanitize a string for use inside markdown, escaping special HTML
+-- characters.
+sanitize :: String -> String
+sanitize s = concat $ map repl (split s)
+  where
+    repl "<" = "&lt;"
+    repl ">" = "&gt;"
+    repl "&" = "&amp;"
+    repl "\"" = "&quot;"
+    repl other = other
 
 -- | Append a newline.
 nl :: String -> Env
