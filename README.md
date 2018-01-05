@@ -125,7 +125,7 @@ You can set-up a development environment using [Stack] (recommended) or [Cabal]:
 
 ```bash
 # Stack:
-brew install haskell-stack
+brew install stack
 stack build
 
 # Cabal:
