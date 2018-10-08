@@ -2,7 +2,7 @@
 
 set -e
 
-if tmux has-session -t docvim 2> /dev/null; then
+if tmux has-session -t=docvim 2> /dev/null; then
   tmux attach -t docvim
   exit
 fi
