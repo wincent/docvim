@@ -10,7 +10,7 @@ fi
 tmux new-session -d -s docvim -n vim  -x $(tput cols) -y $(tput lines)
 
 # 1. Main window: vim.
-tmux send-keys -t docvim:vim "vim -c CommandT" Enter
+tmux send-keys -t docvim:vim "vim -c CommandTBoot" Enter
 
 # 2. REPL.
 tmux new-window -t docvim -n repl
@@ -25,7 +25,7 @@ tmux new-window -t docvim
 
 # 5. vim-docvim plugin
 tmux new-window -t docvim -c "$HOME/.vim/pack/bundle/start/vim-docvim" -n vim-docvim
-tmux send-keys -t docvim:vim-docvim "vim -c CommandT" Enter
+tmux send-keys -t docvim:vim-docvim "vim -c CommandTBoot" Enter
 tmux split-window -t docvim:vim-docvim -h -c "$HOME/.vim/pack/bundle/start/vim-docvim"
 tmux send-keys -t docvim:vim-docvim.right "git status" Enter
 
