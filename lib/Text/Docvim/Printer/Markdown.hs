@@ -70,12 +70,12 @@ node n = case n of
 -- | Split a string into a list of strings, each containing a single character.
 split :: String -> [String]
 split [] = []
-split (s:xs) = ([s]:rest) where rest = split xs
+split (s:xs) = [s]:rest where rest = split xs
 
 -- | Sanitize a string for use inside markdown, escaping special HTML
 -- characters.
 sanitize :: String -> String
-sanitize s = concat $ map repl (split s)
+sanitize s = concatMap repl (split s)
   where
     repl "<" = "&lt;"
     repl ">" = "&gt;"
