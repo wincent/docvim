@@ -206,11 +206,10 @@ toc t = do
 
 command :: Node -> Env
 command (CommandAnnotation name params) = do
-  lhs <- append $ concat [":", name, " ", fromMaybe "" params]
-  ws <- append " "
   target' <- linkTargets [":" ++ name] False
-  trailing <- append "\n"
-  return $ concat [lhs, ws, target', trailing]
+  lhs <- append $ concat [":", name, " ", fromMaybe "" params]
+  trailing <- append " ~\n\n"
+  return $ concat [target', lhs, trailing]
 -- TODO indent what follows until next annotation...
 -- will require us to hoist it up inside CommandAnnotation
 -- (and do similar for other sections)
@@ -219,11 +218,10 @@ command _ = invalidNode
 
 function :: Node -> Env
 function (FunctionAnnotation name) = do
-  lhs <- append $ name ++ "()"
-  ws <- append " "
   target' <- linkTargets [name ++ "()"] False
-  trailing <- append "\n"
-  return $ concat [lhs, ws, target', trailing]
+  lhs <- append $ name ++ "()"
+  trailing <- append " ~\n\n"
+  return $ concat [target', lhs, trailing]
 -- TODO indent what follows
 function _ = invalidNode
 
