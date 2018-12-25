@@ -461,7 +461,7 @@ annotation = char '@' *> annotationName
     option'           = string "option" >> ws >> OptionAnnotation <$> optionName <*> optionType <*> optionDefault
     optionName        = many1 (alphaNum <|> char ':') <* ws <?> "option name"
     optionType        = many1 alphaNum <* optional ws <?> "option type"
-    optionDefault     = optionMaybe word <?> "option default value"
+    optionDefault     = optionMaybe $ many1 (noneOf "\n")
 
     plugin            = string "plugin" >> ws >> PluginAnnotation <$> pluginName <*> plugInDescription
     pluginName        = many1 (alphaNum <|> char '-') <* ws

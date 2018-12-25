@@ -2214,6 +2214,7 @@ Project
                       { letLexpr = "l:prefix"
                       , letValue = "'c' \" Will use cexpr, cgetexpr."
                       }
+                  , Empty
                   , LetStatement
                       { letLexpr = "l:handler"
                       , letValue = "get(g:, 'FerretQFHandler', 'botright copen')"
@@ -2224,6 +2225,7 @@ Project
                       { letLexpr = "l:prefix"
                       , letValue = "'l' \" Will use lexpr, lgetexpr."
                       }
+                  , Empty
                   , LetStatement
                       { letLexpr = "l:handler"
                       , letValue = "get(g:, 'FerretLLHandler', 'lopen')"
@@ -3465,6 +3467,85 @@ Project
       , Plaintext "\"bar\":"
       ]
   , Fenced [ ":Acks /\\v(foo\\d+)(bar)/\\2\\1/" ]
+  , CommandAnnotation "FerretCancelAsync" Nothing
+  , Paragraph
+      [ Plaintext "Cancels"
+      , Whitespace
+      , Plaintext "any"
+      , Whitespace
+      , Plaintext "asynchronous"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "may"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "progress"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "background."
+      ]
+  , CommandAnnotation "FerretPullAsync" Nothing
+  , Paragraph
+      [ Plaintext "Eagerly"
+      , Whitespace
+      , Plaintext "populates"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "(or"
+      , Whitespace
+      , Link "location-list"
+      , Plaintext ")"
+      , Whitespace
+      , Plaintext "window"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Plaintext "any"
+      , Whitespace
+      , Plaintext "results"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "may"
+      , Whitespace
+      , Plaintext "have"
+      , Whitespace
+      , Plaintext "been"
+      , Whitespace
+      , Plaintext "produced"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "long-running"
+      , Whitespace
+      , Plaintext "asynchronoous"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "progress"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "background."
+      ]
   , CommandAnnotation "Qargs" Nothing
   , Paragraph
       [ Plaintext "This"
@@ -4944,6 +5025,71 @@ Project
   , Paragraph
       [ Plaintext "Example" , Whitespace , Plaintext "override:" ]
   , Fenced [ "let g:FerretAutojump=2" ]
+  , OptionAnnotation
+      "g:FerretQFHandler" "string" (Just "\"botright copen\"")
+  , Paragraph
+      [ Plaintext "Allows"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "override"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "mechanism"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "opens"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "window"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "display"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "results."
+      ]
+  , OptionAnnotation "g:FerretLLHandler" "string" (Just "\"lopen\"")
+  , Paragraph
+      [ Plaintext "Allows"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "override"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "mechanism"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "opens"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "location-list"
+      , Whitespace
+      , Plaintext "window"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "display"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "results."
+      ]
   , OptionAnnotation "g:FerretQFOptions" "boolean" (Just "1")
   , Paragraph
       [ Plaintext "Controls"
