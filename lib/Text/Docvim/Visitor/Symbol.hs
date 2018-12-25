@@ -25,6 +25,7 @@ getSymbols node = if length symbols == Set.size set
     symbols                                 = walk gatherSymbols [] node
     gatherSymbols (CommandAnnotation n _)   = [":" ++ n]
     gatherSymbols CommandsAnnotation        = genHeading "commands"
+    gatherSymbols (FunctionAnnotation f)    = [f ++ "()"]
     gatherSymbols FunctionsAnnotation       = genHeading "functions"
     gatherSymbols (HeadingAnnotation h)     = genHeading h
     gatherSymbols (LinkTargets ts)          = ts
