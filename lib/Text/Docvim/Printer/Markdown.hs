@@ -165,7 +165,6 @@ attributesString as = unwords (map attributeToString as)
 gitHubAnchor :: String -> String
 gitHubAnchor n = "#user-content-" ++ sanitizeAnchor n
 
--- TODO: make sure symbol table knows about option targets too
 option :: Node -> Env
 option (OptionAnnotation n t d) = do
   h <- h3 $ "`" ++ n ++ "` (" ++ t ++ ", default: " ++ def ++ ")"

@@ -75,7 +75,7 @@ Note that Loupe will not try to set up its &lt;leader&gt;n mapping if any of the
 
 - A mapping for &lt;leader&gt;n already exists.
 - An alternative mapping for <strong>[`<Plug>(LoupeClearHighlight)`](#user-content-plugloupeclearhighlight)</strong> has already been set up from a <strong>`.vimrc`</strong>.
-- The mapping has been suppressed by setting <strong>`g:LoupeClearHighlightMap`</strong> to 1 in your <strong>`.vimrc`</strong>.
+- The mapping has been suppressed by setting <strong>[`g:LoupeClearHighlightMap`](#user-content-gloupeclearhighlightmap)</strong> to 1 in your <strong>`.vimrc`</strong>.
 
 
 ### `<Plug>(LoupeOctothorpe)`<a name="loupe-plugloupeoctothorpe" href="#user-content-loupe-plugloupeoctothorpe"></a>
@@ -162,7 +162,7 @@ To prevent any special highlighting from being applied, set this option to &quot
 
 ### `g:LoupeLoaded` (any, default: none)<a name="loupe-gloupeloaded-any-default-none" href="#user-content-loupe-gloupeloaded-any-default-none"></a>
 
-To prevent Loupe from being loaded, set <strong>`g:LoupeLoaded`</strong> to any value in your <strong>`.vimrc`</strong>. For example:
+To prevent Loupe from being loaded, set <strong>[`g:LoupeLoaded`](#user-content-gloupeloaded)</strong> to any value in your <strong>`.vimrc`</strong>. For example:
 
 ```
 let g:LoupeLoaded=1
@@ -341,7 +341,7 @@ git archive -o loupe-$VERSION.zip HEAD -- .
 
 Loupe is written and maintained by Greg Hurrell &lt;greg@hurrell.net&gt;.
 
-The original idea for the <strong>`g:LoupeHighlightGroup`</strong> feature was taken from Damian Conway's Vim set-up:
+The original idea for the <strong>[`g:LoupeHighlightGroup`](#user-content-gloupehighlightgroup)</strong> feature was taken from Damian Conway's Vim set-up:
 
 - https://github.com/thoughtstream/Damian-Conway-s-Vim-Setup/blob/master/plugin/hlnext.vim
 

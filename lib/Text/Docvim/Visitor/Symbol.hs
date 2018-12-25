@@ -33,6 +33,7 @@ getSymbols node = if length symbols == Set.size set
     gatherSymbols (PluginAnnotation name _) = [name, name ++ ".txt"]
     gatherSymbols (MappingAnnotation m)     = [m]
     gatherSymbols MappingsAnnotation        = genHeading "mappings"
+    gatherSymbols (OptionAnnotation o _ _)  = [o]
     gatherSymbols OptionsAnnotation         = genHeading "options"
     gatherSymbols _                         = []
     genHeading h                            = maybe [] (\x -> [sanitizeAnchor $ x ++ "-" ++ h]) (getPluginName node)
