@@ -7,6 +7,7 @@ Project
           , "Commands"
           , "Mappings"
           , "Options"
+          , "Functions"
           , "Custom autocommands"
           , "Overrides"
           , "Troubleshooting"
@@ -105,6 +106,10 @@ Project
       , Whitespace
       , Plaintext "using"
       , Whitespace
+      , Plaintext "ripgrep"
+      , Whitespace
+      , Plaintext "(https://github.com/BurntSushi/ripgrep),"
+      , Whitespace
       , Plaintext "The"
       , Whitespace
       , Plaintext "Silver"
@@ -171,15 +176,25 @@ Project
       , Whitespace
       , Plaintext "On"
       , Whitespace
+      , Plaintext "modern"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
       , Plaintext "Vim"
       , Whitespace
-      , Plaintext "version"
+      , Plaintext "(version"
       , Whitespace
       , Plaintext "8"
       , Whitespace
       , Plaintext "or"
       , Whitespace
       , Plaintext "higher,"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "Neovim),"
       , Whitespace
       , Plaintext "searches"
       , Whitespace
@@ -345,63 +360,6 @@ Project
       , Plaintext "buffers"
       , Whitespace
       , Plaintext "only."
-      ]
-  , Paragraph
-      [ Plaintext "Finally,"
-      , Whitespace
-      , Plaintext "Ferret"
-      , Whitespace
-      , Plaintext "offers"
-      , Whitespace
-      , Plaintext "integration"
-      , Whitespace
-      , Plaintext "with"
-      , Whitespace
-      , Plaintext "dispatch.vim"
-      , Whitespace
-      , Plaintext "(https://github.com/tpope/vim-dispatch),"
-      , Whitespace
-      , Plaintext "which"
-      , Whitespace
-      , Plaintext "enables"
-      , Whitespace
-      , Plaintext "asynchronous"
-      , Whitespace
-      , Plaintext "searching"
-      , Whitespace
-      , Plaintext "on"
-      , Whitespace
-      , Plaintext "older"
-      , Whitespace
-      , Plaintext "versions"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "Vim"
-      , Whitespace
-      , Plaintext "(prior"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "version"
-      , Whitespace
-      , Plaintext "8),"
-      , Whitespace
-      , Plaintext "despite"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "fact"
-      , Whitespace
-      , Plaintext "that"
-      , Whitespace
-      , Plaintext "Vim"
-      , Whitespace
-      , Plaintext "itself"
-      , Whitespace
-      , Plaintext "is"
-      , Whitespace
-      , Plaintext "single-threaded."
       ]
   , SubheadingAnnotation "2. Streamlined multi-file replace"
   , Paragraph
@@ -702,6 +660,16 @@ Project
       , Whitespace
       , Plaintext "covers"
       , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "older"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
       , Plaintext "by"
       , Whitespace
       , Link ":Acks"
@@ -712,7 +680,25 @@ Project
       , Whitespace
       , Plaintext "its"
       , Whitespace
-      , Plaintext "work."
+      , Plaintext "work"
+      , Whitespace
+      , Plaintext "(on"
+      , Whitespace
+      , Plaintext "newer"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "built-in"
+      , Whitespace
+      , Link ":cfdo"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "used"
+      , Whitespace
+      , Plaintext "instead)."
       ]
   , HeadingAnnotation "Installation"
   , Paragraph
@@ -915,6 +901,18 @@ Project
       [ Unit
           [ FunctionDeclaration
               { functionBang = True
+              , functionName = "ferret#get_default_arguments"
+              , functionArguments = ArgumentList [ Argument "executable" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement
+                      "return get(ferret#private#executables(), a:executable, '')"
+                  ]
+              }
+          ]
+      , Unit
+          [ FunctionDeclaration
+              { functionBang = True
               , functionName = "s:delete"
               , functionArguments =
                   ArgumentList [ Argument "first" , Argument "last" ]
@@ -933,16 +931,14 @@ Project
               }
           , FunctionDeclaration
               { functionBang = True
-              , functionName = "ferret#private#dispatch"
+              , functionName = "ferret#private#nvim"
               , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
+              , functionAttributes = []
               , functionBody =
                   [ Empty
                   , LetStatement
-                      { letLexpr = "l:dispatch"
-                      , letValue = "get(g:, 'FerretDispatch', 1)"
-                      }
-                  , GenericStatement "return l:dispatch && exists(':Make') == 2"
+                      { letLexpr = "l:nvim" , letValue = "get(g:, 'FerretNvim', 1)" }
+                  , GenericStatement "return l:nvim && has('nvim')"
                   ]
               }
           , FunctionDeclaration
@@ -963,7 +959,11 @@ Project
               , functionArguments = ArgumentList [ Argument "message" ]
               , functionAttributes = [ "abort" ]
               , functionBody =
-                  [ GenericStatement "call inputsave()"
+                  [ GenericStatement "if has('lambda') && has('timers')"
+                  , GenericStatement
+                      "call timer_start(100, {-> s:print_error_with_echomsg(a:message)})"
+                  , GenericStatement "else"
+                  , GenericStatement "call inputsave()"
                   , GenericStatement "echohl ErrorMsg"
                   , GenericStatement
                       "unsilent call input(a:message . ': press ENTER to continue')"
@@ -971,6 +971,19 @@ Project
                   , GenericStatement "call inputrestore()"
                   , GenericStatement "unsilent echo"
                   , GenericStatement "redraw!"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:print_error_with_echomsg"
+              , functionArguments = ArgumentList [ Argument "message" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "redraw!"
+                  , GenericStatement "echohl ErrorMsg"
+                  , GenericStatement "echomsg a:message"
+                  , GenericStatement "echohl NONE"
                   ]
               }
           , FunctionDeclaration
@@ -983,8 +996,24 @@ Project
                   , UnletStatement
                       { unletBang = False , unletBody = "g:ferret_lastsearch" }
                   , GenericStatement "endif"
+                  , LetStatement
+                      { letLexpr = "l:odd_number_of_backslashes"
+                      , letValue = "'\\\\\\@<!\\\\\\(\\\\\\\\\\)*\\\\\\@!'"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:unescaped_space"
+                      , letValue = "'\\('.l:odd_number_of_backslashes.'\\)\\@<! '"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:args"
+                      , letValue = "split(a:args, l:unescaped_space)"
+                      }
                   , LetStatement { letLexpr = "l:expanded_args" , letValue = "[]" }
-                  , GenericStatement "for l:arg in a:args"
+                  , GenericStatement "for l:arg in l:args"
+                  , LetStatement
+                      { letLexpr = "l:arg"
+                      , letValue = "substitute(l:arg, '\\\\ ', ' ', 'g')"
+                      }
                   , GenericStatement "if ferret#private#option(l:arg)"
                   , GenericStatement "call add(l:expanded_args, l:arg)"
                   , GenericStatement "elseif exists('g:ferret_lastsearch')"
@@ -1004,7 +1033,8 @@ Project
                   , GenericStatement "call add(l:expanded_args, l:arg)"
                   , GenericStatement "endif"
                   , GenericStatement "endfor"
-                  , GenericStatement "if ferret#private#async()"
+                  , GenericStatement
+                      "if ferret#private#nvim() || ferret#private#async()"
                   , GenericStatement "return l:expanded_args"
                   , GenericStatement "endif"
                   , LetStatement
@@ -1033,26 +1063,46 @@ Project
               }
           , FunctionDeclaration
               { functionBang = True
+              , functionName = "s:qfsize"
+              , functionArguments = ArgumentList [ Argument "type" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('patch-8.0.1112')"
+                  , GenericStatement "if a:type ==# 'qf'"
+                  , GenericStatement "return get(getqflist({'size' : 0}), 'size', 0)"
+                  , GenericStatement "else"
+                  , GenericStatement
+                      "return get(getloclist(0, {'size' : 0}), 'size', 0)"
+                  , GenericStatement "endif"
+                  , GenericStatement "else"
+                  , LetStatement
+                      { letLexpr = "l:qflist"
+                      , letValue = "a:type ==# 'qf' ? getqflist() : getloclist(0)"
+                      }
+                  , GenericStatement "return len(l:qflist)"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
               , functionName = "ferret#private#post"
               , functionArguments = ArgumentList [ Argument "type" ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement "call ferret#private#clearautocmd()"
                   , LetStatement
-                      { letLexpr = "l:lastsearch "
+                      { letLexpr = "l:lastsearch"
                       , letValue = "get(g:, 'ferret_lastsearch', '')"
                       }
                   , LetStatement
-                      { letLexpr = "l:qflist "
-                      , letValue = "a:type == 'qf' ? getqflist() : getloclist(0)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:tip "
+                      { letLexpr = "l:tip"
                       , letValue = "' [see `:help ferret-quotes`]'"
                       }
-                  , GenericStatement "if len(l:qflist) == 0"
                   , LetStatement
-                      { letLexpr = "l:base "
+                      { letLexpr = "l:len" , letValue = "s:qfsize(a:type)" }
+                  , GenericStatement "if l:len == 0"
+                  , LetStatement
+                      { letLexpr = "l:base"
                       , letValue =
                           "'No results for search pattern `' . l:lastsearch . '`'"
                       }
@@ -1064,10 +1114,14 @@ Project
                   , GenericStatement "endif"
                   , GenericStatement "else"
                   , LetStatement
-                      { letLexpr = "l:invalid "
+                      { letLexpr = "l:qflist"
+                      , letValue = "a:type ==# 'qf' ? getqflist() : getloclist(0)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:invalid"
                       , letValue = "filter(copy(l:qflist), 'v:val.valid == 0')"
                       }
-                  , GenericStatement "if len(l:invalid) == len(l:qflist)"
+                  , GenericStatement "if len(l:invalid) == l:len"
                   , GenericStatement "redraw!"
                   , GenericStatement "echohl ErrorMsg"
                   , GenericStatement "for l:item in l:invalid"
@@ -1075,34 +1129,29 @@ Project
                   , GenericStatement "endfor"
                   , GenericStatement "echohl NONE"
                   , LetStatement
-                      { letLexpr = "l:base "
+                      { letLexpr = "l:base"
                       , letValue = "'Search for `' . l:lastsearch . '` failed'"
                       }
-                  , LetStatement
-                      { letLexpr = "l:suffix "
-                      , letValue = "a:type == 'qf' && ferret#private#dispatch() ?"
-                      }
-                  , GenericStatement "\\ ' (run `:messages` to see details)' : ''"
                   , GenericStatement
                       "if l:lastsearch =~ '\\v^[' . \"'\" . '\"].+[^' . \"'\" . '\"]$'"
-                  , GenericStatement
-                      "call ferret#private#error(l:base . l:tip . l:suffix)"
+                  , GenericStatement "call ferret#private#error(l:base . l:tip)"
                   , GenericStatement "else"
-                  , GenericStatement "call ferret#private#error(l:base . l:suffix)"
+                  , GenericStatement "call ferret#private#error(l:base)"
                   , GenericStatement "endif"
                   , GenericStatement "endif"
                   , GenericStatement "endif"
+                  , GenericStatement "return l:len"
                   ]
               }
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#ack"
               , functionArguments =
-                  ArgumentList [ Argument "bang" , Argument "..." ]
+                  ArgumentList [ Argument "bang" , Argument "args" ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ LetStatement
-                      { letLexpr = "l:command" , letValue = "s:parse(a:000)" }
+                      { letLexpr = "l:command" , letValue = "s:parse(a:args)" }
                   , GenericStatement "call ferret#private#hlsearch()"
                   , LetStatement
                       { letLexpr = "l:executable"
@@ -1112,11 +1161,12 @@ Project
                   , GenericStatement "call ferret#private#installprompt()"
                   , GenericStatement "return"
                   , GenericStatement "endif"
-                  , GenericStatement "if ferret#private#async()"
+                  , GenericStatement "if ferret#private#nvim()"
+                  , GenericStatement
+                      "call ferret#private#nvim#search(l:command, 1, a:bang)"
+                  , GenericStatement "elseif ferret#private#async()"
                   , GenericStatement
                       "call ferret#private#async#search(l:command, 1, a:bang)"
-                  , GenericStatement "elseif ferret#private#dispatch()"
-                  , GenericStatement "call ferret#private#dispatch#search(l:command)"
                   , GenericStatement "else"
                   , GenericStatement
                       "call ferret#private#vanilla#search(l:command, 1)"
@@ -1138,29 +1188,29 @@ Project
                       , letValue =
                           "filter(map(l:buflist, 'v:val.name'), 'v:val !=# \"\"')"
                       }
-                  , GenericStatement "return l:bufpaths"
+                  , GenericStatement "return join(l:bufpaths, ' ')"
                   ]
               }
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#back"
               , functionArguments =
-                  ArgumentList [ Argument "bang" , Argument "..." ]
+                  ArgumentList [ Argument "bang" , Argument "args" ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement
-                      "call call('ferret#private#ack', a:bang, a:000 + ferret#private#buflist())"
+                      "call call('ferret#private#ack', [a:bang, a:args . ' ' . ferret#private#buflist()])"
                   ]
               }
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#black"
               , functionArguments =
-                  ArgumentList [ Argument "bang" , Argument "..." ]
+                  ArgumentList [ Argument "bang" , Argument "args" ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement
-                      "call call('ferret#private#lack', a:bang, a:000 + ferret#private#buflist())"
+                      "call call('ferret#private#lack', [a:bang, a:args . ' ' . ferret#private#buflist()])"
                   ]
               }
           , FunctionDeclaration
@@ -1177,11 +1227,11 @@ Project
               { functionBang = True
               , functionName = "ferret#private#lack"
               , functionArguments =
-                  ArgumentList [ Argument "bang" , Argument "..." ]
+                  ArgumentList [ Argument "bang" , Argument "args" ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ LetStatement
-                      { letLexpr = "l:command" , letValue = "s:parse(a:000)" }
+                      { letLexpr = "l:command" , letValue = "s:parse(a:args)" }
                   , GenericStatement "call ferret#private#hlsearch()"
                   , LetStatement
                       { letLexpr = "l:executable"
@@ -1191,7 +1241,10 @@ Project
                   , GenericStatement "call ferret#private#installprompt()"
                   , GenericStatement "return"
                   , GenericStatement "endif"
-                  , GenericStatement "if ferret#private#async()"
+                  , GenericStatement "if ferret#private#nvim()"
+                  , GenericStatement
+                      "call ferret#private#nvim#search(l:command, 0, a:bang)"
+                  , GenericStatement "elseif ferret#private#async()"
                   , GenericStatement
                       "call ferret#private#async#search(l:command, 0, a:bang)"
                   , GenericStatement "else"
@@ -1228,7 +1281,7 @@ Project
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ LetStatement
-                      { letLexpr = "l:matches "
+                      { letLexpr = "l:matches"
                       , letValue =
                           "matchlist(a:command, '\\v\\C^(([^|\"\\\\a-zA-Z0-9]).+\\2.*\\2)([cgeiI]*)$')"
                       }
@@ -1238,9 +1291,9 @@ Project
                   , GenericStatement "return"
                   , GenericStatement "endif"
                   , LetStatement
-                      { letLexpr = "l:pattern " , letValue = "l:matches[1]" }
+                      { letLexpr = "l:pattern" , letValue = "l:matches[1]" }
                   , LetStatement
-                      { letLexpr = "l:options " , letValue = "l:matches[3]" }
+                      { letLexpr = "l:options" , letValue = "l:matches[3]" }
                   , GenericStatement "if l:options !~# 'e'"
                   , LetStatement { letLexpr = "l:options ." , letValue = "'e'" }
                   , GenericStatement "endif"
@@ -1361,7 +1414,7 @@ Project
                       }
                   ]
               }
-          , LetStatement { letLexpr = "s:options " , letValue = "{" }
+          , LetStatement { letLexpr = "s:options" , letValue = "{" }
           , GenericStatement
               "\\ 'ack': [ '--ignore-ack-defaults', '--ignore-case', '--ignore-dir', '--ignore-directory', '--invert-match', '--known-types', '--literal', '--no-recurse', '--recurse', '--sort-files', '--type', '--word-regexp', '-1', '-Q', '-R', '-i', '-k', '-r', '-v', '-w', ], 'ag': [ '--all-types', '--all-text', '--case-sensitive', '--depth', '--follow', '--ignore', '--ignore-case', '--ignore-dir', '--invert-match', '--literal', '--max-count', '--skip-vcs-ignores', '--unrestricted', '--word-regexp', '-Q', '-U', '-a', '-i', '-m', '-s', '-t', '-u', '-v', '-w' ], 'rg': [ '--case-sensitive', '--files-with-matches', '--follow', '--glob', '--hidden', '--ignore-case', '--invert-match', '--max-count', '--maxdepth', '--mmap', '--no-ignore', '--no-ignore-parent', '--no-ignore-vcs', '--no-mmap', '--regexp', '--smart-case', '--text', '--threads', '--type', '--type-not', '--unrestricted', '--word-regexp', '-F', '-L', '-R', '-T', '-a', '-e', '-g', '-i', '-j', '-m', '-s', '-t', '-u', '-v', '-w' ] }"
           , LetStatement
@@ -1476,8 +1529,15 @@ Project
               }
           , LetStatement { letLexpr = "s:executables" , letValue = "{" }
           , GenericStatement
-              "\\ 'rg': 'rg --vimgrep --no-heading', 'ag': 'ag', 'ack': 'ack --column --with-filename', 'ack-grep': 'ack-grep --column --with-filename' }"
+              "\\ 'rg': '--vimgrep --no-config --no-heading', 'ag': '', 'ack': '--column --with-filename', 'ack-grep': '--column --with-filename' }"
           , LetStatement { letLexpr = "s:init_done" , letValue = "0" }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#executables"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "return copy(s:executables)" ]
+              }
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#init"
@@ -1499,10 +1559,10 @@ Project
                       { letLexpr = "l:ag_help" , letValue = "system('ag --help')" }
                   , GenericStatement "if match(l:ag_help, '--vimgrep') != -1"
                   , LetStatement
-                      { letLexpr = "s:executables['ag']." , letValue = "' --vimgrep'" }
+                      { letLexpr = "s:executables['ag']." , letValue = "'--vimgrep'" }
                   , GenericStatement "else"
                   , LetStatement
-                      { letLexpr = "s:executables['ag']." , letValue = "' --column'" }
+                      { letLexpr = "s:executables['ag']." , letValue = "'--column'" }
                   , GenericStatement "endif"
                   , GenericStatement "if match(l:ag_help, '--width') != -1"
                   , LetStatement
@@ -1554,10 +1614,37 @@ Project
                   , GenericStatement "endif"
                   , GenericStatement "for l:executable in l:executables"
                   , GenericStatement "if executable(l:executable)"
-                  , GenericStatement "return s:executables[l:executable]"
+                  , Empty
+                  , LetStatement
+                      { letLexpr = "l:overrides"
+                      , letValue = "get(g:, 'FerretExecutableArguments', {})"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:type"
+                      , letValue = "exists('v:t_dict') ? v:t_dict : 4"
+                      }
+                  , GenericStatement
+                      "if type(l:overrides) == l:type && has_key(l:overrides, l:executable)"
+                  , GenericStatement
+                      "return l:executable . ' ' . l:overrides[l:executable]"
+                  , GenericStatement "else"
+                  , GenericStatement
+                      "return l:executable . ' ' . s:executables[l:executable]"
+                  , GenericStatement "endif"
                   , GenericStatement "endif"
                   , GenericStatement "endfor"
                   , GenericStatement "return ''"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#limit"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ Empty
+                  , GenericStatement
+                      "return max([1, +get(g:, 'FerretMaxResults', 100000)]) - 1"
                   ]
               }
           , GenericStatement "call ferret#private#init()"
@@ -1662,9 +1749,7 @@ Project
                   ]
               }
           , LetStatement
-              { letLexpr = "s:limit"
-              , letValue = "max([1, +get(g:, 'FerretMaxResults', 100000)]) - 1"
-              }
+              { letLexpr = "s:limit" , letValue = "ferret#private#limit()" }
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#async#out_cb"
@@ -1849,7 +1934,267 @@ Project
               }
           ]
       , Unit
+          [ LetStatement { letLexpr = "s:jobs" , letValue = "{}" }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:info_from_job"
+              , functionArguments = ArgumentList [ Argument "job" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "if has_key(s:jobs, a:job)"
+                  , GenericStatement "return s:jobs[a:job]"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#nvim#search"
+              , functionArguments =
+                  ArgumentList
+                    [ Argument "command" , Argument "ack" , Argument "bang" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "call ferret#private#nvim#cancel()"
+                  , GenericStatement
+                      "call ferret#private#autocmd('FerretAsyncStart')"
+                  , LetStatement
+                      { letLexpr = "l:command_and_args"
+                      , letValue =
+                          "extend(split(ferret#private#executable()), a:command)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:job"
+                      , letValue = "jobstart(l:command_and_args, {"
+                      }
+                  , GenericStatement
+                      "\\ 'on_stderr': 'ferret#private#nvim#err_cb', 'on_stdout': 'ferret#private#nvim#out_cb', 'on_exit': 'ferret#private#nvim#close_cb' })"
+                  , LetStatement { letLexpr = "s:jobs[l:job]" , letValue = "{" }
+                  , GenericStatement
+                      "\\ 'job': l:job, 'errors': [], 'output': [], 'pending_error': '', 'pending_output': '', 'pending_error_length': 0, 'pending_output_length': 0, 'result_count': 0, 'ack': a:ack, 'bang': a:bang, 'window': win_getid() }"
+                  ]
+              }
+          , LetStatement
+              { letLexpr = "s:max_line_length" , letValue = "4096" }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#nvim#err_cb"
+              , functionArguments =
+                  ArgumentList
+                    [ Argument "job" , Argument "lines" , Argument "event" ]
+              , functionAttributes = [ "dict" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:info" , letValue = "s:info_from_job(a:job)" }
+                  , GenericStatement "if type(l:info) == 4"
+                  , LetStatement { letLexpr = "l:count" , letValue = "len(a:lines)" }
+                  , GenericStatement "for l:i in range(l:count)"
+                  , LetStatement { letLexpr = "l:line" , letValue = "a:lines[l:i]" }
+                  , GenericStatement
+                      "if l:i != l:count - 1 || l:line == '' && l:info.pending_error_length"
+                  , GenericStatement
+                      "if l:info.pending_error_length < s:max_line_length"
+                  , LetStatement { letLexpr = "l:rest" , letValue = "strpart(" }
+                  , GenericStatement
+                      "\\ l:line, 0, s:max_line_length - l:info.pending_error_length )"
+                  , GenericStatement
+                      "call add(l:info.errors, l:info.pending_error . l:rest)"
+                  , GenericStatement "else"
+                  , GenericStatement "call add(l:info.errors, l:info.pending_error)"
+                  , GenericStatement "endif"
+                  , LetStatement
+                      { letLexpr = "l:info.pending_error" , letValue = "''" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_error_length" , letValue = "0" }
+                  , GenericStatement
+                      "elseif l:info.pending_error_length < s:max_line_length"
+                  , LetStatement
+                      { letLexpr = "l:info.pending_error." , letValue = "l:line" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_error_length+"
+                      , letValue = "strlen(l:line)"
+                      }
+                  , GenericStatement "endif"
+                  , GenericStatement "endfor"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , LetStatement
+              { letLexpr = "s:limit" , letValue = "ferret#private#limit()" }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#nvim#out_cb"
+              , functionArguments =
+                  ArgumentList
+                    [ Argument "job" , Argument "lines" , Argument "event" ]
+              , functionAttributes = [ "dict" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:info" , letValue = "s:info_from_job(a:job)" }
+                  , GenericStatement "if type(l:info) == 4"
+                  , GenericStatement
+                      "if !l:info.bang && l:info.result_count > s:limit"
+                  , GenericStatement "call s:MaxResultsExceeded(l:info)"
+                  , GenericStatement "return"
+                  , GenericStatement "endif"
+                  , LetStatement { letLexpr = "l:count" , letValue = "len(a:lines)" }
+                  , GenericStatement "for l:i in range(l:count)"
+                  , LetStatement { letLexpr = "l:line" , letValue = "a:lines[l:i]" }
+                  , GenericStatement
+                      "if l:i != l:count - 1 || l:line == '' && l:info.pending_output_length"
+                  , GenericStatement
+                      "if l:info.pending_output_length < s:max_line_length"
+                  , LetStatement { letLexpr = "l:rest" , letValue = "strpart(" }
+                  , GenericStatement
+                      "\\ l:line, 0, s:max_line_length - l:info.pending_output_length )"
+                  , GenericStatement
+                      "call add(l:info.output, l:info.pending_output . l:rest)"
+                  , GenericStatement "else"
+                  , GenericStatement "call add(l:info.output, l:info.pending_output)"
+                  , GenericStatement "endif"
+                  , LetStatement
+                      { letLexpr = "l:info.pending_output" , letValue = "''" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_output_length" , letValue = "0" }
+                  , GenericStatement "if !l:info.bang"
+                  , LetStatement
+                      { letLexpr = "l:info.result_count+" , letValue = "1" }
+                  , GenericStatement "if l:info.result_count > s:limit"
+                  , GenericStatement "call s:MaxResultsExceeded(l:info)"
+                  , GenericStatement "break"
+                  , GenericStatement "endif"
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "elseif l:info.pending_output_length < s:max_line_length"
+                  , LetStatement
+                      { letLexpr = "l:info.pending_output." , letValue = "l:line" }
+                  , LetStatement
+                      { letLexpr = "l:info.pending_output_length+"
+                      , letValue = "strlen(l:line)"
+                      }
+                  , GenericStatement "endif"
+                  , GenericStatement "endfor"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#nvim#close_cb"
+              , functionArguments =
+                  ArgumentList
+                    [ Argument "job" , Argument "data" , Argument "event" ]
+              , functionAttributes = [ "abort" , "dict" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:info" , letValue = "s:info_from_job(a:job)" }
+                  , GenericStatement "if type(l:info) == 4"
+                  , GenericStatement "call remove(s:jobs, a:job)"
+                  , GenericStatement
+                      "call ferret#private#autocmd('FerretAsyncFinish')"
+                  , GenericStatement "if !l:info.ack"
+                  , GenericStatement "call win_gotoid(l:info.window)"
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "call ferret#private#shared#finalize_search(l:info.output, l:info.ack)"
+                  , GenericStatement "for l:error in l:info.errors"
+                  , GenericStatement "unsilent echomsg l:error"
+                  , GenericStatement "endfor"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#nvim#pull"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "for l:job in keys(s:jobs)"
+                  , LetStatement { letLexpr = "l:info" , letValue = "s:jobs[l:job]" }
+                  , GenericStatement
+                      "call ferret#private#shared#finalize_search(l:info.output, l:info.ack)"
+                  , GenericStatement "endfor"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#nvim#cancel"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ LetStatement { letLexpr = "l:canceled" , letValue = "0" }
+                  , GenericStatement "for l:job in keys(s:jobs)"
+                  , GenericStatement "call jobstop(l:job)"
+                  , GenericStatement "call remove(s:jobs, l:job)"
+                  , LetStatement { letLexpr = "l:canceled" , letValue = "1" }
+                  , GenericStatement "endfor"
+                  , GenericStatement "if l:canceled"
+                  , GenericStatement
+                      "call ferret#private#autocmd('FerretAsyncFinish')"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:MaxResultsExceeded"
+              , functionArguments = ArgumentList [ Argument "info" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement
+                      "call ferret#private#shared#finalize_search(a:info.output, a:info.ack)"
+                  , GenericStatement "call jobstop(a:info.job)"
+                  , GenericStatement "call remove(s:jobs, a:info.job)"
+                  , GenericStatement
+                      "call ferret#private#autocmd('FerretAsyncFinish')"
+                  , GenericStatement
+                      "call ferret#private#error( 'Maximum result count exceeded. ' . 'Either increase g:FerretMaxResults or ' . 're-run the search with :Ack!, :Lack! etc.' )"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#nvim#debug"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "return s:jobs" ]
+              }
+          ]
+      , Unit
           [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:autojump"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:autojump"
+                      , letValue = "get(g:, 'FerretAutojump', 1)"
+                      }
+                  , GenericStatement
+                      "if l:autojump != 0 && l:autojump != 1 && l:autojump != 2"
+                  , LetStatement { letLexpr = "l:autojump" , letValue = "1" }
+                  , GenericStatement "endif"
+                  , GenericStatement "return l:autojump"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:set_title"
+              , functionArguments =
+                  ArgumentList [ Argument "type" , Argument "title" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "if has('patch-7.4.2200')"
+                  , GenericStatement "if a:type ==# 'qf'"
+                  , GenericStatement "call setqflist([], 'a', {'title' : a:title})"
+                  , GenericStatement "else"
+                  , GenericStatement
+                      "call setloclist(0, [], 'a', {'title' : a:title})"
+                  , GenericStatement "endif"
+                  , GenericStatement "elseif a:type ==# 'qf'"
+                  , LetStatement
+                      { letLexpr = "w:quickfix_title" , letValue = "a:title" }
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#shared#finalize_search"
               , functionArguments =
@@ -1857,19 +2202,59 @@ Project
               , functionAttributes = []
               , functionBody =
                   [ LetStatement
+                      { letLexpr = "l:lastsearch "
+                      , letValue = "get(g:, 'ferret_lastsearch', '')"
+                      }
+                  , LetStatement
                       { letLexpr = "l:original_errorformat" , letValue = "&errorformat" }
+                  , LetStatement
+                      { letLexpr = "l:autojump" , letValue = "s:autojump()" }
+                  , GenericStatement "if a:ack"
+                  , LetStatement
+                      { letLexpr = "l:prefix"
+                      , letValue = "'c' \" Will use cexpr, cgetexpr."
+                      }
+                  , LetStatement
+                      { letLexpr = "l:handler"
+                      , letValue = "get(g:, 'FerretQFHandler', 'botright copen')"
+                      }
+                  , LetStatement { letLexpr = "l:post" , letValue = "'qf'" }
+                  , GenericStatement "else"
+                  , LetStatement
+                      { letLexpr = "l:prefix"
+                      , letValue = "'l' \" Will use lexpr, lgetexpr."
+                      }
+                  , LetStatement
+                      { letLexpr = "l:handler"
+                      , letValue = "get(g:, 'FerretLLHandler', 'lopen')"
+                      }
+                  , LetStatement { letLexpr = "l:post" , letValue = "'location'" }
+                  , GenericStatement "endif"
                   , GenericStatement "try"
                   , LetStatement
                       { letLexpr = "&errorformat" , letValue = "g:FerretFormat" }
-                  , GenericStatement "if a:ack"
-                  , GenericStatement "call s:swallow('cexpr a:1', a:output)"
                   , GenericStatement
-                      "execute get(g:, 'FerretQFHandler', 'botright cwindow')"
-                  , GenericStatement "call ferret#private#post('qf')"
+                      "if l:autojump == 2 \" Show listing and jump to first result."
+                  , GenericStatement
+                      "call s:swallow(l:prefix . 'expr a:1', a:output)"
                   , GenericStatement "else"
-                  , GenericStatement "call s:swallow('lexpr a:1', a:output)"
-                  , GenericStatement "execute get(g:, 'FerretLLHandler', 'lwindow')"
-                  , GenericStatement "call ferret#private#post('location')"
+                  , GenericStatement
+                      "call s:swallow(l:prefix . 'getexpr a:1', a:output)"
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "call s:set_title(l:post, 'Search `' . l:lastsearch . '`')"
+                  , LetStatement { letLexpr = "l:before" , letValue = "winnr()" }
+                  , LetStatement
+                      { letLexpr = "l:len" , letValue = "ferret#private#post(l:post)" }
+                  , GenericStatement "if l:len"
+                  , GenericStatement "execute l:handler"
+                  , GenericStatement
+                      "if l:autojump != 1 \" Show listing, but don't jump anywhere."
+                  , LetStatement { letLexpr = "l:after" , letValue = "winnr()" }
+                  , GenericStatement "if l:before != l:after"
+                  , GenericStatement "execute l:before . 'wincmd w'"
+                  , GenericStatement "end"
+                  , GenericStatement "endif"
                   , GenericStatement "endif"
                   , GenericStatement "finally"
                   , LetStatement
@@ -1962,13 +2347,13 @@ Project
           , GenericStatement "call ferret#private#init()"
           , GenericStatement "endif"
           , GenericStatement
-              "command! -bang -nargs=+ -complete=customlist,ferret#private#ackcomplete Ack call ferret#private#ack(<bang>0, <f-args>)"
+              "command! -bang -nargs=1 -complete=customlist,ferret#private#ackcomplete Ack call ferret#private#ack(<bang>0, <q-args>)"
           , GenericStatement
-              "command! -bang -nargs=+ -complete=customlist,ferret#private#lackcomplete Lack call ferret#private#lack(<bang>0, <f-args>)"
+              "command! -bang -nargs=1 -complete=customlist,ferret#private#lackcomplete Lack call ferret#private#lack(<bang>0, <q-args>)"
           , GenericStatement
-              "command! -bang -nargs=+ -complete=customlist,ferret#private#backcomplete Back call ferret#private#back(<bang>0, <f-args>)"
+              "command! -bang -nargs=1 -complete=customlist,ferret#private#backcomplete Back call ferret#private#back(<bang>0, <q-args>)"
           , GenericStatement
-              "command! -bang -nargs=+ -complete=customlist,ferret#private#blackcomplete Black call ferret#private#black(<bang>0, <f-args>)"
+              "command! -bang -nargs=1 -complete=customlist,ferret#private#blackcomplete Black call ferret#private#black(<bang>0, <q-args>)"
           , GenericStatement
               "command! -nargs=1 Acks call ferret#private#acks(<q-args>)"
           , GenericStatement
@@ -2185,92 +2570,6 @@ Project
       , Plaintext "UI."
       ]
   , Paragraph
-      [ Plaintext "On"
-      , Whitespace
-      , Plaintext "older"
-      , Whitespace
-      , Plaintext "Vim"
-      , Whitespace
-      , Plaintext "versions"
-      , Whitespace
-      , Plaintext "(prior"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "version"
-      , Whitespace
-      , Plaintext "8),"
-      , Whitespace
-      , Plaintext "if"
-      , Whitespace
-      , Plaintext "dispatch.vim"
-      , Whitespace
-      , Plaintext "is"
-      , Whitespace
-      , Plaintext "installed"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "search"
-      , Whitespace
-      , Plaintext "process"
-      , Whitespace
-      , Plaintext "will"
-      , Whitespace
-      , Plaintext "run"
-      , Whitespace
-      , Plaintext "asynchronously"
-      , Whitespace
-      , Plaintext "via"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link ":Make"
-      , Whitespace
-      , Plaintext "command,"
-      , Whitespace
-      , Plaintext "otherwise"
-      , Whitespace
-      , Plaintext "it"
-      , Whitespace
-      , Plaintext "will"
-      , Whitespace
-      , Plaintext "be"
-      , Whitespace
-      , Plaintext "run"
-      , Whitespace
-      , Plaintext "synchronously"
-      , Whitespace
-      , Plaintext "via"
-      , Whitespace
-      , Link ":cexpr"
-      , Plaintext "."
-      , Whitespace
-      , Plaintext "The"
-      , Whitespace
-      , Link "g:FerretDispatch"
-      , Whitespace
-      , Plaintext "option"
-      , Whitespace
-      , Plaintext "can"
-      , Whitespace
-      , Plaintext "be"
-      , Whitespace
-      , Plaintext "used"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "prevent"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "use"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "dispatch.vim."
-      ]
-  , Paragraph
       [ Plaintext "Asynchronous"
       , Whitespace
       , Plaintext "searches"
@@ -2448,8 +2747,6 @@ Project
       , Plaintext "\"bar\""
       , Whitespace
       , Plaintext "subdirectories:"
-      , Whitespace
-      , Plaintext ">"
       ]
   , Fenced [ ":Ack -w something foo bar" ]
   , Paragraph
@@ -2630,21 +2927,6 @@ Project
       , Plaintext "via"
       , Whitespace
       , Link ":cexpr"
-      , Plaintext ","
-      , Whitespace
-      , Plaintext "because"
-      , Whitespace
-      , Plaintext "dispatch.vim"
-      , Whitespace
-      , Plaintext "doesn't"
-      , Whitespace
-      , Plaintext "currently"
-      , Whitespace
-      , Plaintext "support"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link "location-list"
       , Plaintext "."
       ]
   , CommandAnnotation "Lack!" (Just "{pattern} {options}")
@@ -3103,6 +3385,86 @@ Project
       , Plaintext "directory:"
       ]
   , Fenced [ ":Ack foo" , ":Acks /foo/bar/" ]
+  , Paragraph
+      [ Plaintext "The"
+      , Whitespace
+      , Plaintext "pattern"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "replacement"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "passed"
+      , Whitespace
+      , Plaintext "through"
+      , Whitespace
+      , Plaintext "literally"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "Vim's"
+      , Whitespace
+      , Link ":substitute"
+      , Whitespace
+      , Plaintext "command,"
+      , Whitespace
+      , Plaintext "preserving"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "characters"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "escapes,"
+      , Whitespace
+      , Plaintext "including"
+      , Whitespace
+      , Plaintext "references"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "matches"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "pattern."
+      , Whitespace
+      , Plaintext "For"
+      , Whitespace
+      , Plaintext "example,"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "following"
+      , Whitespace
+      , Plaintext "could"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "used"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "swap"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "order"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "\"foo123\""
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "\"bar\":"
+      ]
+  , Fenced [ ":Acks /\\v(foo\\d+)(bar)/\\2\\1/" ]
   , CommandAnnotation "Qargs" Nothing
   , Paragraph
       [ Plaintext "This"
@@ -3270,7 +3632,13 @@ Project
           , Whitespace
           , Plaintext "mapping"
           , Whitespace
-          , Plaintext "for"
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "same"
+          , Whitespace
+          , Link "{lhs}"
           , Whitespace
           , Plaintext "already"
           , Whitespace
@@ -3327,7 +3695,7 @@ Project
           , Whitespace
           , Plaintext "to"
           , Whitespace
-          , Plaintext "1"
+          , Plaintext "0"
           , Whitespace
           , Plaintext "in"
           , Whitespace
@@ -3705,7 +4073,7 @@ Project
       , "nmap <leader>u <Plug>(FerretAcks)"
       ]
   , OptionsAnnotation
-  , OptionAnnotation "g:FerretDispatch" "boolean" (Just "1")
+  , OptionAnnotation "g:FerretNvim" "boolean" (Just "1")
   , Paragraph
       [ Plaintext "Controls"
       , Whitespace
@@ -3715,34 +4083,29 @@ Project
       , Whitespace
       , Plaintext "use"
       , Whitespace
-      , Plaintext "vim-dispatch"
+      , Plaintext "Neovim's"
       , Whitespace
-      , Plaintext "(and"
+      , Link "job-control"
       , Whitespace
-      , Plaintext "specifically,"
+      , Plaintext "features,"
       , Whitespace
-      , Link ":Make"
-      , Plaintext ")"
+      , Plaintext "when"
+      , Whitespace
+      , Plaintext "available,"
       , Whitespace
       , Plaintext "to"
       , Whitespace
       , Plaintext "run"
       , Whitespace
-      , Link ":Ack"
-      , Whitespace
       , Plaintext "searches"
       , Whitespace
-      , Plaintext "asynchronously,"
-      , Whitespace
-      , Plaintext "when"
-      , Whitespace
-      , Plaintext "available."
+      , Plaintext "asynchronously."
       , Whitespace
       , Plaintext "To"
       , Whitespace
       , Plaintext "prevent"
       , Whitespace
-      , Plaintext "vim-dispatch"
+      , Plaintext "this"
       , Whitespace
       , Plaintext "from"
       , Whitespace
@@ -3754,75 +4117,87 @@ Project
       , Whitespace
       , Plaintext "to"
       , Whitespace
-      , Plaintext "0:"
-      ]
-  , Fenced [ "let g:FerretDispatch=0" ]
-  , Paragraph
-      [ Plaintext "Note"
+      , Plaintext "0,"
       , Whitespace
-      , Plaintext "that"
+      , Plaintext "in"
       , Whitespace
-      , Plaintext "on"
+      , Plaintext "which"
       , Whitespace
-      , Plaintext "sufficiently"
-      , Whitespace
-      , Plaintext "recent"
-      , Whitespace
-      , Plaintext "versions"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "Vim"
-      , Whitespace
-      , Plaintext "with"
-      , Whitespace
-      , Link "+job"
-      , Whitespace
-      , Plaintext "support,"
+      , Plaintext "case"
       , Whitespace
       , Plaintext "Ferret"
       , Whitespace
       , Plaintext "will"
       , Whitespace
-      , Plaintext "first"
-      , Whitespace
-      , Plaintext "try"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "use"
-      , Whitespace
-      , Link "+job"
-      , Plaintext ","
-      , Whitespace
-      , Plaintext "falling"
+      , Plaintext "fall"
       , Whitespace
       , Plaintext "back"
       , Whitespace
       , Plaintext "to"
       , Whitespace
-      , Plaintext "vim-dispatch"
+      , Plaintext "the"
       , Whitespace
-      , Plaintext "and"
+      , Plaintext "next"
       , Whitespace
-      , Plaintext "consulting"
+      , Plaintext "method"
       , Whitespace
-      , Link "g:FerretDispatch"
+      , Plaintext "in"
       , Whitespace
-      , Plaintext "only"
+      , Plaintext "the"
       , Whitespace
-      , Plaintext "if"
+      , Plaintext "list"
+      , Whitespace
+      , Plaintext "(Vim's"
+      , Whitespace
+      , Plaintext "built-in"
+      , Whitespace
+      , Plaintext "async"
+      , Whitespace
+      , Plaintext "primitives"
+      , Whitespace
+      , Plaintext "--"
+      , Whitespace
+      , Plaintext "see"
       , Whitespace
       , Link "g:FerretJob"
       , Whitespace
-      , Plaintext "is"
+      , Plaintext "--"
       , Whitespace
-      , Plaintext "set"
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "typically"
+      , Whitespace
+      , Plaintext "not"
+      , Whitespace
+      , Plaintext "available"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "Neovim,"
+      , Whitespace
+      , Plaintext "so"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "then"
+      , Whitespace
+      , Plaintext "fall"
+      , Whitespace
+      , Plaintext "back"
       , Whitespace
       , Plaintext "to"
       , Whitespace
-      , Plaintext "0."
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "next"
+      , Whitespace
+      , Plaintext "available"
+      , Whitespace
+      , Plaintext "method)."
       ]
+  , Fenced [ "let g:FerretNvim=0" ]
   , OptionAnnotation "g:FerretJob" "boolean" (Just "1")
   , Paragraph
       [ Plaintext "Controls"
@@ -3885,14 +4260,13 @@ Project
       , Whitespace
       , Plaintext "to"
       , Whitespace
-      , Plaintext "vim-dispatch"
+      , Plaintext "the"
       , Whitespace
-      , Plaintext "(see"
+      , Plaintext "next"
       , Whitespace
-      , Plaintext "also:"
+      , Plaintext "available"
       , Whitespace
-      , Link "g:FerretDispatch"
-      , Plaintext "):"
+      , Plaintext "method."
       ]
   , Fenced [ "let g:FerretJob=0" ]
   , OptionAnnotation "g:FerretHlsearch" "boolean" Nothing
@@ -4121,6 +4495,97 @@ Project
   , Paragraph [ Plaintext "Example:" ]
   , Fenced
       [ "\" Prefer `ag` over `rg`." , "let g:FerretExecutable='ag,rg'" ]
+  , OptionAnnotation "g:FerretExecutableArguments" "dict" (Just "{}")
+  , Paragraph
+      [ Plaintext "Allows"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "override"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "default"
+      , Whitespace
+      , Plaintext "arguments"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "get"
+      , Whitespace
+      , Plaintext "passed"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "underlying"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "executables."
+      , Whitespace
+      , Plaintext "For"
+      , Whitespace
+      , Plaintext "example,"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "add"
+      , Whitespace
+      , Code "-s"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "default"
+      , Whitespace
+      , Plaintext "arguments"
+      , Whitespace
+      , Plaintext "passed"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Code "ack"
+      , Whitespace
+      , Plaintext "("
+      , Code "--column --with-filename"
+      , Plaintext "):"
+      ]
+  , Fenced
+      [ "let g:FerretExecutableArguments = {"
+      , "  \\   'ack': '--column --with-filename -s'"
+      , "  \\ }"
+      ]
+  , Paragraph
+      [ Plaintext "To"
+      , Whitespace
+      , Plaintext "find"
+      , Whitespace
+      , Plaintext "out"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "default"
+      , Whitespace
+      , Plaintext "arguments"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "given"
+      , Whitespace
+      , Plaintext "executable,"
+      , Whitespace
+      , Plaintext "see"
+      , Whitespace
+      , Link "ferret#get_default_arguments()"
+      , Plaintext "."
+      ]
   , OptionAnnotation "g:FerretMaxResults" "number" (Just "100000")
   , Paragraph
       [ Plaintext "Controls"
@@ -4357,6 +4822,128 @@ Project
       , Whitespace
       , Plaintext "limit."
       ]
+  , OptionAnnotation "g:FerretAutojump" "number" (Just "1")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "whether"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "automatically"
+      , Whitespace
+      , Plaintext "jump"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "first"
+      , Whitespace
+      , Plaintext "found"
+      , Whitespace
+      , Plaintext "match."
+      ]
+  , List
+      [ ListItem
+          [ Plaintext "Set"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "0,"
+          , Whitespace
+          , Plaintext "Ferret"
+          , Whitespace
+          , Plaintext "will"
+          , Whitespace
+          , Plaintext "show"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "search"
+          , Whitespace
+          , Plaintext "results"
+          , Whitespace
+          , Plaintext "but"
+          , Whitespace
+          , Plaintext "perform"
+          , Whitespace
+          , Plaintext "no"
+          , Whitespace
+          , Plaintext "jump."
+          ]
+      , ListItem
+          [ Plaintext "Set"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "1"
+          , Whitespace
+          , Plaintext "(the"
+          , Whitespace
+          , Plaintext "default),"
+          , Whitespace
+          , Plaintext "Ferret"
+          , Whitespace
+          , Plaintext "will"
+          , Whitespace
+          , Plaintext "show"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "search"
+          , Whitespace
+          , Plaintext "results"
+          , Whitespace
+          , Plaintext "and"
+          , Whitespace
+          , Plaintext "focus"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "result"
+          , Whitespace
+          , Plaintext "listing."
+          ]
+      , ListItem
+          [ Plaintext "Set"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "2,"
+          , Whitespace
+          , Plaintext "Ferret"
+          , Whitespace
+          , Plaintext "will"
+          , Whitespace
+          , Plaintext "show"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "search"
+          , Whitespace
+          , Plaintext "results"
+          , Whitespace
+          , Plaintext "and"
+          , Whitespace
+          , Plaintext "jump"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "first"
+          , Whitespace
+          , Plaintext "found"
+          , Whitespace
+          , Plaintext "match."
+          ]
+      ]
+  , Paragraph
+      [ Plaintext "Example" , Whitespace , Plaintext "override:" ]
+  , Fenced [ "let g:FerretAutojump=2" ]
   , OptionAnnotation "g:FerretQFOptions" "boolean" (Just "1")
   , Paragraph
       [ Plaintext "Controls"
@@ -4891,6 +5478,90 @@ Project
       , Whitespace
       , Plaintext "Ferret."
       ]
+  , FunctionsAnnotation
+  , FunctionAnnotation "ferret#get_default_arguments"
+  , Paragraph
+      [ Plaintext "Call"
+      , Whitespace
+      , Plaintext "this"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Plaintext "an"
+      , Whitespace
+      , Plaintext "executable"
+      , Whitespace
+      , Plaintext "name"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "find"
+      , Whitespace
+      , Plaintext "out"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "default"
+      , Whitespace
+      , Plaintext "arguments"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "passed"
+      , Whitespace
+      , Plaintext "when"
+      , Whitespace
+      , Plaintext "invoking"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "executable."
+      , Whitespace
+      , Plaintext "For"
+      , Whitespace
+      , Plaintext "example:"
+      ]
+  , Fenced [ "echo ferret#get_default_arguments('rg')" ]
+  , Paragraph
+      [ Plaintext "This"
+      , Whitespace
+      , Plaintext "may"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "useful"
+      , Whitespace
+      , Plaintext "if"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "wish"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "extend"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "otherwise"
+      , Whitespace
+      , Plaintext "modify"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "arguments"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Plaintext "setting"
+      , Whitespace
+      , Link "g:FerretExecutableArguments"
+      , Plaintext "."
+      ]
   , FooterAnnotation
   , HeadingAnnotation "Custom autocommands"
   , LinkTargets [ "FerretWillWrite" , "FerretDidWrite" ]
@@ -5086,7 +5757,7 @@ Project
       ]
   , IndentAnnotation
   , LinkTargets [ "ferret-nolist" ]
-  , Paragraph [ Plaintext "'nolist'" ]
+  , SubheadingAnnotation "'nolist'"
   , Paragraph
       [ Plaintext "Turned"
       , Whitespace
@@ -5151,7 +5822,7 @@ Project
       , Plaintext "results."
       ]
   , LinkTargets [ "ferret-norelativenumber" ]
-  , Paragraph [ Plaintext "'norelativenumber'" ]
+  , SubheadingAnnotation "'norelativenumber'"
   , Paragraph
       [ Plaintext "Turned"
       , Whitespace
@@ -5260,7 +5931,7 @@ Project
       , Plaintext "respectively)."
       ]
   , LinkTargets [ "ferret-nowrap" ]
-  , Paragraph [ Plaintext "'nowrap'" ]
+  , SubheadingAnnotation "'nowrap'"
   , Paragraph
       [ Plaintext "Turned"
       , Whitespace
@@ -5339,7 +6010,7 @@ Project
       , Plaintext "wrapping."
       ]
   , LinkTargets [ "ferret-number" ]
-  , Paragraph [ Plaintext "'number'" ]
+  , SubheadingAnnotation "'number'"
   , Paragraph
       [ Plaintext "Turned"
       , Whitespace
@@ -5366,7 +6037,7 @@ Project
       , Plaintext "results."
       ]
   , LinkTargets [ "ferret-scrolloff" ]
-  , Paragraph [ Plaintext "'scrolloff'" ]
+  , SubheadingAnnotation "'scrolloff'"
   , Paragraph
       [ Plaintext "Set"
       , Whitespace
@@ -5441,7 +6112,7 @@ Project
       , Plaintext "edge."
       ]
   , LinkTargets [ "ferret-nocursorline" ]
-  , Paragraph [ Plaintext "'nocursorline'" ]
+  , SubheadingAnnotation "'nocursorline'"
   , Paragraph
       [ Plaintext "Turned"
       , Whitespace
@@ -5828,7 +6499,7 @@ Project
       , Whitespace
       , Plaintext "2009"
       , Whitespace
-      , Plaintext "(https://wt.pe/h)."
+      , Plaintext "(https://rfr.to/h)."
       ]
   , Paragraph
       [ Plaintext "So,"
@@ -6533,33 +7204,6 @@ Project
       , Plaintext "<greg@hurrell.net>."
       ]
   , Paragraph
-      [ Plaintext "The"
-      , Whitespace
-      , Plaintext "idea"
-      , Whitespace
-      , Plaintext "for"
-      , Whitespace
-      , Plaintext "vim-dispatch"
-      , Whitespace
-      , Plaintext "integration"
-      , Whitespace
-      , Plaintext "was"
-      , Whitespace
-      , Plaintext "taken"
-      , Whitespace
-      , Plaintext "from"
-      , Whitespace
-      , Plaintext "Miles"
-      , Whitespace
-      , Plaintext "Sterrett's"
-      , Whitespace
-      , Plaintext "ack.vim"
-      , Whitespace
-      , Plaintext "plug-in"
-      , Whitespace
-      , Plaintext "(https://github.com/mileszs/ack.vim)."
-      ]
-  , Paragraph
       [ Plaintext "Other"
       , Whitespace
       , Plaintext "contributors"
@@ -6585,6 +7229,7 @@ Project
       , ListItem
           [ Plaintext "Filip" , Whitespace , Plaintext "Szyma\324ski" ]
       , ListItem [ Plaintext "Joe" , Whitespace , Plaintext "Lencioni" ]
+      , ListItem [ Plaintext "Jon" , Whitespace , Plaintext "Parise" ]
       , ListItem
           [ Plaintext "Nelo-Thara" , Whitespace , Plaintext "Wallus" ]
       , ListItem [ Plaintext "Tom" , Whitespace , Plaintext "Dooner" ]
@@ -6592,6 +7237,179 @@ Project
       ]
   , HeadingAnnotation "History"
   , SubheadingAnnotation "master (not yet released)"
+  , List
+      [ ListItem
+          [ Plaintext "Try"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "avoid"
+          , Whitespace
+          , Plaintext "\"press"
+          , Whitespace
+          , Plaintext "ENTER"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "continue\""
+          , Whitespace
+          , Plaintext "prompts."
+          ]
+      , ListItem
+          [ Plaintext "Put"
+          , Whitespace
+          , Plaintext "search"
+          , Whitespace
+          , Plaintext "term"
+          , Whitespace
+          , Plaintext "in"
+          , Whitespace
+          , Link "w:quickfix_title"
+          , Whitespace
+          , Plaintext "for"
+          , Whitespace
+          , Plaintext "use"
+          , Whitespace
+          , Plaintext "in"
+          , Whitespace
+          , Plaintext "statuslines"
+          , Whitespace
+          , Plaintext "(https://github.com/wincent/ferret/pull/57)."
+          ]
+      , ListItem
+          [ Plaintext "Add"
+          , Whitespace
+          , Link "g:FerretExecutableArguments"
+          , Whitespace
+          , Plaintext "and"
+          , Whitespace
+          , Link "ferret#get_default_arguments()"
+          , Whitespace
+          , Plaintext "(https://github.com/wincent/ferret/pull/46)."
+          ]
+      ]
+  , SubheadingAnnotation "3.0.3 (23 March 2018)"
+  , List
+      [ ListItem
+          [ Plaintext "Fix"
+          , Whitespace
+          , Plaintext "for"
+          , Whitespace
+          , Link ":Lack"
+          , Whitespace
+          , Plaintext "results"
+          , Whitespace
+          , Plaintext "opening"
+          , Whitespace
+          , Plaintext "in"
+          , Whitespace
+          , Plaintext "quickfix"
+          , Whitespace
+          , Plaintext "listing"
+          , Whitespace
+          , Plaintext "in"
+          , Whitespace
+          , Plaintext "Neovim"
+          , Whitespace
+          , Plaintext "(https://github.com/wincent/ferret/issues/47)."
+          ]
+      ]
+  , SubheadingAnnotation "3.0.2 (25 October 2017)"
+  , List
+      [ ListItem
+          [ Plaintext "Fix"
+          , Whitespace
+          , Plaintext "broken"
+          , Whitespace
+          , Link ":Back"
+          , Whitespace
+          , Plaintext "and"
+          , Whitespace
+          , Link ":Black"
+          , Whitespace
+          , Plaintext "commands"
+          , Whitespace
+          , Plaintext "(https://github.com/wincent/ferret/issues/48)."
+          ]
+      ]
+  , SubheadingAnnotation "3.0.1 (24 August 2017)"
+  , List
+      [ ListItem
+          [ Plaintext "Fix"
+          , Whitespace
+          , Plaintext "failure"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "handle"
+          , Whitespace
+          , Plaintext "search"
+          , Whitespace
+          , Plaintext "patterns"
+          , Whitespace
+          , Plaintext "containing"
+          , Whitespace
+          , Plaintext "multiple"
+          , Whitespace
+          , Plaintext "escaped"
+          , Whitespace
+          , Plaintext "spaces"
+          , Whitespace
+          , Plaintext "(https://github.com/wincent/ferret/issues/49)."
+          ]
+      ]
+  , SubheadingAnnotation "3.0 (13 June 2017)"
+  , List
+      [ ListItem
+          [ Plaintext "Improve"
+          , Whitespace
+          , Plaintext "handling"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Plaintext "backslash"
+          , Whitespace
+          , Plaintext "escapes"
+          , Whitespace
+          , Plaintext "(https://github.com/wincent/ferret/issues/41)."
+          ]
+      , ListItem
+          [ Plaintext "Add"
+          , Whitespace
+          , Link "g:FerretAutojump"
+          , Plaintext "."
+          ]
+      , ListItem
+          [ Plaintext "Drop"
+          , Whitespace
+          , Plaintext "support"
+          , Whitespace
+          , Plaintext "for"
+          , Whitespace
+          , Plaintext "vim-dispatch."
+          ]
+      ]
+  , SubheadingAnnotation "2.0 (6 June 2017)"
+  , List
+      [ ListItem
+          [ Plaintext "Add"
+          , Whitespace
+          , Plaintext "support"
+          , Whitespace
+          , Plaintext "for"
+          , Whitespace
+          , Plaintext "Neovim,"
+          , Whitespace
+          , Plaintext "along"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Link "g:FerretNvim"
+          , Whitespace
+          , Plaintext "setting."
+          ]
+      ]
+  , SubheadingAnnotation "1.5 \"Cinco de Cuatro\" (4 May 2017)"
   , List
       [ ListItem
           [ Plaintext "Improvements"

@@ -12,15 +12,13 @@ Ferret improves Vim's multi-file search in four ways:
 
 ### 1. Powerful multi-file search<a name="ferret-1-powerful-multi-file-search" href="#user-content-ferret-1-powerful-multi-file-search"></a>
 
-Ferret provides an <strong>[`:Ack`](#user-content-ack)</strong> command for searching across multiple files using The Silver Searcher (https://github.com/ggreer/the_silver_searcher), or Ack (http://beyondgrep.com/). Support for passing options through to the underlying search command exists, along with the ability to use full regular expression syntax without doing special escaping. On Vim version 8 or higher, searches are performed asynchronously (without blocking the UI).
+Ferret provides an <strong>[`:Ack`](#user-content-ack)</strong> command for searching across multiple files using ripgrep (https://github.com/BurntSushi/ripgrep), The Silver Searcher (https://github.com/ggreer/the_silver_searcher), or Ack (http://beyondgrep.com/). Support for passing options through to the underlying search command exists, along with the ability to use full regular expression syntax without doing special escaping. On modern versions of Vim (version 8 or higher, or Neovim), searches are performed asynchronously (without blocking the UI).
 
 Shortcut mappings are provided to start an <strong>[`:Ack`](#user-content-ack)</strong> search (&lt;leader&gt;a) or to search for the word currently under the cursor (&lt;leader&gt;s).
 
 Results are normally displayed in the <strong>`quickfix`</strong> window, but Ferret also provides a <strong>[`:Lack`](#user-content-lack)</strong> command that behaves like <strong>[`:Ack`](#user-content-ack)</strong> but uses the <strong>`location-list`</strong> instead, and a &lt;leader&gt;l mapping as a shortcut to <strong>[`:Lack`](#user-content-lack)</strong>.
 
 <strong>[`:Back`](#user-content-back)</strong> and <strong>[`:Black`](#user-content-black)</strong> are analogous to <strong>[`:Ack`](#user-content-ack)</strong> and <strong>[`:Lack`](#user-content-lack)</strong>, but scoped to search within currently open buffers only.
-
-Finally, Ferret offers integration with dispatch.vim (https://github.com/tpope/vim-dispatch), which enables asynchronous searching on older versions of Vim (prior to version 8), despite the fact that Vim itself is single-threaded.
 
 
 ### 2. Streamlined multi-file replace<a name="ferret-2-streamlined-multi-file-replace" href="#user-content-ferret-2-streamlined-multi-file-replace"></a>
@@ -37,7 +35,7 @@ Additionally, Vim's <strong>`:cn`</strong>, <strong>`:cp`</strong>, <strong>`:cn
 
 ### 4. Easy operations on files in the quickfix listing<a name="ferret-4-easy-operations-on-files-in-the-quickfix-listing" href="#user-content-ferret-4-easy-operations-on-files-in-the-quickfix-listing"></a>
 
-Finally, Ferret provides a <strong>[`:Qargs`](#user-content-qargs)</strong> command that puts the files currently in the <strong>`quickfix`</strong> listing into the <strong>`:args`</strong> list, where they can be operated on in bulk via the <strong>`:argdo`</strong> command. This is what's used under the covers by <strong>[`:Acks`](#user-content-acks)</strong> to do its work.
+Finally, Ferret provides a <strong>[`:Qargs`](#user-content-qargs)</strong> command that puts the files currently in the <strong>`quickfix`</strong> listing into the <strong>`:args`</strong> list, where they can be operated on in bulk via the <strong>`:argdo`</strong> command. This is what's used under the covers on older versions of Vim by <strong>[`:Acks`](#user-content-acks)</strong> to do its work (on newer versions the built-in <strong>`:cfdo`</strong> is used instead).
 
 
 ## Installation<a name="ferret-installation" href="#user-content-ferret-installation"></a>
@@ -76,8 +74,6 @@ Searches for {pattern} in all the files under the current directory (see <strong
 
 On newer versions of Vim (version 8 and above), the search process runs asynchronously in the background and does not block the UI.
 
-On older Vim versions (prior to version 8), if dispatch.vim is installed the search process will run asynchronously via the <strong>`:Make`</strong> command, otherwise it will be run synchronously via <strong>`:cexpr`</strong>. The <strong>[`g:FerretDispatch`](#user-content-gferretdispatch)</strong> option can be used to prevent the use of dispatch.vim.
-
 Asynchronous searches are preferred because they do not block, despite the fact that Vim itself is single threaded.
 
 The {pattern} is passed through as-is to the underlying search program, and no escaping is required other than preceding spaces by a single backslash. For example, to search for &quot;\bfoo[0-9]{2} bar\b&quot; (ie. using `ag`'s Perl-style regular expression syntax), you could do:
@@ -86,7 +82,7 @@ The {pattern} is passed through as-is to the underlying search program, and no e
 :Ack \bfoo[0-9]{2}\ bar\b
 ```
 
-Likewise, {options} are passed through. In this example, we pass the `-w` option (to search on word boundaries), and scope the search to the &quot;foo&quot; and &quot;bar&quot; subdirectories: &gt;
+Likewise, {options} are passed through. In this example, we pass the `-w` option (to search on word boundaries), and scope the search to the &quot;foo&quot; and &quot;bar&quot; subdirectories:
 
 ```
 :Ack -w something foo bar
@@ -106,7 +102,7 @@ Like <strong>[`:Ack`](#user-content-ack)</strong>, but returns all results irres
 
 Just like <strong>[`:Ack`](#user-content-ack)</strong>, but instead of using the <strong>`quickfix`</strong> listing, which is global across an entire Vim instance, it uses the <strong>`location-list`</strong>, which is a per-window construct.
 
-Note that <strong>[`:Lack`](#user-content-lack)</strong> always runs synchronously via <strong>`:cexpr`</strong>, because dispatch.vim doesn't currently support the <strong>`location-list`</strong>.
+Note that <strong>[`:Lack`](#user-content-lack)</strong> always runs synchronously via <strong>`:cexpr`</strong>.
 
 <p align="right"><a name="lack" href="#user-content-lack"><code>:Lack!</code></a></p>
 
@@ -151,6 +147,12 @@ A typical sequence consists of an <strong>[`:Ack`](#user-content-ack)</strong> i
 :Acks /foo/bar/
 ```
 
+The pattern and replacement are passed through literally to Vim's <strong>`:substitute`</strong> command, preserving all characters and escapes, including references to matches in the pattern. For example, the following could be used to swap the order of &quot;foo123&quot; and &quot;bar&quot;:
+
+```
+:Acks /\v(foo\d+)(bar)/\2\1/
+```
+
 <p align="right"><a name="qargs" href="#user-content-qargs"><code>:Qargs</code></a></p>
 
 ### `:Qargs`<a name="ferret-qargs" href="#user-content-ferret-qargs"></a>
@@ -167,9 +169,9 @@ It takes the files currently in the <strong>`quickfix`</strong> listing and sets
 
 Note that Ferret will not try to set up the &lt;leader&gt; mappings if any of the following are true:
 
-- A mapping for already exists.
+- A mapping with the same <strong>`{lhs}`</strong> already exists.
 - An alternative mapping for the same functionality has already been set up from a <strong>`.vimrc`</strong>.
-- The mapping has been suppressed by setting <strong>[`g:FerretMap`](#user-content-gferretmap)</strong> to 1 in your <strong>`.vimrc`</strong>.
+- The mapping has been suppressed by setting <strong>[`g:FerretMap`](#user-content-gferretmap)</strong> to 0 in your <strong>`.vimrc`</strong>.
 
 
 ### Mappings specific to the quickfix window<a name="ferret-mappings-specific-to-the-quickfix-window" href="#user-content-ferret-mappings-specific-to-the-quickfix-window"></a>
@@ -223,23 +225,21 @@ nmap <leader>u <Plug>(FerretAcks)
 
 ## Options<a name="ferret-options" href="#user-content-ferret-options"></a>
 
-<p align="right"><a name="gferretdispatch" href="#user-content-gferretdispatch"><code>g:FerretDispatch</code></a></p>
+<p align="right"><a name="gferretnvim" href="#user-content-gferretnvim"><code>g:FerretNvim</code></a></p>
 
-### `g:FerretDispatch` (boolean, default: 1)<a name="ferret-gferretdispatch-boolean-default-1" href="#user-content-ferret-gferretdispatch-boolean-default-1"></a>
+### `g:FerretNvim` (boolean, default: 1)<a name="ferret-gferretnvim-boolean-default-1" href="#user-content-ferret-gferretnvim-boolean-default-1"></a>
 
-Controls whether to use vim-dispatch (and specifically, <strong>`:Make`</strong>) to run <strong>[`:Ack`](#user-content-ack)</strong> searches asynchronously, when available. To prevent vim-dispatch from being used, set to 0:
+Controls whether to use Neovim's <strong>`job-control`</strong> features, when available, to run searches asynchronously. To prevent this from being used, set to 0, in which case Ferret will fall back to the next method in the list (Vim's built-in async primitives -- see <strong>[`g:FerretJob`](#user-content-gferretjob)</strong> -- which are typically not available in Neovim, so will then fall back to the next available method).
 
 ```
-let g:FerretDispatch=0
+let g:FerretNvim=0
 ```
-
-Note that on sufficiently recent versions of Vim with <strong>`+job`</strong> support, Ferret will first try to use <strong>`+job`</strong>, falling back to vim-dispatch and consulting <strong>[`g:FerretDispatch`](#user-content-gferretdispatch)</strong> only if <strong>[`g:FerretJob`](#user-content-gferretjob)</strong> is set to 0.
 
 <p align="right"><a name="gferretjob" href="#user-content-gferretjob"><code>g:FerretJob</code></a></p>
 
 ### `g:FerretJob` (boolean, default: 1)<a name="ferret-gferretjob-boolean-default-1" href="#user-content-ferret-gferretjob-boolean-default-1"></a>
 
-Controls whether to use Vim's <strong>`+job`</strong> feature, when available, to run searches asynchronously. To prevent <strong>`+job`</strong> from being used, set to 0, in which case Ferret will fall back to vim-dispatch (see also: <strong>[`g:FerretDispatch`](#user-content-gferretdispatch)</strong>):
+Controls whether to use Vim's <strong>`+job`</strong> feature, when available, to run searches asynchronously. To prevent <strong>`+job`</strong> from being used, set to 0, in which case Ferret will fall back to the next available method.
 
 ```
 let g:FerretJob=0
@@ -268,6 +268,20 @@ Example:
 let g:FerretExecutable='ag,rg'
 ```
 
+<p align="right"><a name="gferretexecutablearguments" href="#user-content-gferretexecutablearguments"><code>g:FerretExecutableArguments</code></a></p>
+
+### `g:FerretExecutableArguments` (dict, default: {})<a name="ferret-gferretexecutablearguments-dict-default-" href="#user-content-ferret-gferretexecutablearguments-dict-default-"></a>
+
+Allows you to override the default arguments that get passed to the underlying search executables. For example, to add `-s` to the default arguments passed to `ack` (`--column --with-filename`):
+
+```
+let g:FerretExecutableArguments = {
+  \   'ack': '--column --with-filename -s'
+  \ }
+```
+
+To find out the default arguments for a given executable, see <strong>`ferret#get_default_arguments()`</strong>.
+
 <p align="right"><a name="gferretmaxresults" href="#user-content-gferretmaxresults"><code>g:FerretMaxResults</code></a></p>
 
 ### `g:FerretMaxResults` (number, default: 100000)<a name="ferret-gferretmaxresults-number-default-100000" href="#user-content-ferret-gferretmaxresults-number-default-100000"></a>
@@ -277,6 +291,22 @@ Controls the maximum number of results Ferret will attempt to gather before disp
 The intent of this option is to prevent runaway search processes that produce huge volumes of output (for example, searching for a common string like &quot;test&quot; inside a <strong>`$HOME`</strong> directory containing millions of files) from locking up Vim.
 
 In the event that Ferret aborts a search that has hit the <strong>[`g:FerretMaxResults`](#user-content-gferretmaxresults)</strong> limit, a message will be printed prompting users to run the search again with <strong>[`:Ack!`](#user-content-ack)</strong> or <strong>[`:Lack!`](#user-content-lack)</strong> if they want to bypass the limit.
+
+<p align="right"><a name="gferretautojump" href="#user-content-gferretautojump"><code>g:FerretAutojump</code></a></p>
+
+### `g:FerretAutojump` (number, default: 1)<a name="ferret-gferretautojump-number-default-1" href="#user-content-ferret-gferretautojump-number-default-1"></a>
+
+Controls whether Ferret will automatically jump to the first found match.
+
+- Set to 0, Ferret will show the search results but perform no jump.
+- Set to 1 (the default), Ferret will show the search results and focus the result listing.
+- Set to 2, Ferret will show the search results and jump to the first found match.
+
+Example override:
+
+```
+let g:FerretAutojump=2
+```
 
 <p align="right"><a name="gferretqfoptions" href="#user-content-gferretqfoptions"><code>g:FerretQFOptions</code></a></p>
 
@@ -355,6 +385,21 @@ let g:FerretQFCommands=0
 Sets the '<strong>`grepformat`</strong>' used by Ferret.
 
 
+## Functions<a name="ferret-functions" href="#user-content-ferret-functions"></a>
+
+<p align="right"><a name="ferretgetdefaultarguments" href="#user-content-ferretgetdefaultarguments"><code>ferret#get_default_arguments()</code></a></p>
+
+### `ferret#get_default_arguments()`<a name="ferret-ferretgetdefaultarguments" href="#user-content-ferret-ferretgetdefaultarguments"></a>
+
+Call this with an executable name to find out the default arguments that will be passed when invoking that executable. For example:
+
+```
+echo ferret#get_default_arguments('rg')
+```
+
+This may be useful if you wish to extend or otherwise modify the arguments by setting <strong>[`g:FerretExecutableArguments`](#user-content-gferretexecutablearguments)</strong>.
+
+
 ## Custom autocommands<a name="ferret-custom-autocommands" href="#user-content-ferret-custom-autocommands"></a>
 
 <p align="right"><a name="ferretdidwrite" href="#user-content-ferretdidwrite"><code>FerretDidWrite</code></a> <a name="ferretwillwrite" href="#user-content-ferretwillwrite"><code>FerretWillWrite</code></a></p>
@@ -380,32 +425,38 @@ Ferret overrides the 'grepformat' and 'grepprg' settings, preferentially setting
 Additionally, Ferret includes an <strong>`ftplugin`</strong> for the <strong>`quickfix`</strong> listing that adjusts a number of settings to improve the usability of search results.
 
 <p align="right"><a name="ferret-nolist" href="#user-content-ferret-nolist"><code>ferret-nolist</code></a></p>
-'nolist'
+
+### 'nolist'<a name="ferret-nolist" href="#user-content-ferret-nolist"></a>
 
 Turned off to reduce visual clutter in the search results, and because 'list' is most useful in files that are being actively edited, which is not the case for <strong>`quickfix`</strong> results.
 
 <p align="right"><a name="ferret-norelativenumber" href="#user-content-ferret-norelativenumber"><code>ferret-norelativenumber</code></a></p>
-'norelativenumber'
+
+### 'norelativenumber'<a name="ferret-norelativenumber" href="#user-content-ferret-norelativenumber"></a>
 
 Turned off, because it is more useful to have a sense of absolute progress through the results list than to have the ability to jump to nearby results (especially seeing as the most common operations are moving to the next or previous file, which are both handled nicely by <strong>`:cnf`</strong> and <strong>`:cpf`</strong> respectively).
 
 <p align="right"><a name="ferret-nowrap" href="#user-content-ferret-nowrap"><code>ferret-nowrap</code></a></p>
-'nowrap'
+
+### 'nowrap'<a name="ferret-nowrap" href="#user-content-ferret-nowrap"></a>
 
 Turned off to avoid ugly wrapping that makes the results list hard to read, and because in search results, the most relevant information is the filename, which is on the left and is usually visible even without wrapping.
 
 <p align="right"><a name="ferret-number" href="#user-content-ferret-number"><code>ferret-number</code></a></p>
-'number'
+
+### 'number'<a name="ferret-number" href="#user-content-ferret-number"></a>
 
 Turned on to give a sense of absolute progress through the results.
 
 <p align="right"><a name="ferret-scrolloff" href="#user-content-ferret-scrolloff"><code>ferret-scrolloff</code></a></p>
-'scrolloff'
+
+### 'scrolloff'<a name="ferret-scrolloff" href="#user-content-ferret-scrolloff"></a>
 
 Set to 0 because the <strong>`quickfix`</strong> listing is usually small by default, so trying to keep the current line away from the edge of the viewpoint is futile; by definition it is usually near the edge.
 
 <p align="right"><a name="ferret-nocursorline" href="#user-content-ferret-nocursorline"><code>ferret-nocursorline</code></a></p>
-'nocursorline'
+
+### 'nocursorline'<a name="ferret-nocursorline" href="#user-content-ferret-nocursorline"></a>
 
 Turned off to reduce visual clutter.
 
@@ -458,7 +509,7 @@ This approach to escaping is taken in order to make it straightfoward to use pow
 
 ### Why do Ferret commands start with "Ack", "Lack" and so on?<a name="ferret-why-do-ferret-commands-start-with-ack-lack-and-so-on" href="#user-content-ferret-why-do-ferret-commands-start-with-ack-lack-and-so-on"></a>
 
-Ferret was originally the thinnest of wrappers (7 lines of code in my <strong>`.vimrc`</strong>) around `ack`. The earliest traces of it can be seen in the initial commit to my dotfiles repo in May, 2009 (https://wt.pe/h).
+Ferret was originally the thinnest of wrappers (7 lines of code in my <strong>`.vimrc`</strong>) around `ack`. The earliest traces of it can be seen in the initial commit to my dotfiles repo in May, 2009 (https://rfr.to/h).
 
 So, even though Ferret has a new name now and actually prefers `rg` then `ag` over `ack`/`ack-grep` when available, I prefer to keep the command names intact and benefit from years of accumulated muscle-memory.
 
@@ -544,13 +595,12 @@ git archive -o ferret-$VERSION.zip HEAD -- .
 
 Ferret is written and maintained by Greg Hurrell &lt;greg@hurrell.net&gt;.
 
-The idea for vim-dispatch integration was taken from Miles Sterrett's ack.vim plug-in (https://github.com/mileszs/ack.vim).
-
 Other contributors that have submitted patches include (in alphabetical order):
 
 - Daniel Silva
 - Filip Szymański
 - Joe Lencioni
+- Jon Parise
 - Nelo-Thara Wallus
 - Tom Dooner
 - Vaibhav Sagar
@@ -560,6 +610,40 @@ Other contributors that have submitted patches include (in alphabetical order):
 
 
 ### master (not yet released)<a name="ferret-master-not-yet-released" href="#user-content-ferret-master-not-yet-released"></a>
+
+- Try to avoid &quot;press ENTER to continue&quot; prompts.
+- Put search term in <strong>`w:quickfix_title`</strong> for use in statuslines (https://github.com/wincent/ferret/pull/57).
+- Add <strong>[`g:FerretExecutableArguments`](#user-content-gferretexecutablearguments)</strong> and <strong>`ferret#get_default_arguments()`</strong> (https://github.com/wincent/ferret/pull/46).
+
+
+### 3.0.3 (23 March 2018)<a name="ferret-303-23-march-2018" href="#user-content-ferret-303-23-march-2018"></a>
+
+- Fix for <strong>[`:Lack`](#user-content-lack)</strong> results opening in quickfix listing in Neovim (https://github.com/wincent/ferret/issues/47).
+
+
+### 3.0.2 (25 October 2017)<a name="ferret-302-25-october-2017" href="#user-content-ferret-302-25-october-2017"></a>
+
+- Fix broken <strong>[`:Back`](#user-content-back)</strong> and <strong>[`:Black`](#user-content-black)</strong> commands (https://github.com/wincent/ferret/issues/48).
+
+
+### 3.0.1 (24 August 2017)<a name="ferret-301-24-august-2017" href="#user-content-ferret-301-24-august-2017"></a>
+
+- Fix failure to handle search patterns containing multiple escaped spaces (https://github.com/wincent/ferret/issues/49).
+
+
+### 3.0 (13 June 2017)<a name="ferret-30-13-june-2017" href="#user-content-ferret-30-13-june-2017"></a>
+
+- Improve handling of backslash escapes (https://github.com/wincent/ferret/issues/41).
+- Add <strong>[`g:FerretAutojump`](#user-content-gferretautojump)</strong>.
+- Drop support for vim-dispatch.
+
+
+### 2.0 (6 June 2017)<a name="ferret-20-6-june-2017" href="#user-content-ferret-20-6-june-2017"></a>
+
+- Add support for Neovim, along with <strong>[`g:FerretNvim`](#user-content-gferretnvim)</strong> setting.
+
+
+### 1.5 "Cinco de Cuatro" (4 May 2017)<a name="ferret-15-cinco-de-cuatro-4-may-2017" href="#user-content-ferret-15-cinco-de-cuatro-4-may-2017"></a>
 
 - Improvements to the handling of very large result sets (due to wide lines or many results).
 - Added <strong>[`g:FerretLazyInit`](#user-content-gferretlazyinit)</strong>.

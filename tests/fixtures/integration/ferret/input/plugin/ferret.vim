@@ -16,11 +16,13 @@
 " ## 1. Powerful multi-file search
 "
 " Ferret provides an |:Ack| command for searching across multiple files using
-" The Silver Searcher (https://github.com/ggreer/the_silver_searcher), or Ack
+" ripgrep (https://github.com/BurntSushi/ripgrep), The Silver Searcher
+" (https://github.com/ggreer/the_silver_searcher), or Ack
 " (http://beyondgrep.com/). Support for passing options through to the
 " underlying search command exists, along with the ability to use full regular
-" expression syntax without doing special escaping. On Vim version 8 or higher,
-" searches are performed asynchronously (without blocking the UI).
+" expression syntax without doing special escaping. On modern versions
+" of Vim (version 8 or higher, or Neovim), searches are performed
+" asynchronously (without blocking the UI).
 "
 " Shortcut mappings are provided to start an |:Ack| search (<leader>a) or to
 " search for the word currently under the cursor (<leader>s).
@@ -31,11 +33,6 @@
 "
 " |:Back| and |:Black| are analogous to |:Ack| and |:Lack|, but scoped to search
 " within currently open buffers only.
-"
-" Finally, Ferret offers integration with dispatch.vim
-" (https://github.com/tpope/vim-dispatch), which enables asynchronous searching
-" on older versions of Vim (prior to version 8), despite the fact that Vim
-" itself is single-threaded.
 "
 " ## 2. Streamlined multi-file replace
 "
@@ -59,8 +56,9 @@
 "
 " Finally, Ferret provides a |:Qargs| command that puts the files currently in
 " the |quickfix| listing into the |:args| list, where they can be operated on in
-" bulk via the |:argdo| command. This is what's used under the covers by |:Acks|
-" to do its work.
+" bulk via the |:argdo| command. This is what's used under the covers on older
+" versions of Vim by |:Acks| to do its work (on newer versions the built-in
+" |:cfdo| is used instead).
 "
 "
 " # Installation
@@ -97,10 +95,10 @@
 " Note that Ferret will not try to set up the <leader> mappings if any of the
 " following are true:
 "
-" - A mapping for already exists.
+" - A mapping with the same |{lhs}| already exists.
 " - An alternative mapping for the same functionality has already been set up
 "   from a |.vimrc|.
-" - The mapping has been suppressed by setting |g:FerretMap| to 1 in your
+" - The mapping has been suppressed by setting |g:FerretMap| to 0 in your
 "   |.vimrc|.
 "
 " ## Mappings specific to the quickfix window
@@ -147,14 +145,14 @@
 "
 " @indent
 "                                                                 *ferret-nolist*
-"   'nolist'
+"   ## 'nolist'
 "
 "   Turned off to reduce visual clutter in the search results, and because
 "   'list' is most useful in files that are being actively edited, which is not
 "   the case for |quickfix| results.
 "
 "                                                       *ferret-norelativenumber*
-"   'norelativenumber'
+"   ## 'norelativenumber'
 "
 "   Turned off, because it is more useful to have a sense of absolute progress
 "   through the results list than to have the ability to jump to nearby results
@@ -163,26 +161,26 @@
 "   respectively).
 "
 "                                                                 *ferret-nowrap*
-"   'nowrap'
+"   ## 'nowrap'
 "
 "   Turned off to avoid ugly wrapping that makes the results list hard to read,
 "   and because in search results, the most relevant information is the
 "   filename, which is on the left and is usually visible even without wrapping.
 "
 "                                                                 *ferret-number*
-"   'number'
+"   ## 'number'
 "
 "   Turned on to give a sense of absolute progress through the results.
 "
 "                                                              *ferret-scrolloff*
-"   'scrolloff'
+"   ## 'scrolloff'
 "
 "   Set to 0 because the |quickfix| listing is usually small by default, so
 "   trying to keep the current line away from the edge of the viewpoint is
 "   futile; by definition it is usually near the edge.
 "
 "                                                           *ferret-nocursorline*
-"   'nocursorline'
+"   ## 'nocursorline'
 "
 "   Turned off to reduce visual clutter.
 "
@@ -243,7 +241,7 @@
 "
 " Ferret was originally the thinnest of wrappers (7 lines of code in my
 " |.vimrc|) around `ack`. The earliest traces of it can be seen in the initial
-" commit to my dotfiles repo in May, 2009 (https://wt.pe/h).
+" commit to my dotfiles repo in May, 2009 (https://rfr.to/h).
 "
 " So, even though Ferret has a new name now and actually prefers `rg` then `ag`
 " over `ack`/`ack-grep` when available, I prefer to keep the command names
@@ -345,15 +343,13 @@
 "
 " Ferret is written and maintained by Greg Hurrell <greg@hurrell.net>.
 "
-" The idea for vim-dispatch integration was taken from Miles Sterrett's ack.vim
-" plug-in (https://github.com/mileszs/ack.vim).
-"
 " Other contributors that have submitted patches include (in alphabetical
 " order):
 "
 " - Daniel Silva
 " - Filip Szymański
 " - Joe Lencioni
+" - Jon Parise
 " - Nelo-Thara Wallus
 " - Tom Dooner
 " - Vaibhav Sagar
@@ -362,6 +358,40 @@
 " # History
 "
 " ## master (not yet released)
+"
+" - Try to avoid "press ENTER to continue" prompts.
+" - Put search term in |w:quickfix_title| for use in statuslines
+"   (https://github.com/wincent/ferret/pull/57).
+" - Add |g:FerretExecutableArguments| and |ferret#get_default_arguments()|
+"   (https://github.com/wincent/ferret/pull/46).
+"
+" ## 3.0.3 (23 March 2018)
+"
+" - Fix for |:Lack| results opening in quickfix listing in Neovim
+"   (https://github.com/wincent/ferret/issues/47).
+"
+" ## 3.0.2 (25 October 2017)
+"
+" - Fix broken |:Back| and |:Black| commands
+"   (https://github.com/wincent/ferret/issues/48).
+"
+" ## 3.0.1 (24 August 2017)
+"
+" - Fix failure to handle search patterns containing multiple escaped spaces
+"   (https://github.com/wincent/ferret/issues/49).
+"
+" ## 3.0 (13 June 2017)
+"
+" - Improve handling of backslash escapes
+"   (https://github.com/wincent/ferret/issues/41).
+" - Add |g:FerretAutojump|.
+" - Drop support for vim-dispatch.
+"
+" ## 2.0 (6 June 2017)
+"
+" - Add support for Neovim, along with |g:FerretNvim| setting.
+"
+" ## 1.5 "Cinco de Cuatro" (4 May 2017)
 "
 " - Improvements to the handling of very large result sets (due to wide lines or
 "   many results).
@@ -484,11 +514,6 @@ endif
 " On newer versions of Vim (version 8 and above), the search process runs
 " asynchronously in the background and does not block the UI.
 "
-" On older Vim versions (prior to version 8), if dispatch.vim is installed the
-" search process will run asynchronously via the |:Make| command, otherwise it
-" will be run synchronously via |:cexpr|. The |g:FerretDispatch| option can be
-" used to prevent the use of dispatch.vim.
-"
 " Asynchronous searches are preferred because they do not block, despite the
 " fact that Vim itself is single threaded.
 "
@@ -503,7 +528,7 @@ endif
 "
 " Likewise, {options} are passed through. In this example, we pass the `-w`
 " option (to search on word boundaries), and scope the search to the "foo" and
-" "bar" subdirectories: >
+" "bar" subdirectories:
 "
 " ```
 " :Ack -w something foo bar
@@ -519,7 +544,7 @@ endif
 " Like |:Ack|, but returns all results irrespective of the value of
 " |g:FerretMaxResults|.
 "
-command! -bang -nargs=+ -complete=customlist,ferret#private#ackcomplete Ack call ferret#private#ack(<bang>0, <f-args>)
+command! -bang -nargs=1 -complete=customlist,ferret#private#ackcomplete Ack call ferret#private#ack(<bang>0, <q-args>)
 
 ""
 " @command :Lack {pattern} {options}
@@ -528,15 +553,14 @@ command! -bang -nargs=+ -complete=customlist,ferret#private#ackcomplete Ack call
 " across an entire Vim instance, it uses the |location-list|, which is a
 " per-window construct.
 "
-" Note that |:Lack| always runs synchronously via |:cexpr|, because dispatch.vim
-" doesn't currently support the |location-list|.
+" Note that |:Lack| always runs synchronously via |:cexpr|.
 "
 " @command :Lack! {pattern} {options}
 "
 " Like |:Lack|, but returns all results irrespective of the value of
 " |g:FerretMaxResults|.
 "
-command! -bang -nargs=+ -complete=customlist,ferret#private#lackcomplete Lack call ferret#private#lack(<bang>0, <f-args>)
+command! -bang -nargs=1 -complete=customlist,ferret#private#lackcomplete Lack call ferret#private#lack(<bang>0, <q-args>)
 
 ""
 " @command :Back {pattern} {options}
@@ -552,7 +576,7 @@ command! -bang -nargs=+ -complete=customlist,ferret#private#lackcomplete Lack ca
 " Like |:Back|, but returns all results irrespective of the value of
 " |g:FerretMaxResults|.
 "
-command! -bang -nargs=+ -complete=customlist,ferret#private#backcomplete Back call ferret#private#back(<bang>0, <f-args>)
+command! -bang -nargs=1 -complete=customlist,ferret#private#backcomplete Back call ferret#private#back(<bang>0, <q-args>)
 
 ""
 " @command :Black {pattern} {options}
@@ -568,7 +592,7 @@ command! -bang -nargs=+ -complete=customlist,ferret#private#backcomplete Back ca
 " Like |:Black|, but returns all results irrespective of the value of
 " |g:FerretMaxResults|.
 "
-command! -bang -nargs=+ -complete=customlist,ferret#private#blackcomplete Black call ferret#private#black(<bang>0, <f-args>)
+command! -bang -nargs=1 -complete=customlist,ferret#private#blackcomplete Black call ferret#private#black(<bang>0, <q-args>)
 
 ""
 " @command :Acks /{pattern}/{replacement}/
@@ -585,6 +609,15 @@ command! -bang -nargs=+ -complete=customlist,ferret#private#blackcomplete Black 
 " ```
 " :Ack foo
 " :Acks /foo/bar/
+" ```
+"
+" The pattern and replacement are passed through literally to Vim's
+" |:substitute| command, preserving all characters and escapes,
+" including references to matches in the pattern. For example, the
+" following could be used to swap the order of "foo123" and "bar":
+"
+" ```
+" :Acks /\v(foo\d+)(bar)/\2\1/
 " ```
 command! -nargs=1 Acks call ferret#private#acks(<q-args>)
 command! FerretCancelAsync call ferret#private#async#cancel()
