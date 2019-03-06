@@ -10,7 +10,7 @@ function! scalpel#cword(curpos) abort
   let l:word=[]
 
   " Look for keyword characters rightwards.
-  for l:char in l:chars[l:col:]
+  for l:char in l:chars[(l:col):]
     if match(l:char, '\k') != -1
       call add(l:word, l:char)
     else
@@ -19,7 +19,7 @@ function! scalpel#cword(curpos) abort
   endfor
 
   " Look for keyword characters leftwards.
-  for l:char in reverse(l:chars[:l:col - 1])
+  for l:char in reverse(l:chars[:(l:col) - 1])
     if match(l:char, '\k') != -1
       call insert(l:word, l:char, 0)
     else
@@ -28,6 +28,29 @@ function! scalpel#cword(curpos) abort
   endfor
 
   return join(l:word, '')
+endfunction
+
+function s:g()
+  return &gdefault ? '' : 'g'
+endfunction
+
+" a:lastline is effectively reserved (see `:h a:lastline`), so use _lastline
+" instead.
+function s:replacements(currentline, _lastline, patterns, g)
+  let s:report=&report
+  try
+    set report=10000
+    execute a:currentline . ',' . a:_lastline . 's' . a:patterns . a:g . 'ce#'
+  catch /^Vim:Interrupt$/
+    execute 'set report=' . s:report
+    return
+  finally
+    normal! q
+    let s:transcript=getreg('s')
+    if exists('s:register')
+      call setreg('s', s:register)
+    endif
+  endtry
 endfunction
 
 function! scalpel#substitute(patterns, line1, line2, count) abort
@@ -41,31 +64,34 @@ function! scalpel#substitute(patterns, line1, line2, count) abort
     let l:lastline=a:line2 >= a:line2 ? a:line2 : a:line1
     let l:currentline=l:firstline
   endif
-  if match(a:patterns, '\v^/[^/]*/[^/]*/$') != 0
+
+  let l:g=s:g()
+
+  " As per `:h E146`, can use any single-byte non-alphanumeric character as
+  " delimiter except for backslash, quote, and vertical bar.
+  if match(a:patterns, '\v^([^"\\|A-Za-z0-9 ]).*\1.*\1$') != 0
     echomsg 'Invalid patterns: ' . a:patterns
     echomsg 'Expected patterns of the form "/foo/bar/".'
     return
   endif
   if getregtype('s') != ''
-    let l:register=getreg('s')
+    let s:register=getreg('s')
+  elseif exists('s:register')
+    unlet s:register
   endif
   normal! qs
-  redir => l:replacements
-  try
-    execute l:currentline . ',' . l:lastline . 's' . a:patterns . 'gce#'
-  catch /^Vim:Interrupt$/
-    return
-  finally
-    normal! q
-    let l:transcript=getreg('s')
-    if exists('l:register')
-      call setreg('s', l:register)
-    endif
-  endtry
-  redir END
+
+  if exists('*execute')
+    let l:replacements=execute('call s:replacements(l:currentline, l:lastline, a:patterns, l:g)', '')
+  else
+    redir => l:replacements
+    call s:replacements(l:currentline, l:lastline, a:patterns, l:g)
+    redir END
+  endif
+
   if len(l:replacements) > 0
     " At least one instance of pattern was found.
-    let l:last=strpart(l:transcript, len(l:transcript) - 1)
+    let l:last=strpart(s:transcript, len(s:transcript) - 1)
     if l:last ==# 'l' || l:last ==# 'q' || l:last ==# ''
       " User bailed.
       return
@@ -74,7 +100,7 @@ function! scalpel#substitute(patterns, line1, line2, count) abort
       " Avoid unwanted "Backwards range given, OK to swap (y/n)?" messages.
       if l:currentline > l:firstline
         " Drop c flag.
-        execute l:firstline . ',' . l:currentline . '-&gce'
+        execute l:firstline . ',' . l:currentline . '-&' . l:g . 'ce'
       endif
      return
     endif
@@ -83,6 +109,7 @@ function! scalpel#substitute(patterns, line1, line2, count) abort
   " Loop around to top of range/file and continue.
   " Avoid unwanted "Backwards range given, OK to swap (y/n)?" messages.
   if l:currentline > l:firstline
-    execute l:firstline . ',' . l:currentline . '-&gce'
+    execute l:firstline . ',' . l:currentline . '-&' .l:g . 'ce'
+    execute 'set report=' . s:report
   endif
 endfunction

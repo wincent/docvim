@@ -4,6 +4,7 @@ Project
       , TOC
           [ "Intro"
           , "Installation"
+          , "FAQ"
           , "Website"
           , "License"
           , "Development"
@@ -216,6 +217,58 @@ Project
       , Plaintext "entire"
       , Whitespace
       , Plaintext "file."
+      ]
+  , Paragraph
+      [ Plaintext "Screencasts"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "show"
+      , Whitespace
+      , Plaintext "Scalpel"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "action:"
+      ]
+  , List
+      [ ListItem
+          [ Plaintext "https://youtu.be/YwMgnmZNWXA:"
+          , Whitespace
+          , Plaintext "\"Vim"
+          , Whitespace
+          , Plaintext "screencast"
+          , Whitespace
+          , Plaintext "#13:"
+          , Whitespace
+          , Plaintext "Multiple"
+          , Whitespace
+          , Plaintext "Cursors\""
+          ]
+      , ListItem
+          [ Plaintext "https://youtu.be/7Bx_mLDBtRc:"
+          , Whitespace
+          , Plaintext "\"Vim"
+          , Whitespace
+          , Plaintext "screencast"
+          , Whitespace
+          , Plaintext "#14:"
+          , Whitespace
+          , Plaintext "*Ncgn\""
+          ]
+      , ListItem
+          [ Plaintext "https://youtu.be/iNVyCPPYFzc:"
+          , Whitespace
+          , Plaintext "\"Vim"
+          , Whitespace
+          , Plaintext "screencast"
+          , Whitespace
+          , Plaintext "#21:"
+          , Whitespace
+          , Plaintext "Scalpel"
+          , Whitespace
+          , Plaintext "update\""
+          ]
       ]
   , Paragraph
       [ Plaintext "Note"
@@ -785,6 +838,202 @@ Project
       , Plaintext "with:"
       ]
   , Fenced [ ":call pathogen#helptags()" ]
+  , HeadingAnnotation "FAQ"
+  , SubheadingAnnotation
+      "Why use Scalpel rather than a built-in alternative?"
+  , Paragraph
+      [ Plaintext "Scalpel"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "lightweight"
+      , Whitespace
+      , Plaintext "plug-in"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "provides"
+      , Whitespace
+      , Plaintext "subtle"
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "valuable"
+      , Whitespace
+      , Plaintext "improvements"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "experience"
+      , Whitespace
+      , Plaintext "you'd"
+      , Whitespace
+      , Plaintext "get"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Plaintext "using"
+      , Whitespace
+      , Plaintext "Vim's"
+      , Whitespace
+      , Plaintext "built-in"
+      , Whitespace
+      , Plaintext "functionality."
+      ]
+  , Paragraph
+      [ Plaintext "Compared"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "writing"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Link ":substitute"
+      , Whitespace
+      , Plaintext "command"
+      , Whitespace
+      , Plaintext "manually:"
+      ]
+  , List
+      [ ListItem
+          [ Plaintext "Scalpel"
+          , Whitespace
+          , Plaintext "is"
+          , Whitespace
+          , Plaintext "quickly"
+          , Whitespace
+          , Plaintext "activated"
+          , Whitespace
+          , Plaintext "by"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Plaintext "mapping."
+          ]
+      , ListItem
+          [ Plaintext "Scalpel"
+          , Whitespace
+          , Plaintext "prepopulates"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "search"
+          , Whitespace
+          , Plaintext "pattern"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "word"
+          , Whitespace
+          , Plaintext "currently"
+          , Whitespace
+          , Plaintext "under"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "cursor."
+          ]
+      , ListItem
+          [ Plaintext "Scalpel"
+          , Whitespace
+          , Plaintext "avoids"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Plaintext "jarring"
+          , Whitespace
+          , Plaintext "jump"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "top"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "file,"
+          , Whitespace
+          , Plaintext "instead"
+          , Whitespace
+          , Plaintext "starting"
+          , Whitespace
+          , Plaintext "replacements"
+          , Whitespace
+          , Plaintext "at"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "current"
+          , Whitespace
+          , Plaintext "location."
+          ]
+      ]
+  , Paragraph
+      [ Plaintext "Compared"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "mapping"
+      , Whitespace
+      , Plaintext "such"
+      , Whitespace
+      , Plaintext "as"
+      , Whitespace
+      , Plaintext "\"*Ncgn\":"
+      ]
+  , List
+      [ ListItem
+          [ Plaintext "Scalpel"
+          , Whitespace
+          , Plaintext "allows"
+          , Whitespace
+          , Plaintext "you"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "preview"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "location"
+          , Whitespace
+          , Plaintext "at"
+          , Whitespace
+          , Plaintext "which"
+          , Whitespace
+          , Plaintext "each"
+          , Whitespace
+          , Plaintext "change"
+          , Whitespace
+          , Plaintext "will"
+          , Whitespace
+          , Plaintext "occur"
+          , Whitespace
+          , Plaintext "instead"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Plaintext "performing"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "change"
+          , Whitespace
+          , Plaintext "blindly."
+          ]
+      ]
   , HeadingAnnotation "Website"
   , Paragraph
       [ Plaintext "The"
@@ -1337,7 +1586,118 @@ Project
       , Plaintext "<greg@hurrell.net>."
       ]
   , HeadingAnnotation "History"
-  , SubheadingAnnotation "0.2 (not yet released)"
+  , SubheadingAnnotation "1.0 (3 January 2019)"
+  , List
+      [ ListItem
+          [ Plaintext "Perform"
+          , Whitespace
+          , Plaintext "multiple"
+          , Whitespace
+          , Plaintext "replacements"
+          , Whitespace
+          , Plaintext "per"
+          , Whitespace
+          , Plaintext "line"
+          , Whitespace
+          , Plaintext "even"
+          , Whitespace
+          , Plaintext "when"
+          , Whitespace
+          , Link "'gdefault'"
+          , Whitespace
+          , Plaintext "is"
+          , Whitespace
+          , Plaintext "on."
+          ]
+      ]
+  , SubheadingAnnotation "0.5 (28 July 2018)"
+  , List
+      [ ListItem
+          [ Plaintext "Fix"
+          , Whitespace
+          , Plaintext "problem"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Link "Visual"
+          , Whitespace
+          , Plaintext "mode"
+          , Whitespace
+          , Plaintext "operation"
+          , Whitespace
+          , Plaintext "on"
+          , Whitespace
+          , Plaintext "older"
+          , Whitespace
+          , Plaintext "versions"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Plaintext "Vim"
+          , Whitespace
+          , Plaintext "(GitHub"
+          , Whitespace
+          , Plaintext "issue"
+          , Whitespace
+          , Plaintext "#8)."
+          ]
+      ]
+  , SubheadingAnnotation "0.4 (23 July 2018)"
+  , List
+      [ ListItem
+          [ Plaintext "Fix"
+          , Whitespace
+          , Plaintext "problem"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "replacement"
+          , Whitespace
+          , Plaintext "patterns"
+          , Whitespace
+          , Plaintext "containing"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "number"
+          , Whitespace
+          , Plaintext "1"
+          , Whitespace
+          , Plaintext "(GitHub"
+          , Whitespace
+          , Plaintext "issue"
+          , Whitespace
+          , Plaintext "#7)."
+          ]
+      ]
+  , SubheadingAnnotation "0.3 (10 May 2018)"
+  , List
+      [ ListItem
+          [ Plaintext "Fix"
+          , Whitespace
+          , Plaintext "compatibility"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "older"
+          , Whitespace
+          , Plaintext "versions"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Plaintext "Vim"
+          , Whitespace
+          , Plaintext "that"
+          , Whitespace
+          , Plaintext "don't"
+          , Whitespace
+          , Plaintext "implement"
+          , Whitespace
+          , Link "getcurpos()"
+          , Plaintext "."
+          ]
+      ]
+  , SubheadingAnnotation "0.2 (13 June 2016)"
   , List
       [ ListItem
           [ Plaintext "Support"
@@ -1345,6 +1705,25 @@ Project
           , Plaintext "visual"
           , Whitespace
           , Plaintext "mode."
+          ]
+      , ListItem
+          [ Plaintext "Do"
+          , Whitespace
+          , Plaintext "not"
+          , Whitespace
+          , Plaintext "show"
+          , Whitespace
+          , Plaintext "\"N"
+          , Whitespace
+          , Plaintext "substitutions"
+          , Whitespace
+          , Plaintext "on"
+          , Whitespace
+          , Plaintext "N"
+          , Whitespace
+          , Plaintext "lines\""
+          , Whitespace
+          , Plaintext "messages."
           ]
       ]
   , SubheadingAnnotation "0.1 (29 April 2016)"
@@ -1366,14 +1745,14 @@ Project
                   , LetStatement
                       { letLexpr = "l:chars" , letValue = "split(l:line, '\\zs')" }
                   , LetStatement { letLexpr = "l:word" , letValue = "[]" }
-                  , GenericStatement "for l:char in l:chars[l:col:]"
+                  , GenericStatement "for l:char in l:chars[(l:col):]"
                   , GenericStatement "if match(l:char, '\\k') != -1"
                   , GenericStatement "call add(l:word, l:char)"
                   , GenericStatement "else"
                   , GenericStatement "break"
                   , GenericStatement "endif"
                   , GenericStatement "endfor"
-                  , GenericStatement "for l:char in reverse(l:chars[:l:col - 1])"
+                  , GenericStatement "for l:char in reverse(l:chars[:(l:col) - 1])"
                   , GenericStatement "if match(l:char, '\\k') != -1"
                   , GenericStatement "call insert(l:word, l:char, 0)"
                   , GenericStatement "else"
@@ -1381,6 +1760,43 @@ Project
                   , GenericStatement "endif"
                   , GenericStatement "endfor"
                   , GenericStatement "return join(l:word, '')"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "s:g"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = [ GenericStatement "return &gdefault ? '' : 'g'" ]
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "s:replacements"
+              , functionArguments =
+                  ArgumentList
+                    [ Argument "currentline"
+                    , Argument "_lastline"
+                    , Argument "patterns"
+                    , Argument "g"
+                    ]
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement { letLexpr = "s:report" , letValue = "&report" }
+                  , GenericStatement "try"
+                  , GenericStatement "set report=10000"
+                  , GenericStatement
+                      "execute a:currentline . ',' . a:_lastline . 's' . a:patterns . a:g . 'ce#'"
+                  , GenericStatement "catch /^Vim:Interrupt$/"
+                  , GenericStatement "execute 'set report=' . s:report"
+                  , GenericStatement "return"
+                  , GenericStatement "finally"
+                  , GenericStatement "normal! q"
+                  , LetStatement
+                      { letLexpr = "s:transcript" , letValue = "getreg('s')" }
+                  , GenericStatement "if exists('s:register')"
+                  , GenericStatement "call setreg('s', s:register)"
+                  , GenericStatement "endif"
+                  , GenericStatement "endtry"
                   ]
               }
           , FunctionDeclaration
@@ -1412,8 +1828,9 @@ Project
                   , LetStatement
                       { letLexpr = "l:currentline" , letValue = "l:firstline" }
                   , GenericStatement "endif"
+                  , LetStatement { letLexpr = "l:g" , letValue = "s:g()" }
                   , GenericStatement
-                      "if match(a:patterns, '\\v^/[^/]*/[^/]*/$') != 0"
+                      "if match(a:patterns, '\\v^([^\"\\\\|A-Za-z0-9 ]).*\\1.*\\1$') != 0"
                   , GenericStatement "echomsg 'Invalid patterns: ' . a:patterns"
                   , GenericStatement
                       "echomsg 'Expected patterns of the form \"/foo/bar/\".'"
@@ -1421,28 +1838,27 @@ Project
                   , GenericStatement "endif"
                   , GenericStatement "if getregtype('s') != ''"
                   , LetStatement
-                      { letLexpr = "l:register" , letValue = "getreg('s')" }
+                      { letLexpr = "s:register" , letValue = "getreg('s')" }
+                  , GenericStatement "elseif exists('s:register')"
+                  , UnletStatement { unletBang = False , unletBody = "s:register" }
                   , GenericStatement "endif"
                   , GenericStatement "normal! qs"
-                  , GenericStatement "redir => l:replacements"
-                  , GenericStatement "try"
-                  , GenericStatement
-                      "execute l:currentline . ',' . l:lastline . 's' . a:patterns . 'gce#'"
-                  , GenericStatement "catch /^Vim:Interrupt$/"
-                  , GenericStatement "return"
-                  , GenericStatement "finally"
-                  , GenericStatement "normal! q"
+                  , GenericStatement "if exists('*execute')"
                   , LetStatement
-                      { letLexpr = "l:transcript" , letValue = "getreg('s')" }
-                  , GenericStatement "if exists('l:register')"
-                  , GenericStatement "call setreg('s', l:register)"
-                  , GenericStatement "endif"
-                  , GenericStatement "endtry"
+                      { letLexpr = "l:replacements"
+                      , letValue =
+                          "execute('call s:replacements(l:currentline, l:lastline, a:patterns, l:g)', '')"
+                      }
+                  , GenericStatement "else"
+                  , GenericStatement "redir => l:replacements"
+                  , GenericStatement
+                      "call s:replacements(l:currentline, l:lastline, a:patterns, l:g)"
                   , GenericStatement "redir END"
+                  , GenericStatement "endif"
                   , GenericStatement "if len(l:replacements) > 0"
                   , LetStatement
                       { letLexpr = "l:last"
-                      , letValue = "strpart(l:transcript, len(l:transcript) - 1)"
+                      , letValue = "strpart(s:transcript, len(s:transcript) - 1)"
                       }
                   , GenericStatement
                       "if l:last ==# 'l' || l:last ==# 'q' || l:last ==# '\ESC'"
@@ -1450,14 +1866,15 @@ Project
                   , GenericStatement "elseif l:last ==# 'a'"
                   , GenericStatement "if l:currentline > l:firstline"
                   , GenericStatement
-                      "execute l:firstline . ',' . l:currentline . '-&gce'"
+                      "execute l:firstline . ',' . l:currentline . '-&' . l:g . 'ce'"
                   , GenericStatement "endif"
                   , GenericStatement "return"
                   , GenericStatement "endif"
                   , GenericStatement "endif"
                   , GenericStatement "if l:currentline > l:firstline"
                   , GenericStatement
-                      "execute l:firstline . ',' . l:currentline . '-&gce'"
+                      "execute l:firstline . ',' . l:currentline . '-&' .l:g . 'ce'"
+                  , GenericStatement "execute 'set report=' . s:report"
                   , GenericStatement "endif"
                   ]
               }
@@ -1485,10 +1902,25 @@ Project
           , GenericStatement "endif"
           , GenericStatement
               "execute 'command! -nargs=1 -range ' . s:command . ' call scalpel#substitute(<q-args>, <line1>, <line2>, <count>)'"
-          , LetStatement { letLexpr = "s:curpos" , letValue = "getcurpos()" }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:GetCurposCompat"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "if exists('*getcurpos')"
+                  , GenericStatement "return getcurpos()"
+                  , GenericStatement "else"
+                  , GenericStatement "return getpos('.')"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , LetStatement
+              { letLexpr = "s:curpos" , letValue = "s:GetCurposCompat()" }
           , GenericStatement "augroup Scalpel"
           , GenericStatement "autocmd!"
-          , GenericStatement "autocmd CursorMoved * let s:curpos=getcurpos()"
+          , GenericStatement
+              "autocmd CursorMoved * let s:curpos=s:GetCurposCompat()"
           , GenericStatement "augroup END"
           , FunctionDeclaration
               { functionBang = True

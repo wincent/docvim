@@ -1,3 +1,579 @@
-"(eval)" (line 134, column 38):
-unexpected "_"
-expecting letter or digit, "\n", "," or ")"
+Project
+  [ Project
+      [ Unit
+          [ GenericStatement "if exists('g:command_t_autoloaded') || &cp"
+          , GenericStatement "finish"
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "g:command_t_autoloaded " , letValue = "1" }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:RubyWarning"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "echohl WarningMsg"
+                  , GenericStatement
+                      "echo 'command-t.vim requires Vim to be compiled with Ruby support'"
+                  , GenericStatement
+                      "echo 'For more information type: :help command-t'"
+                  , GenericStatement "echohl none"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#BufferFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.show_buffer_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#CommandFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.show_command_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#FileFinder"
+              , functionArguments = ArgumentList [ Argument "arg" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.show_file_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#JumpFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.show_jump_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#MRUFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.show_mru_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#HelpFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.show_help_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#HistoryFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.show_history_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#LineFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , LetStatement
+                      { letLexpr = "g:CommandTCurrentBuffer" , letValue = "bufnr('%')" }
+                  , GenericStatement "ruby $command_t.show_line_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#SearchFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.show_search_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#TagFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.show_tag_finder"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#Flush"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement "ruby $command_t.flush"
+                  , GenericStatement "else"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#Load"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if !has('ruby')"
+                  , GenericStatement "call s:RubyWarning()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#ActiveFinder"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement
+                      "ruby ::VIM::command \"return '#{$command_t.active_finder}'\""
+                  , GenericStatement "else"
+                  , GenericStatement "return ''"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#Path"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement
+                      "ruby ::VIM::command \"return '#{($command_t.path || '').gsub(/'/, \"''\")}'\""
+                  , GenericStatement "else"
+                  , GenericStatement "return ''"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#CheckBuffer"
+              , functionArguments = ArgumentList [ Argument "buffer_number" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('ruby')"
+                  , GenericStatement
+                      "execute 'ruby $command_t.return_is_own_buffer' a:buffer_number"
+                  , GenericStatement "else"
+                  , GenericStatement "return 0"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , GenericStatement "if !has('ruby')"
+          , GenericStatement "finish"
+          , GenericStatement "endif"
+          , GenericStatement "augroup CommandTMRUBuffer"
+          , GenericStatement "autocmd!"
+          , GenericStatement "autocmd BufEnter * ruby CommandT::MRU.touch"
+          , GenericStatement "autocmd BufDelete * ruby CommandT::MRU.delete"
+          , GenericStatement "augroup END"
+          , GenericStatement "ruby << EOF"
+          , GenericStatement "# require Ruby files"
+          , GenericStatement "begin"
+          , GenericStatement "require 'command-t'"
+          , GenericStatement
+              "# Make sure we're running with the same version of Ruby that Command-T was"
+          , GenericStatement "# compiled with."
+          , GenericStatement
+              "patchlevel = defined?(RUBY_PATCHLEVEL) ? RUBY_PATCHLEVEL : nil"
+          , GenericStatement "if CommandT::Metadata::UNKNOWN == true || ("
+          , GenericStatement
+              "CommandT::Metadata::EXPECTED_RUBY_VERSION == RUBY_VERSION &&"
+          , GenericStatement
+              "CommandT::Metadata::EXPECTED_RUBY_PATCHLEVEL == patchlevel"
+          , GenericStatement ")"
+          , GenericStatement
+              "require 'command-t/ext' # eager load, to catch compilation problems early"
+          , GenericStatement "$command_t = CommandT::Controller.new"
+          , GenericStatement "else"
+          , GenericStatement "$command_t = CommandT::Stub.new"
+          , GenericStatement "end"
+          , GenericStatement "rescue LoadError"
+          , GenericStatement "load_path_modified = false"
+          , GenericStatement
+              "::VIM::evaluate('&runtimepath').to_s.split(',').each do |path|"
+          , GenericStatement "ext = \"#{path}/ruby/command-t/ext\""
+          , GenericStatement
+              "if !$LOAD_PATH.include?(ext) && File.exist?(ext)"
+          , GenericStatement "$LOAD_PATH << ext"
+          , GenericStatement "load_path_modified = true"
+          , GenericStatement "end"
+          , GenericStatement "lib = \"#{path}/ruby/command-t/lib\""
+          , GenericStatement
+              "if !$LOAD_PATH.include?(lib) && File.exist?(lib)"
+          , GenericStatement "$LOAD_PATH << lib"
+          , GenericStatement "load_path_modified = true"
+          , GenericStatement "end"
+          , GenericStatement "end"
+          , GenericStatement "retry if load_path_modified"
+          , GenericStatement "$command_t = CommandT::Stub.new"
+          , GenericStatement "end"
+          , GenericStatement "EOF"
+          ]
+      , Unit
+          [ LetStatement
+              { letLexpr = "s:script_directory"
+              , letValue = "expand('<sfile>:p:h')"
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#isengard#init"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:daemon_path"
+                      , letValue =
+                          "resolve(s:script_directory . '/../../ruby/command-t/bin/commandtd')"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:client_log_file"
+                      , letValue = "get(g:, 'CommandTClientLog', '')"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:server_log_file"
+                      , letValue = "get(g:, 'CommandTServerLog', '')"
+                      }
+                  , GenericStatement "if !empty(l:client_log_file)"
+                  , GenericStatement "call ch_logfile(l:client_log_file, 'w')"
+                  , GenericStatement "endif"
+                  , GenericStatement "if !empty(l:server_log_file)"
+                  , LetStatement
+                      { letLexpr = "s:job"
+                      , letValue =
+                          "job_start([l:daemon_path, '--logfile=' . l:server_log_file, '--vim-pid=' . getpid()])"
+                      }
+                  , GenericStatement "else"
+                  , LetStatement
+                      { letLexpr = "s:job"
+                      , letValue = "job_start([l:daemon_path, '--vim-pid=' . getpid()])"
+                      }
+                  , GenericStatement "endif"
+                  , LetStatement
+                      { letLexpr = "s:channel" , letValue = "job_getchannel(s:job)" }
+                  , GenericStatement
+                      "call ch_evalraw(s:channel, json_encode({'cd': getcwd()}) . \"\\n\")"
+                  , LetStatement
+                      { letLexpr = "g:CommandTResult"
+                      , letValue =
+                          "ch_evalraw(s:channel, json_encode({'match': 'commandt'}) . \"\\n\")"
+                      }
+                  ]
+              }
+          ]
+      , Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#mirkwood#init"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement
+                      "command! CommandTBuffer call commandt#BufferFinder()"
+                  , GenericStatement
+                      "command! CommandTCommand call commandt#CommandFinder()"
+                  , GenericStatement
+                      "command! CommandTHelp call commandt#HelpFinder()"
+                  , GenericStatement
+                      "command! CommandTHistory call commandt#HistoryFinder()"
+                  , GenericStatement
+                      "command! CommandTJump call commandt#JumpFinder()"
+                  , GenericStatement
+                      "command! CommandTLine call commandt#LineFinder()"
+                  , GenericStatement "command! CommandTMRU call commandt#MRUFinder()"
+                  , GenericStatement
+                      "command! CommandTSearch call commandt#SearchFinder()"
+                  , GenericStatement "command! CommandTTag call commandt#TagFinder()"
+                  , GenericStatement
+                      "command! -nargs=? -complete=dir CommandT call commandt#FileFinder(<q-args>)"
+                  , GenericStatement "command! CommandTFlush call commandt#Flush()"
+                  , GenericStatement "command! CommandTLoad call commandt#Load()"
+                  , GenericStatement
+                      "if !hasmapto('<Plug>(CommandT)') && maparg('<Leader>t', 'n') ==# ''"
+                  , GenericStatement "nmap <unique> <Leader>t <Plug>(CommandT)"
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandT) :CommandT<CR>"
+                  , GenericStatement
+                      "if !hasmapto('<Plug>(CommandTBuffer)') && maparg('<Leader>b', 'n') ==# ''"
+                  , GenericStatement "nmap <unique> <Leader>b <Plug>(CommandTBuffer)"
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandTBuffer) :CommandTBuffer<CR>"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandTHelp) :CommandTHelp<CR>"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandTHistory) :CommandTHistory<CR>"
+                  , GenericStatement "if has('jumplist')"
+                  , GenericStatement
+                      "if !hasmapto('<Plug>(CommandTJump)') && maparg('<Leader>j', 'n') ==# ''"
+                  , GenericStatement "nmap <unique> <Leader>j <Plug>(CommandTJump)"
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandTJump) :CommandTJump<CR>"
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandTCommand) :CommandTCommand<CR>"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandTLine) :CommandTLine<CR>"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandTMRU) :CommandTMRU<CR>"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandTSearch) :CommandTSearch<CR>"
+                  , GenericStatement
+                      "nnoremap <silent> <Plug>(CommandTTag) :CommandTTag<CR>"
+                  ]
+              }
+          ]
+      , Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#ListMatches"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "ruby $command_t.list_matches" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#HandleKey"
+              , functionArguments = ArgumentList [ Argument "arg" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.handle_key" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#Backspace"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.backspace" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#Delete"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.delete" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#AcceptSelection"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "ruby $command_t.accept_selection" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#AcceptSelectionTab"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement
+                      "ruby $command_t.accept_selection :command => $command_t.tab_command"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#AcceptSelectionSplit"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement
+                      "ruby $command_t.accept_selection :command => $command_t.split_command"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#AcceptSelectionVSplit"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement
+                      "ruby $command_t.accept_selection :command => $command_t.vsplit_command"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#Quickfix"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.quickfix" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#Refresh"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.refresh" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#ToggleFocus"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "ruby $command_t.toggle_focus" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#Cancel"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.cancel" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#SelectNext"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.select_next" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#SelectPrev"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.select_prev" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#Clear"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.clear" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#ClearPrevWord"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "ruby $command_t.clear_prev_word" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#CursorLeft"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.cursor_left" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#CursorRight"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "ruby $command_t.cursor_right" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#CursorEnd"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody = [ GenericStatement "ruby $command_t.cursor_end" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#CursorStart"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "ruby $command_t.cursor_start" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "commandt#private#RunAutocmd"
+              , functionArguments = ArgumentList [ Argument "cmd" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement
+                      "if v:version > 703 || v:version == 703 && has('patch438')"
+                  , GenericStatement
+                      "execute 'silent doautocmd <nomodeline> User ' . a:cmd"
+                  , GenericStatement "else"
+                  , GenericStatement "execute 'silent doautocmd User ' . a:cmd"
+                  , GenericStatement "endif"
+                  ]
+              }
+          ]
+      , Unit
+          [ GenericStatement "if exists('g:command_t_loaded') || &compatible"
+          , GenericStatement "finish"
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "g:command_t_loaded " , letValue = "1" }
+          , GenericStatement
+              "if has('patch-7-4-1829') && get(g:, 'CommandTEngine', 'mirkwood') ==? 'isengard'"
+          , GenericStatement "call commandt#isengard#init()"
+          , GenericStatement "endif"
+          , GenericStatement "call commandt#mirkwood#init()"
+          , GenericStatement "finish"
+          , GenericStatement
+              "if has('patch-7-4-1829') && get(g:, 'CommandTEngine', 'isengard') ==? 'isengard'"
+          , GenericStatement "call commandt#isengard#init()"
+          , GenericStatement "else"
+          , GenericStatement "call commandt#mirkwood#init()"
+          , GenericStatement "endif"
+          ]
+      ]
+  ]

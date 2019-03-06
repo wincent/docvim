@@ -53,7 +53,7 @@ function =   FunctionDeclaration
     arguments  =  (char '(' >> optional wsc)
                *> (ArgumentList <$> argument `sepBy` (char ',' >> optional wsc))
                <* (optional wsc >> char ')' >> optional wsc)
-    argument   = Argument <$> (string "..." <|> many1 alphaNum) <* optional wsc
+    argument   = Argument <$> (string "..." <|> many1 (oneOf identifier)) <* optional wsc
     attributes = choice [string "abort", string "range", string "dict"] `sepEndBy` wsc
 
 -- Disambiguate `:endf[unction]` and `:endfo[r]`
