@@ -262,6 +262,7 @@ library
                  ,  Text.Docvim.Visitor.Footer
                  ,  Text.Docvim.Visitor.Function
                  ,  Text.Docvim.Visitor.Functions
+                 ,  Text.Docvim.Visitor.Header
                  ,  Text.Docvim.Visitor.Heading
                  ,  Text.Docvim.Visitor.Mapping
                  ,  Text.Docvim.Visitor.Mappings
@@ -316,6 +317,7 @@ test-suite tasty
                ,     Text.Docvim.Visitor.Footer
                ,     Text.Docvim.Visitor.Function
                ,     Text.Docvim.Visitor.Functions
+               ,     Text.Docvim.Visitor.Header
                ,     Text.Docvim.Visitor.Heading
                ,     Text.Docvim.Visitor.Mapping
                ,     Text.Docvim.Visitor.Mappings

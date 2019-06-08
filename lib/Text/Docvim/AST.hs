@@ -64,6 +64,8 @@ data Node
     | CommandsAnnotation
     | CommandAnnotation Name (Maybe Parameters)
     | FooterAnnotation
+    | HeaderAnnotation
+    | ImageAnnotation Source (Maybe Alignment)
     | MappingsAnnotation
     | MappingAnnotation Name
     | OptionsAnnotation
@@ -94,9 +96,11 @@ data Argument = Argument String
 
 instance Plated Node
 
+type Alignment = String
 type Default = String
 type Description = String
 type Name = String
+type Source = String
 type Type = String
 type Parameters = String
 

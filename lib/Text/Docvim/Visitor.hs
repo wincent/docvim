@@ -18,6 +18,7 @@ endSection = \case
   FooterAnnotation       -> True
   FunctionAnnotation _   -> True
   FunctionsAnnotation    -> True
+  HeaderAnnotation       -> True
   MappingAnnotation _    -> True
   MappingsAnnotation     -> True
   OptionAnnotation {}    -> True

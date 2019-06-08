@@ -1,41 +1,5 @@
 Project
-  [ DocBlock
-      [ PluginAnnotation "vcs-jump" "vcs-jump plug-in for Vim"
-      , TOC [ "Intro" ]
-      ]
-  , HeadingAnnotation "Intro"
-  , Paragraph
-      [ Plaintext "This"
-      , Whitespace
-      , Plaintext "plug-in"
-      , Whitespace
-      , Plaintext "allows"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "jump"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "useful"
-      , Whitespace
-      , Plaintext "places"
-      , Whitespace
-      , Plaintext "within"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Plaintext "Git"
-      , Whitespace
-      , Plaintext "or"
-      , Whitespace
-      , Plaintext "Mercurial"
-      , Whitespace
-      , Plaintext "repository."
-      ]
-  , Project
+  [ Project
       [ Unit
           [ LetStatement
               { letLexpr = "s:jump_path"
@@ -72,5 +36,41 @@ Project
           , GenericStatement "endif"
           , GenericStatement "nnoremap <Plug>(VcsJump) :VcsJump diff<space>"
           ]
+      ]
+  , DocBlock
+      [ PluginAnnotation "vcs-jump" "vcs-jump plug-in for Vim"
+      , TOC [ "Intro" ]
+      ]
+  , HeadingAnnotation "Intro"
+  , Paragraph
+      [ Plaintext "This"
+      , Whitespace
+      , Plaintext "plug-in"
+      , Whitespace
+      , Plaintext "allows"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "jump"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "useful"
+      , Whitespace
+      , Plaintext "places"
+      , Whitespace
+      , Plaintext "within"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "Git"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "Mercurial"
+      , Whitespace
+      , Plaintext "repository."
       ]
   ]

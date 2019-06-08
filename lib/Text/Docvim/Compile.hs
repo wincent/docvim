@@ -8,6 +8,7 @@ import Text.Docvim.Visitor.Commands
 import Text.Docvim.Visitor.Footer
 import Text.Docvim.Visitor.Function
 import Text.Docvim.Visitor.Functions
+import Text.Docvim.Visitor.Header
 import Text.Docvim.Visitor.Heading
 import Text.Docvim.Visitor.Mapping
 import Text.Docvim.Visitor.Mappings
@@ -24,7 +25,8 @@ compile ns = do
                                      , injectMappings
                                      , injectOptions
                                      ]
-    let steps = [ extract extractPlugin
+    let steps = [ extract extractHeader
+                , extract extractPlugin
                 , extract extractCommands
                 , extract extractCommand
                 , extract extractMappings

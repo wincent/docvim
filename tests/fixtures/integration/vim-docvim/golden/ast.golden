@@ -1,5 +1,152 @@
 Project
-  [ DocBlock
+  [ Project
+      [ Unit
+          [ GenericStatement
+              "syntax region docvimBlock start='\\v^\\s*\"\"' end='\\v^\\zs\\ze\\s*($|[^ \\t\"])' containedin=vimFuncBody"
+          , GenericStatement
+              "syntax region docvimPre start='\\v^\\s*\"\\s+\\zs```\\s*$' end='\\v^\\s*\"\\s+```\\s*$' containedin=docvimBlock contained keepend"
+          , GenericStatement
+              "syntax match docvimAnnotation '\\v\\@command( .+)?' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '@commands' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '@dedent' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '@footer' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '\\v\\@function( .+)?' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '@functions' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '@indent' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '\\v\\@mapping( .+)?' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '@mappings' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '\\v\\@option( .+)?' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '@options' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '@param' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '\\v\\@plugin( .+)?' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimAnnotation '@private' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimBackticks '\\v`[^\\s`]+`' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimBlockquote '\\v^\\s*\"\\s+\\zs\\>\\s+.+$' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimCrossReference '\\v\\c\\|:?[a-z0-9()<>\\.:-]+\\|' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimHeading '\\v^\\s*\"\\s+\\zs#\\s+.+$' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimPreComment '\\v^\\s*\"' containedin=docvimPre contained"
+          , GenericStatement
+              "syntax match docvimSetting \"\\v'[a-z]{2,}'\" containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimSetting \"\\v't_..'\" containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimSpecial '\\v\\<CSM-.\\>' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimSpecial '\\v\\<[-a-zA-Z0-9_]+\\>' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimSubheading '\\v^\\s*\"\\s+\\zs##\\s+.+$' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimTarget '\\v\\c\\*:?[a-z0-9()<>-]+\\*' containedin=docvimBlock contained"
+          , GenericStatement
+              "syntax match docvimURL `\\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' <>\"]+|(www|web|w3)[a-z0-9_-]*\\.[a-z0-9._-]+\\.[^' <>\"]+)[a-zA-Z0-9/]` containedin=docvimBlock contained"
+          , GenericStatement "if has('conceal')"
+          , GenericStatement
+              "syntax match docvimBacktick '\\v`' containedin=docvimBackticks contained conceal"
+          , GenericStatement
+              "syntax match docvimBar '\\v\\|' containedin=docvimCrossReference contained conceal"
+          , GenericStatement
+              "syntax match docvimHeadingPrefix '\\v# ' containedin=docvimHeading contained conceal"
+          , GenericStatement
+              "syntax match docvimStar '\\v\\*' containedin=docvimTarget contained conceal"
+          , GenericStatement
+              "syntax match docvimSubheadingPrefix '\\v## ' containedin=docvimSubheading contained conceal"
+          , GenericStatement "else"
+          , GenericStatement
+              "syntax match docvimBacktick '\\v`' containedin=docvimBackticks contained"
+          , GenericStatement
+              "syntax match docvimBar '\\v\\|' containedin=docvimCrossReference contained"
+          , GenericStatement
+              "syntax match docvimHeadingPrefix '\\v# ' containedin=docvimHeading contained"
+          , GenericStatement
+              "syntax match docvimStar '\\v\\*' containedin=docvimTarget contained"
+          , GenericStatement
+              "syntax match docvimSubheadingPrefix '\\v## ' containedin=docvimSubheading contained"
+          , GenericStatement "endif"
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:italicize"
+              , functionArguments =
+                  ArgumentList [ Argument "name" , Argument "link" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "try"
+                  , GenericStatement
+                      "execute 'highlight! ' . a:name . ' ' . pinnacle#italicize(a:link)"
+                  , GenericStatement "catch"
+                  , GenericStatement
+                      "execute 'highlight! link ' . a:name . ' ' . a:link"
+                  , GenericStatement "endtry"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:highlight"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "call s:italicize('docvimAnnotation', 'String')"
+                  , GenericStatement "call s:italicize('docvimBacktick', 'Comment')"
+                  , GenericStatement "call s:italicize('docvimBackticks', 'Comment')"
+                  , GenericStatement "call s:italicize('docvimBar', 'Identifier')"
+                  , GenericStatement "call s:italicize('docvimBlock', 'Normal')"
+                  , GenericStatement
+                      "call s:italicize('docvimBlockquote', 'Comment')"
+                  , GenericStatement "call s:italicize('docvimComment', 'Normal')"
+                  , GenericStatement
+                      "call s:italicize('docvimCrossReference', 'Identifier')"
+                  , GenericStatement
+                      "call s:italicize('docvimHeading', 'Identifier')"
+                  , GenericStatement
+                      "call s:italicize('docvimHeadingPrefix', 'Identifier')"
+                  , GenericStatement "call s:italicize('docvimPre', 'Comment')"
+                  , GenericStatement "call s:italicize('docvimSetting', 'Type')"
+                  , GenericStatement "call s:italicize('docvimSpecial', 'Special')"
+                  , GenericStatement "call s:italicize('docvimStar', 'String')"
+                  , GenericStatement
+                      "call s:italicize('docvimSubheading', 'PreProc')"
+                  , GenericStatement
+                      "call s:italicize('docvimSubheadingPrefix', 'PreProc')"
+                  , GenericStatement "call s:italicize('docvimTarget', 'String')"
+                  , GenericStatement "call s:italicize('docvimURL', 'String')"
+                  ]
+              }
+          , GenericStatement "if has('autocmd')"
+          , GenericStatement "augroup Docvim"
+          , GenericStatement "autocmd!"
+          , GenericStatement "autocmd ColorScheme * call s:highlight()"
+          , GenericStatement "augroup END"
+          , GenericStatement "endif"
+          , GenericStatement "call s:highlight()"
+          ]
+      , Unit
+          [ GenericStatement "set conceallevel=2"
+          , GenericStatement "set concealcursor=nc"
+          , LetStatement
+              { letLexpr = "s:path"
+              , letValue = "resolve(expand('<sfile>:p:h:h')) . '/after'"
+              }
+          , GenericStatement "execute 'set rtp+=' . s:path"
+          ]
+      ]
+  , DocBlock
       [ PluginAnnotation
           "docvim" "Syntax highlighting for docvim comments"
       , TOC
@@ -930,152 +1077,5 @@ Project
   , List
       [ ListItem
           [ Plaintext "Initial" , Whitespace , Plaintext "release." ]
-      ]
-  , Project
-      [ Unit
-          [ GenericStatement
-              "syntax region docvimBlock start='\\v^\\s*\"\"' end='\\v^\\zs\\ze\\s*($|[^ \\t\"])' containedin=vimFuncBody"
-          , GenericStatement
-              "syntax region docvimPre start='\\v^\\s*\"\\s+\\zs```\\s*$' end='\\v^\\s*\"\\s+```\\s*$' containedin=docvimBlock contained keepend"
-          , GenericStatement
-              "syntax match docvimAnnotation '\\v\\@command( .+)?' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '@commands' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '@dedent' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '@footer' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '\\v\\@function( .+)?' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '@functions' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '@indent' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '\\v\\@mapping( .+)?' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '@mappings' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '\\v\\@option( .+)?' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '@options' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '@param' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '\\v\\@plugin( .+)?' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimAnnotation '@private' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimBackticks '\\v`[^\\s`]+`' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimBlockquote '\\v^\\s*\"\\s+\\zs\\>\\s+.+$' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimCrossReference '\\v\\c\\|:?[a-z0-9()<>\\.:-]+\\|' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimHeading '\\v^\\s*\"\\s+\\zs#\\s+.+$' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimPreComment '\\v^\\s*\"' containedin=docvimPre contained"
-          , GenericStatement
-              "syntax match docvimSetting \"\\v'[a-z]{2,}'\" containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimSetting \"\\v't_..'\" containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimSpecial '\\v\\<CSM-.\\>' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimSpecial '\\v\\<[-a-zA-Z0-9_]+\\>' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimSubheading '\\v^\\s*\"\\s+\\zs##\\s+.+$' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimTarget '\\v\\c\\*:?[a-z0-9()<>-]+\\*' containedin=docvimBlock contained"
-          , GenericStatement
-              "syntax match docvimURL `\\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' <>\"]+|(www|web|w3)[a-z0-9_-]*\\.[a-z0-9._-]+\\.[^' <>\"]+)[a-zA-Z0-9/]` containedin=docvimBlock contained"
-          , GenericStatement "if has('conceal')"
-          , GenericStatement
-              "syntax match docvimBacktick '\\v`' containedin=docvimBackticks contained conceal"
-          , GenericStatement
-              "syntax match docvimBar '\\v\\|' containedin=docvimCrossReference contained conceal"
-          , GenericStatement
-              "syntax match docvimHeadingPrefix '\\v# ' containedin=docvimHeading contained conceal"
-          , GenericStatement
-              "syntax match docvimStar '\\v\\*' containedin=docvimTarget contained conceal"
-          , GenericStatement
-              "syntax match docvimSubheadingPrefix '\\v## ' containedin=docvimSubheading contained conceal"
-          , GenericStatement "else"
-          , GenericStatement
-              "syntax match docvimBacktick '\\v`' containedin=docvimBackticks contained"
-          , GenericStatement
-              "syntax match docvimBar '\\v\\|' containedin=docvimCrossReference contained"
-          , GenericStatement
-              "syntax match docvimHeadingPrefix '\\v# ' containedin=docvimHeading contained"
-          , GenericStatement
-              "syntax match docvimStar '\\v\\*' containedin=docvimTarget contained"
-          , GenericStatement
-              "syntax match docvimSubheadingPrefix '\\v## ' containedin=docvimSubheading contained"
-          , GenericStatement "endif"
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:italicize"
-              , functionArguments =
-                  ArgumentList [ Argument "name" , Argument "link" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ GenericStatement "try"
-                  , GenericStatement
-                      "execute 'highlight! ' . a:name . ' ' . pinnacle#italicize(a:link)"
-                  , GenericStatement "catch"
-                  , GenericStatement
-                      "execute 'highlight! link ' . a:name . ' ' . a:link"
-                  , GenericStatement "endtry"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:highlight"
-              , functionArguments = ArgumentList []
-              , functionAttributes = []
-              , functionBody =
-                  [ GenericStatement "call s:italicize('docvimAnnotation', 'String')"
-                  , GenericStatement "call s:italicize('docvimBacktick', 'Comment')"
-                  , GenericStatement "call s:italicize('docvimBackticks', 'Comment')"
-                  , GenericStatement "call s:italicize('docvimBar', 'Identifier')"
-                  , GenericStatement "call s:italicize('docvimBlock', 'Normal')"
-                  , GenericStatement
-                      "call s:italicize('docvimBlockquote', 'Comment')"
-                  , GenericStatement "call s:italicize('docvimComment', 'Normal')"
-                  , GenericStatement
-                      "call s:italicize('docvimCrossReference', 'Identifier')"
-                  , GenericStatement
-                      "call s:italicize('docvimHeading', 'Identifier')"
-                  , GenericStatement
-                      "call s:italicize('docvimHeadingPrefix', 'Identifier')"
-                  , GenericStatement "call s:italicize('docvimPre', 'Comment')"
-                  , GenericStatement "call s:italicize('docvimSetting', 'Type')"
-                  , GenericStatement "call s:italicize('docvimSpecial', 'Special')"
-                  , GenericStatement "call s:italicize('docvimStar', 'String')"
-                  , GenericStatement
-                      "call s:italicize('docvimSubheading', 'PreProc')"
-                  , GenericStatement
-                      "call s:italicize('docvimSubheadingPrefix', 'PreProc')"
-                  , GenericStatement "call s:italicize('docvimTarget', 'String')"
-                  , GenericStatement "call s:italicize('docvimURL', 'String')"
-                  ]
-              }
-          , GenericStatement "if has('autocmd')"
-          , GenericStatement "augroup Docvim"
-          , GenericStatement "autocmd!"
-          , GenericStatement "autocmd ColorScheme * call s:highlight()"
-          , GenericStatement "augroup END"
-          , GenericStatement "endif"
-          , GenericStatement "call s:highlight()"
-          ]
-      , Unit
-          [ GenericStatement "set conceallevel=2"
-          , GenericStatement "set concealcursor=nc"
-          , LetStatement
-              { letLexpr = "s:path"
-              , letValue = "resolve(expand('<sfile>:p:h:h')) . '/after'"
-              }
-          , GenericStatement "execute 'set rtp+=' . s:path"
-          ]
       ]
   ]

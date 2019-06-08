@@ -1,902 +1,11 @@
 Project
-  [ DocBlock
-      [ PluginAnnotation "ferret" "Ferret plug-in for Vim"
-      , TOC
-          [ "Intro"
-          , "Installation"
-          , "Commands"
-          , "Mappings"
-          , "Options"
-          , "Functions"
-          , "Custom autocommands"
-          , "Overrides"
-          , "Troubleshooting"
-          , "FAQ"
-          , "Related"
-          , "Website"
-          , "License"
-          , "Development"
-          , "Authors"
-          , "History"
-          ]
-      ]
-  , HeadingAnnotation "Intro"
-  , Blockquote
-      [ Paragraph
-          [ Plaintext "\"ferret"
-          , Whitespace
-          , Plaintext "(verb)"
-          , BreakTag
-          , Plaintext "(ferret"
-          , Whitespace
-          , Plaintext "something"
-          , Whitespace
-          , Plaintext "out)"
-          , Whitespace
-          , Plaintext "search"
-          , Whitespace
-          , Plaintext "tenaciously"
-          , Whitespace
-          , Plaintext "for"
-          , Whitespace
-          , Plaintext "and"
-          , Whitespace
-          , Plaintext "find"
-          , Whitespace
-          , Plaintext "something:"
-          , Whitespace
-          , Plaintext "she"
-          , Whitespace
-          , Plaintext "had"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "ability"
-          , Whitespace
-          , Plaintext "to"
-          , Whitespace
-          , Plaintext "ferret"
-          , Whitespace
-          , Plaintext "out"
-          , Whitespace
-          , Plaintext "the"
-          , Whitespace
-          , Plaintext "facts.\""
-          ]
-      ]
-  , LinkTargets [ "ferret-features" ]
-  , Paragraph
-      [ Plaintext "Ferret"
-      , Whitespace
-      , Plaintext "improves"
-      , Whitespace
-      , Plaintext "Vim's"
-      , Whitespace
-      , Plaintext "multi-file"
-      , Whitespace
-      , Plaintext "search"
-      , Whitespace
-      , Plaintext "in"
-      , Whitespace
-      , Plaintext "four"
-      , Whitespace
-      , Plaintext "ways:"
-      ]
-  , SubheadingAnnotation "1. Powerful multi-file search"
-  , Paragraph
-      [ Plaintext "Ferret"
-      , Whitespace
-      , Plaintext "provides"
-      , Whitespace
-      , Plaintext "an"
-      , Whitespace
-      , Link ":Ack"
-      , Whitespace
-      , Plaintext "command"
-      , Whitespace
-      , Plaintext "for"
-      , Whitespace
-      , Plaintext "searching"
-      , Whitespace
-      , Plaintext "across"
-      , Whitespace
-      , Plaintext "multiple"
-      , Whitespace
-      , Plaintext "files"
-      , Whitespace
-      , Plaintext "using"
-      , Whitespace
-      , Plaintext "ripgrep"
-      , Whitespace
-      , Plaintext "(https://github.com/BurntSushi/ripgrep),"
-      , Whitespace
-      , Plaintext "The"
-      , Whitespace
-      , Plaintext "Silver"
-      , Whitespace
-      , Plaintext "Searcher"
-      , Whitespace
-      , Plaintext "(https://github.com/ggreer/the_silver_searcher),"
-      , Whitespace
-      , Plaintext "or"
-      , Whitespace
-      , Plaintext "Ack"
-      , Whitespace
-      , Plaintext "(http://beyondgrep.com/)."
-      , Whitespace
-      , Plaintext "Support"
-      , Whitespace
-      , Plaintext "for"
-      , Whitespace
-      , Plaintext "passing"
-      , Whitespace
-      , Plaintext "options"
-      , Whitespace
-      , Plaintext "through"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "underlying"
-      , Whitespace
-      , Plaintext "search"
-      , Whitespace
-      , Plaintext "command"
-      , Whitespace
-      , Plaintext "exists,"
-      , Whitespace
-      , Plaintext "along"
-      , Whitespace
-      , Plaintext "with"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "ability"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "use"
-      , Whitespace
-      , Plaintext "full"
-      , Whitespace
-      , Plaintext "regular"
-      , Whitespace
-      , Plaintext "expression"
-      , Whitespace
-      , Plaintext "syntax"
-      , Whitespace
-      , Plaintext "without"
-      , Whitespace
-      , Plaintext "doing"
-      , Whitespace
-      , Plaintext "special"
-      , Whitespace
-      , Plaintext "escaping."
-      , Whitespace
-      , Plaintext "On"
-      , Whitespace
-      , Plaintext "modern"
-      , Whitespace
-      , Plaintext "versions"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "Vim"
-      , Whitespace
-      , Plaintext "(version"
-      , Whitespace
-      , Plaintext "8"
-      , Whitespace
-      , Plaintext "or"
-      , Whitespace
-      , Plaintext "higher,"
-      , Whitespace
-      , Plaintext "or"
-      , Whitespace
-      , Plaintext "Neovim),"
-      , Whitespace
-      , Plaintext "searches"
-      , Whitespace
-      , Plaintext "are"
-      , Whitespace
-      , Plaintext "performed"
-      , Whitespace
-      , Plaintext "asynchronously"
-      , Whitespace
-      , Plaintext "(without"
-      , Whitespace
-      , Plaintext "blocking"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "UI)."
-      ]
-  , Paragraph
-      [ Plaintext "Shortcut"
-      , Whitespace
-      , Plaintext "mappings"
-      , Whitespace
-      , Plaintext "are"
-      , Whitespace
-      , Plaintext "provided"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "start"
-      , Whitespace
-      , Plaintext "an"
-      , Whitespace
-      , Link ":Ack"
-      , Whitespace
-      , Plaintext "search"
-      , Whitespace
-      , Plaintext "(<leader>a)"
-      , Whitespace
-      , Plaintext "or"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "search"
-      , Whitespace
-      , Plaintext "for"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "word"
-      , Whitespace
-      , Plaintext "currently"
-      , Whitespace
-      , Plaintext "under"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "cursor"
-      , Whitespace
-      , Plaintext "(<leader>s)."
-      ]
-  , Paragraph
-      [ Plaintext "Results"
-      , Whitespace
-      , Plaintext "are"
-      , Whitespace
-      , Plaintext "normally"
-      , Whitespace
-      , Plaintext "displayed"
-      , Whitespace
-      , Plaintext "in"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link "quickfix"
-      , Whitespace
-      , Plaintext "window,"
-      , Whitespace
-      , Plaintext "but"
-      , Whitespace
-      , Plaintext "Ferret"
-      , Whitespace
-      , Plaintext "also"
-      , Whitespace
-      , Plaintext "provides"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Link ":Lack"
-      , Whitespace
-      , Plaintext "command"
-      , Whitespace
-      , Plaintext "that"
-      , Whitespace
-      , Plaintext "behaves"
-      , Whitespace
-      , Plaintext "like"
-      , Whitespace
-      , Link ":Ack"
-      , Whitespace
-      , Plaintext "but"
-      , Whitespace
-      , Plaintext "uses"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link "location-list"
-      , Whitespace
-      , Plaintext "instead,"
-      , Whitespace
-      , Plaintext "and"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Plaintext "<leader>l"
-      , Whitespace
-      , Plaintext "mapping"
-      , Whitespace
-      , Plaintext "as"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Plaintext "shortcut"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Link ":Lack"
-      , Plaintext "."
-      ]
-  , Paragraph
-      [ Link ":Back"
-      , Whitespace
-      , Plaintext "and"
-      , Whitespace
-      , Link ":Black"
-      , Whitespace
-      , Plaintext "are"
-      , Whitespace
-      , Plaintext "analogous"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Link ":Ack"
-      , Whitespace
-      , Plaintext "and"
-      , Whitespace
-      , Link ":Lack"
-      , Plaintext ","
-      , Whitespace
-      , Plaintext "but"
-      , Whitespace
-      , Plaintext "scoped"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "search"
-      , Whitespace
-      , Plaintext "within"
-      , Whitespace
-      , Plaintext "currently"
-      , Whitespace
-      , Plaintext "open"
-      , Whitespace
-      , Plaintext "buffers"
-      , Whitespace
-      , Plaintext "only."
-      ]
-  , SubheadingAnnotation "2. Streamlined multi-file replace"
-  , Paragraph
-      [ Plaintext "The"
-      , Whitespace
-      , Plaintext "companion"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Link ":Ack"
-      , Whitespace
-      , Plaintext "is"
-      , Whitespace
-      , Link ":Acks"
-      , Whitespace
-      , Plaintext "(mnemonic:"
-      , Whitespace
-      , Plaintext "\"Ack"
-      , Whitespace
-      , Plaintext "substitute\","
-      , Whitespace
-      , Plaintext "accessible"
-      , Whitespace
-      , Plaintext "via"
-      , Whitespace
-      , Plaintext "shortcut"
-      , Whitespace
-      , Plaintext "<leader>r),"
-      , Whitespace
-      , Plaintext "which"
-      , Whitespace
-      , Plaintext "allows"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "run"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Plaintext "multi-file"
-      , Whitespace
-      , Plaintext "replace"
-      , Whitespace
-      , Plaintext "across"
-      , Whitespace
-      , Plaintext "all"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "files"
-      , Whitespace
-      , Plaintext "placed"
-      , Whitespace
-      , Plaintext "in"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link "quickfix"
-      , Whitespace
-      , Plaintext "window"
-      , Whitespace
-      , Plaintext "by"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Plaintext "previous"
-      , Whitespace
-      , Plaintext "invocation"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Link ":Ack"
-      , Whitespace
-      , Plaintext "(or"
-      , Whitespace
-      , Link ":Back"
-      , Plaintext ")."
-      ]
-  , SubheadingAnnotation "3. Quickfix listing enhancements"
-  , Paragraph
-      [ Plaintext "The"
-      , Whitespace
-      , Link "quickfix"
-      , Whitespace
-      , Plaintext "listing"
-      , Whitespace
-      , Plaintext "itself"
-      , Whitespace
-      , Plaintext "is"
-      , Whitespace
-      , Plaintext "enhanced"
-      , Whitespace
-      , Plaintext "with"
-      , Whitespace
-      , Plaintext "settings"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "improve"
-      , Whitespace
-      , Plaintext "its"
-      , Whitespace
-      , Plaintext "usability,"
-      , Whitespace
-      , Plaintext "and"
-      , Whitespace
-      , Plaintext "natural"
-      , Whitespace
-      , Plaintext "mappings"
-      , Whitespace
-      , Plaintext "that"
-      , Whitespace
-      , Plaintext "allow"
-      , Whitespace
-      , Plaintext "quick"
-      , Whitespace
-      , Plaintext "removal"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "items"
-      , Whitespace
-      , Plaintext "from"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "list"
-      , Whitespace
-      , Plaintext "(for"
-      , Whitespace
-      , Plaintext "example,"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "can"
-      , Whitespace
-      , Plaintext "reduce"
-      , Whitespace
-      , Plaintext "clutter"
-      , Whitespace
-      , Plaintext "in"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "listing"
-      , Whitespace
-      , Plaintext "by"
-      , Whitespace
-      , Plaintext "removing"
-      , Whitespace
-      , Plaintext "lines"
-      , Whitespace
-      , Plaintext "that"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "don't"
-      , Whitespace
-      , Plaintext "intend"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "make"
-      , Whitespace
-      , Plaintext "changes"
-      , Whitespace
-      , Plaintext "to)."
-      ]
-  , Paragraph
-      [ Plaintext "Additionally,"
-      , Whitespace
-      , Plaintext "Vim's"
-      , Whitespace
-      , Link ":cn"
-      , Plaintext ","
-      , Whitespace
-      , Link ":cp"
-      , Plaintext ","
-      , Whitespace
-      , Link ":cnf"
-      , Whitespace
-      , Plaintext "and"
-      , Whitespace
-      , Link ":cpf"
-      , Whitespace
-      , Plaintext "commands"
-      , Whitespace
-      , Plaintext "are"
-      , Whitespace
-      , Plaintext "tweaked"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "make"
-      , Whitespace
-      , Plaintext "it"
-      , Whitespace
-      , Plaintext "easier"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "immediately"
-      , Whitespace
-      , Plaintext "identify"
-      , Whitespace
-      , Plaintext "matches"
-      , Whitespace
-      , Plaintext "by"
-      , Whitespace
-      , Plaintext "centering"
-      , Whitespace
-      , Plaintext "them"
-      , Whitespace
-      , Plaintext "within"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "viewport."
-      ]
-  , SubheadingAnnotation
-      "4. Easy operations on files in the quickfix listing"
-  , Paragraph
-      [ Plaintext "Finally,"
-      , Whitespace
-      , Plaintext "Ferret"
-      , Whitespace
-      , Plaintext "provides"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Link ":Qargs"
-      , Whitespace
-      , Plaintext "command"
-      , Whitespace
-      , Plaintext "that"
-      , Whitespace
-      , Plaintext "puts"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "files"
-      , Whitespace
-      , Plaintext "currently"
-      , Whitespace
-      , Plaintext "in"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link "quickfix"
-      , Whitespace
-      , Plaintext "listing"
-      , Whitespace
-      , Plaintext "into"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link ":args"
-      , Whitespace
-      , Plaintext "list,"
-      , Whitespace
-      , Plaintext "where"
-      , Whitespace
-      , Plaintext "they"
-      , Whitespace
-      , Plaintext "can"
-      , Whitespace
-      , Plaintext "be"
-      , Whitespace
-      , Plaintext "operated"
-      , Whitespace
-      , Plaintext "on"
-      , Whitespace
-      , Plaintext "in"
-      , Whitespace
-      , Plaintext "bulk"
-      , Whitespace
-      , Plaintext "via"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Link ":argdo"
-      , Whitespace
-      , Plaintext "command."
-      , Whitespace
-      , Plaintext "This"
-      , Whitespace
-      , Plaintext "is"
-      , Whitespace
-      , Plaintext "what's"
-      , Whitespace
-      , Plaintext "used"
-      , Whitespace
-      , Plaintext "under"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "covers"
-      , Whitespace
-      , Plaintext "on"
-      , Whitespace
-      , Plaintext "older"
-      , Whitespace
-      , Plaintext "versions"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "Vim"
-      , Whitespace
-      , Plaintext "by"
-      , Whitespace
-      , Link ":Acks"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "do"
-      , Whitespace
-      , Plaintext "its"
-      , Whitespace
-      , Plaintext "work"
-      , Whitespace
-      , Plaintext "(on"
-      , Whitespace
-      , Plaintext "newer"
-      , Whitespace
-      , Plaintext "versions"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "built-in"
-      , Whitespace
-      , Link ":cfdo"
-      , Whitespace
-      , Plaintext "is"
-      , Whitespace
-      , Plaintext "used"
-      , Whitespace
-      , Plaintext "instead)."
-      ]
-  , HeadingAnnotation "Installation"
-  , Paragraph
-      [ Plaintext "To"
-      , Whitespace
-      , Plaintext "install"
-      , Whitespace
-      , Plaintext "Ferret,"
-      , Whitespace
-      , Plaintext "use"
-      , Whitespace
-      , Plaintext "your"
-      , Whitespace
-      , Plaintext "plug-in"
-      , Whitespace
-      , Plaintext "management"
-      , Whitespace
-      , Plaintext "system"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "choice."
-      ]
-  , Paragraph
-      [ Plaintext "If"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "don't"
-      , Whitespace
-      , Plaintext "have"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Plaintext "\"plug-in"
-      , Whitespace
-      , Plaintext "management"
-      , Whitespace
-      , Plaintext "system"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "choice\","
-      , Whitespace
-      , Plaintext "I"
-      , Whitespace
-      , Plaintext "recommend"
-      , Whitespace
-      , Plaintext "Pathogen"
-      , Whitespace
-      , Plaintext "(https://github.com/tpope/vim-pathogen)"
-      , Whitespace
-      , Plaintext "due"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "its"
-      , Whitespace
-      , Plaintext "simplicity"
-      , Whitespace
-      , Plaintext "and"
-      , Whitespace
-      , Plaintext "robustness."
-      , Whitespace
-      , Plaintext "Assuming"
-      , Whitespace
-      , Plaintext "that"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "have"
-      , Whitespace
-      , Plaintext "Pathogen"
-      , Whitespace
-      , Plaintext "installed"
-      , Whitespace
-      , Plaintext "and"
-      , Whitespace
-      , Plaintext "configured,"
-      , Whitespace
-      , Plaintext "and"
-      , Whitespace
-      , Plaintext "that"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "want"
-      , Whitespace
-      , Plaintext "to"
-      , Whitespace
-      , Plaintext "install"
-      , Whitespace
-      , Plaintext "Ferret"
-      , Whitespace
-      , Plaintext "into"
-      , Whitespace
-      , Code "~/.vim/bundle"
-      , Plaintext ","
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "can"
-      , Whitespace
-      , Plaintext "do"
-      , Whitespace
-      , Plaintext "so"
-      , Whitespace
-      , Plaintext "with:"
-      ]
-  , Fenced
-      [ "git clone https://github.com/wincent/ferret.git ~/.vim/bundle/ferret"
-      ]
-  , Paragraph
-      [ Plaintext "Alternatively,"
-      , Whitespace
-      , Plaintext "if"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "use"
-      , Whitespace
-      , Plaintext "a"
-      , Whitespace
-      , Plaintext "Git"
-      , Whitespace
-      , Plaintext "submodule"
-      , Whitespace
-      , Plaintext "for"
-      , Whitespace
-      , Plaintext "each"
-      , Whitespace
-      , Plaintext "Vim"
-      , Whitespace
-      , Plaintext "plug-in,"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "could"
-      , Whitespace
-      , Plaintext "do"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "following"
-      , Whitespace
-      , Plaintext "after"
-      , Whitespace
-      , Code "cd"
-      , Plaintext "-ing"
-      , Whitespace
-      , Plaintext "into"
-      , Whitespace
-      , Plaintext "the"
-      , Whitespace
-      , Plaintext "top-level"
-      , Whitespace
-      , Plaintext "of"
-      , Whitespace
-      , Plaintext "your"
-      , Whitespace
-      , Plaintext "Git"
-      , Whitespace
-      , Plaintext "superproject:"
-      ]
-  , Fenced
-      [ "git submodule add https://github.com/wincent/ferret.git ~/vim/bundle/ferret"
-      , "git submodule init"
-      ]
-  , Paragraph
-      [ Plaintext "To"
-      , Whitespace
-      , Plaintext "generate"
-      , Whitespace
-      , Plaintext "help"
-      , Whitespace
-      , Plaintext "tags"
-      , Whitespace
-      , Plaintext "under"
-      , Whitespace
-      , Plaintext "Pathogen,"
-      , Whitespace
-      , Plaintext "you"
-      , Whitespace
-      , Plaintext "can"
-      , Whitespace
-      , Plaintext "do"
-      , Whitespace
-      , Plaintext "so"
-      , Whitespace
-      , Plaintext "from"
-      , Whitespace
-      , Plaintext "inside"
-      , Whitespace
-      , Plaintext "Vim"
-      , Whitespace
-      , Plaintext "with:"
-      ]
-  , Fenced [ ":call pathogen#helptags()" ]
+  [ HeaderAnnotation
+  , ImageAnnotation
+      "https://raw.githubusercontent.com/wincent/ferret/media/ferret.jpg"
+      (Just "center")
+  , ImageAnnotation
+      "https://raw.githubusercontent.com/wincent/ferret/media/ferret.gif"
+      (Just "center")
   , Project
       [ Unit
           [ FunctionDeclaration
@@ -913,19 +22,46 @@ Project
       , Unit
           [ FunctionDeclaration
               { functionBang = True
+              , functionName = "s:is_quickfix"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "if exists('*getwininfo')"
+                  , LetStatement
+                      { letLexpr = "l:info" , letValue = "getwininfo(win_getid())[0]" }
+                  , GenericStatement "return l:info.quickfix && !l:info.loclist"
+                  , GenericStatement "else"
+                  , GenericStatement "return 1"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
               , functionName = "s:delete"
               , functionArguments =
                   ArgumentList [ Argument "first" , Argument "last" ]
               , functionAttributes = []
               , functionBody =
-                  [ LetStatement { letLexpr = "l:list" , letValue = "getqflist()" }
+                  [ LetStatement
+                      { letLexpr = "l:type"
+                      , letValue = "s:is_quickfix() ? 'qf' : 'location'"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:list"
+                      , letValue = "l:type == 'qf' ? getqflist() : getloclist(0)"
+                      }
                   , LetStatement { letLexpr = "l:line" , letValue = "a:first" }
                   , GenericStatement "while l:line >= a:first && l:line <= a:last"
                   , LetStatement { letLexpr = "l:list[l:line - 1]" , letValue = "0" }
                   , LetStatement { letLexpr = "l:line" , letValue = "l:line + 1" }
                   , GenericStatement "endwhile"
+                  , GenericStatement "if l:type ==# 'qf'"
                   , GenericStatement "call setqflist(l:list, 'r')"
                   , GenericStatement "execute 'cc ' . a:first"
+                  , GenericStatement "else"
+                  , GenericStatement "call setloclist(0, l:list, 'r')"
+                  , GenericStatement "execute 'll ' . a:first"
+                  , GenericStatement "endif"
                   , GenericStatement "execute \"normal \\<C-W>\\<C-P>\""
                   ]
               }
@@ -1215,6 +351,22 @@ Project
               }
           , FunctionDeclaration
               { functionBang = True
+              , functionName = "ferret#private#quack"
+              , functionArguments =
+                  ArgumentList [ Argument "bang" , Argument "args" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if s:qfsize('qf') == 0"
+                  , GenericStatement
+                      "call ferret#private#error('Cannot search in empty quickfix list')"
+                  , GenericStatement "else"
+                  , GenericStatement
+                      "call call('ferret#private#ack', [a:bang, a:args . ' ' . ferret#private#args('qf')])"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
               , functionName = "ferret#private#installprompt"
               , functionArguments = ArgumentList []
               , functionAttributes = [ "abort" ]
@@ -1277,7 +429,8 @@ Project
           , FunctionDeclaration
               { functionBang = True
               , functionName = "ferret#private#acks"
-              , functionArguments = ArgumentList [ Argument "command" ]
+              , functionArguments =
+                  ArgumentList [ Argument "command" , Argument "type" ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ LetStatement
@@ -1295,18 +448,32 @@ Project
                   , LetStatement
                       { letLexpr = "l:options" , letValue = "l:matches[3]" }
                   , GenericStatement "if l:options !~# 'e'"
-                  , LetStatement { letLexpr = "l:options ." , letValue = "'e'" }
+                  , LetStatement { letLexpr = "l:options." , letValue = "'e'" }
                   , GenericStatement "endif"
+                  , GenericStatement "if !&gdefault"
                   , GenericStatement "if l:options !~# 'g'"
-                  , LetStatement { letLexpr = "l:options ." , letValue = "'g'" }
+                  , LetStatement { letLexpr = "l:options." , letValue = "'g'" }
+                  , GenericStatement "else"
+                  , LetStatement
+                      { letLexpr = "l:options"
+                      , letValue = "substitute(l:options, 'g', '', 'g') . 'g'"
+                      }
+                  , GenericStatement "endif"
+                  , GenericStatement "elseif &gdefault && l:options =~# 'g'"
+                  , LetStatement
+                      { letLexpr = "l:options"
+                      , letValue = "substitute(l:options, 'g', '', 'g')"
+                      }
                   , GenericStatement "endif"
                   , LetStatement
-                      { letLexpr = "l:cfdo"
-                      , letValue = "has('listcmds') && exists(':cfdo') == 2"
+                      { letLexpr = "l:cdo"
+                      , letValue = "has('listcmds') && exists(':cdo') == 2"
                       }
-                  , GenericStatement "if !l:cfdo"
+                  , GenericStatement "if !l:cdo"
                   , LetStatement
-                      { letLexpr = "l:filenames" , letValue = "ferret#private#qargs()" }
+                      { letLexpr = "l:filenames"
+                      , letValue = "ferret#private#args(a:type)"
+                      }
                   , GenericStatement "if l:filenames ==# ''"
                   , GenericStatement
                       "call ferret#private#error( 'Ferret: Quickfix filenames must be present, but there are none ' . '(must use :Ack to find files before :Acks can be used)' )"
@@ -1315,14 +482,60 @@ Project
                   , GenericStatement "execute 'args' l:filenames"
                   , GenericStatement "endif"
                   , GenericStatement "call ferret#private#autocmd('FerretWillWrite')"
-                  , GenericStatement "if l:cfdo"
+                  , GenericStatement "if l:cdo"
+                  , GenericStatement "if a:type == 'qf'"
+                  , Empty
                   , GenericStatement
-                      "execute 'cfdo' '%s' . l:pattern . l:options . ' | update'"
+                      "if get(g:, 'FerretAcksCommand', 'cdo') == 'cfdo'"
+                  , LetStatement { letLexpr = "l:command" , letValue = "'cfdo'" }
+                  , LetStatement
+                      { letLexpr = "l:substitute" , letValue = "'%substitute'" }
                   , GenericStatement "else"
-                  , GenericStatement
-                      "execute 'argdo' '%s' . l:pattern . l:options . ' | update'"
+                  , LetStatement { letLexpr = "l:command" , letValue = "'cdo'" }
+                  , LetStatement
+                      { letLexpr = "l:substitute" , letValue = "'substitute'" }
                   , GenericStatement "endif"
+                  , GenericStatement "else"
+                  , Empty
+                  , GenericStatement
+                      "if get(g:, 'FerretLacksCommand', 'ldo') == 'lfdo'"
+                  , LetStatement { letLexpr = "l:command" , letValue = "'lfdo'" }
+                  , LetStatement
+                      { letLexpr = "l:substitute" , letValue = "'%substitute'" }
+                  , GenericStatement "else"
+                  , LetStatement { letLexpr = "l:command" , letValue = "'ldo'" }
+                  , LetStatement
+                      { letLexpr = "l:substitute" , letValue = "'substitute'" }
+                  , GenericStatement "endif"
+                  , GenericStatement "endif"
+                  , GenericStatement "else"
+                  , LetStatement { letLexpr = "l:command" , letValue = "'argdo'" }
+                  , LetStatement
+                      { letLexpr = "l:substitute" , letValue = "'%substitute'" }
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "execute l:command l:substitute . l:pattern . l:options . ' | update'"
                   , GenericStatement "call ferret#private#autocmd('FerretDidWrite')"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "ferret#private#acks_prompt"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:magic"
+                      , letValue = "get(g:, 'FerretVeryMagic', 1)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:mode" , letValue = "l:magic ? '\\v' : ''" }
+                  , GenericStatement "if exists('g:ferret_lastsearch')"
+                  , GenericStatement
+                      "return '/' . l:mode . g:ferret_lastsearch . '// '"
+                  , GenericStatement "else"
+                  , GenericStatement "return '/' . l:mode . '//'"
+                  , GenericStatement "endif"
                   ]
               }
           , FunctionDeclaration
@@ -1371,7 +584,7 @@ Project
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement
-                      "return ferret#private#complete('Lack', a:arglead, a:cmdline, a:cursorpos, 0)"
+                      "return ferret#private#complete('Back', a:arglead, a:cmdline, a:cursorpos, 0)"
                   ]
               }
           , FunctionDeclaration
@@ -1383,7 +596,7 @@ Project
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ GenericStatement
-                      "return ferret#private#complete('Lack', a:arglead, a:cmdline, a:cursorpos, 0)"
+                      "return ferret#private#complete('Black', a:arglead, a:cmdline, a:cursorpos, 0)"
                   ]
               }
           , FunctionDeclaration
@@ -1400,6 +613,18 @@ Project
               }
           , FunctionDeclaration
               { functionBang = True
+              , functionName = "ferret#private#quackcomplete"
+              , functionArguments =
+                  ArgumentList
+                    [ Argument "arglead" , Argument "cmdline" , Argument "cursorpos" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement
+                      "return ferret#private#complete('Quack', a:arglead, a:cmdline, a:cursorpos, 0)"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
               , functionName = "ferret#private#executable_name"
               , functionArguments = ArgumentList []
               , functionAttributes = []
@@ -1408,10 +633,7 @@ Project
                       { letLexpr = "l:executable"
                       , letValue = "ferret#private#executable()"
                       }
-                  , LetStatement
-                      { letLexpr = "l:binary"
-                      , letValue = "matchstr(l:executable, '\\v\\w+')"
-                      }
+                  , GenericStatement "return matchstr(l:executable, '\\v\\w+')"
                   ]
               }
           , LetStatement { letLexpr = "s:options" , letValue = "{" }
@@ -1480,16 +702,24 @@ Project
               }
           , FunctionDeclaration
               { functionBang = True
-              , functionName = "ferret#private#qargs"
-              , functionArguments = ArgumentList []
+              , functionName = "ferret#private#args"
+              , functionArguments = ArgumentList [ Argument "type" ]
               , functionAttributes = [ "abort" ]
               , functionBody =
                   [ LetStatement { letLexpr = "l:buffer_numbers" , letValue = "{}" }
-                  , GenericStatement "for l:item in getqflist()"
                   , LetStatement
-                      { letLexpr = "l:buffer_numbers[l:item['bufnr']]"
-                      , letValue = "bufname(l:item['bufnr'])"
+                      { letLexpr = "l:items"
+                      , letValue = "a:type == 'qf' ? getqflist() : getloclist(0)"
                       }
+                  , GenericStatement "for l:item in l:items"
+                  , LetStatement
+                      { letLexpr = "l:number" , letValue = "l:item['bufnr']" }
+                  , GenericStatement "if !has_key(l:buffer_numbers, l:number)"
+                  , LetStatement
+                      { letLexpr = "l:buffer_numbers[l:number]"
+                      , letValue = "bufname(l:number)"
+                      }
+                  , GenericStatement "endif"
                   , GenericStatement "endfor"
                   , GenericStatement
                       "return join(map(values(l:buffer_numbers), 'fnameescape(v:val)'))"
@@ -1529,7 +759,7 @@ Project
               }
           , LetStatement { letLexpr = "s:executables" , letValue = "{" }
           , GenericStatement
-              "\\ 'rg': '--vimgrep --no-config --no-heading', 'ag': '', 'ack': '--column --with-filename', 'ack-grep': '--column --with-filename' }"
+              "\\ 'rg': '--vimgrep --no-heading', 'ag': '', 'ack': '--column --with-filename', 'ack-grep': '--column --with-filename' }"
           , LetStatement { letLexpr = "s:init_done" , letValue = "0" }
           , FunctionDeclaration
               { functionBang = True
@@ -1547,12 +777,19 @@ Project
                   [ GenericStatement "if s:init_done"
                   , GenericStatement "return"
                   , GenericStatement "endif"
-                  , GenericStatement
-                      "if executable('rg') && match(system('rg --help'), '--max-columns') != -1"
+                  , GenericStatement "if executable('rg')"
+                  , LetStatement
+                      { letLexpr = "l:rg_help" , letValue = "system('rg --help')" }
+                  , GenericStatement "if match(l:rg_help, '--no-config') != -1"
+                  , LetStatement
+                      { letLexpr = "s:executables['rg']." , letValue = "' --no-config'" }
+                  , GenericStatement "endif"
+                  , GenericStatement "if match(l:rg_help, '--max-columns') != -1"
                   , LetStatement
                       { letLexpr = "s:executables['rg']."
                       , letValue = "' --max-columns 4096'"
                       }
+                  , GenericStatement "endif"
                   , GenericStatement "endif"
                   , GenericStatement "if executable('ag')"
                   , LetStatement
@@ -2312,8 +1549,10 @@ Project
           , GenericStatement "endif"
           , GenericStatement "setlocal nowrap"
           , GenericStatement "setlocal number"
+          , GenericStatement "if !exists('s:original_scrolloff')"
           , LetStatement
               { letLexpr = "s:original_scrolloff" , letValue = "&scrolloff" }
+          , GenericStatement "endif"
           , GenericStatement "set scrolloff=0"
           , GenericStatement "if has('autocmd')"
           , GenericStatement "augroup FerretQF"
@@ -2357,7 +1596,11 @@ Project
           , GenericStatement
               "command! -bang -nargs=1 -complete=customlist,ferret#private#blackcomplete Black call ferret#private#black(<bang>0, <q-args>)"
           , GenericStatement
-              "command! -nargs=1 Acks call ferret#private#acks(<q-args>)"
+              "command! -bang -nargs=1 -complete=customlist,ferret#private#quackcomplete Quack call ferret#private#quack(<bang>0, <q-args>)"
+          , GenericStatement
+              "command! -nargs=1 Acks call ferret#private#acks(<q-args>, 'qf')"
+          , GenericStatement
+              "command! -nargs=1 Lacks call ferret#private#acks(<q-args>, 'location')"
           , GenericStatement
               "command! FerretCancelAsync call ferret#private#async#cancel()"
           , GenericStatement
@@ -2367,7 +1610,7 @@ Project
           , GenericStatement
               "nnoremap <Plug>(FerretAckWord) :Ack <C-r><C-w><CR>"
           , GenericStatement
-              "nnoremap <Plug>(FerretAcks) :Acks <c-r>=(exists('g:ferret_lastsearch') ? '/' . g:ferret_lastsearch . '//' : ' ')<CR><Left>"
+              "nnoremap <Plug>(FerretAcks) :Acks <c-r>=(ferret#private#acks_prompt())<CR><Left><Left>"
           , LetStatement
               { letLexpr = "s:map" , letValue = "get(g:, 'FerretMap', 1)" }
           , GenericStatement "if s:map"
@@ -2389,7 +1632,9 @@ Project
           , GenericStatement "endif"
           , GenericStatement "endif"
           , GenericStatement
-              "command! -bar Qargs execute 'args' ferret#private#qargs()"
+              "command! -bar Qargs execute 'args' ferret#private#args('qf')"
+          , GenericStatement
+              "command! -bar Largs execute 'args' ferret#private#args('location')"
           , LetStatement
               { letLexpr = "s:commands"
               , letValue = "get(g:, 'FerretQFCommands', 1)"
@@ -2413,6 +1658,993 @@ Project
           , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
           ]
       ]
+  , DocBlock
+      [ PluginAnnotation "ferret" "Ferret plug-in for Vim"
+      , TOC
+          [ "Intro"
+          , "Installation"
+          , "Commands"
+          , "Mappings"
+          , "Options"
+          , "Functions"
+          , "Custom autocommands"
+          , "Overrides"
+          , "Troubleshooting"
+          , "FAQ"
+          , "Related"
+          , "Website"
+          , "License"
+          , "Development"
+          , "Authors"
+          , "History"
+          ]
+      ]
+  , HeadingAnnotation "Intro"
+  , Blockquote
+      [ Paragraph
+          [ Plaintext "\"ferret"
+          , Whitespace
+          , Plaintext "(verb)"
+          , BreakTag
+          , Plaintext "(ferret"
+          , Whitespace
+          , Plaintext "something"
+          , Whitespace
+          , Plaintext "out)"
+          , Whitespace
+          , Plaintext "search"
+          , Whitespace
+          , Plaintext "tenaciously"
+          , Whitespace
+          , Plaintext "for"
+          , Whitespace
+          , Plaintext "and"
+          , Whitespace
+          , Plaintext "find"
+          , Whitespace
+          , Plaintext "something:"
+          , Whitespace
+          , Plaintext "she"
+          , Whitespace
+          , Plaintext "had"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "ability"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "ferret"
+          , Whitespace
+          , Plaintext "out"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "facts.\""
+          ]
+      ]
+  , LinkTargets [ "ferret-features" ]
+  , Paragraph
+      [ Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "improves"
+      , Whitespace
+      , Plaintext "Vim's"
+      , Whitespace
+      , Plaintext "multi-file"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "four"
+      , Whitespace
+      , Plaintext "ways:"
+      ]
+  , SubheadingAnnotation "1. Powerful multi-file search"
+  , Paragraph
+      [ Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "provides"
+      , Whitespace
+      , Plaintext "an"
+      , Whitespace
+      , Link ":Ack"
+      , Whitespace
+      , Plaintext "command"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "searching"
+      , Whitespace
+      , Plaintext "across"
+      , Whitespace
+      , Plaintext "multiple"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "using"
+      , Whitespace
+      , Plaintext "ripgrep"
+      , Whitespace
+      , Plaintext "(https://github.com/BurntSushi/ripgrep),"
+      , Whitespace
+      , Plaintext "The"
+      , Whitespace
+      , Plaintext "Silver"
+      , Whitespace
+      , Plaintext "Searcher"
+      , Whitespace
+      , Plaintext "(https://github.com/ggreer/the_silver_searcher),"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "Ack"
+      , Whitespace
+      , Plaintext "(http://beyondgrep.com/)."
+      , Whitespace
+      , Plaintext "Support"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "passing"
+      , Whitespace
+      , Plaintext "options"
+      , Whitespace
+      , Plaintext "through"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "underlying"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "command"
+      , Whitespace
+      , Plaintext "exists,"
+      , Whitespace
+      , Plaintext "along"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "ability"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Plaintext "full"
+      , Whitespace
+      , Plaintext "regular"
+      , Whitespace
+      , Plaintext "expression"
+      , Whitespace
+      , Plaintext "syntax"
+      , Whitespace
+      , Plaintext "without"
+      , Whitespace
+      , Plaintext "doing"
+      , Whitespace
+      , Plaintext "special"
+      , Whitespace
+      , Plaintext "escaping."
+      , Whitespace
+      , Plaintext "On"
+      , Whitespace
+      , Plaintext "modern"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "(version"
+      , Whitespace
+      , Plaintext "8"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "higher,"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "Neovim),"
+      , Whitespace
+      , Plaintext "searches"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "performed"
+      , Whitespace
+      , Plaintext "asynchronously"
+      , Whitespace
+      , Plaintext "(without"
+      , Whitespace
+      , Plaintext "blocking"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "UI)."
+      ]
+  , Paragraph
+      [ Plaintext "Shortcut"
+      , Whitespace
+      , Plaintext "mappings"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "provided"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "start"
+      , Whitespace
+      , Plaintext "an"
+      , Whitespace
+      , Link ":Ack"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "(<leader>a)"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "word"
+      , Whitespace
+      , Plaintext "currently"
+      , Whitespace
+      , Plaintext "under"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "cursor"
+      , Whitespace
+      , Plaintext "(<leader>s)."
+      ]
+  , Paragraph
+      [ Plaintext "Results"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "normally"
+      , Whitespace
+      , Plaintext "displayed"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "window,"
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "also"
+      , Whitespace
+      , Plaintext "provides"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Link ":Lack"
+      , Whitespace
+      , Plaintext "command"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "behaves"
+      , Whitespace
+      , Plaintext "like"
+      , Whitespace
+      , Link ":Ack"
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "uses"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "location-list"
+      , Whitespace
+      , Plaintext "instead,"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "<leader>l"
+      , Whitespace
+      , Plaintext "mapping"
+      , Whitespace
+      , Plaintext "as"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "shortcut"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Link ":Lack"
+      , Plaintext "."
+      ]
+  , Paragraph
+      [ Link ":Back"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Link ":Black"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "analogous"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Link ":Ack"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Link ":Lack"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "scoped"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "within"
+      , Whitespace
+      , Plaintext "currently"
+      , Whitespace
+      , Plaintext "open"
+      , Whitespace
+      , Plaintext "buffers"
+      , Whitespace
+      , Plaintext "only."
+      , Whitespace
+      , Link ":Quack"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "scoped"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "among"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "currently"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "list."
+      ]
+  , SubheadingAnnotation "2. Streamlined multi-file replace"
+  , Paragraph
+      [ Plaintext "The"
+      , Whitespace
+      , Plaintext "companion"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Link ":Ack"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Link ":Acks"
+      , Whitespace
+      , Plaintext "(mnemonic:"
+      , Whitespace
+      , Plaintext "\"Ack"
+      , Whitespace
+      , Plaintext "substitute\","
+      , Whitespace
+      , Plaintext "accessible"
+      , Whitespace
+      , Plaintext "via"
+      , Whitespace
+      , Plaintext "shortcut"
+      , Whitespace
+      , Plaintext "<leader>r),"
+      , Whitespace
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "allows"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "run"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "multi-file"
+      , Whitespace
+      , Plaintext "replace"
+      , Whitespace
+      , Plaintext "across"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "placed"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "window"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "previous"
+      , Whitespace
+      , Plaintext "invocation"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Link ":Ack"
+      , Whitespace
+      , Plaintext "(or"
+      , Whitespace
+      , Link ":Back"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Link ":Quack"
+      , Plaintext ")."
+      ]
+  , Paragraph
+      [ Plaintext "Correspondingly,"
+      , Whitespace
+      , Plaintext "results"
+      , Whitespace
+      , Plaintext "obtained"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Link ":Lack"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "targeted"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "replacement"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Link ":Lacks"
+      , Plaintext "."
+      ]
+  , SubheadingAnnotation "3. Quickfix listing enhancements"
+  , Paragraph
+      [ Plaintext "The"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "listing"
+      , Whitespace
+      , Plaintext "itself"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "enhanced"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Plaintext "settings"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "improve"
+      , Whitespace
+      , Plaintext "its"
+      , Whitespace
+      , Plaintext "usability,"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "natural"
+      , Whitespace
+      , Plaintext "mappings"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "allow"
+      , Whitespace
+      , Plaintext "quick"
+      , Whitespace
+      , Plaintext "removal"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "items"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "list"
+      , Whitespace
+      , Plaintext "(for"
+      , Whitespace
+      , Plaintext "example,"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "reduce"
+      , Whitespace
+      , Plaintext "clutter"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "listing"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Plaintext "removing"
+      , Whitespace
+      , Plaintext "lines"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "don't"
+      , Whitespace
+      , Plaintext "intend"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "make"
+      , Whitespace
+      , Plaintext "changes"
+      , Whitespace
+      , Plaintext "to)."
+      ]
+  , Paragraph
+      [ Plaintext "Additionally,"
+      , Whitespace
+      , Plaintext "Vim's"
+      , Whitespace
+      , Link ":cn"
+      , Plaintext ","
+      , Whitespace
+      , Link ":cp"
+      , Plaintext ","
+      , Whitespace
+      , Link ":cnf"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Link ":cpf"
+      , Whitespace
+      , Plaintext "commands"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "tweaked"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "make"
+      , Whitespace
+      , Plaintext "it"
+      , Whitespace
+      , Plaintext "easier"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "immediately"
+      , Whitespace
+      , Plaintext "identify"
+      , Whitespace
+      , Plaintext "matches"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Plaintext "centering"
+      , Whitespace
+      , Plaintext "them"
+      , Whitespace
+      , Plaintext "within"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "viewport."
+      ]
+  , SubheadingAnnotation
+      "4. Easy operations on files in the quickfix listing"
+  , Paragraph
+      [ Plaintext "Finally,"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "provides"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Link ":Qargs"
+      , Whitespace
+      , Plaintext "command"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "puts"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "currently"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "listing"
+      , Whitespace
+      , Plaintext "into"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link ":args"
+      , Whitespace
+      , Plaintext "list,"
+      , Whitespace
+      , Plaintext "where"
+      , Whitespace
+      , Plaintext "they"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "operated"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "bulk"
+      , Whitespace
+      , Plaintext "via"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link ":argdo"
+      , Whitespace
+      , Plaintext "command."
+      , Whitespace
+      , Plaintext "This"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "what's"
+      , Whitespace
+      , Plaintext "used"
+      , Whitespace
+      , Plaintext "under"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "covers"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "older"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Link ":Acks"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "do"
+      , Whitespace
+      , Plaintext "its"
+      , Whitespace
+      , Plaintext "work"
+      , Whitespace
+      , Plaintext "(on"
+      , Whitespace
+      , Plaintext "newer"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "built-in"
+      , Whitespace
+      , Link ":cdo"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Link ":cfdo"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "used"
+      , Whitespace
+      , Plaintext "instead)."
+      ]
+  , Paragraph
+      [ Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "also"
+      , Whitespace
+      , Plaintext "provides"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Link ":Largs"
+      , Whitespace
+      , Plaintext "command,"
+      , Whitespace
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Link "location-list"
+      , Whitespace
+      , Plaintext "analog"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Link ":Qargs"
+      , Plaintext "."
+      ]
+  , HeadingAnnotation "Installation"
+  , Paragraph
+      [ Plaintext "To"
+      , Whitespace
+      , Plaintext "install"
+      , Whitespace
+      , Plaintext "Ferret,"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Plaintext "your"
+      , Whitespace
+      , Plaintext "plug-in"
+      , Whitespace
+      , Plaintext "management"
+      , Whitespace
+      , Plaintext "system"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "choice."
+      ]
+  , Paragraph
+      [ Plaintext "If"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "don't"
+      , Whitespace
+      , Plaintext "have"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "\"plug-in"
+      , Whitespace
+      , Plaintext "management"
+      , Whitespace
+      , Plaintext "system"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "choice\","
+      , Whitespace
+      , Plaintext "I"
+      , Whitespace
+      , Plaintext "recommend"
+      , Whitespace
+      , Plaintext "Pathogen"
+      , Whitespace
+      , Plaintext "(https://github.com/tpope/vim-pathogen)"
+      , Whitespace
+      , Plaintext "due"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "its"
+      , Whitespace
+      , Plaintext "simplicity"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "robustness."
+      , Whitespace
+      , Plaintext "Assuming"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "have"
+      , Whitespace
+      , Plaintext "Pathogen"
+      , Whitespace
+      , Plaintext "installed"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "configured,"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "want"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "install"
+      , Whitespace
+      , Plaintext "Ferret"
+      , Whitespace
+      , Plaintext "into"
+      , Whitespace
+      , Code "~/.vim/bundle"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "do"
+      , Whitespace
+      , Plaintext "so"
+      , Whitespace
+      , Plaintext "with:"
+      ]
+  , Fenced
+      [ "git clone https://github.com/wincent/ferret.git ~/.vim/bundle/ferret"
+      ]
+  , Paragraph
+      [ Plaintext "Alternatively,"
+      , Whitespace
+      , Plaintext "if"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "Git"
+      , Whitespace
+      , Plaintext "submodule"
+      , Whitespace
+      , Plaintext "for"
+      , Whitespace
+      , Plaintext "each"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "plug-in,"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "could"
+      , Whitespace
+      , Plaintext "do"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "following"
+      , Whitespace
+      , Plaintext "after"
+      , Whitespace
+      , Code "cd"
+      , Plaintext "-ing"
+      , Whitespace
+      , Plaintext "into"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "top-level"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "your"
+      , Whitespace
+      , Plaintext "Git"
+      , Whitespace
+      , Plaintext "superproject:"
+      ]
+  , Fenced
+      [ "git submodule add https://github.com/wincent/ferret.git ~/vim/bundle/ferret"
+      , "git submodule init"
+      ]
+  , Paragraph
+      [ Plaintext "To"
+      , Whitespace
+      , Plaintext "generate"
+      , Whitespace
+      , Plaintext "help"
+      , Whitespace
+      , Plaintext "tags"
+      , Whitespace
+      , Plaintext "under"
+      , Whitespace
+      , Plaintext "Pathogen,"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "do"
+      , Whitespace
+      , Plaintext "so"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "inside"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "with:"
+      ]
+  , Fenced [ ":call pathogen#helptags()" ]
   , CommandsAnnotation
   , CommandAnnotation "Ack" (Just "{pattern} {options}")
   , Paragraph
@@ -3258,6 +3490,163 @@ Project
       , Link "g:FerretMaxResults"
       , Plaintext "."
       ]
+  , CommandAnnotation "Quack" (Just "{pattern} {options}")
+  , Paragraph
+      [ Plaintext "Like"
+      , Whitespace
+      , Link ":Ack"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "searches"
+      , Whitespace
+      , Plaintext "only"
+      , Whitespace
+      , Plaintext "among"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "currently"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "listing."
+      , Whitespace
+      , Plaintext "Note"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "still"
+      , Whitespace
+      , Plaintext "delegated"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "underlying"
+      , Whitespace
+      , Link "'grepprg'"
+      , Whitespace
+      , Plaintext "("
+      , Code "rg"
+      , Plaintext ","
+      , Whitespace
+      , Code "ag"
+      , Plaintext ","
+      , Whitespace
+      , Code "ack"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Code "ack-grep"
+      , Plaintext "),"
+      , Whitespace
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "means"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "only"
+      , Whitespace
+      , Plaintext "buffers"
+      , Whitespace
+      , Plaintext "written"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "disk"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "searched."
+      , Whitespace
+      , Plaintext "If"
+      , Whitespace
+      , Plaintext "no"
+      , Whitespace
+      , Plaintext "buffers"
+      , Whitespace
+      , Plaintext "are"
+      , Whitespace
+      , Plaintext "written"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "disk,"
+      , Whitespace
+      , Plaintext "then"
+      , Whitespace
+      , Link ":Quack"
+      , Whitespace
+      , Plaintext "behaves"
+      , Whitespace
+      , Plaintext "exactly"
+      , Whitespace
+      , Plaintext "like"
+      , Whitespace
+      , Link ":Ack"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "current"
+      , Whitespace
+      , Plaintext "directory."
+      ]
+  , CommandAnnotation "Quack!" (Just "{pattern} {options}")
+  , Paragraph
+      [ Plaintext "Like"
+      , Whitespace
+      , Link ":Quack"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "returns"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "results"
+      , Whitespace
+      , Plaintext "irrespective"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "value"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Link "g:FerretMaxResults"
+      , Plaintext "."
+      ]
   , CommandAnnotation "Acks" (Just "/{pattern}/{replacement}/")
   , Paragraph
       [ Plaintext "Takes"
@@ -3467,6 +3856,84 @@ Project
       , Plaintext "\"bar\":"
       ]
   , Fenced [ ":Acks /\\v(foo\\d+)(bar)/\\2\\1/" ]
+  , CommandAnnotation "Lacks" (Just "/{pattern}/{replacement}/")
+  , Paragraph
+      [ Plaintext "Takes"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "current"
+      , Whitespace
+      , Link "location-list"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "performs"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "substitution"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "instances"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "{pattern}"
+      , Whitespace
+      , Plaintext "by"
+      , Whitespace
+      , Plaintext "{replacement}."
+      , Whitespace
+      , Plaintext "This"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "an"
+      , Whitespace
+      , Plaintext "analog"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link ":Acks"
+      , Whitespace
+      , Plaintext "command,"
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "operates"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "location-list"
+      , Whitespace
+      , Plaintext "instead"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "listing."
+      ]
   , CommandAnnotation "FerretCancelAsync" Nothing
   , Paragraph
       [ Plaintext "Cancels"
@@ -3532,7 +3999,7 @@ Project
       , Whitespace
       , Plaintext "long-running"
       , Whitespace
-      , Plaintext "asynchronoous"
+      , Plaintext "asynchronous"
       , Whitespace
       , Plaintext "search"
       , Whitespace
@@ -3628,6 +4095,81 @@ Project
       , Link "quickfix"
       , Whitespace
       , Plaintext "listing"
+      , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Plaintext "sets"
+      , Whitespace
+      , Plaintext "them"
+      , Whitespace
+      , Plaintext "as"
+      , Whitespace
+      , Link ":args"
+      , Whitespace
+      , Plaintext "so"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "they"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "operated"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "en"
+      , Whitespace
+      , Plaintext "masse"
+      , Whitespace
+      , Plaintext "via"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link ":argdo"
+      , Whitespace
+      , Plaintext "command."
+      ]
+  , CommandAnnotation "Largs" Nothing
+  , Paragraph
+      [ Plaintext "Just"
+      , Whitespace
+      , Plaintext "like"
+      , Whitespace
+      , Link ":Qargs"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "but"
+      , Whitespace
+      , Plaintext "applies"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "current"
+      , Whitespace
+      , Link "location-list"
+      , Plaintext "."
+      ]
+  , Paragraph
+      [ Plaintext "It"
+      , Whitespace
+      , Plaintext "takes"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "current"
+      , Whitespace
+      , Link "location-list"
       , Whitespace
       , Plaintext "and"
       , Whitespace
@@ -4438,6 +4980,487 @@ Project
       , Plaintext "(off):"
       ]
   , Fenced [ "let g:FerretHlsearch=0" ]
+  , OptionAnnotation "g:FerretAcksCommand" "string" (Just "\"cdo\"")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "underlying"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "command"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Link ":Acks"
+      , Whitespace
+      , Plaintext "uses"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "peform"
+      , Whitespace
+      , Plaintext "substitutions."
+      , Whitespace
+      , Plaintext "On"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "have"
+      , Whitespace
+      , Plaintext "it,"
+      , Whitespace
+      , Plaintext "defaults"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Link ":cdo"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "means"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "substitutions"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "apply"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "specific"
+      , Whitespace
+      , Plaintext "lines"
+      , Whitespace
+      , Plaintext "currently"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "listing."
+      , Whitespace
+      , Plaintext "Can"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "\"cfdo\""
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "instead"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Link ":cfdo"
+      , Whitespace
+      , Plaintext "(if"
+      , Whitespace
+      , Plaintext "available),"
+      , Whitespace
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "means"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "substitutions"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "applied"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "per-file"
+      , Whitespace
+      , Plaintext "basis"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "quickfix"
+      , Whitespace
+      , Plaintext "listing."
+      , Whitespace
+      , Plaintext "This"
+      , Whitespace
+      , Plaintext "distinction"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "important"
+      , Whitespace
+      , Plaintext "if"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "have"
+      , Whitespace
+      , Plaintext "used"
+      , Whitespace
+      , Plaintext "Ferret's"
+      , Whitespace
+      , Plaintext "bindings"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "delete"
+      , Whitespace
+      , Plaintext "entries"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "listing."
+      ]
+  , Fenced [ "let g:FerretAcksCommand='cfdo'" ]
+  , OptionAnnotation "g:FerretLacksCommand" "string" (Just "\"ldo\"")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "underlying"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "command"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Link ":Lacks"
+      , Whitespace
+      , Plaintext "uses"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "peform"
+      , Whitespace
+      , Plaintext "substitutions."
+      , Whitespace
+      , Plaintext "On"
+      , Whitespace
+      , Plaintext "versions"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Plaintext "Vim"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "have"
+      , Whitespace
+      , Plaintext "it,"
+      , Whitespace
+      , Plaintext "defaults"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Link ":ldo"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "means"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "substitutions"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "apply"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "specific"
+      , Whitespace
+      , Plaintext "lines"
+      , Whitespace
+      , Plaintext "currently"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "location-list"
+      , Plaintext "."
+      , Whitespace
+      , Plaintext "Can"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "\"lfdo\""
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "instead"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Link ":lfdo"
+      , Whitespace
+      , Plaintext "(if"
+      , Whitespace
+      , Plaintext "available),"
+      , Whitespace
+      , Plaintext "which"
+      , Whitespace
+      , Plaintext "means"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "substitutions"
+      , Whitespace
+      , Plaintext "will"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "applied"
+      , Whitespace
+      , Plaintext "on"
+      , Whitespace
+      , Plaintext "a"
+      , Whitespace
+      , Plaintext "per-file"
+      , Whitespace
+      , Plaintext "basis"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "all"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "files"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "location-list"
+      , Plaintext "."
+      , Whitespace
+      , Plaintext "This"
+      , Whitespace
+      , Plaintext "distinction"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "important"
+      , Whitespace
+      , Plaintext "if"
+      , Whitespace
+      , Plaintext "you"
+      , Whitespace
+      , Plaintext "have"
+      , Whitespace
+      , Plaintext "used"
+      , Whitespace
+      , Plaintext "Ferret's"
+      , Whitespace
+      , Plaintext "bindings"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "delete"
+      , Whitespace
+      , Plaintext "entries"
+      , Whitespace
+      , Plaintext "from"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "listing."
+      ]
+  , Fenced [ "let g:FerretLacksCommand='lfdo'" ]
+  , OptionAnnotation "g:FerretVeryMagic" "boolean" (Just "1")
+  , Paragraph
+      [ Plaintext "Controls"
+      , Whitespace
+      , Plaintext "whether"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "<Plug>(FerretAck)"
+      , Whitespace
+      , Plaintext "mapping"
+      , Whitespace
+      , Plaintext "should"
+      , Whitespace
+      , Plaintext "populate"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "command"
+      , Whitespace
+      , Plaintext "line"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Link "/\\v"
+      , Whitespace
+      , Plaintext "\"very"
+      , Whitespace
+      , Plaintext "magic\""
+      , Whitespace
+      , Plaintext "marker."
+      , Whitespace
+      , Plaintext "Given"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "argument"
+      , Whitespace
+      , Plaintext "passed"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Link ":Acks"
+      , Whitespace
+      , Plaintext "is"
+      , Whitespace
+      , Plaintext "handed"
+      , Whitespace
+      , Plaintext "straight"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "Vim,"
+      , Whitespace
+      , Plaintext "using"
+      , Whitespace
+      , Plaintext "\"very"
+      , Whitespace
+      , Plaintext "magic\""
+      , Whitespace
+      , Plaintext "makes"
+      , Whitespace
+      , Plaintext "it"
+      , Whitespace
+      , Plaintext "more"
+      , Whitespace
+      , Plaintext "likely"
+      , Whitespace
+      , Plaintext "that"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "(probably"
+      , Whitespace
+      , Plaintext "Perl-compatible)"
+      , Whitespace
+      , Plaintext "regular"
+      , Whitespace
+      , Plaintext "expression"
+      , Whitespace
+      , Plaintext "used"
+      , Whitespace
+      , Plaintext "in"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "initial"
+      , Whitespace
+      , Plaintext "search"
+      , Whitespace
+      , Plaintext "can"
+      , Whitespace
+      , Plaintext "be"
+      , Whitespace
+      , Plaintext "used"
+      , Whitespace
+      , Plaintext "directly"
+      , Whitespace
+      , Plaintext "with"
+      , Whitespace
+      , Plaintext "Vim's"
+      , Whitespace
+      , Plaintext "(famously"
+      , Whitespace
+      , Plaintext "not-Perl-compatible)"
+      , Whitespace
+      , Plaintext "regular"
+      , Whitespace
+      , Plaintext "expression"
+      , Whitespace
+      , Plaintext "engine."
+      ]
+  , Paragraph
+      [ Plaintext "To"
+      , Whitespace
+      , Plaintext "prevent"
+      , Whitespace
+      , Plaintext "the"
+      , Whitespace
+      , Plaintext "automatic"
+      , Whitespace
+      , Plaintext "use"
+      , Whitespace
+      , Plaintext "of"
+      , Whitespace
+      , Link "/\\v"
+      , Plaintext ","
+      , Whitespace
+      , Plaintext "set"
+      , Whitespace
+      , Plaintext "this"
+      , Whitespace
+      , Plaintext "option"
+      , Whitespace
+      , Plaintext "to"
+      , Whitespace
+      , Plaintext "0:"
+      ]
+  , Fenced [ "let g:FerretVeryMagic=0" ]
   , OptionAnnotation
       "g:FerretExecutable" "string" (Just "\"rg,ag,ack,ack-grep\"")
   , Paragraph
@@ -5246,6 +6269,10 @@ Project
       , Whitespace
       , Plaintext "window"
       , Whitespace
+      , Plaintext "and"
+      , Whitespace
+      , Link "location-list"
+      , Whitespace
       , Plaintext "for"
       , Whitespace
       , Plaintext "deleting"
@@ -5755,6 +6782,10 @@ Project
       , Plaintext "during"
       , Whitespace
       , Link ":Acks"
+      , Whitespace
+      , Plaintext "or"
+      , Whitespace
+      , Link ":Lacks"
       , Plaintext ":"
       ]
   , List
@@ -6645,7 +7676,7 @@ Project
       , Whitespace
       , Plaintext "2009"
       , Whitespace
-      , Plaintext "(https://rfr.to/h)."
+      , Plaintext "(https://wincent.com/h)."
       ]
   , Paragraph
       [ Plaintext "So,"
@@ -7382,7 +8413,372 @@ Project
       , ListItem [ Plaintext "Vaibhav" , Whitespace , Plaintext "Sagar" ]
       ]
   , HeadingAnnotation "History"
-  , SubheadingAnnotation "master (not yet released)"
+  , SubheadingAnnotation "5.0 (8 June 2019)"
+  , List
+      [ ListItem
+          [ Plaintext "The"
+          , Whitespace
+          , Link "<Plug>(FerretAcks)"
+          , Whitespace
+          , Plaintext "mapping"
+          , Whitespace
+          , Plaintext "now"
+          , Whitespace
+          , Plaintext "uses"
+          , Whitespace
+          , Link "/\\v"
+          , Whitespace
+          , Plaintext "\"very"
+          , Whitespace
+          , Plaintext "magic\""
+          , Whitespace
+          , Plaintext "mode"
+          , Whitespace
+          , Plaintext "by"
+          , Whitespace
+          , Plaintext "default."
+          , Whitespace
+          , Plaintext "This"
+          , Whitespace
+          , Plaintext "default"
+          , Whitespace
+          , Plaintext "can"
+          , Whitespace
+          , Plaintext "be"
+          , Whitespace
+          , Plaintext "changed"
+          , Whitespace
+          , Plaintext "using"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "g:FerretVeryMagic"
+          , Whitespace
+          , Plaintext "option."
+          ]
+      , ListItem
+          [ Link ":Acks"
+          , Whitespace
+          , Plaintext "now"
+          , Whitespace
+          , Plaintext "preferentially"
+          , Whitespace
+          , Plaintext "uses"
+          , Whitespace
+          , Link ":cdo"
+          , Whitespace
+          , Plaintext "(rather"
+          , Whitespace
+          , Plaintext "than"
+          , Whitespace
+          , Link ":cfdo"
+          , Plaintext ")"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "make"
+          , Whitespace
+          , Plaintext "replacements,"
+          , Whitespace
+          , Plaintext "which"
+          , Whitespace
+          , Plaintext "means"
+          , Whitespace
+          , Plaintext "that"
+          , Whitespace
+          , Plaintext "it"
+          , Whitespace
+          , Plaintext "no"
+          , Whitespace
+          , Plaintext "longer"
+          , Whitespace
+          , Plaintext "operates"
+          , Whitespace
+          , Plaintext "on"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Plaintext "per-file"
+          , Whitespace
+          , Plaintext "level"
+          , Whitespace
+          , Plaintext "and"
+          , Whitespace
+          , Plaintext "instead"
+          , Whitespace
+          , Plaintext "targets"
+          , Whitespace
+          , Plaintext "individual"
+          , Whitespace
+          , Plaintext "entries"
+          , Whitespace
+          , Plaintext "within"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "quickfix"
+          , Whitespace
+          , Plaintext "window."
+          , Whitespace
+          , Plaintext "This"
+          , Whitespace
+          , Plaintext "is"
+          , Whitespace
+          , Plaintext "relevant"
+          , Whitespace
+          , Plaintext "if"
+          , Whitespace
+          , Plaintext "you've"
+          , Whitespace
+          , Plaintext "used"
+          , Whitespace
+          , Plaintext "Ferrets"
+          , Whitespace
+          , Plaintext "mappings"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "delete"
+          , Whitespace
+          , Plaintext "entries"
+          , Whitespace
+          , Plaintext "from"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "window."
+          , Whitespace
+          , Plaintext "The"
+          , Whitespace
+          , Plaintext "old"
+          , Whitespace
+          , Plaintext "behavior"
+          , Whitespace
+          , Plaintext "can"
+          , Whitespace
+          , Plaintext "be"
+          , Whitespace
+          , Plaintext "restored"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "g:FerretAcksCommand"
+          , Whitespace
+          , Plaintext "option."
+          ]
+      , ListItem
+          [ Plaintext "Ferret"
+          , Whitespace
+          , Plaintext "now"
+          , Whitespace
+          , Plaintext "has"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Link ":Lacks"
+          , Whitespace
+          , Plaintext "command,"
+          , Whitespace
+          , Plaintext "an"
+          , Whitespace
+          , Plaintext "analog"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Link ":Acks"
+          , Whitespace
+          , Plaintext "which"
+          , Whitespace
+          , Plaintext "applies"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "location-list"
+          , Plaintext "."
+          ]
+      , ListItem
+          [ Plaintext "Likewise,"
+          , Whitespace
+          , Plaintext "Ferret"
+          , Whitespace
+          , Plaintext "now"
+          , Whitespace
+          , Plaintext "has"
+          , Whitespace
+          , Plaintext "a"
+          , Whitespace
+          , Link ":Largs"
+          , Whitespace
+          , Plaintext "command,"
+          , Whitespace
+          , Plaintext "analogous"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Link ":Qargs"
+          , Plaintext ","
+          , Whitespace
+          , Plaintext "which"
+          , Whitespace
+          , Plaintext "applies"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "location-list"
+          , Whitespace
+          , Plaintext "instead"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "quickfix"
+          , Whitespace
+          , Plaintext "window."
+          ]
+      , ListItem
+          [ Plaintext "The"
+          , Whitespace
+          , Plaintext "Ferret"
+          , Whitespace
+          , Plaintext "bindings"
+          , Whitespace
+          , Plaintext "that"
+          , Whitespace
+          , Plaintext "are"
+          , Whitespace
+          , Plaintext "set-up"
+          , Whitespace
+          , Plaintext "in"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "quickfix"
+          , Whitespace
+          , Plaintext "window"
+          , Whitespace
+          , Plaintext "when"
+          , Whitespace
+          , Link "g:FerretQFMap"
+          , Whitespace
+          , Plaintext "is"
+          , Whitespace
+          , Plaintext "enabled"
+          , Whitespace
+          , Plaintext "now"
+          , Whitespace
+          , Plaintext "also"
+          , Whitespace
+          , Plaintext "apply"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "location-list"
+          , Plaintext "."
+          ]
+      ]
+  , SubheadingAnnotation "4.1 (31 January 2019)"
+  , List
+      [ ListItem
+          [ Plaintext "Added"
+          , Whitespace
+          , Link ":Quack"
+          , Whitespace
+          , Plaintext "command,"
+          , Whitespace
+          , Plaintext "analogous"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Link ":Ack"
+          , Whitespace
+          , Plaintext "but"
+          , Whitespace
+          , Plaintext "scoped"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "files"
+          , Whitespace
+          , Plaintext "currently"
+          , Whitespace
+          , Plaintext "listed"
+          , Whitespace
+          , Plaintext "in"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "quickfix"
+          , Whitespace
+          , Plaintext "window."
+          ]
+      , ListItem
+          [ Plaintext "Fixed"
+          , Whitespace
+          , Plaintext "option"
+          , Whitespace
+          , Plaintext "autocompletion."
+          ]
+      ]
+  , SubheadingAnnotation "4.0.2 (11 January 2019)"
+  , List
+      [ ListItem
+          [ Plaintext "Restore"
+          , Whitespace
+          , Plaintext "compatibility"
+          , Whitespace
+          , Plaintext "with"
+          , Whitespace
+          , Plaintext "versions"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Code "rg"
+          , Whitespace
+          , Plaintext "prior"
+          , Whitespace
+          , Plaintext "to"
+          , Whitespace
+          , Plaintext "v0.8"
+          , Whitespace
+          , Plaintext "(https://github.com/wincent/ferret/issues/59)."
+          ]
+      ]
+  , SubheadingAnnotation "4.0.1 (8 January 2019)"
+  , List
+      [ ListItem
+          [ Plaintext "Make"
+          , Whitespace
+          , Link ":Acks"
+          , Whitespace
+          , Plaintext "behavior"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Plaintext "same"
+          , Whitespace
+          , Plaintext "irrespective"
+          , Whitespace
+          , Plaintext "of"
+          , Whitespace
+          , Plaintext "the"
+          , Whitespace
+          , Link "'gdefault'"
+          , Whitespace
+          , Plaintext "setting."
+          ]
+      ]
+  , SubheadingAnnotation "4.0 (25 December 2018)"
   , List
       [ ListItem
           [ Plaintext "Try"

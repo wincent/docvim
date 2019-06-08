@@ -1,5 +1,224 @@
 Project
-  [ DocBlock
+  [ Project
+      [ Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "scalpel#cword"
+              , functionArguments = ArgumentList [ Argument "curpos" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:line" , letValue = "getline(a:curpos[1])" }
+                  , LetStatement { letLexpr = "l:col" , letValue = "a:curpos[2]" }
+                  , LetStatement
+                      { letLexpr = "l:chars" , letValue = "split(l:line, '\\zs')" }
+                  , LetStatement { letLexpr = "l:word" , letValue = "[]" }
+                  , GenericStatement "for l:char in l:chars[(l:col):]"
+                  , GenericStatement "if match(l:char, '\\k') != -1"
+                  , GenericStatement "call add(l:word, l:char)"
+                  , GenericStatement "else"
+                  , GenericStatement "break"
+                  , GenericStatement "endif"
+                  , GenericStatement "endfor"
+                  , GenericStatement "for l:char in reverse(l:chars[:(l:col) - 1])"
+                  , GenericStatement "if match(l:char, '\\k') != -1"
+                  , GenericStatement "call insert(l:word, l:char, 0)"
+                  , GenericStatement "else"
+                  , GenericStatement "break"
+                  , GenericStatement "endif"
+                  , GenericStatement "endfor"
+                  , GenericStatement "return join(l:word, '')"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "s:g"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = [ GenericStatement "return &gdefault ? '' : 'g'" ]
+              }
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "s:replacements"
+              , functionArguments =
+                  ArgumentList
+                    [ Argument "currentline"
+                    , Argument "_lastline"
+                    , Argument "patterns"
+                    , Argument "g"
+                    ]
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement { letLexpr = "s:report" , letValue = "&report" }
+                  , GenericStatement "try"
+                  , GenericStatement "set report=10000"
+                  , GenericStatement
+                      "execute a:currentline . ',' . a:_lastline . 's' . a:patterns . a:g . 'ce#'"
+                  , GenericStatement "catch /^Vim:Interrupt$/"
+                  , GenericStatement "execute 'set report=' . s:report"
+                  , GenericStatement "return"
+                  , GenericStatement "finally"
+                  , GenericStatement "normal! q"
+                  , LetStatement
+                      { letLexpr = "s:transcript" , letValue = "getreg('s')" }
+                  , GenericStatement "if exists('s:register')"
+                  , GenericStatement "call setreg('s', s:register)"
+                  , GenericStatement "endif"
+                  , GenericStatement "endtry"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "scalpel#substitute"
+              , functionArguments =
+                  ArgumentList
+                    [ Argument "patterns"
+                    , Argument "line1"
+                    , Argument "line2"
+                    , Argument "count"
+                    ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if a:count == -1"
+                  , LetStatement
+                      { letLexpr = "l:currentline" , letValue = "a:line1" }
+                  , LetStatement { letLexpr = "l:firstline" , letValue = "1" }
+                  , LetStatement { letLexpr = "l:lastline" , letValue = "line('$')" }
+                  , GenericStatement "else"
+                  , LetStatement
+                      { letLexpr = "l:firstline"
+                      , letValue = "a:line1 <= a:line2 ? a:line1 : a:line2"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:lastline"
+                      , letValue = "a:line2 >= a:line2 ? a:line2 : a:line1"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:currentline" , letValue = "l:firstline" }
+                  , GenericStatement "endif"
+                  , LetStatement { letLexpr = "l:g" , letValue = "s:g()" }
+                  , GenericStatement
+                      "if match(a:patterns, '\\v^([^\"\\\\|A-Za-z0-9 ]).*\\1.*\\1$') != 0"
+                  , GenericStatement "echomsg 'Invalid patterns: ' . a:patterns"
+                  , GenericStatement
+                      "echomsg 'Expected patterns of the form \"/foo/bar/\".'"
+                  , GenericStatement "return"
+                  , GenericStatement "endif"
+                  , GenericStatement "if getregtype('s') != ''"
+                  , LetStatement
+                      { letLexpr = "s:register" , letValue = "getreg('s')" }
+                  , GenericStatement "elseif exists('s:register')"
+                  , UnletStatement { unletBang = False , unletBody = "s:register" }
+                  , GenericStatement "endif"
+                  , GenericStatement "normal! qs"
+                  , GenericStatement "if exists('*execute')"
+                  , LetStatement
+                      { letLexpr = "l:replacements"
+                      , letValue =
+                          "execute('call s:replacements(l:currentline, l:lastline, a:patterns, l:g)', '')"
+                      }
+                  , GenericStatement "else"
+                  , GenericStatement "redir => l:replacements"
+                  , GenericStatement
+                      "call s:replacements(l:currentline, l:lastline, a:patterns, l:g)"
+                  , GenericStatement "redir END"
+                  , GenericStatement "endif"
+                  , GenericStatement "if len(l:replacements) > 0"
+                  , LetStatement
+                      { letLexpr = "l:last"
+                      , letValue = "strpart(s:transcript, len(s:transcript) - 1)"
+                      }
+                  , GenericStatement
+                      "if l:last ==# 'l' || l:last ==# 'q' || l:last ==# '\ESC'"
+                  , GenericStatement "return"
+                  , GenericStatement "elseif l:last ==# 'a'"
+                  , GenericStatement "if l:currentline > l:firstline"
+                  , GenericStatement
+                      "execute l:firstline . ',' . l:currentline . '-&' . l:g . 'ce'"
+                  , GenericStatement "endif"
+                  , GenericStatement "return"
+                  , GenericStatement "endif"
+                  , GenericStatement "endif"
+                  , GenericStatement "if l:currentline > l:firstline"
+                  , GenericStatement
+                      "execute l:firstline . ',' . l:currentline . '-&' .l:g . 'ce'"
+                  , GenericStatement "execute 'set report=' . s:report"
+                  , GenericStatement "endif"
+                  ]
+              }
+          ]
+      , Unit
+          [ GenericStatement
+              "if exists('g:ScalpelLoaded') || &compatible || v:version < 700"
+          , GenericStatement "finish"
+          , GenericStatement "endif"
+          , LetStatement { letLexpr = "g:ScalpelLoaded " , letValue = "1" }
+          , LetStatement
+              { letLexpr = "s:cpoptions " , letValue = "&cpoptions" }
+          , GenericStatement "set cpoptions&vim"
+          , LetStatement
+              { letLexpr = "s:command"
+              , letValue = "get(g:, 'ScalpelCommand', 'Scalpel')"
+              }
+          , GenericStatement "if s:command ==# ''"
+          , GenericStatement "finish"
+          , GenericStatement
+              "elseif match(s:command, '\\v\\C^[A-Z][A-Za-z]*$') == -1"
+          , GenericStatement
+              "echoerr 'g:ScalpelCommand must contain only letters and start with a ' . 'capital letter'"
+          , GenericStatement "finish"
+          , GenericStatement "endif"
+          , GenericStatement
+              "execute 'command! -nargs=1 -range ' . s:command . ' call scalpel#substitute(<q-args>, <line1>, <line2>, <count>)'"
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:GetCurposCompat"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody =
+                  [ GenericStatement "if exists('*getcurpos')"
+                  , GenericStatement "return getcurpos()"
+                  , GenericStatement "else"
+                  , GenericStatement "return getpos('.')"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , LetStatement
+              { letLexpr = "s:curpos" , letValue = "s:GetCurposCompat()" }
+          , GenericStatement "augroup Scalpel"
+          , GenericStatement "autocmd!"
+          , GenericStatement
+              "autocmd CursorMoved * let s:curpos=s:GetCurposCompat()"
+          , GenericStatement "augroup END"
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:GetCurpos"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody = [ GenericStatement "return s:curpos" ]
+              }
+          , GenericStatement
+              "execute 'nnoremap <Plug>(Scalpel) :' . s:command . \"/\\\\v<<C-R>=expand('<cword>')<CR>>//<Left>\""
+          , GenericStatement
+              "execute 'vnoremap <Plug>(ScalpelVisual) :' . s:command . \"/\\\\v<<C-R>=scalpel#cword(<SID>GetCurpos())<CR>>//<Left>\""
+          , LetStatement
+              { letLexpr = "s:map" , letValue = "get(g:, 'ScalpelMap', 1)" }
+          , GenericStatement "if s:map"
+          , GenericStatement
+              "if !hasmapto('<Plug>(Scalpel)') && maparg('<leader>e', 'n') ==# ''"
+          , GenericStatement "nmap <unique> <Leader>e <Plug>(Scalpel)"
+          , GenericStatement "endif"
+          , GenericStatement
+              "if !hasmapto('<Plug>(ScalpelVisual)') && maparg('<leader>e', 'v') ==# ''"
+          , GenericStatement "vmap <unique> <Leader>e <Plug>(ScalpelVisual)"
+          , GenericStatement "endif"
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "&cpoptions " , letValue = "s:cpoptions" }
+          , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
+          ]
+      ]
+  , DocBlock
       [ PluginAnnotation "scalpel" "Scalpel plug-in for Vim"
       , TOC
           [ "Intro"
@@ -1730,224 +1949,5 @@ Project
   , List
       [ ListItem
           [ Plaintext "Initial" , Whitespace , Plaintext "release." ]
-      ]
-  , Project
-      [ Unit
-          [ FunctionDeclaration
-              { functionBang = True
-              , functionName = "scalpel#cword"
-              , functionArguments = ArgumentList [ Argument "curpos" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "l:line" , letValue = "getline(a:curpos[1])" }
-                  , LetStatement { letLexpr = "l:col" , letValue = "a:curpos[2]" }
-                  , LetStatement
-                      { letLexpr = "l:chars" , letValue = "split(l:line, '\\zs')" }
-                  , LetStatement { letLexpr = "l:word" , letValue = "[]" }
-                  , GenericStatement "for l:char in l:chars[(l:col):]"
-                  , GenericStatement "if match(l:char, '\\k') != -1"
-                  , GenericStatement "call add(l:word, l:char)"
-                  , GenericStatement "else"
-                  , GenericStatement "break"
-                  , GenericStatement "endif"
-                  , GenericStatement "endfor"
-                  , GenericStatement "for l:char in reverse(l:chars[:(l:col) - 1])"
-                  , GenericStatement "if match(l:char, '\\k') != -1"
-                  , GenericStatement "call insert(l:word, l:char, 0)"
-                  , GenericStatement "else"
-                  , GenericStatement "break"
-                  , GenericStatement "endif"
-                  , GenericStatement "endfor"
-                  , GenericStatement "return join(l:word, '')"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = False
-              , functionName = "s:g"
-              , functionArguments = ArgumentList []
-              , functionAttributes = []
-              , functionBody = [ GenericStatement "return &gdefault ? '' : 'g'" ]
-              }
-          , FunctionDeclaration
-              { functionBang = False
-              , functionName = "s:replacements"
-              , functionArguments =
-                  ArgumentList
-                    [ Argument "currentline"
-                    , Argument "_lastline"
-                    , Argument "patterns"
-                    , Argument "g"
-                    ]
-              , functionAttributes = []
-              , functionBody =
-                  [ LetStatement { letLexpr = "s:report" , letValue = "&report" }
-                  , GenericStatement "try"
-                  , GenericStatement "set report=10000"
-                  , GenericStatement
-                      "execute a:currentline . ',' . a:_lastline . 's' . a:patterns . a:g . 'ce#'"
-                  , GenericStatement "catch /^Vim:Interrupt$/"
-                  , GenericStatement "execute 'set report=' . s:report"
-                  , GenericStatement "return"
-                  , GenericStatement "finally"
-                  , GenericStatement "normal! q"
-                  , LetStatement
-                      { letLexpr = "s:transcript" , letValue = "getreg('s')" }
-                  , GenericStatement "if exists('s:register')"
-                  , GenericStatement "call setreg('s', s:register)"
-                  , GenericStatement "endif"
-                  , GenericStatement "endtry"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "scalpel#substitute"
-              , functionArguments =
-                  ArgumentList
-                    [ Argument "patterns"
-                    , Argument "line1"
-                    , Argument "line2"
-                    , Argument "count"
-                    ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if a:count == -1"
-                  , LetStatement
-                      { letLexpr = "l:currentline" , letValue = "a:line1" }
-                  , LetStatement { letLexpr = "l:firstline" , letValue = "1" }
-                  , LetStatement { letLexpr = "l:lastline" , letValue = "line('$')" }
-                  , GenericStatement "else"
-                  , LetStatement
-                      { letLexpr = "l:firstline"
-                      , letValue = "a:line1 <= a:line2 ? a:line1 : a:line2"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:lastline"
-                      , letValue = "a:line2 >= a:line2 ? a:line2 : a:line1"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:currentline" , letValue = "l:firstline" }
-                  , GenericStatement "endif"
-                  , LetStatement { letLexpr = "l:g" , letValue = "s:g()" }
-                  , GenericStatement
-                      "if match(a:patterns, '\\v^([^\"\\\\|A-Za-z0-9 ]).*\\1.*\\1$') != 0"
-                  , GenericStatement "echomsg 'Invalid patterns: ' . a:patterns"
-                  , GenericStatement
-                      "echomsg 'Expected patterns of the form \"/foo/bar/\".'"
-                  , GenericStatement "return"
-                  , GenericStatement "endif"
-                  , GenericStatement "if getregtype('s') != ''"
-                  , LetStatement
-                      { letLexpr = "s:register" , letValue = "getreg('s')" }
-                  , GenericStatement "elseif exists('s:register')"
-                  , UnletStatement { unletBang = False , unletBody = "s:register" }
-                  , GenericStatement "endif"
-                  , GenericStatement "normal! qs"
-                  , GenericStatement "if exists('*execute')"
-                  , LetStatement
-                      { letLexpr = "l:replacements"
-                      , letValue =
-                          "execute('call s:replacements(l:currentline, l:lastline, a:patterns, l:g)', '')"
-                      }
-                  , GenericStatement "else"
-                  , GenericStatement "redir => l:replacements"
-                  , GenericStatement
-                      "call s:replacements(l:currentline, l:lastline, a:patterns, l:g)"
-                  , GenericStatement "redir END"
-                  , GenericStatement "endif"
-                  , GenericStatement "if len(l:replacements) > 0"
-                  , LetStatement
-                      { letLexpr = "l:last"
-                      , letValue = "strpart(s:transcript, len(s:transcript) - 1)"
-                      }
-                  , GenericStatement
-                      "if l:last ==# 'l' || l:last ==# 'q' || l:last ==# '\ESC'"
-                  , GenericStatement "return"
-                  , GenericStatement "elseif l:last ==# 'a'"
-                  , GenericStatement "if l:currentline > l:firstline"
-                  , GenericStatement
-                      "execute l:firstline . ',' . l:currentline . '-&' . l:g . 'ce'"
-                  , GenericStatement "endif"
-                  , GenericStatement "return"
-                  , GenericStatement "endif"
-                  , GenericStatement "endif"
-                  , GenericStatement "if l:currentline > l:firstline"
-                  , GenericStatement
-                      "execute l:firstline . ',' . l:currentline . '-&' .l:g . 'ce'"
-                  , GenericStatement "execute 'set report=' . s:report"
-                  , GenericStatement "endif"
-                  ]
-              }
-          ]
-      , Unit
-          [ GenericStatement
-              "if exists('g:ScalpelLoaded') || &compatible || v:version < 700"
-          , GenericStatement "finish"
-          , GenericStatement "endif"
-          , LetStatement { letLexpr = "g:ScalpelLoaded " , letValue = "1" }
-          , LetStatement
-              { letLexpr = "s:cpoptions " , letValue = "&cpoptions" }
-          , GenericStatement "set cpoptions&vim"
-          , LetStatement
-              { letLexpr = "s:command"
-              , letValue = "get(g:, 'ScalpelCommand', 'Scalpel')"
-              }
-          , GenericStatement "if s:command ==# ''"
-          , GenericStatement "finish"
-          , GenericStatement
-              "elseif match(s:command, '\\v\\C^[A-Z][A-Za-z]*$') == -1"
-          , GenericStatement
-              "echoerr 'g:ScalpelCommand must contain only letters and start with a ' . 'capital letter'"
-          , GenericStatement "finish"
-          , GenericStatement "endif"
-          , GenericStatement
-              "execute 'command! -nargs=1 -range ' . s:command . ' call scalpel#substitute(<q-args>, <line1>, <line2>, <count>)'"
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:GetCurposCompat"
-              , functionArguments = ArgumentList []
-              , functionAttributes = []
-              , functionBody =
-                  [ GenericStatement "if exists('*getcurpos')"
-                  , GenericStatement "return getcurpos()"
-                  , GenericStatement "else"
-                  , GenericStatement "return getpos('.')"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , LetStatement
-              { letLexpr = "s:curpos" , letValue = "s:GetCurposCompat()" }
-          , GenericStatement "augroup Scalpel"
-          , GenericStatement "autocmd!"
-          , GenericStatement
-              "autocmd CursorMoved * let s:curpos=s:GetCurposCompat()"
-          , GenericStatement "augroup END"
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:GetCurpos"
-              , functionArguments = ArgumentList []
-              , functionAttributes = []
-              , functionBody = [ GenericStatement "return s:curpos" ]
-              }
-          , GenericStatement
-              "execute 'nnoremap <Plug>(Scalpel) :' . s:command . \"/\\\\v<<C-R>=expand('<cword>')<CR>>//<Left>\""
-          , GenericStatement
-              "execute 'vnoremap <Plug>(ScalpelVisual) :' . s:command . \"/\\\\v<<C-R>=scalpel#cword(<SID>GetCurpos())<CR>>//<Left>\""
-          , LetStatement
-              { letLexpr = "s:map" , letValue = "get(g:, 'ScalpelMap', 1)" }
-          , GenericStatement "if s:map"
-          , GenericStatement
-              "if !hasmapto('<Plug>(Scalpel)') && maparg('<leader>e', 'n') ==# ''"
-          , GenericStatement "nmap <unique> <Leader>e <Plug>(Scalpel)"
-          , GenericStatement "endif"
-          , GenericStatement
-              "if !hasmapto('<Plug>(ScalpelVisual)') && maparg('<leader>e', 'v') ==# ''"
-          , GenericStatement "vmap <unique> <Leader>e <Plug>(ScalpelVisual)"
-          , GenericStatement "endif"
-          , GenericStatement "endif"
-          , LetStatement
-              { letLexpr = "&cpoptions " , letValue = "s:cpoptions" }
-          , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
-          ]
       ]
   ]

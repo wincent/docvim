@@ -46,6 +46,7 @@ node n = case n of
   FunctionDeclaration {}  -> nodes $ functionBody n
   FunctionsAnnotation     -> h2 "Functions"
   HeadingAnnotation h     -> h2 h
+  ImageAnnotation {}      -> image n
   Link l                  -> link l
   LinkTargets l           -> return $ linkTargets l
   List ls                 -> nodes ls >>= nl
@@ -187,6 +188,16 @@ function (FunctionAnnotation name) = do
   return $ target ++ content
   where target = linkTargets [name ++ "()"]
 function _ = invalidNode
+
+image :: Node -> Env
+image (ImageAnnotation source alignment) = do
+  return $ open ++ img ++ close
+  where open = "<p" ++ (align alignment) ++ ">\n"
+        align (Just al) = " align=\"" ++ al ++ "\""
+        align Nothing = ""
+        img = "  <img src=\"" ++ source ++ "\" />\n"
+        close = "</p>\n"
+image _ = invalidNode
 
 mapping :: String -> Env
 mapping name = h3 $ "`" ++ name ++ "`"

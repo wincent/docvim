@@ -1,5 +1,128 @@
 Project
-  [ DocBlock
+  [ Project
+      [ Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "pinnacle#sub_newlines"
+              , functionArguments = ArgumentList [ Argument "string" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "return tr(a:string, \"\\r\\n\", ' ')" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "pinnacle#capture_line"
+              , functionArguments = ArgumentList [ Argument "command" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "redir => l:capture"
+                  , GenericStatement "execute a:command"
+                  , GenericStatement "redir END"
+                  , GenericStatement "return pinnacle#sub_newlines(l:capture)"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "pinnacle#capture_highlight"
+              , functionArguments = ArgumentList [ Argument "group" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement
+                      "return pinnacle#capture_line('0verbose silent highlight ' . a:group)"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "pinnacle#extract_highlight"
+              , functionArguments = ArgumentList [ Argument "group" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:group "
+                      , letValue = "pinnacle#capture_highlight(a:group)"
+                      }
+                  , GenericStatement "while l:group =~# 'links to'"
+                  , LetStatement
+                      { letLexpr = "l:index "
+                      , letValue = "stridx(l:group, 'links to') + len('links to')"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:linked "
+                      , letValue = "strpart(l:group, l:index + 1)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:group "
+                      , letValue = "pinnacle#capture_highlight(l:linked)"
+                      }
+                  , GenericStatement "endwhile"
+                  , LetStatement
+                      { letLexpr = "l:matches "
+                      , letValue = "matchlist(l:group, '\\<xxx\\>\\s\\+\\(.*\\)')"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:original " , letValue = "l:matches[1]" }
+                  , GenericStatement "return l:original"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "pinnacle#italicize"
+              , functionArguments = ArgumentList [ Argument "group" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "return pinnacle#decorate('italic', a:group)" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "pinnacle#embolden"
+              , functionArguments = ArgumentList [ Argument "group" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "return pinnacle#decorate('bold', a:group)" ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "pinnacle#decorate"
+              , functionArguments =
+                  ArgumentList [ Argument "style" , Argument "group" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "l:original "
+                      , letValue = "pinnacle#extract_highlight(a:group)"
+                      }
+                  , GenericStatement "for l:lhs in ['gui', 'term', 'cterm']"
+                  , LetStatement
+                      { letLexpr = "l:matches " , letValue = "matchlist(" }
+                  , GenericStatement
+                      "\\ l:original, '^\\([^ ]\\+ \\)\\?' . '\\(' . l:lhs . '=[^ ]\\+\\)' . '\\( .\\+\\)\\?$' )"
+                  , GenericStatement "if l:matches == []"
+                  , LetStatement
+                      { letLexpr = "l:original ."
+                      , letValue = "' ' . l:lhs . '=' . a:style"
+                      }
+                  , GenericStatement "else"
+                  , LetStatement
+                      { letLexpr = "l:start " , letValue = "l:matches[1]" }
+                  , LetStatement
+                      { letLexpr = "l:value " , letValue = "l:matches[2]" }
+                  , LetStatement { letLexpr = "l:end " , letValue = "l:matches[3]" }
+                  , GenericStatement "if l:value =~# '.*' . a:style . '.*'"
+                  , GenericStatement "continue"
+                  , GenericStatement "else"
+                  , LetStatement
+                      { letLexpr = "l:original "
+                      , letValue = "l:start . l:value . ',' . a:style . l:end"
+                      }
+                  , GenericStatement "endif"
+                  , GenericStatement "endif"
+                  , GenericStatement "endfor"
+                  , GenericStatement "return pinnacle#sub_newlines(l:original)"
+                  ]
+              }
+          ]
+      ]
+  , DocBlock
       [ PluginAnnotation
           "Pinnacle" "Highlight group manipulation for Vim"
       , TOC
@@ -771,128 +894,5 @@ Project
   , List
       [ ListItem
           [ Plaintext "Initial" , Whitespace , Plaintext "release." ]
-      ]
-  , Project
-      [ Unit
-          [ FunctionDeclaration
-              { functionBang = True
-              , functionName = "pinnacle#sub_newlines"
-              , functionArguments = ArgumentList [ Argument "string" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "return tr(a:string, \"\\r\\n\", ' ')" ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "pinnacle#capture_line"
-              , functionArguments = ArgumentList [ Argument "command" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "redir => l:capture"
-                  , GenericStatement "execute a:command"
-                  , GenericStatement "redir END"
-                  , GenericStatement "return pinnacle#sub_newlines(l:capture)"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "pinnacle#capture_highlight"
-              , functionArguments = ArgumentList [ Argument "group" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement
-                      "return pinnacle#capture_line('0verbose silent highlight ' . a:group)"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "pinnacle#extract_highlight"
-              , functionArguments = ArgumentList [ Argument "group" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "l:group "
-                      , letValue = "pinnacle#capture_highlight(a:group)"
-                      }
-                  , GenericStatement "while l:group =~# 'links to'"
-                  , LetStatement
-                      { letLexpr = "l:index "
-                      , letValue = "stridx(l:group, 'links to') + len('links to')"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:linked "
-                      , letValue = "strpart(l:group, l:index + 1)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:group "
-                      , letValue = "pinnacle#capture_highlight(l:linked)"
-                      }
-                  , GenericStatement "endwhile"
-                  , LetStatement
-                      { letLexpr = "l:matches "
-                      , letValue = "matchlist(l:group, '\\<xxx\\>\\s\\+\\(.*\\)')"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:original " , letValue = "l:matches[1]" }
-                  , GenericStatement "return l:original"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "pinnacle#italicize"
-              , functionArguments = ArgumentList [ Argument "group" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "return pinnacle#decorate('italic', a:group)" ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "pinnacle#embolden"
-              , functionArguments = ArgumentList [ Argument "group" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "return pinnacle#decorate('bold', a:group)" ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "pinnacle#decorate"
-              , functionArguments =
-                  ArgumentList [ Argument "style" , Argument "group" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "l:original "
-                      , letValue = "pinnacle#extract_highlight(a:group)"
-                      }
-                  , GenericStatement "for l:lhs in ['gui', 'term', 'cterm']"
-                  , LetStatement
-                      { letLexpr = "l:matches " , letValue = "matchlist(" }
-                  , GenericStatement
-                      "\\ l:original, '^\\([^ ]\\+ \\)\\?' . '\\(' . l:lhs . '=[^ ]\\+\\)' . '\\( .\\+\\)\\?$' )"
-                  , GenericStatement "if l:matches == []"
-                  , LetStatement
-                      { letLexpr = "l:original ."
-                      , letValue = "' ' . l:lhs . '=' . a:style"
-                      }
-                  , GenericStatement "else"
-                  , LetStatement
-                      { letLexpr = "l:start " , letValue = "l:matches[1]" }
-                  , LetStatement
-                      { letLexpr = "l:value " , letValue = "l:matches[2]" }
-                  , LetStatement { letLexpr = "l:end " , letValue = "l:matches[3]" }
-                  , GenericStatement "if l:value =~# '.*' . a:style . '.*'"
-                  , GenericStatement "continue"
-                  , GenericStatement "else"
-                  , LetStatement
-                      { letLexpr = "l:original "
-                      , letValue = "l:start . l:value . ',' . a:style . l:end"
-                      }
-                  , GenericStatement "endif"
-                  , GenericStatement "endif"
-                  , GenericStatement "endfor"
-                  , GenericStatement "return pinnacle#sub_newlines(l:original)"
-                  ]
-              }
-          ]
       ]
   ]

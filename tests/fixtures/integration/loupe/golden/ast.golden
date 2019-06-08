@@ -1,5 +1,363 @@
 Project
-  [ DocBlock
+  [ Project
+      [ Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#hlmatch"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ Empty
+                  , LetStatement
+                      { letLexpr = "l:highlight"
+                      , letValue = "get(g:, 'LoupeHighlightGroup', 'IncSearch')"
+                      }
+                  , GenericStatement "if empty(l:highlight)"
+                  , GenericStatement "return"
+                  , GenericStatement "endif"
+                  , GenericStatement "if has('autocmd')"
+                  , GenericStatement "augroup LoupeHightlightMatch"
+                  , GenericStatement "autocmd!"
+                  , GenericStatement "augroup END"
+                  , GenericStatement "endif"
+                  , GenericStatement "call loupe#private#clear_highlight()"
+                  , LetStatement
+                      { letLexpr = "l:pattern" , letValue = "'\\c\\%#' . @/" }
+                  , GenericStatement "if exists('*matchadd')"
+                  , LetStatement
+                      { letLexpr = "w:loupe_hlmatch"
+                      , letValue = "matchadd(l:highlight, l:pattern)"
+                      }
+                  , GenericStatement "endif"
+                  ]
+              }
+          ]
+      , Unit
+          [ FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#private#very_magic_slash"
+              , functionArguments = ArgumentList [ Argument "slash" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if getcmdtype() != ':'"
+                  , GenericStatement "return a:slash"
+                  , GenericStatement "endif"
+                  , LetStatement { letLexpr = "l:pos" , letValue = "getcmdpos()" }
+                  , LetStatement { letLexpr = "l:cmd" , letValue = "getcmdline()" }
+                  , GenericStatement "if len(l:cmd) + 1 != l:pos"
+                  , GenericStatement "return a:slash"
+                  , GenericStatement "endif"
+                  , GenericStatement "while 1"
+                  , LetStatement
+                      { letLexpr = "l:stripped" , letValue = "s:strip_ranges(l:cmd)" }
+                  , GenericStatement "if l:stripped ==# l:cmd"
+                  , GenericStatement "break"
+                  , GenericStatement "else"
+                  , LetStatement { letLexpr = "l:cmd" , letValue = "l:stripped" }
+                  , GenericStatement "endif"
+                  , GenericStatement "endwhile"
+                  , GenericStatement "if index(['g', 's', 'v'], l:cmd) != -1"
+                  , GenericStatement
+                      "return loupe#private#prepare_highlight(a:slash . '\\v')"
+                  , GenericStatement "endif"
+                  , GenericStatement "return a:slash"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:strip_ranges"
+              , functionArguments = ArgumentList [ Argument "cmdline" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement { letLexpr = "l:cmdline" , letValue = "a:cmdline" }
+                  , LetStatement
+                      { letLexpr = "l:modifier" , letValue = "'\\([+-]\\d*\\)*'" }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\d\\+' . l:modifier, '', '') \" line number"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\.' . l:modifier, '', '') \" current line"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^$' . l:modifier, '', '') \" last line in file"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^%' . l:modifier, '', '') \" entire file"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, \"^'[a-z]\\\\c\" . l:modifier, '', '') \" mark t (or T)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, \"^'[<>]\" . l:modifier, '', '') \" visual selection marks"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^/[^/]\\+/' . l:modifier, '', '') \" /{pattern}/"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^?[^?]\\+?' . l:modifier, '', '') \" ?{pattern}?"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\\\/' . l:modifier, '', '') \" \\/ (next match of previous pattern)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\\\?' . l:modifier, '', '') \" \\? (last match of previous pattern)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue =
+                          "substitute(l:cmdline, '^\\\\&' . l:modifier, '', '') \" \\& (last match of previous substitution)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue = "substitute(l:cmdline, '^,', '', '') \" , (separator)"
+                      }
+                  , LetStatement
+                      { letLexpr = "l:cmdline"
+                      , letValue = "substitute(l:cmdline, '^;', '', '') \" ; (separator)"
+                      }
+                  , GenericStatement "return l:cmdline"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#private#prepare_highlight"
+              , functionArguments = ArgumentList [ Argument "result" ]
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if has('autocmd')"
+                  , GenericStatement "augroup LoupeHightlightMatch"
+                  , GenericStatement "autocmd!"
+                  , GenericStatement "autocmd CursorMoved * :call loupe#hlmatch()"
+                  , GenericStatement "augroup END"
+                  , GenericStatement "endif"
+                  , GenericStatement "return a:result"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#private#clear_highlight"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if exists('w:loupe_hlmatch')"
+                  , GenericStatement "try"
+                  , GenericStatement "call matchdelete(w:loupe_hlmatch)"
+                  , GenericStatement "catch /\\v<(E802|E803)>/"
+                  , GenericStatement "finally"
+                  , UnletStatement
+                      { unletBang = False , unletBody = "w:loupe_hlmatch" }
+                  , GenericStatement "endtry"
+                  , GenericStatement "endif"
+                  ]
+              }
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "loupe#private#cleanup"
+              , functionArguments = ArgumentList []
+              , functionAttributes = [ "abort" ]
+              , functionBody =
+                  [ GenericStatement "if !exists('v:hlsearch') || !v:hlsearch"
+                  , GenericStatement "call loupe#private#clear_highlight()"
+                  , GenericStatement "endif"
+                  ]
+              }
+          ]
+      , Unit
+          [ GenericStatement
+              "if exists('g:LoupeLoaded') || &compatible || v:version < 700"
+          , GenericStatement "finish"
+          , GenericStatement "endif"
+          , LetStatement { letLexpr = "g:LoupeLoaded" , letValue = "1" }
+          , LetStatement
+              { letLexpr = "s:cpoptions" , letValue = "&cpoptions" }
+          , GenericStatement "set cpoptions&vim"
+          , GenericStatement "if &history < 1000"
+          , GenericStatement
+              "set history=1000 \" Longer search and command history (default is 50)."
+          , GenericStatement "endif"
+          , GenericStatement "if has('extra_search')"
+          , GenericStatement "set hlsearch \" Highlight search strings."
+          , GenericStatement
+              "set incsearch \" Incremental search (\"find as you type\")."
+          , GenericStatement "endif"
+          , GenericStatement "set ignorecase \" Ignore case when searching."
+          , GenericStatement
+              "set shortmess+=s \" Don't echo search wrap messages."
+          , GenericStatement
+              "set smartcase \" Case-sensitive search if search string includes a capital letter."
+          , LetStatement
+              { letLexpr = "s:clear"
+              , letValue = "get(g:, 'LoupeClearHighlightMap', 1)"
+              }
+          , GenericStatement "if s:clear"
+          , GenericStatement
+              "if !hasmapto('<Plug>(LoupeClearHighlight)') && maparg('<leader>n', 'n') ==# ''"
+          , GenericStatement
+              "nmap <silent> <unique> <leader>n <Plug>(LoupeClearHighlight)"
+          , GenericStatement "endif"
+          , GenericStatement "endif"
+          , GenericStatement
+              "nnoremap <silent> <Plug>(LoupeClearHighlight) :nohlsearch<bar> call loupe#private#clear_highlight()<CR>"
+          , GenericStatement
+              "cnoreabbrev <silent> <expr> noh (getcmdtype() == ':' && getcmdpos() == 4 ? 'noh <bar> call loupe#private#clear_highlight()' : 'noh')"
+          , GenericStatement
+              "cnoreabbrev <silent> <expr> nohl (getcmdtype() == ':' && getcmdpos() == 5 ? 'nohl <bar> call loupe#private#clear_highlight()' : 'nohl')"
+          , GenericStatement
+              "cnoreabbrev <silent> <expr> nohls (getcmdtype() == ':' && getcmdpos() == 6 ? 'nohls <bar> call loupe#private#clear_highlight()' : 'nohls')"
+          , GenericStatement
+              "cnoreabbrev <silent> <expr> nohlse (getcmdtype() == ':' && getcmdpos() == 7 ? 'nohlse <bar> call loupe#private#clear_highlight()' : 'nohlse')"
+          , GenericStatement
+              "cnoreabbrev <silent> <expr> nohlsea (getcmdtype() == ':' && getcmdpos() == 8 ? 'nohlsea <bar> call loupe#private#clear_highlight()' : 'nohlsea')"
+          , GenericStatement
+              "cnoreabbrev <silent> <expr> nohlsear (getcmdtype() == ':' && getcmdpos() == 9 ? 'nohlsear <bar> call loupe#private#clear_highlight()' : 'nohlsear')"
+          , GenericStatement
+              "cnoreabbrev <silent> <expr> nohlsearc (getcmdtype() == ':' && getcmdpos() == 10 ? 'nohlsearc <bar> call loupe#private#clear_highlight()' : 'nohlsearc')"
+          , GenericStatement
+              "cnoreabbrev <silent> <expr> nohlsearch (getcmdtype() == ':' && getcmdpos() == 11 ? 'nohlsearch <bar> call loupe#private#clear_highlight()' : 'nohlsearch')"
+          , FunctionDeclaration
+              { functionBang = False
+              , functionName = "s:MagicString"
+              , functionArguments = ArgumentList []
+              , functionAttributes = []
+              , functionBody =
+                  [ LetStatement
+                      { letLexpr = "s:magic"
+                      , letValue = "get(g:, 'LoupeVeryMagic', 1)"
+                      }
+                  , GenericStatement "return s:magic ? '\\v' : ''"
+                  ]
+              }
+          , GenericStatement
+              "nnoremap <expr> / loupe#private#prepare_highlight('/' . <SID>MagicString())"
+          , GenericStatement
+              "nnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())"
+          , GenericStatement
+              "xnoremap <expr> / loupe#private#prepare_highlight('/' . <SID>MagicString())"
+          , GenericStatement
+              "xnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())"
+          , GenericStatement "if !empty(s:MagicString())"
+          , GenericStatement
+              "cnoremap <expr> ! loupe#private#very_magic_slash('!')"
+          , GenericStatement
+              "cnoremap <expr> # loupe#private#very_magic_slash('#')"
+          , GenericStatement
+              "cnoremap <expr> $ loupe#private#very_magic_slash('$')"
+          , GenericStatement
+              "cnoremap <expr> % loupe#private#very_magic_slash('%')"
+          , GenericStatement
+              "cnoremap <expr> & loupe#private#very_magic_slash('&')"
+          , GenericStatement
+              "cnoremap <expr> ' loupe#private#very_magic_slash(\"'\")"
+          , GenericStatement
+              "cnoremap <expr> ( loupe#private#very_magic_slash('(')"
+          , GenericStatement
+              "cnoremap <expr> ) loupe#private#very_magic_slash(')')"
+          , GenericStatement
+              "cnoremap <expr> * loupe#private#very_magic_slash('*')"
+          , GenericStatement
+              "cnoremap <expr> + loupe#private#very_magic_slash('+')"
+          , GenericStatement
+              "cnoremap <expr> , loupe#private#very_magic_slash(',')"
+          , GenericStatement
+              "cnoremap <expr> - loupe#private#very_magic_slash('-')"
+          , GenericStatement
+              "cnoremap <expr> . loupe#private#very_magic_slash('.')"
+          , GenericStatement
+              "cnoremap <expr> / loupe#private#very_magic_slash('/')"
+          , GenericStatement
+              "cnoremap <expr> : loupe#private#very_magic_slash(':')"
+          , GenericStatement
+              "cnoremap <expr> ; loupe#private#very_magic_slash(';')"
+          , GenericStatement
+              "cnoremap <expr> < loupe#private#very_magic_slash('<')"
+          , GenericStatement
+              "cnoremap <expr> = loupe#private#very_magic_slash('=')"
+          , GenericStatement
+              "cnoremap <expr> > loupe#private#very_magic_slash('>')"
+          , GenericStatement
+              "cnoremap <expr> ? loupe#private#very_magic_slash('?')"
+          , GenericStatement
+              "cnoremap <expr> @ loupe#private#very_magic_slash('@')"
+          , GenericStatement
+              "cnoremap <expr> [ loupe#private#very_magic_slash('[')"
+          , GenericStatement
+              "cnoremap <expr> ] loupe#private#very_magic_slash(']')"
+          , GenericStatement
+              "cnoremap <expr> ^ loupe#private#very_magic_slash('^')"
+          , GenericStatement
+              "cnoremap <expr> _ loupe#private#very_magic_slash('_')"
+          , GenericStatement
+              "cnoremap <expr> ` loupe#private#very_magic_slash('`')"
+          , GenericStatement
+              "cnoremap <expr> { loupe#private#very_magic_slash('{')"
+          , GenericStatement
+              "cnoremap <expr> } loupe#private#very_magic_slash('}')"
+          , GenericStatement
+              "cnoremap <expr> ~ loupe#private#very_magic_slash('~')"
+          , GenericStatement "endif"
+          , FunctionDeclaration
+              { functionBang = True
+              , functionName = "s:map"
+              , functionArguments =
+                  ArgumentList [ Argument "keys" , Argument "name" ]
+              , functionAttributes = []
+              , functionBody =
+                  [ Empty
+                  , LetStatement
+                      { letLexpr = "s:center"
+                      , letValue = "get(g:, 'LoupeCenterResults', 1)"
+                      }
+                  , LetStatement
+                      { letLexpr = "s:center_string"
+                      , letValue = "s:center ? 'zz' : ''"
+                      }
+                  , GenericStatement "if !hasmapto('<Plug>(Loupe' . a:name . ')')"
+                  , GenericStatement
+                      "execute 'nmap <silent> ' . a:keys . ' <Plug>(Loupe' . a:name . ')'"
+                  , GenericStatement "endif"
+                  , GenericStatement
+                      "execute 'nnoremap <silent> <Plug>(Loupe' . a:name . ')' . ' ' . a:keys . s:center_string . ':call loupe#hlmatch()<CR>'"
+                  ]
+              }
+          , GenericStatement "call s:map('#', 'Octothorpe')"
+          , GenericStatement "call s:map('*', 'Star')"
+          , GenericStatement "call s:map('N', 'N')"
+          , GenericStatement "call s:map('g#', 'GOctothorpe')"
+          , GenericStatement "call s:map('g*', 'GStar')"
+          , GenericStatement "call s:map('n', 'n')"
+          , GenericStatement "if has('autocmd') && has('extra_search')"
+          , GenericStatement "augroup LoupeCleanUp"
+          , GenericStatement "autocmd!"
+          , GenericStatement
+              "autocmd WinEnter * :call loupe#private#cleanup()"
+          , GenericStatement "augroup END"
+          , GenericStatement "endif"
+          , LetStatement
+              { letLexpr = "&cpoptions" , letValue = "s:cpoptions" }
+          , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
+          ]
+      ]
+  , DocBlock
       [ PluginAnnotation "loupe" "Loupe plug-in for Vim"
       , TOC
           [ "Intro"
@@ -663,364 +1021,6 @@ Project
       , Plaintext "with:"
       ]
   , Fenced [ ":call pathogen#helptags()" ]
-  , Project
-      [ Unit
-          [ FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#hlmatch"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ Empty
-                  , LetStatement
-                      { letLexpr = "l:highlight"
-                      , letValue = "get(g:, 'LoupeHighlightGroup', 'IncSearch')"
-                      }
-                  , GenericStatement "if empty(l:highlight)"
-                  , GenericStatement "return"
-                  , GenericStatement "endif"
-                  , GenericStatement "if has('autocmd')"
-                  , GenericStatement "augroup LoupeHightlightMatch"
-                  , GenericStatement "autocmd!"
-                  , GenericStatement "augroup END"
-                  , GenericStatement "endif"
-                  , GenericStatement "call loupe#private#clear_highlight()"
-                  , LetStatement
-                      { letLexpr = "l:pattern" , letValue = "'\\c\\%#' . @/" }
-                  , GenericStatement "if exists('*matchadd')"
-                  , LetStatement
-                      { letLexpr = "w:loupe_hlmatch"
-                      , letValue = "matchadd(l:highlight, l:pattern)"
-                      }
-                  , GenericStatement "endif"
-                  ]
-              }
-          ]
-      , Unit
-          [ FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#private#very_magic_slash"
-              , functionArguments = ArgumentList [ Argument "slash" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if getcmdtype() != ':'"
-                  , GenericStatement "return a:slash"
-                  , GenericStatement "endif"
-                  , LetStatement { letLexpr = "l:pos" , letValue = "getcmdpos()" }
-                  , LetStatement { letLexpr = "l:cmd" , letValue = "getcmdline()" }
-                  , GenericStatement "if len(l:cmd) + 1 != l:pos"
-                  , GenericStatement "return a:slash"
-                  , GenericStatement "endif"
-                  , GenericStatement "while 1"
-                  , LetStatement
-                      { letLexpr = "l:stripped" , letValue = "s:strip_ranges(l:cmd)" }
-                  , GenericStatement "if l:stripped ==# l:cmd"
-                  , GenericStatement "break"
-                  , GenericStatement "else"
-                  , LetStatement { letLexpr = "l:cmd" , letValue = "l:stripped" }
-                  , GenericStatement "endif"
-                  , GenericStatement "endwhile"
-                  , GenericStatement "if index(['g', 's', 'v'], l:cmd) != -1"
-                  , GenericStatement
-                      "return loupe#private#prepare_highlight(a:slash . '\\v')"
-                  , GenericStatement "endif"
-                  , GenericStatement "return a:slash"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:strip_ranges"
-              , functionArguments = ArgumentList [ Argument "cmdline" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ LetStatement { letLexpr = "l:cmdline" , letValue = "a:cmdline" }
-                  , LetStatement
-                      { letLexpr = "l:modifier" , letValue = "'\\([+-]\\d*\\)*'" }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\d\\+' . l:modifier, '', '') \" line number"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\.' . l:modifier, '', '') \" current line"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^$' . l:modifier, '', '') \" last line in file"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^%' . l:modifier, '', '') \" entire file"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, \"^'[a-z]\\\\c\" . l:modifier, '', '') \" mark t (or T)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, \"^'[<>]\" . l:modifier, '', '') \" visual selection marks"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^/[^/]\\+/' . l:modifier, '', '') \" /{pattern}/"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^?[^?]\\+?' . l:modifier, '', '') \" ?{pattern}?"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\\\/' . l:modifier, '', '') \" \\/ (next match of previous pattern)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\\\?' . l:modifier, '', '') \" \\? (last match of previous pattern)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue =
-                          "substitute(l:cmdline, '^\\\\&' . l:modifier, '', '') \" \\& (last match of previous substitution)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue = "substitute(l:cmdline, '^,', '', '') \" , (separator)"
-                      }
-                  , LetStatement
-                      { letLexpr = "l:cmdline"
-                      , letValue = "substitute(l:cmdline, '^;', '', '') \" ; (separator)"
-                      }
-                  , GenericStatement "return l:cmdline"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#private#prepare_highlight"
-              , functionArguments = ArgumentList [ Argument "result" ]
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if has('autocmd')"
-                  , GenericStatement "augroup LoupeHightlightMatch"
-                  , GenericStatement "autocmd!"
-                  , GenericStatement "autocmd CursorMoved * :call loupe#hlmatch()"
-                  , GenericStatement "augroup END"
-                  , GenericStatement "endif"
-                  , GenericStatement "return a:result"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#private#clear_highlight"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if exists('w:loupe_hlmatch')"
-                  , GenericStatement "try"
-                  , GenericStatement "call matchdelete(w:loupe_hlmatch)"
-                  , GenericStatement "catch /\\v<(E802|E803)>/"
-                  , GenericStatement "finally"
-                  , UnletStatement
-                      { unletBang = False , unletBody = "w:loupe_hlmatch" }
-                  , GenericStatement "endtry"
-                  , GenericStatement "endif"
-                  ]
-              }
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "loupe#private#cleanup"
-              , functionArguments = ArgumentList []
-              , functionAttributes = [ "abort" ]
-              , functionBody =
-                  [ GenericStatement "if !exists('v:hlsearch') || !v:hlsearch"
-                  , GenericStatement "call loupe#private#clear_highlight()"
-                  , GenericStatement "endif"
-                  ]
-              }
-          ]
-      , Unit
-          [ GenericStatement
-              "if exists('g:LoupeLoaded') || &compatible || v:version < 700"
-          , GenericStatement "finish"
-          , GenericStatement "endif"
-          , LetStatement { letLexpr = "g:LoupeLoaded" , letValue = "1" }
-          , LetStatement
-              { letLexpr = "s:cpoptions" , letValue = "&cpoptions" }
-          , GenericStatement "set cpoptions&vim"
-          , GenericStatement "if &history < 1000"
-          , GenericStatement
-              "set history=1000 \" Longer search and command history (default is 50)."
-          , GenericStatement "endif"
-          , GenericStatement "if has('extra_search')"
-          , GenericStatement "set hlsearch \" Highlight search strings."
-          , GenericStatement
-              "set incsearch \" Incremental search (\"find as you type\")."
-          , GenericStatement "endif"
-          , GenericStatement "set ignorecase \" Ignore case when searching."
-          , GenericStatement
-              "set shortmess+=s \" Don't echo search wrap messages."
-          , GenericStatement
-              "set smartcase \" Case-sensitive search if search string includes a capital letter."
-          , LetStatement
-              { letLexpr = "s:clear"
-              , letValue = "get(g:, 'LoupeClearHighlightMap', 1)"
-              }
-          , GenericStatement "if s:clear"
-          , GenericStatement
-              "if !hasmapto('<Plug>(LoupeClearHighlight)') && maparg('<leader>n', 'n') ==# ''"
-          , GenericStatement
-              "nmap <silent> <unique> <leader>n <Plug>(LoupeClearHighlight)"
-          , GenericStatement "endif"
-          , GenericStatement "endif"
-          , GenericStatement
-              "nnoremap <silent> <Plug>(LoupeClearHighlight) :nohlsearch<bar> call loupe#private#clear_highlight()<CR>"
-          , GenericStatement
-              "cnoreabbrev <silent> <expr> noh (getcmdtype() == ':' && getcmdpos() == 4 ? 'noh <bar> call loupe#private#clear_highlight()' : 'noh')"
-          , GenericStatement
-              "cnoreabbrev <silent> <expr> nohl (getcmdtype() == ':' && getcmdpos() == 5 ? 'nohl <bar> call loupe#private#clear_highlight()' : 'nohl')"
-          , GenericStatement
-              "cnoreabbrev <silent> <expr> nohls (getcmdtype() == ':' && getcmdpos() == 6 ? 'nohls <bar> call loupe#private#clear_highlight()' : 'nohls')"
-          , GenericStatement
-              "cnoreabbrev <silent> <expr> nohlse (getcmdtype() == ':' && getcmdpos() == 7 ? 'nohlse <bar> call loupe#private#clear_highlight()' : 'nohlse')"
-          , GenericStatement
-              "cnoreabbrev <silent> <expr> nohlsea (getcmdtype() == ':' && getcmdpos() == 8 ? 'nohlsea <bar> call loupe#private#clear_highlight()' : 'nohlsea')"
-          , GenericStatement
-              "cnoreabbrev <silent> <expr> nohlsear (getcmdtype() == ':' && getcmdpos() == 9 ? 'nohlsear <bar> call loupe#private#clear_highlight()' : 'nohlsear')"
-          , GenericStatement
-              "cnoreabbrev <silent> <expr> nohlsearc (getcmdtype() == ':' && getcmdpos() == 10 ? 'nohlsearc <bar> call loupe#private#clear_highlight()' : 'nohlsearc')"
-          , GenericStatement
-              "cnoreabbrev <silent> <expr> nohlsearch (getcmdtype() == ':' && getcmdpos() == 11 ? 'nohlsearch <bar> call loupe#private#clear_highlight()' : 'nohlsearch')"
-          , FunctionDeclaration
-              { functionBang = False
-              , functionName = "s:MagicString"
-              , functionArguments = ArgumentList []
-              , functionAttributes = []
-              , functionBody =
-                  [ LetStatement
-                      { letLexpr = "s:magic"
-                      , letValue = "get(g:, 'LoupeVeryMagic', 1)"
-                      }
-                  , GenericStatement "return s:magic ? '\\v' : ''"
-                  ]
-              }
-          , GenericStatement
-              "nnoremap <expr> / loupe#private#prepare_highlight('/' . <SID>MagicString())"
-          , GenericStatement
-              "nnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())"
-          , GenericStatement
-              "xnoremap <expr> / loupe#private#prepare_highlight('/' . <SID>MagicString())"
-          , GenericStatement
-              "xnoremap <expr> ? loupe#private#prepare_highlight('?' . <SID>MagicString())"
-          , GenericStatement "if !empty(s:MagicString())"
-          , GenericStatement
-              "cnoremap <expr> ! loupe#private#very_magic_slash('!')"
-          , GenericStatement
-              "cnoremap <expr> # loupe#private#very_magic_slash('#')"
-          , GenericStatement
-              "cnoremap <expr> $ loupe#private#very_magic_slash('$')"
-          , GenericStatement
-              "cnoremap <expr> % loupe#private#very_magic_slash('%')"
-          , GenericStatement
-              "cnoremap <expr> & loupe#private#very_magic_slash('&')"
-          , GenericStatement
-              "cnoremap <expr> ' loupe#private#very_magic_slash(\"'\")"
-          , GenericStatement
-              "cnoremap <expr> ( loupe#private#very_magic_slash('(')"
-          , GenericStatement
-              "cnoremap <expr> ) loupe#private#very_magic_slash(')')"
-          , GenericStatement
-              "cnoremap <expr> * loupe#private#very_magic_slash('*')"
-          , GenericStatement
-              "cnoremap <expr> + loupe#private#very_magic_slash('+')"
-          , GenericStatement
-              "cnoremap <expr> , loupe#private#very_magic_slash(',')"
-          , GenericStatement
-              "cnoremap <expr> - loupe#private#very_magic_slash('-')"
-          , GenericStatement
-              "cnoremap <expr> . loupe#private#very_magic_slash('.')"
-          , GenericStatement
-              "cnoremap <expr> / loupe#private#very_magic_slash('/')"
-          , GenericStatement
-              "cnoremap <expr> : loupe#private#very_magic_slash(':')"
-          , GenericStatement
-              "cnoremap <expr> ; loupe#private#very_magic_slash(';')"
-          , GenericStatement
-              "cnoremap <expr> < loupe#private#very_magic_slash('<')"
-          , GenericStatement
-              "cnoremap <expr> = loupe#private#very_magic_slash('=')"
-          , GenericStatement
-              "cnoremap <expr> > loupe#private#very_magic_slash('>')"
-          , GenericStatement
-              "cnoremap <expr> ? loupe#private#very_magic_slash('?')"
-          , GenericStatement
-              "cnoremap <expr> @ loupe#private#very_magic_slash('@')"
-          , GenericStatement
-              "cnoremap <expr> [ loupe#private#very_magic_slash('[')"
-          , GenericStatement
-              "cnoremap <expr> ] loupe#private#very_magic_slash(']')"
-          , GenericStatement
-              "cnoremap <expr> ^ loupe#private#very_magic_slash('^')"
-          , GenericStatement
-              "cnoremap <expr> _ loupe#private#very_magic_slash('_')"
-          , GenericStatement
-              "cnoremap <expr> ` loupe#private#very_magic_slash('`')"
-          , GenericStatement
-              "cnoremap <expr> { loupe#private#very_magic_slash('{')"
-          , GenericStatement
-              "cnoremap <expr> } loupe#private#very_magic_slash('}')"
-          , GenericStatement
-              "cnoremap <expr> ~ loupe#private#very_magic_slash('~')"
-          , GenericStatement "endif"
-          , FunctionDeclaration
-              { functionBang = True
-              , functionName = "s:map"
-              , functionArguments =
-                  ArgumentList [ Argument "keys" , Argument "name" ]
-              , functionAttributes = []
-              , functionBody =
-                  [ Empty
-                  , LetStatement
-                      { letLexpr = "s:center"
-                      , letValue = "get(g:, 'LoupeCenterResults', 1)"
-                      }
-                  , LetStatement
-                      { letLexpr = "s:center_string"
-                      , letValue = "s:center ? 'zz' : ''"
-                      }
-                  , GenericStatement "if !hasmapto('<Plug>(Loupe' . a:name . ')')"
-                  , GenericStatement
-                      "execute 'nmap <silent> ' . a:keys . ' <Plug>(Loupe' . a:name . ')'"
-                  , GenericStatement "endif"
-                  , GenericStatement
-                      "execute 'nnoremap <silent> <Plug>(Loupe' . a:name . ')' . ' ' . a:keys . s:center_string . ':call loupe#hlmatch()<CR>'"
-                  ]
-              }
-          , GenericStatement "call s:map('#', 'Octothorpe')"
-          , GenericStatement "call s:map('*', 'Star')"
-          , GenericStatement "call s:map('N', 'N')"
-          , GenericStatement "call s:map('g#', 'GOctothorpe')"
-          , GenericStatement "call s:map('g*', 'GStar')"
-          , GenericStatement "call s:map('n', 'n')"
-          , GenericStatement "if has('autocmd') && has('extra_search')"
-          , GenericStatement "augroup LoupeCleanUp"
-          , GenericStatement "autocmd!"
-          , GenericStatement
-              "autocmd WinEnter * :call loupe#private#cleanup()"
-          , GenericStatement "augroup END"
-          , GenericStatement "endif"
-          , LetStatement
-              { letLexpr = "&cpoptions" , letValue = "s:cpoptions" }
-          , UnletStatement { unletBang = False , unletBody = "s:cpoptions" }
-          ]
-      ]
   , MappingsAnnotation
   , MappingAnnotation "<Plug>(LoupeClearHighlight)"
   , Paragraph

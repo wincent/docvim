@@ -441,7 +441,9 @@ annotation = char '@' *> annotationName
              , try $ string "footer" >> pure FooterAnnotation -- must come before function'
              , try $ string "functions" >> pure FunctionsAnnotation -- must come before function'
              , function'
-             , string "indent" >> pure IndentAnnotation
+             , string "header" >> pure HeaderAnnotation
+             , try $ string "indent" >> pure IndentAnnotation -- must come before image'
+             , image'
              , try $ string "mappings" >> pure MappingsAnnotation -- must come before mapping
              , mapping
              , try $ string "options" >> pure OptionsAnnotation -- must come before option'
@@ -454,6 +456,10 @@ annotation = char '@' *> annotationName
     commandParameters = optionMaybe $ many1 (noneOf "\n")
 
     function'         = string "function" >> ws >> FunctionAnnotation <$> word <* optional ws
+
+    image'            = string "image" >> ws >> ImageAnnotation <$> imageSource <*> imageAlignment
+    imageSource       = word <* optional ws
+    imageAlignment    = optionMaybe $ many1 (noneOf "\n")
 
     mapping           = string "mapping" >> ws >> MappingAnnotation <$> mappingName
     mappingName       = word <* optional ws

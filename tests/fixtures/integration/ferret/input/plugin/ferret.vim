@@ -2,6 +2,13 @@
 " Licensed under the terms of the BSD 2-clause license.
 
 ""
+" @header
+"
+" @image https://raw.githubusercontent.com/wincent/ferret/media/ferret.jpg center
+" @image https://raw.githubusercontent.com/wincent/ferret/media/ferret.gif center
+"
+
+""
 " @plugin ferret Ferret plug-in for Vim
 "
 " # Intro
@@ -32,14 +39,18 @@
 " |location-list| instead, and a <leader>l mapping as a shortcut to |:Lack|.
 "
 " |:Back| and |:Black| are analogous to |:Ack| and |:Lack|, but scoped to search
-" within currently open buffers only.
+" within currently open buffers only. |:Quack| is scoped to search among the
+" files currently in the |quickfix| list.
 "
 " ## 2. Streamlined multi-file replace
 "
 " The companion to |:Ack| is |:Acks| (mnemonic: "Ack substitute", accessible via
 " shortcut <leader>r), which allows you to run a multi-file replace across all
 " the files placed in the |quickfix| window by a previous invocation of |:Ack|
-" (or |:Back|).
+" (or |:Back|, or |:Quack|).
+"
+" Correspondingly, results obtained by |:Lack| can be targeted for replacement
+" with |:Lacks|.
 "
 " ## 3. Quickfix listing enhancements
 "
@@ -58,8 +69,10 @@
 " the |quickfix| listing into the |:args| list, where they can be operated on in
 " bulk via the |:argdo| command. This is what's used under the covers on older
 " versions of Vim by |:Acks| to do its work (on newer versions the built-in
-" |:cfdo| is used instead).
+" |:cdo| or |:cfdo| are used instead).
 "
+" Ferret also provides a |:Largs| command, which is a |location-list| analog
+" for |:Qargs|.
 "
 " # Installation
 "
@@ -118,7 +131,7 @@
 "                                                *FerretWillWrite* *FerretDidWrite*
 " For maximum compatibility with other plug-ins, Ferret runs the following
 " "User" autocommands before and after running the file writing operations
-" during |:Acks|:
+" during |:Acks| or |:Lacks|:
 "
 " - FerretWillWrite
 " - FerretDidWrite
@@ -241,7 +254,7 @@
 "
 " Ferret was originally the thinnest of wrappers (7 lines of code in my
 " |.vimrc|) around `ack`. The earliest traces of it can be seen in the initial
-" commit to my dotfiles repo in May, 2009 (https://rfr.to/h).
+" commit to my dotfiles repo in May, 2009 (https://wincent.com/h).
 "
 " So, even though Ferret has a new name now and actually prefers `rg` then `ag`
 " over `ack`/`ack-grep` when available, I prefer to keep the command names
@@ -357,7 +370,38 @@
 "
 " # History
 "
-" ## master (not yet released)
+" ## 5.0 (8 June 2019)
+"
+" - The |<Plug>(FerretAcks)| mapping now uses |/\v| "very magic" mode by
+"   default. This default can be changed using the |g:FerretVeryMagic| option.
+" - |:Acks| now preferentially uses |:cdo| (rather than |:cfdo|) to make
+"   replacements, which means that it no longer operates on a per-file level and
+"   instead targets individual entries within the |quickfix| window. This is
+"   relevant if you've used Ferrets mappings to delete entries from the window.
+"   The old behavior can be restored with the |g:FerretAcksCommand| option.
+" - Ferret now has a |:Lacks| command, an analog to |:Acks| which applies to the
+"   |location-list|.
+" - Likewise, Ferret now has a |:Largs| command, analogous to |:Qargs|, which
+"   applies to the |location-list| instead of the |quickfix| window.
+" - The Ferret bindings that are set-up in the |quickfix| window when
+"   |g:FerretQFMap| is enabled now also apply to the |location-list|.
+"
+" ## 4.1 (31 January 2019)
+"
+" - Added |:Quack| command, analogous to |:Ack| but scoped to the files
+"   currently listed in the |quickfix| window.
+" - Fixed option autocompletion.
+"
+" ## 4.0.2 (11 January 2019)
+"
+" - Restore compatibility with versions of `rg` prior to v0.8
+"   (https://github.com/wincent/ferret/issues/59).
+"
+" ## 4.0.1 (8 January 2019)
+"
+" - Make |:Acks| behavior the same irrespective of the |'gdefault'| setting.
+"
+" ## 4.0 (25 December 2018)
 "
 " - Try to avoid "press ENTER to continue" prompts.
 " - Put search term in |w:quickfix_title| for use in statuslines
@@ -595,6 +639,23 @@ command! -bang -nargs=1 -complete=customlist,ferret#private#backcomplete Back ca
 command! -bang -nargs=1 -complete=customlist,ferret#private#blackcomplete Black call ferret#private#black(<bang>0, <q-args>)
 
 ""
+" @command :Quack {pattern} {options}
+"
+" Like |:Ack|, but searches only among files currently in the |quickfix|
+" listing. Note that the search is still delegated to the underlying
+" |'grepprg'| (`rg`, `ag`, `ack` or `ack-grep`), which means that only
+" buffers written to disk will be searched. If no buffers are written
+" to disk, then |:Quack| behaves exactly like |:Ack| and will search all
+" files in the current directory.
+"
+" @command :Quack! {pattern} {options}
+"
+" Like |:Quack|, but returns all results irrespective of the value of
+" |g:FerretMaxResults|.
+"
+command! -bang -nargs=1 -complete=customlist,ferret#private#quackcomplete Quack call ferret#private#quack(<bang>0, <q-args>)
+
+""
 " @command :Acks /{pattern}/{replacement}/
 "
 " Takes all of the files currently in the |quickfix| listing and performs a
@@ -619,7 +680,17 @@ command! -bang -nargs=1 -complete=customlist,ferret#private#blackcomplete Black 
 " ```
 " :Acks /\v(foo\d+)(bar)/\2\1/
 " ```
-command! -nargs=1 Acks call ferret#private#acks(<q-args>)
+command! -nargs=1 Acks call ferret#private#acks(<q-args>, 'qf')
+
+""
+" @command :Lacks /{pattern}/{replacement}/
+"
+" Takes all of the files in the current |location-list| and performs a
+" substitution of all instances of {pattern} by {replacement}. This is an analog
+" of the |:Acks| command, but operates on the |location-list| instead of the
+" |quickfix| listing.
+"
+command! -nargs=1 Lacks call ferret#private#acks(<q-args>, 'location')
 
 ""
 " @command :FerretCancelAsync
@@ -632,7 +703,7 @@ command! FerretCancelAsync call ferret#private#async#cancel()
 " @command :FerretPullAsync
 "
 " Eagerly populates the |quickfix| (or |location-list|) window with any results
-" that may have been produced by a long-running asynchronoous search in progress
+" that may have been produced by a long-running asynchronous search in progress
 " in the background.
 "
 command! FerretPullAsync call ferret#private#async#pull()
@@ -640,8 +711,7 @@ command! FerretPullAsync call ferret#private#async#pull()
 nnoremap <Plug>(FerretAck) :Ack<space>
 nnoremap <Plug>(FerretLack) :Lack<space>
 nnoremap <Plug>(FerretAckWord) :Ack <C-r><C-w><CR>
-nnoremap <Plug>(FerretAcks)
-      \ :Acks <c-r>=(exists('g:ferret_lastsearch') ? '/' . g:ferret_lastsearch . '//' : ' ')<CR><Left>
+nnoremap <Plug>(FerretAcks) :Acks <c-r>=(ferret#private#acks_prompt())<CR><Left><Left>
 
 ""
 " @option g:FerretMap boolean 1
@@ -727,7 +797,16 @@ endif
 "
 " It takes the files currently in the |quickfix| listing and sets them as
 " |:args| so that they can be operated on en masse via the |:argdo| command.
-command! -bar Qargs execute 'args' ferret#private#qargs()
+command! -bar Qargs execute 'args' ferret#private#args('qf')
+
+""
+" @command :Largs
+"
+" Just like |:Qargs|, but applies to the current |location-list|.
+"
+" It takes the files in the current |location-list| and sets them as
+" |:args| so that they can be operated on en masse via the |:argdo| command.
+command! -bar Largs execute 'args' ferret#private#args('location')
 
 ""
 " @option g:FerretQFCommands boolean 1

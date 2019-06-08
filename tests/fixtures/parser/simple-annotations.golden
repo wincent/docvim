@@ -1,10 +1,10 @@
 Project
-  [ DocBlock [ PluginAnnotation "foo" "bar" , TOC [] ]
-  , DedentAnnotation
-  , Project
+  [ Project
       [ Unit
           [ LetStatement { letLexpr = "g:x" , letValue = "1 \"Unset!" }
           , LetStatement { letLexpr = "g:y" , letValue = "1" }
           ]
       ]
+  , DocBlock [ PluginAnnotation "foo" "bar" , TOC [] ]
+  , DedentAnnotation
   ]
