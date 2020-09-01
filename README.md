@@ -1,7 +1,5 @@
 # docvim: a documentation generator for Vim plug-ins
 
-[![Build Status](https://travis-ci.org/wincent/docvim.svg?branch=master)](https://travis-ci.org/wincent/docvim) [![docvim on Stackage LTS 3](http://stackage.org/package/docvim/badge/lts)](http://stackage.org/lts/package/docvim) [![docvim on Stackage Nightly](http://stackage.org/package/docvim/badge/nightly)](http://stackage.org/nightly/package/docvim)
-
 docvim is a documentation generator for Vim plug-ins, written in Haskell.
 
 ## Quickstart
