@@ -232,6 +232,7 @@ bin/upload
 ### Examples of plug-ins using docvim
 
 - [Ferret](https://github.com/wincent/ferret)
+- [Loupe](https://github.com/wincent/loupe)
 - [Pinnacle](https://github.com/wincent/pinnacle)
 - [Scalpel](https://github.com/wincent/scalpel)
 - [vim-docvim](https://github.com/wincent/vim-docvim)
