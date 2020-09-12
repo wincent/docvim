@@ -197,7 +197,7 @@ image (ImageAnnotation source alignment) = do
         align (Just al) = " align=\"" ++ al ++ "\""
         align Nothing = ""
         img = "  <img src=\"" ++ source ++ "\" />\n"
-        close = "</p>\n"
+        close = "</p>\n\n"
 image _ = invalidNode
 
 mapping :: String -> Env
