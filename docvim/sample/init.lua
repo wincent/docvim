@@ -1,0 +1,2 @@
+-- Example.
+print 'hi'
