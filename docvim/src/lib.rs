@@ -1,10 +1,8 @@
+use std::fmt;
 use std::fs;
 
 use self::LiteralKind::*;
 use self::TokenKind::*;
-
-// Error message strings.
-const EXPECTED_COMMENT: &str= "Expected Comment token";
 
 #[derive(Debug)]
 struct Token {
@@ -59,6 +57,49 @@ enum TokenKind {
     Unknown,
 }
 
+// TODO: move all Lexer stuff into Lexer mod
+#[derive(Copy, Clone)]
+enum LexerErrorKind {
+    ExpectedComment,
+
+    EndOfInput, // Not a real error; just used to signify we got to the end.
+}
+
+impl LexerErrorKind {
+    fn to_str(&self) -> &'static str {
+        match *self {
+            LexerErrorKind::EndOfInput => "end of input",
+            LexerErrorKind::ExpectedComment => "expected comment",
+        }
+    }
+}
+
+struct LexerError {
+    kind: LexerErrorKind,
+    position: usize
+}
+
+impl LexerError {
+    pub fn new(kind: LexerErrorKind, position: usize) -> LexerError {
+        Self {
+            kind,
+            position,
+        }
+    }
+}
+
+impl fmt::Display for LexerError {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(fmt, "{} ({})", self.kind.to_str(), self.position)
+    }
+}
+
+impl From<LexerErrorKind> for LexerError {
+    fn from(kind: LexerErrorKind) -> LexerError {
+        LexerError::new(kind, 0)
+    }
+}
+
 struct Lexer<'a> {
     iter: std::iter::Peekable<std::str::Chars<'a>>,
     position: usize
@@ -77,24 +118,23 @@ impl<'a> Lexer<'a> {
         self.iter.next();
     }
 
-    // TODO: see if a type alias can help us avoid explicit lifetime here.
-    // TODO: make a struct with position info in it and use that for richer errors
-    fn expect<'b>(&mut self, ch: char, err: &'b str) -> Result<char, &'b str> {
+    fn expect(&mut self, ch: char, err: LexerErrorKind) -> Result<char, LexerError> {
         let next = self.iter.next().ok_or(err)?;
         if next == ch {
             Ok(ch)
         } else {
-            Err(err)
+            Err(LexerError::from(err))
         }
     }
 
-    fn scan_comment(&mut self) -> Result<Token, &str> {
-        self.expect('-', EXPECTED_COMMENT)?;
-        self.expect('-', EXPECTED_COMMENT)?;
+    fn scan_comment(&mut self) -> Result<Token, LexerError> {
+        self.expect('-', LexerErrorKind::ExpectedComment)?;
+        self.expect('-', LexerErrorKind::ExpectedComment)?;
         Ok(Token::new(Comment))
     }
 
-    fn next_token(&mut self) -> Result<Token, &str> {
+    fn next_token(&mut self) -> Result<Token, LexerError> {
+        let position = self.position;
         self.skip_whitespace();
         match self.iter.peek() {
             Some('-') => {
@@ -104,7 +144,7 @@ impl<'a> Lexer<'a> {
                 self.advance();
                 Ok(Token::new(Unknown))
             }
-            None => Err("end of input") // TODO: use self.position here
+            None => Err(LexerError { kind: LexerErrorKind::EndOfInput, position })
         }
     }
 
