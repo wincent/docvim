@@ -125,8 +125,8 @@ impl<I: std::iter::Iterator> std::iter::Iterator for Peekable<I> {
     fn next(&mut self) -> Option<I::Item> {
         let c = self.iter.next();
         match c {
-            None => { self.position +=1; },
-            _ => ()
+            None => (),
+            _ => { self.position += 1; },
         }
         c
     }
@@ -211,5 +211,26 @@ mod tests {
     #[test]
     fn blinking_light() {
         assert_eq!(1, 1)
+    }
+
+    #[test]
+    fn peekable_tracks_position() {
+        let sample = "hello";
+        let mut iter = Peekable::new(sample.chars());
+        assert_eq!(iter.position, 0);
+        assert_eq!(*iter.peek().unwrap(), 'h');
+        assert_eq!(iter.position, 0);
+        assert_eq!(iter.next(), Some('h'));
+        assert_eq!(iter.position, 1);
+        assert_eq!(iter.next(), Some('e'));
+        assert_eq!(iter.position, 2);
+        assert_eq!(iter.next(), Some('l'));
+        assert_eq!(iter.position, 3);
+        assert_eq!(iter.next(), Some('l'));
+        assert_eq!(iter.position, 4);
+        assert_eq!(iter.next(), Some('o'));
+        assert_eq!(iter.position, 5);
+        assert_eq!(iter.next(), None);
+        assert_eq!(iter.position, 5);
     }
 }
