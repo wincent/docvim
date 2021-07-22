@@ -89,26 +89,16 @@ impl<'a> Lexer<'a> {
     }
 
     fn scan_comment(&mut self) -> Result<Token, &str> {
-        let ch = self.iter.next().ok_or(EXPECTED_COMMENT)?;
-        if ch != '-' {
-            return Err(EXPECTED_COMMENT);
-        }
-        match self.iter.next() {
-            Some(ch) => {
-                Ok(Token::new(Comment))
-            }
-            None => {
-                Err(EXPECTED_COMMENT)
-            }
-        }
+        self.expect('-', EXPECTED_COMMENT)?;
+        self.expect('-', EXPECTED_COMMENT)?;
+        Ok(Token::new(Comment))
     }
 
     fn next_token(&mut self) -> Result<Token, &str> {
         self.skip_whitespace();
         match self.iter.peek() {
             Some('-') => {
-                self.advance();
-                Ok(Token::new(Comment))
+                Ok(self.scan_comment()?)
             },
             Some(_c) => {
                 self.advance();
