@@ -100,22 +100,47 @@ impl From<LexerErrorKind> for LexerError {
     }
 }
 
+// Wrapper around standard Peekable iterator that tracks position.
+struct Peekable<I: std::iter::Iterator> {
+    iter: std::iter::Peekable<I>,
+    position: usize,
+}
+
+impl<I: std::iter::Iterator> Peekable<I> {
+    pub fn new(iter: I) -> Self {
+        Peekable {
+            iter: iter.peekable(),
+            position: 0,
+        }
+    }
+
+    pub fn peek(&mut self) -> Option<&I::Item> {
+        self.iter.peek()
+    }
+}
+
+impl<I: std::iter::Iterator> std::iter::Iterator for Peekable<I> {
+    type Item = I::Item;
+
+    fn next(&mut self) -> Option<I::Item> {
+        let c = self.iter.next();
+        match c {
+            None => { self.position +=1; },
+            _ => ()
+        }
+        c
+    }
+}
+
 struct Lexer<'a> {
-    iter: std::iter::Peekable<std::str::Chars<'a>>,
-    position: usize
+    iter: Peekable<std::str::Chars<'a>>,
 }
 
 impl<'a> Lexer<'a> {
     fn new(input: &'a str) -> Self {
         Self {
-            iter: input.chars().peekable(),
-            position: 0,
+            iter: Peekable::new(input.chars()),
         }
-    }
-
-    fn advance(&mut self) {
-        self.position = self.position + 1;
-        self.iter.next();
     }
 
     fn expect(&mut self, ch: char, err: LexerErrorKind) -> Result<char, LexerError> {
@@ -134,14 +159,14 @@ impl<'a> Lexer<'a> {
     }
 
     fn next_token(&mut self) -> Result<Token, LexerError> {
-        let position = self.position;
+        let position = self.iter.position;
         self.skip_whitespace();
         match self.iter.peek() {
             Some('-') => {
                 Ok(self.scan_comment()?)
             },
             Some(_c) => {
-                self.advance();
+                self.iter.next();
                 Ok(Token::new(Unknown))
             }
             None => Err(LexerError { kind: LexerErrorKind::EndOfInput, position })
@@ -151,8 +176,8 @@ impl<'a> Lexer<'a> {
     fn skip_whitespace(&mut self) {
         while let Some(&c) = self.iter.peek() {
             match c {
-                ' ' | '\n' | '\r' | '\t' => self.advance(),
-                _ => break
+                ' ' | '\n' | '\r' | '\t' => { self.iter.next(); }
+                _ => { break; }
             }
         }
     }
@@ -176,25 +201,6 @@ pub fn run(args: Vec<String>) {
                 break;
             }
         }
-    }
-
-    let mut iter = contents.chars().peekable();
-    while let Some(&c) = iter.peek() {
-        let token = match c {
-            '-' => {
-                Token::new(Comment)
-            }
-            '0'..='9' => {
-                // println!("Got digit");
-                Token::new(Unknown)
-            }
-            _ => {
-                // println!("Something else {}", c);
-                Token::new(Unknown)
-            }
-        };
-        println!("Token {:?}", token);
-        iter.next();
     }
 }
 
