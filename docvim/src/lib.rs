@@ -3,6 +3,9 @@ use std::fs;
 use self::LiteralKind::*;
 use self::TokenKind::*;
 
+// Error message strings.
+const EXPECTED_COMMENT: &str= "Expected Comment token";
+
 #[derive(Debug)]
 struct Token {
     pub kind: TokenKind,
@@ -62,19 +65,45 @@ struct Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
-    pub fn new(input: &'a str) -> Self {
+    fn new(input: &'a str) -> Self {
         Self {
             iter: input.chars().peekable(),
             position: 0,
         }
     }
 
-    pub fn advance(&mut self) {
+    fn advance(&mut self) {
         self.position = self.position + 1;
         self.iter.next();
     }
 
-    pub fn next_token(&mut self) -> Result<Token, &str> {
+    // TODO: see if a type alias can help us avoid explicit lifetime here.
+    // TODO: make a struct with position info in it and use that for richer errors
+    fn expect<'b>(&mut self, ch: char, err: &'b str) -> Result<char, &'b str> {
+        let next = self.iter.next().ok_or(err)?;
+        if next == ch {
+            Ok(ch)
+        } else {
+            Err(err)
+        }
+    }
+
+    fn scan_comment(&mut self) -> Result<Token, &str> {
+        let ch = self.iter.next().ok_or(EXPECTED_COMMENT)?;
+        if ch != '-' {
+            return Err(EXPECTED_COMMENT);
+        }
+        match self.iter.next() {
+            Some(ch) => {
+                Ok(Token::new(Comment))
+            }
+            None => {
+                Err(EXPECTED_COMMENT)
+            }
+        }
+    }
+
+    fn next_token(&mut self) -> Result<Token, &str> {
         self.skip_whitespace();
         match self.iter.peek() {
             Some('-') => {
@@ -89,7 +118,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    pub fn skip_whitespace(&mut self) {
+    fn skip_whitespace(&mut self) {
         while let Some(&c) = self.iter.peek() {
             match c {
                 ' ' | '\n' | '\r' | '\t' => self.advance(),
@@ -99,7 +128,10 @@ impl<'a> Lexer<'a> {
     }
 }
 
-pub fn process(input: &str) {
+pub fn run(args: Vec<String>) {
+    // TODO: actual arg parsing
+    let input = "sample/init.lua";
+
     let contents = fs::read_to_string(input)
         .expect("unable to read file");
 
