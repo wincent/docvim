@@ -5,6 +5,8 @@ use self::CommentKind::*;
 use self::KeywordKind::*;
 use self::LiteralKind::*;
 use self::NameKind::*;
+use self::OpKind::*;
+use self::PunctuatorKind::*;
 use self::TokenKind::*;
 
 #[derive(Debug)]
@@ -24,12 +26,6 @@ impl Token {
 enum CommentKind {
     BlockComment,
     LineComment,
-}
-
-#[derive(Debug)]
-enum NameKind {
-    Identifier,
-    Keyword(KeywordKind),
 }
 
 #[derive(Debug)]
@@ -58,28 +54,44 @@ enum KeywordKind {
 }
 
 #[derive(Debug)]
-enum BinaryOpToken {
-    And,     // and (logical and)
+enum NameKind {
+    Identifier,
+    Keyword(KeywordKind),
+}
+
+#[derive(Debug)]
+enum PunctuatorKind {
+    Colon,
+    Comma,
+    Dot,
+    Lcurly,
+    Lparen,
+    Lbracket,
+    Rparen,
+    Rcurly,
+    Rbracket,
+    Semi,
+}
+
+// Note that "and" and "or" are _operators_ in Lua, but we lex them as _keywords_ (see
+// `KeywordKind`).
+#[derive(Debug)]
+enum OpKind {
     Caret,   // ^ (exponentiate)
     Concat,  // .. (concatenate)
     Eq,      // == (equal)
     Gt,      // > (greater than)
     Gte,     // >= (greater than or equal)
+    Hash,    // # (length, unary)
     Lt,      // < (less than)
     Lte,     // <= (less than or equal)
-    Minus,   // - (subtract): note can also be a unary operator (negation)
+    Minus,   // - (negate, unary / subtract, binary)
     Ne,      // == (not equal)
-    Or,      // or (logical or)
     Percent, // % (modulo)
     Plus,    // + (add)
     Slash,   // / (divide)
     Star,    // * (multiply)
-}
-
-#[derive(Debug)]
-enum UnaryOpToken {
-    Hash,  // # (length)
-    Minus, // - (negate)
+    Vararg,  // ... (varargs, technically not an "operator", just syntax)
 }
 
 enum LiteralKind {
@@ -88,10 +100,10 @@ enum LiteralKind {
 
 #[derive(Debug)]
 enum TokenKind {
-    BinaryOp(BinaryOpToken),
-    UnaryOp(UnaryOpToken),
+    Op(OpKind),
     Comment(CommentKind),
     Name(NameKind),
+    Punctuator(PunctuatorKind),
     Unknown,
 }
 
@@ -99,6 +111,7 @@ enum TokenKind {
 #[derive(Copy, Clone)]
 enum LexerErrorKind {
     ExpectedComment,
+    InvalidOperator,
     UnterminatedBlockComment,
 
     EndOfInput, // Not a real error; just used to signify we got to the end.
@@ -109,6 +122,7 @@ impl LexerErrorKind {
         match *self {
             LexerErrorKind::EndOfInput => "end of input",
             LexerErrorKind::ExpectedComment => "expected comment",
+            LexerErrorKind::InvalidOperator => "invalid operator",
             LexerErrorKind::UnterminatedBlockComment => "unterminated block comment",
         }
     }
@@ -316,6 +330,86 @@ impl<'a> Lexer<'a> {
                     } else {
                         // TODO: operator cases (unary, binary)
                         Ok(Token::new(Unknown, start, self.iter.position))
+                    }
+                },
+                '+' => {
+                    self.iter.next();
+                    Ok(Token::new(Op(Plus), start, self.iter.position))
+                },
+                '-' => {
+                    self.iter.next();
+                    Ok(Token::new(Op(Minus), start, self.iter.position))
+                },
+                '*' => {
+                    self.iter.next();
+                    Ok(Token::new(Op(Star), start, self.iter.position))
+                },
+                '/' => {
+                    self.iter.next();
+                    Ok(Token::new(Op(Slash), start, self.iter.position))
+                },
+                '%' => {
+                    self.iter.next();
+                    Ok(Token::new(Op(Percent), start, self.iter.position))
+                },
+                '^' => {
+                    self.iter.next();
+                    Ok(Token::new(Op(Caret), start, self.iter.position))
+                },
+                '#' => {
+                    self.iter.next();
+                    Ok(Token::new(Op(Hash), start, self.iter.position))
+                },
+                // ==    ~=    <=    >=    <     >     =
+                '(' => {
+                    self.iter.next();
+                    Ok(Token::new(Punctuator(Lparen), start, self.iter.position))
+                },
+                ')' => {
+                    self.iter.next();
+                    Ok(Token::new(Punctuator(Rparen), start, self.iter.position))
+                },
+                '{' => {
+                    self.iter.next();
+                    Ok(Token::new(Punctuator(Lcurly), start, self.iter.position))
+                },
+                '}' => {
+                    self.iter.next();
+                    Ok(Token::new(Punctuator(Rcurly), start, self.iter.position))
+                },
+                '[' => {
+                    self.iter.next();
+                    Ok(Token::new(Punctuator(Lbracket), start, self.iter.position))
+                },
+                ']' => {
+                    self.iter.next();
+                    Ok(Token::new(Punctuator(Rbracket), start, self.iter.position))
+                },
+                ';' => {
+                    self.iter.next();
+                    Ok(Token::new(Punctuator(Semi), start, self.iter.position))
+                },
+                ':' => {
+                    self.iter.next();
+                    Ok(Token::new(Punctuator(Colon), start, self.iter.position))
+                },
+                ',' => {
+                    self.iter.next();
+                    Ok(Token::new(Punctuator(Comma), start, self.iter.position))
+                },
+                '.' => {
+                    let mut dot_count = 0;
+                    while self.consume_char('.') {
+                        dot_count += 1;
+                    }
+                    match dot_count {
+                        1 => Ok(Token::new(Punctuator(Dot), start, self.iter.position)),
+                        2 => Ok(Token::new(Op(Concat), start, self.iter.position)),
+                        3 => Ok(Token::new(Op(Vararg), start, self.iter.position)),
+                        _ => Err(LexerError {
+                            kind: LexerErrorKind::InvalidOperator,
+                            position: start,
+                        })
                     }
                 },
                 'A'..='Z' | 'a'..='z' | '_' => {

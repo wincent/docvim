@@ -1,4 +1,4 @@
 -- Example.
 if true then
-  print 'hi'
+  print('hello' .. 'world')
 end
