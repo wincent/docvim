@@ -1,25 +1,24 @@
 use std::fmt;
 use std::fs;
 
+use self::CommentKind::*;
 use self::LiteralKind::*;
 use self::TokenKind::*;
 
 #[derive(Debug)]
 struct Token {
     pub kind: TokenKind,
-    // TODO: tokens should have contents too (some of them, at least, like literals and
-    // comments); could also encode range info in them and then extract content later (for the ones
-    // where it matters) -- not sure which is better...
-    pos: usize,
-    len: usize,
+    pub start: usize,
+    pub end: usize,
 }
 
 impl Token {
-    fn new(kind: TokenKind, pos: usize, len: usize) -> Token {
-        Token { kind, pos, len }
+    fn new(kind: TokenKind, start: usize, end: usize) -> Token {
+        Token { kind, start, end }
     }
 }
 
+#[derive(Debug)]
 enum CommentKind {
     BlockComment,
     LineComment,
@@ -58,7 +57,7 @@ enum LiteralKind {
 enum TokenKind {
     BinaryOp(BinaryOpToken),
     UnaryOp(UnaryOpToken),
-    Comment,
+    Comment(CommentKind),
     Unknown,
 }
 
@@ -66,6 +65,7 @@ enum TokenKind {
 #[derive(Copy, Clone)]
 enum LexerErrorKind {
     ExpectedComment,
+    UnterminatedBlockComment,
 
     EndOfInput, // Not a real error; just used to signify we got to the end.
 }
@@ -75,21 +75,19 @@ impl LexerErrorKind {
         match *self {
             LexerErrorKind::EndOfInput => "end of input",
             LexerErrorKind::ExpectedComment => "expected comment",
+            LexerErrorKind::UnterminatedBlockComment => "unterminated block comment",
         }
     }
 }
 
 struct LexerError {
     kind: LexerErrorKind,
-    position: usize
+    position: usize,
 }
 
 impl LexerError {
     pub fn new(kind: LexerErrorKind, position: usize) -> LexerError {
-        Self {
-            kind,
-            position,
-        }
+        Self { kind, position }
     }
 }
 
@@ -99,6 +97,7 @@ impl fmt::Display for LexerError {
     }
 }
 
+// This is pretty useless if I can't pass position info into it.
 impl From<LexerErrorKind> for LexerError {
     fn from(kind: LexerErrorKind) -> LexerError {
         LexerError::new(kind, 0)
@@ -131,7 +130,9 @@ impl<I: std::iter::Iterator> std::iter::Iterator for Peekable<I> {
         let c = self.iter.next();
         match c {
             None => (),
-            _ => { self.position += 1; },
+            _ => {
+                self.position += 1;
+            }
         }
         c
     }
@@ -148,7 +149,23 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn expect(&mut self, ch: char, err: LexerErrorKind) -> Result<char, LexerError> {
+    /// Consumes the specified `char`, returning `true` on success and `false` if nothing was
+    /// consumed.
+    fn consume_char(&mut self, ch: char) -> bool {
+        match self.iter.peek() {
+            Some(seen) => {
+                if *seen == ch {
+                    self.iter.next();
+                    true
+                } else {
+                    false
+                }
+            }
+            _ => false,
+        }
+    }
+
+    fn expect_char(&mut self, ch: char, err: LexerErrorKind) -> Result<char, LexerError> {
         let next = self.iter.next().ok_or(err)?;
         if next == ch {
             Ok(ch)
@@ -158,61 +175,98 @@ impl<'a> Lexer<'a> {
     }
 
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
-        self.expect('-', LexerErrorKind::ExpectedComment)?;
-        self.expect('-', LexerErrorKind::ExpectedComment)?;
-        let position = self.iter.position;
-        match self.iter.peek() {
-            Some('[') => {
-                // might be a multiline comment start...
-                // want multiple lookahead for this...
-                // could clone iterator.. (if i can implement clone trait on it and all its
-                // fields)
-                // or could pull in itertools dep
-                // or could extend peekable with some more methods for peek_nth() etc
-                // TODO: deal with this later
-                Ok(Token::new(Comment, position, 1))
-            },
-            Some('\n') => {
-                // end of line
-                Ok(Token::new(Comment, position, 1))
-            },
-            Some(_) => {
-                // everything else...
-                // want "consume until" closure...
-                // let length: usize = 0;
-                // loop {
-                //     let c = self.iter.peek();
-                //     match 
-                // }
-                Ok(Token::new(Comment, position, 0))
-            },
-            None => {
-                // end of input
-                Ok(Token::new(Comment, position, 0))
-            },
+        if self.consume_char('[') && self.consume_char('[') {
+            self.scan_block_comment()
+        } else {
+            self.scan_line_comment()
+        }
+    }
+
+    /// Scans until seeing "--]]" in the first non-whitespace position on a line.
+    fn scan_block_comment(&mut self) -> Result<Token, LexerError> {
+        let start = self.iter.position;
+        let mut waiting_for_newline = true;
+        loop {
+            match self.iter.next() {
+                Some('\n') => {
+                    waiting_for_newline = false;
+                }
+                Some(' ') | Some('\t') => {
+                    ();
+                }
+                Some('-') => {
+                    // BUG: this is greedy so -------[[ will not match
+                    //                    but  ------[[ will match (ie. even number of dashes)
+                    // probably need a better look-ahead mechanism than one char
+                    if !waiting_for_newline
+                        && self.consume_char('-')
+                        && self.consume_char('[')
+                        && self.consume_char('[')
+                    {
+                        // BLOCK COMMENT FOUND.
+                        return Ok(Token::new(Comment(BlockComment), start, self.iter.position));
+                    }
+                }
+                Some(_) => {
+                    waiting_for_newline = true;
+                }
+                None => {
+                    return Err(LexerError {
+                        kind: LexerErrorKind::UnterminatedBlockComment,
+                        position: self.iter.position,
+                    });
+                }
+            }
+        }
+    }
+
+    /// Scans until end of line, or end of input.
+    fn scan_line_comment(&mut self) -> Result<Token, LexerError> {
+        // BUG: position starts right after the "--", should probably start at the beginning.
+        let start = self.iter.position;
+        loop {
+            match self.iter.next() {
+                Some('\n') | None => {
+                    return Ok(Token::new(Comment(LineComment), start, self.iter.position));
+                },
+                _ => (),
+            }
         }
     }
 
     fn next_token(&mut self) -> Result<Token, LexerError> {
         self.skip_whitespace();
-        let position = self.iter.position;
+        let start = self.iter.position;
         match self.iter.peek() {
             Some('-') => {
-                Ok(self.scan_comment()?)
-            },
+                self.iter.next();
+                if self.consume_char('-') {
+                    Ok(self.scan_comment()?)
+                } else {
+                    // TODO: operator cases (unary, binary)
+                    Ok(Token::new(Unknown, start, self.iter.position))
+                }
+            }
             Some(_c) => {
                 self.iter.next();
-                Ok(Token::new(Unknown, position, 1))
+                Ok(Token::new(Unknown, start, self.iter.position))
             }
-            None => Err(LexerError { kind: LexerErrorKind::EndOfInput, position })
+            None => Err(LexerError {
+                kind: LexerErrorKind::EndOfInput,
+                position: start,
+            }),
         }
     }
 
     fn skip_whitespace(&mut self) {
         while let Some(&c) = self.iter.peek() {
             match c {
-                ' ' | '\n' | '\r' | '\t' => { self.iter.next(); }
-                _ => { break; }
+                ' ' | '\n' | '\r' | '\t' => {
+                    self.iter.next();
+                }
+                _ => {
+                    break;
+                }
             }
         }
     }
@@ -222,8 +276,7 @@ pub fn run(args: Vec<String>) {
     // TODO: actual arg parsing
     let input = "sample/init.lua";
 
-    let contents = fs::read_to_string(input)
-        .expect("unable to read file");
+    let contents = fs::read_to_string(input).expect("unable to read file");
 
     println!("Text:\n{}", contents);
 
