@@ -1,5 +1,4 @@
 use std::fmt;
-use std::fs;
 
 mod peekable;
 
@@ -15,7 +14,7 @@ use self::StrKind::*;
 use self::TokenKind::*;
 
 #[derive(Debug, Eq, PartialEq)]
-struct Token {
+pub struct Token {
     pub kind: TokenKind,
     pub start: usize,
     pub end: usize,
@@ -28,13 +27,13 @@ impl Token {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-enum CommentKind {
+pub enum CommentKind {
     BlockComment,
     LineComment,
 }
 
 #[derive(Debug, Eq, PartialEq)]
-enum KeywordKind {
+pub enum KeywordKind {
     And,
     Break,
     Do,
@@ -59,13 +58,13 @@ enum KeywordKind {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-enum NameKind {
+pub enum NameKind {
     Identifier,
     Keyword(KeywordKind),
 }
 
 #[derive(Debug, Eq, PartialEq)]
-enum PunctuatorKind {
+pub enum PunctuatorKind {
     Colon,
     Comma,
     Dot,
@@ -81,7 +80,7 @@ enum PunctuatorKind {
 // Note that "and" and "or" are _operators_ in Lua, but we lex them as _keywords_ (see
 // `KeywordKind`).
 #[derive(Debug, Eq, PartialEq)]
-enum OpKind {
+pub enum OpKind {
     Assign,  // = (assign)
     Caret,   // ^ (exponentiate)
     Concat,  // .. (concatenate)
@@ -101,20 +100,20 @@ enum OpKind {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-enum LiteralKind {
+pub enum LiteralKind {
     Number,
     Str(StrKind),
 }
 
 #[derive(Debug, Eq, PartialEq)]
-enum StrKind {
+pub enum StrKind {
     DoubleQuoted,
     SingleQuoted,
     Long { level: usize },
 }
 
 #[derive(Debug, Eq, PartialEq)]
-enum TokenKind {
+pub enum TokenKind {
     Op(OpKind),
     Comment(CommentKind),
     Literal(LiteralKind),
@@ -124,7 +123,7 @@ enum TokenKind {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-enum LexerErrorKind {
+pub enum LexerErrorKind {
     InvalidEscapeSequence,
     InvalidOperator,
     InvalidNumberLiteral,
@@ -150,7 +149,7 @@ impl LexerErrorKind {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-struct LexerError {
+pub struct LexerError {
     kind: LexerErrorKind,
     position: usize,
 }
@@ -174,12 +173,12 @@ impl From<LexerErrorKind> for LexerError {
     }
 }
 
-struct Lexer<'a> {
+pub struct Lexer<'a> {
     iter: Peekable<std::str::Chars<'a>>,
 }
 
 impl<'a> Lexer<'a> {
-    fn new(input: &'a str) -> Self {
+    pub fn new(input: &'a str) -> Self {
         Self {
             iter: Peekable::new(input.chars()),
         }
@@ -517,7 +516,7 @@ impl<'a> Lexer<'a> {
         })
     }
 
-    fn next_token(&mut self) -> Result<Token, LexerError> {
+    pub fn next_token(&mut self) -> Result<Token, LexerError> {
         self.skip_whitespace();
         let start = self.iter.position;
         if let Some(&c) = self.iter.peek() {
@@ -729,26 +728,6 @@ impl<'a> std::iter::Iterator for Lexer<'a> {
 
     fn next(&mut self) -> Option<Token> {
         return self.next_token().ok();
-    }
-}
-
-pub fn run(args: Vec<String>) {
-    // TODO: actual arg parsing
-    let input = "sample/init.lua";
-
-    let contents = fs::read_to_string(input).expect("unable to read file");
-
-    println!("Text:\n{}", contents);
-
-    let mut lexer = Lexer::new(&contents);
-    loop {
-        match lexer.next_token() {
-            Ok(t) => println!("token: {:?}", t),
-            Err(e) => {
-                println!("error: {}", e);
-                break;
-            }
-        }
     }
 }
 

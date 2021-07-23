@@ -1,3 +1,5 @@
+use docvim::*;
+
 fn main() {
-    lexer::run(std::env::args().collect())
+    run(std::env::args().collect());
 }
