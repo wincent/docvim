@@ -708,6 +708,7 @@ impl<'a> Lexer<'a> {
 
     /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
     /// `None` if the input is valid.
+    #[cfg(test)]
     fn validate(&mut self) -> Option<LexerError> {
         if self.iter.position > 0 {
             panic!("validate() called on partially consumed Lexer");
