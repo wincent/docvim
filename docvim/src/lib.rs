@@ -738,11 +738,11 @@ pub fn run(args: Vec<String>) {
 mod tests {
     use super::*;
 
-    // MEH: by moving assertion into function, reported failure line is always this one instead of
-    // the real one
-    fn assert_lexes(input: &str, expected: Vec<Token>) {
-        let tokens: Vec<Token> = Lexer::new(&input).collect();
-        assert_eq!(tokens, expected)
+    macro_rules! assert_lexes {
+        ($input:expr, $expected:expr) => {
+            let tokens: Vec<Token> = Lexer::new(&$input).collect();
+            assert_eq!(tokens, $expected);
+        };
     }
 
     // 3.0.1 malformed number
@@ -763,74 +763,74 @@ mod tests {
     #[test]
     fn lexer_lexes_numbers() {
         // Examples from Lua docs.
-        assert_lexes(
+        assert_lexes!(
             "3",
             vec![Token {
                 kind: Literal(Number),
                 start: 0,
                 end: 1,
-            }],
+            }]
         );
-        assert_lexes(
+        assert_lexes!(
             "3.0",
             vec![Token {
                 kind: Literal(Number),
                 start: 0,
                 end: 3,
-            }],
+            }]
         );
-        assert_lexes(
+        assert_lexes!(
             "3.1416",
             vec![Token {
                 kind: Literal(Number),
                 start: 0,
                 end: 6,
-            }],
+            }]
         );
-        assert_lexes(
+        assert_lexes!(
             "314.16e-2",
             vec![Token {
                 kind: Literal(Number),
                 start: 0,
                 end: 9,
-            }],
+            }]
         );
-        assert_lexes(
+        assert_lexes!(
             "0.31416E1",
             vec![Token {
                 kind: Literal(Number),
                 start: 0,
                 end: 9,
-            }],
+            }]
         );
-        assert_lexes(
+        assert_lexes!(
             "0xff",
             vec![Token {
                 kind: Literal(Number),
                 start: 0,
                 end: 4,
-            }],
+            }]
         );
-        assert_lexes(
+        assert_lexes!(
             "0x56",
             vec![Token {
                 kind: Literal(Number),
                 start: 0,
                 end: 4,
-            }],
+            }]
         );
     }
 
     #[test]
     fn lexer_lexes_strings() {
-        assert_lexes(
+        assert_lexes!(
             "'hello'",
             vec![Token {
                 kind: Literal(Str(SingleQuoted)),
                 start: 0,
                 end: 7,
-            }],
-        )
+            }]
+        );
     }
 
     #[test]
