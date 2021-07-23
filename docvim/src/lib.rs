@@ -10,7 +10,7 @@ use self::PunctuatorKind::*;
 use self::StrKind::*;
 use self::TokenKind::*;
 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 struct Token {
     pub kind: TokenKind,
     pub start: usize,
@@ -23,13 +23,13 @@ impl Token {
     }
 }
 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 enum CommentKind {
     BlockComment,
     LineComment,
 }
 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 enum KeywordKind {
     And,
     Break,
@@ -54,13 +54,13 @@ enum KeywordKind {
     While,
 }
 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 enum NameKind {
     Identifier,
     Keyword(KeywordKind),
 }
 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 enum PunctuatorKind {
     Colon,
     Comma,
@@ -76,7 +76,7 @@ enum PunctuatorKind {
 
 // Note that "and" and "or" are _operators_ in Lua, but we lex them as _keywords_ (see
 // `KeywordKind`).
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 enum OpKind {
     Assign,  // = (assign)
     Caret,   // ^ (exponentiate)
@@ -96,20 +96,20 @@ enum OpKind {
     Vararg,  // ... (varargs, technically not an "operator", just syntax)
 }
 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 enum LiteralKind {
     Number,
     Str(StrKind),
 }
 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 enum StrKind {
     DoubleQuoted,
     SingleQuoted,
-    Long
+    Long,
 }
 
-#[derive(Debug,Eq,PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 enum TokenKind {
     Op(OpKind),
     Comment(CommentKind),
@@ -298,7 +298,7 @@ impl<'a> Lexer<'a> {
             match c {
                 'A'..='Z' | 'a'..='z' | '0'..='9' | '_' => {
                     name.push(self.iter.next().unwrap());
-                },
+                }
                 _ => {
                     break;
                 }
@@ -328,36 +328,88 @@ impl<'a> Lexer<'a> {
                 "true" => Name(Keyword(True)),
                 "until" => Name(Keyword(Until)),
                 "while" => Name(Keyword(While)),
-                _ => Name(Identifier)
+                _ => Name(Identifier),
             },
             start,
-            self.iter.position
+            self.iter.position,
         ))
     }
 
-    /// optional decimal part and an optional decimal exponent
-    /// 3   3.0   3.1416   314.16e-2   0.31416E1   0xff   0x56
-    ///
-    /// 3.0.1 malformed number
-    /// 3e-2.1 ditto
-    /// 0xffx malformed number
-    /// 0xff.0xff ditto
-
-    ///
-    /// BUT
-    ///
-    /// 0xff.1 = 255.0625
-    /// 0xff.ff = 255.99...
-    /// 0xffe10 = 1048080 because "e" doesn't mean exponent here...
-    /// 0xffe-10 = 4084 (ie. (0xffe) - (10))
-    /// 0xff.ffe2 = 255.99
-    ///
-    /// TODO: write tests for the above
     fn scan_number(&mut self) -> Result<Token, LexerError> {
-        Err(LexerError {
-            kind: LexerErrorKind::InvalidNumberLiteral,
-            position: self.iter.position,
-        })
+        let start = self.iter.position;
+        let err = |iter: &Peekable<std::str::Chars>| {
+            Err(LexerError {
+                kind: LexerErrorKind::InvalidNumberLiteral,
+                position: iter.position
+            })
+        };
+        let token = |iter: &Peekable<std::str::Chars>| {
+            Ok(Token::new(Literal(Number), start, iter.position))
+        };
+        let ch = self.iter.next().unwrap();
+        if ch == '0' && self.consume_char('x') {
+            let mut seen_separator = false;
+            while let Some(next) = self.iter.peek() {
+                match next {
+                    '0'..='9' | 'A'..='F' | 'a'..='f' => {
+                        self.iter.next();
+                    },
+                    '.' => {
+                        if seen_separator {
+                            return err(&self.iter);
+                        } else {
+                            seen_separator = true;
+                            self.iter.next();
+                        }
+                    },
+                    _ => {
+                        self.iter.next();
+                        break;
+                    }
+                }
+            }
+            return token(&self.iter);
+        } else {
+            let mut seen_exp = false;
+            let mut seen_separator = false;
+            while let Some(next) = self.iter.peek() {
+                match next {
+                    '0'..='9' => {
+                        self.iter.next();
+                    },
+                    '.' => {
+                        if seen_separator {
+                            return err(&self.iter);
+                        } else {
+                            seen_separator = true;
+                            self.iter.next();
+                        }
+                    },
+                    'E' | 'e' => {
+                        if seen_exp {
+                            return err(&self.iter);
+                        } else {
+                            self.iter.next();
+                            seen_exp = true;
+                            seen_separator = false;
+                            self.consume_char('-');
+                            if let Some(next) = self.iter.next() {
+                                match next {
+                                    '0'..='9' => {continue;},
+                                    _ => {return err(&self.iter);}
+                                }
+                            } else {
+                                return err(&self.iter);
+                            }
+                        }
+                    }
+                    _ => {
+                        break;
+                    }
+                }
+            }
+        }
+        token(&self.iter)
     }
 
     fn scan_string(&mut self) -> Result<Token, LexerError> {
@@ -366,9 +418,17 @@ impl<'a> Lexer<'a> {
         while let Some(c) = self.iter.next() {
             if c == quote {
                 if quote == '"' {
-                    return Ok(Token::new(Literal(Str(DoubleQuoted)), start, self.iter.position));
+                    return Ok(Token::new(
+                        Literal(Str(DoubleQuoted)),
+                        start,
+                        self.iter.position,
+                    ));
                 } else {
-                    return Ok(Token::new(Literal(Str(SingleQuoted)), start, self.iter.position));
+                    return Ok(Token::new(
+                        Literal(Str(SingleQuoted)),
+                        start,
+                        self.iter.position,
+                    ));
                 }
             }
             match c {
@@ -419,8 +479,8 @@ impl<'a> Lexer<'a> {
                             position: self.iter.position,
                         });
                     }
-                },
-                _ => () // Non-escaped string contents.
+                }
+                _ => (), // Non-escaped string contents.
             }
         }
         Err(LexerError {
@@ -473,33 +533,33 @@ impl<'a> Lexer<'a> {
                     } else {
                         Ok(Token::new(Op(Minus), start, self.iter.position))
                     }
-                },
+                }
                 '+' => {
                     // TODO: make macro to reduce verbosity here (once overall shape has settled
                     // down).
                     self.iter.next();
                     Ok(Token::new(Op(Plus), start, self.iter.position))
-                },
+                }
                 '*' => {
                     self.iter.next();
                     Ok(Token::new(Op(Star), start, self.iter.position))
-                },
+                }
                 '/' => {
                     self.iter.next();
                     Ok(Token::new(Op(Slash), start, self.iter.position))
-                },
+                }
                 '%' => {
                     self.iter.next();
                     Ok(Token::new(Op(Percent), start, self.iter.position))
-                },
+                }
                 '^' => {
                     self.iter.next();
                     Ok(Token::new(Op(Caret), start, self.iter.position))
-                },
+                }
                 '#' => {
                     self.iter.next();
                     Ok(Token::new(Op(Hash), start, self.iter.position))
-                },
+                }
                 '=' => {
                     let mut eq_count = 0;
                     while self.consume_char('=') {
@@ -511,9 +571,9 @@ impl<'a> Lexer<'a> {
                         _ => Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
                             position: start,
-                        })
+                        }),
                     }
-                },
+                }
                 '~' => {
                     // TODO might want to think about some general rules here instead of coding
                     // these one at a time... as in, having punctuators or operators one after the
@@ -529,7 +589,7 @@ impl<'a> Lexer<'a> {
                             position: start,
                         })
                     }
-                },
+                }
                 '<' => {
                     self.iter.next();
                     if self.consume_char('=') {
@@ -537,7 +597,7 @@ impl<'a> Lexer<'a> {
                     } else {
                         Ok(Token::new(Op(Lt), start, self.iter.position))
                     }
-                },
+                }
                 '>' => {
                     self.iter.next();
                     if self.consume_char('=') {
@@ -545,23 +605,23 @@ impl<'a> Lexer<'a> {
                     } else {
                         Ok(Token::new(Op(Gt), start, self.iter.position))
                     }
-                },
+                }
                 '(' => {
                     self.iter.next();
                     Ok(Token::new(Punctuator(Lparen), start, self.iter.position))
-                },
+                }
                 ')' => {
                     self.iter.next();
                     Ok(Token::new(Punctuator(Rparen), start, self.iter.position))
-                },
+                }
                 '{' => {
                     self.iter.next();
                     Ok(Token::new(Punctuator(Lcurly), start, self.iter.position))
-                },
+                }
                 '}' => {
                     self.iter.next();
                     Ok(Token::new(Punctuator(Rcurly), start, self.iter.position))
-                },
+                }
                 '[' => {
                     self.iter.next();
                     if self.consume_char('[') {
@@ -577,23 +637,23 @@ impl<'a> Lexer<'a> {
                             Ok(Token::new(Punctuator(Lbracket), start, self.iter.position))
                         }
                     }
-                },
+                }
                 ']' => {
                     self.iter.next();
                     Ok(Token::new(Punctuator(Rbracket), start, self.iter.position))
-                },
+                }
                 ';' => {
                     self.iter.next();
                     Ok(Token::new(Punctuator(Semi), start, self.iter.position))
-                },
+                }
                 ':' => {
                     self.iter.next();
                     Ok(Token::new(Punctuator(Colon), start, self.iter.position))
-                },
+                }
                 ',' => {
                     self.iter.next();
                     Ok(Token::new(Punctuator(Comma), start, self.iter.position))
-                },
+                }
                 '.' => {
                     let mut dot_count = 0;
                     while self.consume_char('.') {
@@ -606,9 +666,9 @@ impl<'a> Lexer<'a> {
                         _ => Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
                             position: start,
-                        })
+                        }),
                     }
-                },
+                }
                 '\'' | '"' => Ok(self.scan_string()?),
                 '0'..='9' => Ok(self.scan_number()?),
                 'A'..='Z' | 'a'..='z' | '_' => Ok(self.scan_name()?),
@@ -674,11 +734,99 @@ pub fn run(args: Vec<String>) {
 mod tests {
     use super::*;
 
+    // MEH: by moving assertion into function, reported failure line is always this one instead of
+    // the real one
+    fn assert_lexes(input: &str, expected: Vec<Token>) {
+        let tokens: Vec<Token> = Lexer::new(&input).collect();
+        assert_eq!(tokens, expected)
+    }
+
+    // 3.0.1 malformed number
+    // 3e-2.1 ditto
+    // 0xffx malformed number
+    // 0xff.0xff ditto
+
+    //
+    // BUT
+    //
+    // 0xff.1 = 255.0625
+    // 0xff.ff = 255.99...
+    // 0xffe10 = 1048080 because "e" doesn't mean exponent here...
+    // 0xffe-10 = 4084 (ie. (0xffe) - (10))
+    // 0xff.ffe2 = 255.99
+    //
+    // TODO: write tests for the failing cases
+    #[test]
+    fn lexer_lexes_numbers() {
+        // Examples from Lua docs.
+        assert_lexes(
+            "3",
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 1,
+            }],
+        );
+        assert_lexes(
+            "3.0",
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 3,
+            }],
+        );
+        assert_lexes(
+            "3.1416",
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 6,
+            }],
+        );
+        assert_lexes(
+            "314.16e-2",
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 9,
+            }],
+        );
+        assert_lexes(
+            "0.31416E1",
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 9,
+            }],
+        );
+        assert_lexes(
+            "0xff",
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 4,
+            }],
+        );
+        assert_lexes(
+            "0x56",
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 4,
+            }],
+        );
+    }
+
     #[test]
     fn lexer_lexes_strings() {
-        let sample = "'hello'";
-        let tokens: Vec<Token> = Lexer::new(&sample).collect();
-        assert_eq!(tokens, vec![Token { kind: Literal(Str(SingleQuoted)), start: 0, end: 7}])
+        assert_lexes(
+            "'hello'",
+            vec![Token {
+                kind: Literal(Str(SingleQuoted)),
+                start: 0,
+                end: 7,
+            }],
+        )
     }
 
     #[test]
