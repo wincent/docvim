@@ -7,9 +7,10 @@ use self::LiteralKind::*;
 use self::NameKind::*;
 use self::OpKind::*;
 use self::PunctuatorKind::*;
+use self::StrKind::*;
 use self::TokenKind::*;
 
-#[derive(Debug)]
+#[derive(Debug,Eq,PartialEq)]
 struct Token {
     pub kind: TokenKind,
     pub start: usize,
@@ -22,13 +23,13 @@ impl Token {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug,Eq,PartialEq)]
 enum CommentKind {
     BlockComment,
     LineComment,
 }
 
-#[derive(Debug)]
+#[derive(Debug,Eq,PartialEq)]
 enum KeywordKind {
     And,
     Break,
@@ -53,13 +54,13 @@ enum KeywordKind {
     While,
 }
 
-#[derive(Debug)]
+#[derive(Debug,Eq,PartialEq)]
 enum NameKind {
     Identifier,
     Keyword(KeywordKind),
 }
 
-#[derive(Debug)]
+#[derive(Debug,Eq,PartialEq)]
 enum PunctuatorKind {
     Colon,
     Comma,
@@ -75,7 +76,7 @@ enum PunctuatorKind {
 
 // Note that "and" and "or" are _operators_ in Lua, but we lex them as _keywords_ (see
 // `KeywordKind`).
-#[derive(Debug)]
+#[derive(Debug,Eq,PartialEq)]
 enum OpKind {
     Assign,  // = (assign)
     Caret,   // ^ (exponentiate)
@@ -95,12 +96,20 @@ enum OpKind {
     Vararg,  // ... (varargs, technically not an "operator", just syntax)
 }
 
-#[derive(Debug)]
+#[derive(Debug,Eq,PartialEq)]
 enum LiteralKind {
-    Str,
+    Number,
+    Str(StrKind),
 }
 
-#[derive(Debug)]
+#[derive(Debug,Eq,PartialEq)]
+enum StrKind {
+    DoubleQuoted,
+    SingleQuoted,
+    Long
+}
+
+#[derive(Debug,Eq,PartialEq)]
 enum TokenKind {
     Op(OpKind),
     Comment(CommentKind),
@@ -115,6 +124,7 @@ enum TokenKind {
 enum LexerErrorKind {
     InvalidEscapeSequence,
     InvalidOperator,
+    InvalidNumberLiteral,
     UnterminatedBlockComment,
     UnterminatedEscapeSequence,
     UnterminatedStringLiteral,
@@ -127,6 +137,7 @@ impl LexerErrorKind {
         match *self {
             LexerErrorKind::EndOfInput => "end of input",
             LexerErrorKind::InvalidEscapeSequence => "invalid escape sequence",
+            LexerErrorKind::InvalidNumberLiteral => "invalid number literal",
             LexerErrorKind::InvalidOperator => "invalid operator",
             LexerErrorKind::UnterminatedBlockComment => "unterminated block comment",
             LexerErrorKind::UnterminatedEscapeSequence => "unterminated escape sequence",
@@ -324,12 +335,41 @@ impl<'a> Lexer<'a> {
         ))
     }
 
+    /// optional decimal part and an optional decimal exponent
+    /// 3   3.0   3.1416   314.16e-2   0.31416E1   0xff   0x56
+    ///
+    /// 3.0.1 malformed number
+    /// 3e-2.1 ditto
+    /// 0xffx malformed number
+    /// 0xff.0xff ditto
+
+    ///
+    /// BUT
+    ///
+    /// 0xff.1 = 255.0625
+    /// 0xff.ff = 255.99...
+    /// 0xffe10 = 1048080 because "e" doesn't mean exponent here...
+    /// 0xffe-10 = 4084 (ie. (0xffe) - (10))
+    /// 0xff.ffe2 = 255.99
+    ///
+    /// TODO: write tests for the above
+    fn scan_number(&mut self) -> Result<Token, LexerError> {
+        Err(LexerError {
+            kind: LexerErrorKind::InvalidNumberLiteral,
+            position: self.iter.position,
+        })
+    }
+
     fn scan_string(&mut self) -> Result<Token, LexerError> {
         let start = self.iter.position;
         let quote = self.iter.next().unwrap();
         while let Some(c) = self.iter.next() {
             if c == quote {
-                return Ok(Token::new(Literal(Str), start, self.iter.position));
+                if quote == '"' {
+                    return Ok(Token::new(Literal(Str(DoubleQuoted)), start, self.iter.position));
+                } else {
+                    return Ok(Token::new(Literal(Str(SingleQuoted)), start, self.iter.position));
+                }
             }
             match c {
                 '\\' => {
@@ -391,11 +431,11 @@ impl<'a> Lexer<'a> {
 
     /// Long format strings do not interpret escape sequences.
     ///
-    /// Example strings:
+    /// Examples:
     ///
-    ///     [[a level 0 string]]
-    ///     [=[a level 1 string]=]
-    ///     [==[a level 2 string]==]
+    /// - [[a level 0 string]]
+    /// - [=[a level 1 string]=]
+    /// - [==[a level 2 string]==]
     ///
     fn scan_long_string(&mut self, level: usize) -> Result<Token, LexerError> {
         let start = self.iter.position - level - 2;
@@ -411,7 +451,7 @@ impl<'a> Lexer<'a> {
                 }
                 if eq_count == level && self.consume_char(']') {
                     // TODO: Include level info in struct?
-                    return Ok(Token::new(Literal(Str), start, self.iter.position));
+                    return Ok(Token::new(Literal(Str(Long)), start, self.iter.position));
                 }
             }
         }
@@ -570,8 +610,12 @@ impl<'a> Lexer<'a> {
                     }
                 },
                 '\'' | '"' => Ok(self.scan_string()?),
+                '0'..='9' => Ok(self.scan_number()?),
                 'A'..='Z' | 'a'..='z' | '_' => Ok(self.scan_name()?),
                 _ => {
+                    // For docvim's purposes it is better to fail gracefully and emit some
+                    // "Unknown" tokens for stuff we don't recognize, so that it can at least take
+                    // its best shot at generating documentation.
                     self.iter.next();
                     Ok(Token::new(Unknown, start, self.iter.position))
                 }
@@ -598,6 +642,14 @@ impl<'a> Lexer<'a> {
     }
 }
 
+impl<'a> std::iter::Iterator for Lexer<'a> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Token> {
+        return self.next_token().ok();
+    }
+}
+
 pub fn run(args: Vec<String>) {
     // TODO: actual arg parsing
     let input = "sample/init.lua";
@@ -621,6 +673,13 @@ pub fn run(args: Vec<String>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn lexer_lexes_strings() {
+        let sample = "'hello'";
+        let tokens: Vec<Token> = Lexer::new(&sample).collect();
+        assert_eq!(tokens, vec![Token { kind: Literal(Str(SingleQuoted)), start: 0, end: 7}])
+    }
 
     #[test]
     fn peekable_tracks_position() {
