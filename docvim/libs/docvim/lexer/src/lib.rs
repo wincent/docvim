@@ -110,7 +110,7 @@ enum LiteralKind {
 enum StrKind {
     DoubleQuoted,
     SingleQuoted,
-    Long,
+    Long { level: usize },
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -123,7 +123,6 @@ enum TokenKind {
     Unknown,
 }
 
-// TODO: move all Lexer stuff into Lexer mod
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum LexerErrorKind {
     InvalidEscapeSequence,
@@ -501,8 +500,11 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 if eq_count == level && self.consume_char(']') {
-                    // TODO: Include level info in struct?
-                    return Ok(Token::new(Literal(Str(Long)), start, self.iter.position));
+                    return Ok(Token::new(
+                        Literal(Str(Long { level })),
+                        start,
+                        self.iter.position,
+                    ));
                 }
             }
         }
