@@ -195,18 +195,19 @@ impl<'a> Lexer<'a> {
                     ();
                 }
                 Some('-') => {
-                    // BUG: this is greedy so -------[[ will not match
-                    //                    but  ------[[ will match (ie. even number of dashes)
-                    // probably need a better look-ahead mechanism than one char
-                    if !waiting_for_newline
-                        && self.consume_char('-')
-                        && self.consume_char('[')
-                        && self.consume_char('[')
-                    {
-                        // BLOCK COMMENT FOUND.
-                        return Ok(Token::new(Comment(BlockComment), start, self.iter.position));
+                    // Can't just chain `consume_char` calls here (for "-", "-", "[", and "[")
+                    // because the greedy match would fail for text like "---[[" which is also a
+                    // valid marker to end a block comment.
+                    if !waiting_for_newline {
+                        let mut dash_count = 1;
+                        while self.consume_char('-') {
+                            dash_count += 1;
+                        }
+                        if dash_count >= 2 && self.consume_char('[') && self.consume_char('[') {
+                            return Ok(Token::new(Comment(BlockComment), start, self.iter.position));
+                        }
                     }
-                }
+                },
                 Some(_) => {
                     waiting_for_newline = true;
                 }
