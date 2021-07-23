@@ -6,7 +6,7 @@ version = 3
 name = "docvim"
 version = "0.1.0"
 dependencies = [
- "docvim_lexer",
+ "docvim_parser",
 ]
 
 [[package]]

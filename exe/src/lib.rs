@@ -4,7 +4,8 @@ use std::fs;
 // docvim::lexer::Lexer -- and later:
 // docvim::lexer::lua::Lexer -- because later will have vimscript::Lexer
 // but this underscore pattern is what rustc_* itself usess
-use docvim_lexer::Lexer;
+// use docvim_lexer::Lexer;
+use docvim_parser::Parser;
 
 pub fn run(args: Vec<String>) {
     // TODO: actual arg parsing
@@ -14,14 +15,7 @@ pub fn run(args: Vec<String>) {
 
     println!("Text:\n{}", contents);
 
-    let mut lexer = Lexer::new(&contents);
-    loop {
-        match lexer.next_token() {
-            Ok(t) => println!("token: {:?}", t),
-            Err(e) => {
-                println!("error: {}", e);
-                break;
-            }
-        }
-    }
+    let parser = Parser::new();
+
+    parser.parse(&contents);
 }

@@ -2,7 +2,8 @@
 name = "docvim"
 
 [dependencies]
-docvim_lexer = { path = "../libs/docvim_lexer" }
+# docvim_lexer = { path = "../libs/docvim_lexer" }
+docvim_parser = { path = "../libs/docvim_parser" }
 
 [lib]
 
