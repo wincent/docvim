@@ -743,11 +743,11 @@ mod tests {
         };
     }
 
-    #[should_panic]
+    #[should_panic(expected = "called on partially consumed Lexer")]
     #[test]
     fn lexer_validate_panics_if_iteration_has_started() {
         let mut lexer = Lexer::new("print('1')");
-        lexer.iter.next();
+        lexer.next_token().expect("failed to produce a token");
         lexer.validate();
     }
 
