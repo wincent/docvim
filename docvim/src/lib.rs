@@ -340,7 +340,7 @@ impl<'a> Lexer<'a> {
         let err = |iter: &Peekable<std::str::Chars>| {
             Err(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                position: iter.position
+                position: iter.position,
             })
         };
         let token = |iter: &Peekable<std::str::Chars>| {
@@ -353,7 +353,7 @@ impl<'a> Lexer<'a> {
                 match next {
                     '0'..='9' | 'A'..='F' | 'a'..='f' => {
                         self.iter.next();
-                    },
+                    }
                     '.' => {
                         if seen_separator {
                             return err(&self.iter);
@@ -361,7 +361,7 @@ impl<'a> Lexer<'a> {
                             seen_separator = true;
                             self.iter.next();
                         }
-                    },
+                    }
                     _ => {
                         self.iter.next();
                         break;
@@ -376,7 +376,7 @@ impl<'a> Lexer<'a> {
                 match next {
                     '0'..='9' => {
                         self.iter.next();
-                    },
+                    }
                     '.' => {
                         if seen_separator {
                             return err(&self.iter);
@@ -384,7 +384,7 @@ impl<'a> Lexer<'a> {
                             seen_separator = true;
                             self.iter.next();
                         }
-                    },
+                    }
                     'E' | 'e' => {
                         if seen_exp {
                             return err(&self.iter);
@@ -395,8 +395,12 @@ impl<'a> Lexer<'a> {
                             self.consume_char('-');
                             if let Some(next) = self.iter.next() {
                                 match next {
-                                    '0'..='9' => {continue;},
-                                    _ => {return err(&self.iter);}
+                                    '0'..='9' => {
+                                        continue;
+                                    }
+                                    _ => {
+                                        return err(&self.iter);
+                                    }
                                 }
                             } else {
                                 return err(&self.iter);
