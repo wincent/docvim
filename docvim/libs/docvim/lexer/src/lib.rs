@@ -1,6 +1,10 @@
 use std::fmt;
 use std::fs;
 
+mod peekable;
+
+use crate::peekable::*;
+
 use self::CommentKind::*;
 use self::KeywordKind::*;
 use self::LiteralKind::*;
@@ -168,40 +172,6 @@ impl fmt::Display for LexerError {
 impl From<LexerErrorKind> for LexerError {
     fn from(kind: LexerErrorKind) -> LexerError {
         LexerError::new(kind, 0)
-    }
-}
-
-// Wrapper around standard Peekable iterator that tracks position.
-struct Peekable<I: std::iter::Iterator> {
-    iter: std::iter::Peekable<I>,
-    position: usize,
-}
-
-impl<I: std::iter::Iterator> Peekable<I> {
-    pub fn new(iter: I) -> Self {
-        Peekable {
-            iter: iter.peekable(),
-            position: 0,
-        }
-    }
-
-    pub fn peek(&mut self) -> Option<&I::Item> {
-        self.iter.peek()
-    }
-}
-
-impl<I: std::iter::Iterator> std::iter::Iterator for Peekable<I> {
-    type Item = I::Item;
-
-    fn next(&mut self) -> Option<I::Item> {
-        let c = self.iter.next();
-        match c {
-            None => (),
-            _ => {
-                self.position += 1;
-            }
-        }
-        c
     }
 }
 
@@ -777,7 +747,7 @@ mod tests {
     #[test]
     fn lexer_validate_panics_if_iteration_has_started() {
         let mut lexer = Lexer::new("print('1')");
-        lexer.next_token();
+        lexer.iter.next();
         lexer.validate();
     }
 
@@ -899,26 +869,5 @@ mod tests {
                 end: 7,
             }]
         );
-    }
-
-    #[test]
-    fn peekable_tracks_position() {
-        let sample = "hello";
-        let mut iter = Peekable::new(sample.chars());
-        assert_eq!(iter.position, 0);
-        assert_eq!(*iter.peek().unwrap(), 'h');
-        assert_eq!(iter.position, 0);
-        assert_eq!(iter.next(), Some('h'));
-        assert_eq!(iter.position, 1);
-        assert_eq!(iter.next(), Some('e'));
-        assert_eq!(iter.position, 2);
-        assert_eq!(iter.next(), Some('l'));
-        assert_eq!(iter.position, 3);
-        assert_eq!(iter.next(), Some('l'));
-        assert_eq!(iter.position, 4);
-        assert_eq!(iter.next(), Some('o'));
-        assert_eq!(iter.position, 5);
-        assert_eq!(iter.next(), None);
-        assert_eq!(iter.position, 5);
     }
 }
