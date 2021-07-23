@@ -77,6 +77,7 @@ enum PunctuatorKind {
 // `KeywordKind`).
 #[derive(Debug)]
 enum OpKind {
+    Assign,  // = (assign)
     Caret,   // ^ (exponentiate)
     Concat,  // .. (concatenate)
     Eq,      // == (equal)
@@ -328,17 +329,14 @@ impl<'a> Lexer<'a> {
                     if self.consume_char('-') {
                         Ok(self.scan_comment()?)
                     } else {
-                        // TODO: operator cases (unary, binary)
-                        Ok(Token::new(Unknown, start, self.iter.position))
+                        Ok(Token::new(Op(Minus), start, self.iter.position))
                     }
                 },
                 '+' => {
+                    // TODO: make macro to reduce verbosity here (once overall shape has settled
+                    // down).
                     self.iter.next();
                     Ok(Token::new(Op(Plus), start, self.iter.position))
-                },
-                '-' => {
-                    self.iter.next();
-                    Ok(Token::new(Op(Minus), start, self.iter.position))
                 },
                 '*' => {
                     self.iter.next();
@@ -360,7 +358,52 @@ impl<'a> Lexer<'a> {
                     self.iter.next();
                     Ok(Token::new(Op(Hash), start, self.iter.position))
                 },
-                // ==    ~=    <=    >=    <     >     =
+                '=' => {
+                    let mut eq_count = 0;
+                    while self.consume_char('=') {
+                        eq_count += 1;
+                    }
+                    match eq_count {
+                        1 => Ok(Token::new(Op(Assign), start, self.iter.position)),
+                        2 => Ok(Token::new(Op(Eq), start, self.iter.position)),
+                        _ => Err(LexerError {
+                            kind: LexerErrorKind::InvalidOperator,
+                            position: start,
+                        })
+                    }
+                },
+                '~' => {
+                    // TODO might want to think about some general rules here instead of coding
+                    // these one at a time... as in, having punctuators or operators one after the
+                    // other, is almost certainly invalid except for rare cases(? eg. ;;;; or x=-1)
+                    // eg. (1) + (-1) is legit, luajit accepts `(1+-1)`
+                    // could also let parser deal with it
+                    self.iter.next();
+                    if self.consume_char('=') {
+                        Ok(Token::new(Op(Ne), start, self.iter.position))
+                    } else {
+                        Err(LexerError {
+                            kind: LexerErrorKind::InvalidOperator,
+                            position: start,
+                        })
+                    }
+                },
+                '<' => {
+                    self.iter.next();
+                    if self.consume_char('=') {
+                        Ok(Token::new(Op(Lte), start, self.iter.position))
+                    } else {
+                        Ok(Token::new(Op(Lt), start, self.iter.position))
+                    }
+                },
+                '>' => {
+                    self.iter.next();
+                    if self.consume_char('=') {
+                        Ok(Token::new(Op(Gte), start, self.iter.position))
+                    } else {
+                        Ok(Token::new(Op(Gt), start, self.iter.position))
+                    }
+                },
                 '(' => {
                     self.iter.next();
                     Ok(Token::new(Punctuator(Lparen), start, self.iter.position))
