@@ -120,7 +120,7 @@ enum TokenKind {
 }
 
 // TODO: move all Lexer stuff into Lexer mod
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum LexerErrorKind {
     InvalidEscapeSequence,
     InvalidOperator,
@@ -146,6 +146,7 @@ impl LexerErrorKind {
     }
 }
 
+#[derive(Debug, Eq, PartialEq)]
 struct LexerError {
     kind: LexerErrorKind,
     position: usize,
@@ -704,6 +705,31 @@ impl<'a> Lexer<'a> {
             }
         }
     }
+
+    /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
+    /// `None` if the input is valid.
+    fn validate(&mut self) -> Option<LexerError> {
+        if self.iter.position > 0 {
+            panic!("validate() called on partially consumed Lexer");
+        }
+
+        loop {
+            match self.next_token() {
+                Err(e) => match e {
+                    LexerError {
+                        kind: LexerErrorKind::EndOfInput,
+                        position: _,
+                    } => {
+                        return None;
+                    }
+                    _ => {
+                        return Some(e);
+                    }
+                },
+                _ => (),
+            }
+        }
+    }
 }
 
 impl<'a> std::iter::Iterator for Lexer<'a> {
@@ -737,6 +763,7 @@ pub fn run(args: Vec<String>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use LexerErrorKind;
 
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
@@ -745,23 +772,16 @@ mod tests {
         };
     }
 
-    // 3.0.1 malformed number
-    // 3e-2.1 ditto
-    // 0xffx malformed number
-    // 0xff.0xff ditto
-
-    //
-    // BUT
-    //
-    // 0xff.1 = 255.0625
-    // 0xff.ff = 255.99...
-    // 0xffe10 = 1048080 because "e" doesn't mean exponent here...
-    // 0xffe-10 = 4084 (ie. (0xffe) - (10))
-    // 0xff.ffe2 = 255.99
-    //
-    // TODO: write tests for the failing cases
+    #[should_panic]
     #[test]
-    fn lexer_lexes_numbers() {
+    fn lexer_validate_panics_if_iteration_has_started() {
+        let mut lexer = Lexer::new("print('1')");
+        lexer.next_token();
+        lexer.validate();
+    }
+
+    #[test]
+    fn lexer_lexes_valid_numbers() {
         // Examples from Lua docs.
         assert_lexes!(
             "3",
@@ -819,6 +839,53 @@ mod tests {
                 end: 4,
             }]
         );
+    }
+
+    // But note, all these _are_ valid.
+    //
+    // 0xff.1 = 255.0625
+    // 0xff.ff = 255.99...
+    // 0xffe10 = 1048080 because "e" doesn't mean exponent here...
+    // 0xffe-10 = 4084 (ie. (0xffe) - (10))
+    // 0xff.ffe2 = 255.99
+    //
+    #[test]
+    fn lexer_rejects_invalid_numbers() {
+        assert_eq!(
+            Lexer::new("3.0.1").validate(),
+            Some(LexerError {
+                kind: LexerErrorKind::InvalidNumberLiteral,
+                position: 3
+            })
+        );
+        // assert_eq!(
+        //     Lexer::new("3e-2.1").validate(),
+        //     Some(LexerError {
+        //         kind: LexerErrorKind::InvalidNumberLiteral,
+        //         position: 3
+        //     })
+        // );
+        // assert_eq!(
+        //     Lexer::new("0xffx").validate(),
+        //     Some(LexerError {
+        //         kind: LexerErrorKind::InvalidNumberLiteral,
+        //         position: 3
+        //     })
+        // );
+        // assert_eq!(
+        //     Lexer::new("0xff.0xff").validate(),
+        //     Some(LexerError {
+        //         kind: LexerErrorKind::InvalidNumberLiteral,
+        //         position: 3
+        //     })
+        // );
+        // assert_eq!(
+        //     Lexer::new("0xff.0xff").validate(),
+        //     Some(LexerError {
+        //         kind: LexerErrorKind::InvalidNumberLiteral,
+        //         position: 3
+        //     })
+        // );
     }
 
     #[test]
