@@ -337,7 +337,6 @@ impl<'a> Lexer<'a> {
                     | ':' | ',' | '{' | '(' | '[' |  '}' | ')' | ']' | ';' | '\\' // punctuators
                     | '=' | '^' | '>' | '<' | '-' | '%' | '+' | '/' | '*' // operators
                     => {
-                        self.iter.next();
                         break;
                     }
                     _ => {
@@ -829,12 +828,58 @@ mod tests {
         );
 
         // These ones look fishy but actually aren't.
-        // TODO:
-        // 0xff.1 = 255.0625
-        // 0xff.ff = 255.99...
-        // 0xffe10 = 1048080 because "e" doesn't mean exponent here...
-        // 0xffe-10 = 4084 (ie. (0xffe) - (10))
-        // 0xff.ffe2 = 255.99
+        assert_lexes!(
+            "0xff.1", // ie. 255.0625
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 6,
+            }]
+        );
+        assert_lexes!(
+            "0xff.ff", // ie. 255.99609375.
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 7,
+            }]
+        );
+        assert_lexes!(
+            "0xffe10", // 1048080 because "e" doesn't mean exponent here.
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 7,
+            }]
+        );
+        assert_lexes!(
+            "0xffe-10", // "e" not exponent; this is `(0xffe) - 10` ie. 4084.
+            vec![
+                Token {
+                    kind: Literal(Number),
+                    start: 0,
+                    end: 5,
+                },
+                Token {
+                    kind: Op(Minus),
+                    start: 5,
+                    end: 6,
+                },
+                Token {
+                    kind: Literal(Number),
+                    start: 6,
+                    end: 8
+                }
+            ]
+        );
+        assert_lexes!(
+            "0xff.ffe2", // ie. 255.99954223633.
+            vec![Token {
+                kind: Literal(Number),
+                start: 0,
+                end: 9,
+            }]
+        );
     }
 
     #[test]
