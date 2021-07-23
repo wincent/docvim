@@ -210,16 +210,16 @@ impl<'a> Lexer<'a> {
     // }
 
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
+        let start = self.iter.position - 2; // Subtract length of "--" prefix.
         if self.consume_char('[') && self.consume_char('[') {
-            self.scan_block_comment()
+            self.scan_block_comment(start)
         } else {
-            self.scan_line_comment()
+            self.scan_line_comment(start)
         }
     }
 
     /// Scans until seeing "--]]".
-    fn scan_block_comment(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.position - 2; // Subtract length of "--" prefix.
+    fn scan_block_comment(&mut self, start: usize) -> Result<Token, LexerError> {
         loop {
             match self.iter.next() {
                 Some('-') => {
@@ -248,8 +248,7 @@ impl<'a> Lexer<'a> {
     }
 
     /// Scans until end of line, or end of input.
-    fn scan_line_comment(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.position - 2; // Subtract length of "--" prefix.
+    fn scan_line_comment(&mut self, start: usize) -> Result<Token, LexerError> {
         loop {
             match self.iter.next() {
                 Some('\n') | None => {
@@ -748,6 +747,38 @@ mod tests {
         let mut lexer = Lexer::new("print('1')");
         lexer.next_token().expect("failed to produce a token");
         lexer.validate();
+    }
+
+    #[test]
+    fn lexes_line_comments() {
+        assert_lexes!(
+            "-- TODO: something",
+            vec![Token {
+                kind: Comment(LineComment),
+                start: 0,
+                end: 18,
+            }]
+        );
+        assert_lexes!(
+            "--[ Almost a block comment, but not quite",
+            vec![Token {
+                kind: Comment(LineComment),
+                start: 0,
+                end: 41,
+            }]
+        );
+    }
+
+    #[test]
+    fn lexes_block_comments() {
+        assert_lexes!(
+            "--[[\nstuff\n--]]",
+            vec![Token {
+                kind: Comment(BlockComment),
+                start: 0,
+                end: 15,
+            }]
+        );
     }
 
     #[test]
