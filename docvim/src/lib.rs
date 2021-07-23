@@ -182,23 +182,15 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    /// Scans until seeing "--]]" in the first non-whitespace position on a line.
+    /// Scans until seeing "--]]".
     fn scan_block_comment(&mut self) -> Result<Token, LexerError> {
         let start = self.iter.position;
-        let mut waiting_for_newline = true;
         loop {
             match self.iter.next() {
-                Some('\n') => {
-                    waiting_for_newline = false;
-                }
-                Some(' ') | Some('\t') => {
-                    ();
-                }
                 Some('-') => {
                     // Can't just chain `consume_char` calls here (for "-", "-", "[", and "[")
                     // because the greedy match would fail for text like "---[[" which is also a
                     // valid marker to end a block comment.
-                    if !waiting_for_newline {
                         let mut dash_count = 1;
                         while self.consume_char('-') {
                             dash_count += 1;
@@ -206,10 +198,9 @@ impl<'a> Lexer<'a> {
                         if dash_count >= 2 && self.consume_char('[') && self.consume_char('[') {
                             return Ok(Token::new(Comment(BlockComment), start, self.iter.position));
                         }
-                    }
                 },
                 Some(_) => {
-                    waiting_for_newline = true;
+                    ();
                 }
                 None => {
                     return Err(LexerError {
