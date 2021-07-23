@@ -333,9 +333,15 @@ impl<'a> Lexer<'a> {
                             self.iter.next();
                         }
                     }
-                    _ => {
+                    | ' ' | '\n' | '\t' | '\r' // whitespace
+                    | ':' | ',' | '{' | '(' | '[' |  '}' | ')' | ']' | ';' | '\\' // punctuators
+                    | '=' | '^' | '>' | '<' | '-' | '%' | '+' | '/' | '*' // operators
+                    => {
                         self.iter.next();
                         break;
+                    }
+                    _ => {
+                        return err(&self.iter);
                     }
                 }
             }
@@ -364,15 +370,26 @@ impl<'a> Lexer<'a> {
                             seen_exp = true;
                             seen_separator = false;
                             self.consume_char('-');
-                            if let Some(next) = self.iter.next() {
+                            let mut exp_digits_count = 0;
+                            while let Some(next) = self.iter.peek() {
                                 match next {
                                     '0'..='9' => {
-                                        continue;
+                                        exp_digits_count += 1;
+                                        self.iter.next();
+                                    }
+                                    | ' ' | '\n' | '\t' | '\r' // whitespace
+                                    | ':' | ',' | '{' | '(' | '[' |  '}' | ')' | ']' | ';' | '\\' // punctuators
+                                    | '=' | '^' | '>' | '<' | '-' | '%' | '+' | '/' | '*' // operators
+                                    => {
+                                        break;
                                     }
                                     _ => {
                                         return err(&self.iter);
                                     }
                                 }
+                            }
+                            if exp_digits_count > 0 {
+                                return token(&self.iter);
                             } else {
                                 return err(&self.iter);
                             }
@@ -810,16 +827,16 @@ mod tests {
                 end: 4,
             }]
         );
+
+        // These ones look fishy but actually aren't.
+        // TODO:
+        // 0xff.1 = 255.0625
+        // 0xff.ff = 255.99...
+        // 0xffe10 = 1048080 because "e" doesn't mean exponent here...
+        // 0xffe-10 = 4084 (ie. (0xffe) - (10))
+        // 0xff.ffe2 = 255.99
     }
 
-    // But note, all these _are_ valid.
-    //
-    // 0xff.1 = 255.0625
-    // 0xff.ff = 255.99...
-    // 0xffe10 = 1048080 because "e" doesn't mean exponent here...
-    // 0xffe-10 = 4084 (ie. (0xffe) - (10))
-    // 0xff.ffe2 = 255.99
-    //
     #[test]
     fn rejects_invalid_numbers() {
         assert_eq!(
@@ -829,34 +846,27 @@ mod tests {
                 position: 3
             })
         );
-        // assert_eq!(
-        //     Lexer::new("3e-2.1").validate(),
-        //     Some(LexerError {
-        //         kind: LexerErrorKind::InvalidNumberLiteral,
-        //         position: 3
-        //     })
-        // );
-        // assert_eq!(
-        //     Lexer::new("0xffx").validate(),
-        //     Some(LexerError {
-        //         kind: LexerErrorKind::InvalidNumberLiteral,
-        //         position: 3
-        //     })
-        // );
-        // assert_eq!(
-        //     Lexer::new("0xff.0xff").validate(),
-        //     Some(LexerError {
-        //         kind: LexerErrorKind::InvalidNumberLiteral,
-        //         position: 3
-        //     })
-        // );
-        // assert_eq!(
-        //     Lexer::new("0xff.0xff").validate(),
-        //     Some(LexerError {
-        //         kind: LexerErrorKind::InvalidNumberLiteral,
-        //         position: 3
-        //     })
-        // );
+        assert_eq!(
+            Lexer::new("3e-2.1").validate(),
+            Some(LexerError {
+                kind: LexerErrorKind::InvalidNumberLiteral,
+                position: 4
+            })
+        );
+        assert_eq!(
+            Lexer::new("0xffx").validate(),
+            Some(LexerError {
+                kind: LexerErrorKind::InvalidNumberLiteral,
+                position: 4
+            })
+        );
+        assert_eq!(
+            Lexer::new("0xff.0xff").validate(),
+            Some(LexerError {
+                kind: LexerErrorKind::InvalidNumberLiteral,
+                position: 6
+            })
+        );
     }
 
     #[test]
