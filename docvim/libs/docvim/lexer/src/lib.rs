@@ -745,14 +745,14 @@ mod tests {
 
     #[should_panic(expected = "called on partially consumed Lexer")]
     #[test]
-    fn lexer_validate_panics_if_iteration_has_started() {
+    fn validate_panics_if_iteration_has_started() {
         let mut lexer = Lexer::new("print('1')");
         lexer.next_token().expect("failed to produce a token");
         lexer.validate();
     }
 
     #[test]
-    fn lexer_lexes_valid_numbers() {
+    fn lexes_valid_numbers() {
         // Examples from Lua docs.
         assert_lexes!(
             "3",
@@ -821,7 +821,7 @@ mod tests {
     // 0xff.ffe2 = 255.99
     //
     #[test]
-    fn lexer_rejects_invalid_numbers() {
+    fn rejects_invalid_numbers() {
         assert_eq!(
             Lexer::new("3.0.1").validate(),
             Some(LexerError {
@@ -860,7 +860,7 @@ mod tests {
     }
 
     #[test]
-    fn lexer_lexes_strings() {
+    fn lexes_strings() {
         assert_lexes!(
             "'hello'",
             vec![Token {
