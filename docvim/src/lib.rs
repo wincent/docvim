@@ -191,14 +191,14 @@ impl<'a> Lexer<'a> {
                     // Can't just chain `consume_char` calls here (for "-", "-", "[", and "[")
                     // because the greedy match would fail for text like "---[[" which is also a
                     // valid marker to end a block comment.
-                        let mut dash_count = 1;
-                        while self.consume_char('-') {
-                            dash_count += 1;
-                        }
-                        if dash_count >= 2 && self.consume_char('[') && self.consume_char('[') {
-                            return Ok(Token::new(Comment(BlockComment), start, self.iter.position));
-                        }
-                },
+                    let mut dash_count = 1;
+                    while self.consume_char('-') {
+                        dash_count += 1;
+                    }
+                    if dash_count >= 2 && self.consume_char('[') && self.consume_char('[') {
+                        return Ok(Token::new(Comment(BlockComment), start, self.iter.position));
+                    }
+                }
                 Some(_) => {
                     ();
                 }
@@ -220,7 +220,7 @@ impl<'a> Lexer<'a> {
             match self.iter.next() {
                 Some('\n') | None => {
                     return Ok(Token::new(Comment(LineComment), start, self.iter.position));
-                },
+                }
                 _ => (),
             }
         }
