@@ -261,6 +261,9 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    // From Lua docs: "The definition of letter depends on the current locale: any character
+    // considered alphabetic by the current locale can be used in an identifier", so the below
+    // could use a bit of work...
     fn scan_name(&mut self) -> Result<Token, LexerError> {
         let start = self.iter.position;
         let mut name = Vec::new();
@@ -756,8 +759,7 @@ mod tests {
 
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
-            let tokens: Vec<Token> = Lexer::new(&$input).collect();
-            assert_eq!(tokens, $expected);
+            assert_eq!(Lexer::new(&$input).collect::<Vec<Token>>(), $expected)
         };
     }
 
