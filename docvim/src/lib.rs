@@ -95,6 +95,7 @@ enum OpKind {
     Vararg,  // ... (varargs, technically not an "operator", just syntax)
 }
 
+#[derive(Debug)]
 enum LiteralKind {
     Str,
 }
@@ -103,6 +104,7 @@ enum LiteralKind {
 enum TokenKind {
     Op(OpKind),
     Comment(CommentKind),
+    Literal(LiteralKind),
     Name(NameKind),
     Punctuator(PunctuatorKind),
     Unknown,
@@ -111,9 +113,11 @@ enum TokenKind {
 // TODO: move all Lexer stuff into Lexer mod
 #[derive(Copy, Clone)]
 enum LexerErrorKind {
-    ExpectedComment,
+    InvalidEscapeSequence,
     InvalidOperator,
     UnterminatedBlockComment,
+    UnterminatedEscapeSequence,
+    UnterminatedStringLiteral,
 
     EndOfInput, // Not a real error; just used to signify we got to the end.
 }
@@ -122,9 +126,11 @@ impl LexerErrorKind {
     fn to_str(&self) -> &'static str {
         match *self {
             LexerErrorKind::EndOfInput => "end of input",
-            LexerErrorKind::ExpectedComment => "expected comment",
+            LexerErrorKind::InvalidEscapeSequence => "invalid escape sequence",
             LexerErrorKind::InvalidOperator => "invalid operator",
             LexerErrorKind::UnterminatedBlockComment => "unterminated block comment",
+            LexerErrorKind::UnterminatedEscapeSequence => "unterminated escape sequence",
+            LexerErrorKind::UnterminatedStringLiteral => "unterminated string literal",
         }
     }
 }
@@ -214,14 +220,14 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn expect_char(&mut self, ch: char, err: LexerErrorKind) -> Result<char, LexerError> {
-        let next = self.iter.next().ok_or(err)?;
-        if next == ch {
-            Ok(ch)
-        } else {
-            Err(LexerError::from(err))
-        }
-    }
+    // fn DEAD_CODE_expect_char(&mut self, ch: char, err: LexerErrorKind) -> Result<char, LexerError> {
+    //     let next = self.iter.next().ok_or(err)?;
+    //     if next == ch {
+    //         Ok(ch)
+    //     } else {
+    //         Err(LexerError::from(err))
+    //     }
+    // }
 
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
         if self.consume_char('[') && self.consume_char('[') {
@@ -233,7 +239,7 @@ impl<'a> Lexer<'a> {
 
     /// Scans until seeing "--]]".
     fn scan_block_comment(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.position;
+        let start = self.iter.position - 2; // Subtract length of "--" prefix.
         loop {
             match self.iter.next() {
                 Some('-') => {
@@ -244,7 +250,7 @@ impl<'a> Lexer<'a> {
                     while self.consume_char('-') {
                         dash_count += 1;
                     }
-                    if dash_count >= 2 && self.consume_char('[') && self.consume_char('[') {
+                    if dash_count >= 2 && self.consume_char(']') && self.consume_char(']') {
                         return Ok(Token::new(Comment(BlockComment), start, self.iter.position));
                     }
                 }
@@ -263,8 +269,7 @@ impl<'a> Lexer<'a> {
 
     /// Scans until end of line, or end of input.
     fn scan_line_comment(&mut self) -> Result<Token, LexerError> {
-        // BUG: position starts right after the "--", should probably start at the beginning.
-        let start = self.iter.position;
+        let start = self.iter.position - 2; // Subtract length of "--" prefix.
         loop {
             match self.iter.next() {
                 Some('\n') | None => {
@@ -317,6 +322,103 @@ impl<'a> Lexer<'a> {
             start,
             self.iter.position
         ))
+    }
+
+    fn scan_string(&mut self) -> Result<Token, LexerError> {
+        let start = self.iter.position;
+        let quote = self.iter.next().unwrap();
+        while let Some(c) = self.iter.next() {
+            if c == quote {
+                return Ok(Token::new(Literal(Str), start, self.iter.position));
+            }
+            match c {
+                '\\' => {
+                    if let Some(escape) = self.iter.next() {
+                        match escape {
+                            | 'a' // bell
+                            | 'b' // backspace
+                            | 'f' // form feed
+                            | 'n' // new line
+                            | 'r' // carriage return
+                            | 't' // horizontal tab
+                            | 'v' // vertical tab
+                            | '\\' // backslash
+                            | '"' // double quote
+                            | '\'' // single quote
+                            | '\n' // literal newline
+                            => (), // legit escape sequence
+                            '0'..='9' => {
+                                let mut digit_count = 1;
+                                while digit_count < 3 {
+                                    // TODO: make is_digit helper fn
+                                    if let Some(&digit) = self.iter.peek() {
+                                        match digit {
+                                            '0'..='9' => {
+                                                self.iter.next();
+                                                digit_count += 1;
+                                            },
+                                            _ => {
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            },
+                            _ => {
+                                return Err(LexerError {
+                                    kind: LexerErrorKind::InvalidEscapeSequence,
+                                    position: self.iter.position,
+                                });
+                            }
+                        }
+                    } else {
+                        return Err(LexerError {
+                            kind: LexerErrorKind::UnterminatedEscapeSequence,
+                            position: self.iter.position,
+                        });
+                    }
+                },
+                _ => () // Non-escaped string contents.
+            }
+        }
+        Err(LexerError {
+            kind: LexerErrorKind::UnterminatedStringLiteral,
+            position: self.iter.position,
+        })
+    }
+
+    /// Long format strings do not interpret escape sequences.
+    ///
+    /// Example strings:
+    ///
+    ///     [[a level 0 string]]
+    ///     [=[a level 1 string]=]
+    ///     [==[a level 2 string]==]
+    ///
+    fn scan_long_string(&mut self, level: usize) -> Result<Token, LexerError> {
+        let start = self.iter.position - level - 2;
+        while let Some(c) = self.iter.next() {
+            if c == ']' {
+                let mut eq_count = 0;
+                while eq_count < level {
+                    if self.consume_char('=') {
+                        eq_count += 1;
+                    } else {
+                        break;
+                    }
+                }
+                if eq_count == level && self.consume_char(']') {
+                    // TODO: Include level info in struct?
+                    return Ok(Token::new(Literal(Str), start, self.iter.position));
+                }
+            }
+        }
+        Err(LexerError {
+            kind: LexerErrorKind::UnterminatedStringLiteral,
+            position: self.iter.position,
+        })
     }
 
     fn next_token(&mut self) -> Result<Token, LexerError> {
@@ -422,7 +524,19 @@ impl<'a> Lexer<'a> {
                 },
                 '[' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Lbracket), start, self.iter.position))
+                    if self.consume_char('[') {
+                        Ok(self.scan_long_string(0)?)
+                    } else {
+                        let mut eq_count = 0;
+                        while self.consume_char('=') {
+                            eq_count += 1;
+                        }
+                        if eq_count > 0 {
+                            Ok(self.scan_long_string(eq_count)?)
+                        } else {
+                            Ok(Token::new(Punctuator(Lbracket), start, self.iter.position))
+                        }
+                    }
                 },
                 ']' => {
                     self.iter.next();
@@ -455,9 +569,8 @@ impl<'a> Lexer<'a> {
                         })
                     }
                 },
-                'A'..='Z' | 'a'..='z' | '_' => {
-                    Ok(self.scan_name()?)
-                },
+                '\'' | '"' => Ok(self.scan_string()?),
+                'A'..='Z' | 'a'..='z' | '_' => Ok(self.scan_name()?),
                 _ => {
                     self.iter.next();
                     Ok(Token::new(Unknown, start, self.iter.position))
