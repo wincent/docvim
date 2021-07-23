@@ -2,7 +2,9 @@ use std::fmt;
 use std::fs;
 
 use self::CommentKind::*;
+use self::KeywordKind::*;
 use self::LiteralKind::*;
+use self::NameKind::*;
 use self::TokenKind::*;
 
 #[derive(Debug)]
@@ -22,6 +24,37 @@ impl Token {
 enum CommentKind {
     BlockComment,
     LineComment,
+}
+
+#[derive(Debug)]
+enum NameKind {
+    Identifier,
+    Keyword(KeywordKind),
+}
+
+#[derive(Debug)]
+enum KeywordKind {
+    And,
+    Break,
+    Do,
+    Else,
+    Elseif,
+    End,
+    False,
+    For,
+    Function,
+    If,
+    In,
+    Local,
+    Nil,
+    Not,
+    Or,
+    Repeat,
+    Return,
+    Then,
+    True,
+    Until,
+    While,
 }
 
 #[derive(Debug)]
@@ -58,6 +91,7 @@ enum TokenKind {
     BinaryOp(BinaryOpToken),
     UnaryOp(UnaryOpToken),
     Comment(CommentKind),
+    Name(NameKind),
     Unknown,
 }
 
@@ -226,27 +260,77 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    fn scan_name(&mut self) -> Result<Token, LexerError> {
+        let start = self.iter.position;
+        let mut name = Vec::new();
+        while let Some(&c) = self.iter.peek() {
+            match c {
+                'A'..='Z' | 'a'..='z' | '0'..='9' | '_' => {
+                    name.push(self.iter.next().unwrap());
+                },
+                _ => {
+                    break;
+                }
+            }
+        }
+        let name: String = name.into_iter().collect();
+        Ok(Token::new(
+            match &name[..] {
+                "and" => Name(Keyword(And)),
+                "break" => Name(Keyword(Break)),
+                "do" => Name(Keyword(Do)),
+                "else" => Name(Keyword(Else)),
+                "elseif" => Name(Keyword(Elseif)),
+                "end" => Name(Keyword(End)),
+                "false" => Name(Keyword(False)),
+                "for" => Name(Keyword(For)),
+                "function" => Name(Keyword(Function)),
+                "if" => Name(Keyword(If)),
+                "in" => Name(Keyword(In)),
+                "local" => Name(Keyword(Local)),
+                "nil" => Name(Keyword(Nil)),
+                "not" => Name(Keyword(Not)),
+                "or" => Name(Keyword(Or)),
+                "repeat" => Name(Keyword(Repeat)),
+                "return" => Name(Keyword(Return)),
+                "then" => Name(Keyword(Then)),
+                "true" => Name(Keyword(True)),
+                "until" => Name(Keyword(Until)),
+                "while" => Name(Keyword(While)),
+                _ => Name(Identifier)
+            },
+            start,
+            self.iter.position
+        ))
+    }
+
     fn next_token(&mut self) -> Result<Token, LexerError> {
         self.skip_whitespace();
         let start = self.iter.position;
-        match self.iter.peek() {
-            Some('-') => {
-                self.iter.next();
-                if self.consume_char('-') {
-                    Ok(self.scan_comment()?)
-                } else {
-                    // TODO: operator cases (unary, binary)
+        if let Some(&c) = self.iter.peek() {
+            match c {
+                '-' => {
+                    self.iter.next();
+                    if self.consume_char('-') {
+                        Ok(self.scan_comment()?)
+                    } else {
+                        // TODO: operator cases (unary, binary)
+                        Ok(Token::new(Unknown, start, self.iter.position))
+                    }
+                },
+                'A'..='Z' | 'a'..='z' | '_' => {
+                    Ok(self.scan_name()?)
+                },
+                _ => {
+                    self.iter.next();
                     Ok(Token::new(Unknown, start, self.iter.position))
                 }
             }
-            Some(_c) => {
-                self.iter.next();
-                Ok(Token::new(Unknown, start, self.iter.position))
-            }
-            None => Err(LexerError {
+        } else {
+            Err(LexerError {
                 kind: LexerErrorKind::EndOfInput,
                 position: start,
-            }),
+            })
         }
     }
 
