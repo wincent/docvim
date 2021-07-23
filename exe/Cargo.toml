@@ -1,17 +1,17 @@
 [[bin]]
 name = "docvim"
-path = "src/main.rs"
 
 [dependencies]
-docvim-lexer = { path = "../libs/docvim/lexer" }
+docvim_lexer = { path = "../libs/docvim_lexer" }
 
 [lib]
-name = "docvim"
-path = "src/lib.rs"
 
 [package]
 authors = ["Greg Hurrell <greg@hurrell.net>"]
 default-run = "docvim"
+description = "Produces Neovim/Vim help and HTML (via Markdown) documentation"
 edition = "2018"
+license = "MIT"
+license-file = "LICENSE.md"
 name = "docvim"
 version = "0.1.0"

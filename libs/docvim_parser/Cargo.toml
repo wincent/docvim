@@ -1,11 +1,10 @@
 [dependencies]
+docvim_lexer = { path = "../docvim_lexer" }
 
 [lib]
-name = "lexer"
-path = "src/lib.rs"
 
 [package]
 authors = ["Greg Hurrell <greg@hurrell.net>"]
 edition = "2018"
-name = "docvim-lexer"
+name = "docvim_parser"
 version = "0.1.0"

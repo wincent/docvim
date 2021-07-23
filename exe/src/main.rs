@@ -1,5 +1,3 @@
-use docvim::*;
-
 fn main() {
-    run(std::env::args().collect());
+    docvim::run(std::env::args().collect());
 }
