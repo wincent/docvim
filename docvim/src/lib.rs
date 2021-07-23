@@ -7,11 +7,16 @@ use self::TokenKind::*;
 #[derive(Debug)]
 struct Token {
     pub kind: TokenKind,
+    // TODO: tokens should have contents too (some of them, at least, like literals and
+    // comments); could also encode range info in them and then extract content later (for the ones
+    // where it matters) -- not sure which is better...
+    pos: usize,
+    len: usize,
 }
 
 impl Token {
-    fn new(kind: TokenKind) -> Token {
-        Token { kind }
+    fn new(kind: TokenKind, pos: usize, len: usize) -> Token {
+        Token { kind, pos, len }
     }
 }
 
@@ -155,19 +160,49 @@ impl<'a> Lexer<'a> {
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
         self.expect('-', LexerErrorKind::ExpectedComment)?;
         self.expect('-', LexerErrorKind::ExpectedComment)?;
-        Ok(Token::new(Comment))
+        let position = self.iter.position;
+        match self.iter.peek() {
+            Some('[') => {
+                // might be a multiline comment start...
+                // want multiple lookahead for this...
+                // could clone iterator.. (if i can implement clone trait on it and all its
+                // fields)
+                // or could pull in itertools dep
+                // or could extend peekable with some more methods for peek_nth() etc
+                // TODO: deal with this later
+                Ok(Token::new(Comment, position, 1))
+            },
+            Some('\n') => {
+                // end of line
+                Ok(Token::new(Comment, position, 1))
+            },
+            Some(_) => {
+                // everything else...
+                // want "consume until" closure...
+                // let length: usize = 0;
+                // loop {
+                //     let c = self.iter.peek();
+                //     match 
+                // }
+                Ok(Token::new(Comment, position, 0))
+            },
+            None => {
+                // end of input
+                Ok(Token::new(Comment, position, 0))
+            },
+        }
     }
 
     fn next_token(&mut self) -> Result<Token, LexerError> {
-        let position = self.iter.position;
         self.skip_whitespace();
+        let position = self.iter.position;
         match self.iter.peek() {
             Some('-') => {
                 Ok(self.scan_comment()?)
             },
             Some(_c) => {
                 self.iter.next();
-                Ok(Token::new(Unknown))
+                Ok(Token::new(Unknown, position, 1))
             }
             None => Err(LexerError { kind: LexerErrorKind::EndOfInput, position })
         }
@@ -207,11 +242,6 @@ pub fn run(args: Vec<String>) {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn blinking_light() {
-        assert_eq!(1, 1)
-    }
 
     #[test]
     fn peekable_tracks_position() {
