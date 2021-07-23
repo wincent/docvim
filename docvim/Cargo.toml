@@ -1,17 +1,5 @@
-[[bin]]
-doc = false
-name = "docvim"
-path = "src/main.rs"
-
-[dependencies]
-
-[lib]
-name = "docvim"
-path = "src/lib.rs"
-
-[package]
-authors = ["Greg Hurrell <greg@hurrell.net>"]
-default-run = "docvim"
-edition = "2018"
-name = "docvim"
-version = "0.1.0"
+[workspace]
+members = [
+  "exe",
+  "libs/docvim/lexer"
+]

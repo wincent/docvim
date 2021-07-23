@@ -1,0 +1,13 @@
+[[bin]]
+name = "docvim"
+path = "src/main.rs"
+
+[dependencies]
+docvim-lexer = { path = "../libs/docvim/lexer" }
+
+[package]
+authors = ["Greg Hurrell <greg@hurrell.net>"]
+default-run = "docvim"
+edition = "2018"
+name = "docvim"
+version = "0.1.0"

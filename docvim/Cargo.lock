@@ -5,3 +5,10 @@ version = 3
 [[package]]
 name = "docvim"
 version = "0.1.0"
+dependencies = [
+ "docvim-lexer",
+]
+
+[[package]]
+name = "docvim-lexer"
+version = "0.1.0"
