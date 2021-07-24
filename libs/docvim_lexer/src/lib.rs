@@ -169,22 +169,22 @@ impl LexerErrorKind {
 #[derive(Debug, Eq, PartialEq)]
 pub struct LexerError {
     kind: LexerErrorKind,
-    position: usize,
+    char_idx: usize, // TODO: think about this.... "start" and "end" don't call out that they are char indices, so maybe we shouldn't do that here either...
 }
 
 impl LexerError {
-    pub fn new(kind: LexerErrorKind, position: usize) -> LexerError {
-        Self { kind, position }
+    pub fn new(kind: LexerErrorKind, char_idx: usize) -> LexerError {
+        Self { kind, char_idx }
     }
 }
 
 impl fmt::Display for LexerError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "{} ({})", self.kind.to_str(), self.position)
+        write!(fmt, "{} ({})", self.kind.to_str(), self.char_idx)
     }
 }
 
-// This is pretty useless if I can't pass position info into it.
+// This is pretty useless if I can't pass char_idx info into it.
 impl From<LexerErrorKind> for LexerError {
     fn from(kind: LexerErrorKind) -> LexerError {
         LexerError::new(kind, 0)
@@ -192,10 +192,8 @@ impl From<LexerErrorKind> for LexerError {
 }
 
 pub struct Lexer<'a> {
-    // testing:
     input: &'a str,
-
-    iter: Peekable<std::str::Chars<'a>>,
+    iter: Peekable<'a>,
 }
 
 impl<'a> Lexer<'a> {
@@ -206,7 +204,7 @@ impl<'a> Lexer<'a> {
             // TODO: investigate changing this to char_indices()
             // once/if I can confirm that we make cheap slice "copies" based on indices (will just
             // test with ascii to start with, where byte index === char index)
-            iter: Peekable::new(input.chars()),
+            iter: Peekable::new(input),
         }
     }
 
@@ -215,7 +213,7 @@ impl<'a> Lexer<'a> {
     fn consume_char(&mut self, ch: char) -> bool {
         match self.iter.peek() {
             Some(seen) => {
-                if *seen == ch {
+                if seen == ch {
                     self.iter.next();
                     true
                 } else {
@@ -227,7 +225,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.position - 2; // Subtract length of "--" prefix.
+        let start = self.iter.char_idx - 2; // Subtract length of "--" prefix.
         if self.consume_char('[') && self.consume_char('[') {
             self.scan_block_comment(start)
         } else {
@@ -253,14 +251,14 @@ impl<'a> Lexer<'a> {
                             Comment(BlockComment),
                             self.input,
                             start,
-                            self.iter.position,
+                            self.iter.char_idx,
                         ));
                     }
                 }
                 None => {
                     return Err(LexerError {
                         kind: LexerErrorKind::UnterminatedBlockComment,
-                        position: self.iter.position,
+                        char_idx: self.iter.char_idx,
                     });
                 }
                 _ => (),
@@ -278,7 +276,7 @@ impl<'a> Lexer<'a> {
                         Comment(LineComment),
                         self.input,
                         start,
-                        self.iter.position,
+                        self.iter.char_idx,
                     ));
                 }
                 _ => (),
@@ -290,9 +288,9 @@ impl<'a> Lexer<'a> {
     // considered alphabetic by the current locale can be used in an identifier", so the below
     // could use a bit of work...
     fn scan_name(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.position;
+        let start = self.iter.char_idx;
         let mut name = Vec::new();
-        while let Some(&c) = self.iter.peek() {
+        while let Some(c) = self.iter.peek() {
             match c {
                 'A'..='Z' | 'a'..='z' | '0'..='9' | '_' => {
                     name.push(self.iter.next().unwrap());
@@ -329,21 +327,19 @@ impl<'a> Lexer<'a> {
                 _ => Name(Identifier),
             },
             start,
-            self.iter.position,
+            self.iter.char_idx,
         ))
     }
 
     fn scan_number(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.position;
-        let err = |iter: &Peekable<std::str::Chars>| {
+        let start = self.iter.char_idx;
+        let err = |iter: &Peekable| {
             Err(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                position: iter.position,
+                char_idx: iter.char_idx,
             })
         };
-        let token = |iter: &Peekable<std::str::Chars>| {
-            Ok(Token::new(Literal(Number), start, iter.position))
-        };
+        let token = |iter: &Peekable| Ok(Token::new(Literal(Number), start, iter.char_idx));
         let ch = self.iter.next().unwrap();
         if ch == '0' && self.consume_char('x') {
             let mut seen_separator = false;
@@ -431,7 +427,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn scan_string(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.position;
+        let start = self.iter.char_idx;
         let quote = self.iter.next().unwrap();
         while let Some(c) = self.iter.next() {
             if c == quote {
@@ -439,13 +435,13 @@ impl<'a> Lexer<'a> {
                     return Ok(Token::new(
                         Literal(Str(DoubleQuoted)),
                         start,
-                        self.iter.position,
+                        self.iter.char_idx,
                     ));
                 } else {
                     return Ok(Token::new(
                         Literal(Str(SingleQuoted)),
                         start,
-                        self.iter.position,
+                        self.iter.char_idx,
                     ));
                 }
             }
@@ -469,7 +465,7 @@ impl<'a> Lexer<'a> {
                                 let mut digit_count = 1;
                                 while digit_count < 3 {
                                     // TODO: make is_digit helper fn
-                                    if let Some(&digit) = self.iter.peek() {
+                                    if let Some(digit) = self.iter.peek() {
                                         match digit {
                                             '0'..='9' => {
                                                 self.iter.next();
@@ -487,14 +483,14 @@ impl<'a> Lexer<'a> {
                             _ => {
                                 return Err(LexerError {
                                     kind: LexerErrorKind::InvalidEscapeSequence,
-                                    position: self.iter.position,
+                                    char_idx: self.iter.char_idx,
                                 });
                             }
                         }
                     } else {
                         return Err(LexerError {
                             kind: LexerErrorKind::UnterminatedEscapeSequence,
-                            position: self.iter.position,
+                            char_idx: self.iter.char_idx,
                         });
                     }
                 }
@@ -503,7 +499,7 @@ impl<'a> Lexer<'a> {
         }
         Err(LexerError {
             kind: LexerErrorKind::UnterminatedStringLiteral,
-            position: self.iter.position,
+            char_idx: self.iter.char_idx,
         })
     }
 
@@ -516,7 +512,7 @@ impl<'a> Lexer<'a> {
     /// - [==[a level 2 string]==]
     ///
     fn scan_long_string(&mut self, level: usize) -> Result<Token, LexerError> {
-        let start = self.iter.position - level - 2;
+        let start = self.iter.char_idx - level - 2;
         while let Some(c) = self.iter.next() {
             if c == ']' {
                 let mut eq_count = 0;
@@ -531,55 +527,55 @@ impl<'a> Lexer<'a> {
                     return Ok(Token::new(
                         Literal(Str(Long { level })),
                         start,
-                        self.iter.position,
+                        self.iter.char_idx,
                     ));
                 }
             }
         }
         Err(LexerError {
             kind: LexerErrorKind::UnterminatedStringLiteral,
-            position: self.iter.position,
+            char_idx: self.iter.char_idx,
         })
     }
 
     pub fn next_token(&mut self) -> Result<Token, LexerError> {
         self.skip_whitespace();
-        let start = self.iter.position;
-        if let Some(&c) = self.iter.peek() {
+        let start = self.iter.char_idx;
+        if let Some(c) = self.iter.peek() {
             match c {
                 '-' => {
                     self.iter.next();
                     if self.consume_char('-') {
                         Ok(self.scan_comment()?)
                     } else {
-                        Ok(Token::new(Op(Minus), start, self.iter.position))
+                        Ok(Token::new(Op(Minus), start, self.iter.char_idx))
                     }
                 }
                 '+' => {
                     // TODO: make macro to reduce verbosity here (once overall shape has settled
                     // down).
                     self.iter.next();
-                    Ok(Token::new(Op(Plus), start, self.iter.position))
+                    Ok(Token::new(Op(Plus), start, self.iter.char_idx))
                 }
                 '*' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Star), start, self.iter.position))
+                    Ok(Token::new(Op(Star), start, self.iter.char_idx))
                 }
                 '/' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Slash), start, self.iter.position))
+                    Ok(Token::new(Op(Slash), start, self.iter.char_idx))
                 }
                 '%' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Percent), start, self.iter.position))
+                    Ok(Token::new(Op(Percent), start, self.iter.char_idx))
                 }
                 '^' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Caret), start, self.iter.position))
+                    Ok(Token::new(Op(Caret), start, self.iter.char_idx))
                 }
                 '#' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Hash), start, self.iter.position))
+                    Ok(Token::new(Op(Hash), start, self.iter.char_idx))
                 }
                 '=' => {
                     let mut eq_count = 0;
@@ -587,11 +583,11 @@ impl<'a> Lexer<'a> {
                         eq_count += 1;
                     }
                     match eq_count {
-                        1 => Ok(Token::new(Op(Assign), start, self.iter.position)),
-                        2 => Ok(Token::new(Op(Eq), start, self.iter.position)),
+                        1 => Ok(Token::new(Op(Assign), start, self.iter.char_idx)),
+                        2 => Ok(Token::new(Op(Eq), start, self.iter.char_idx)),
                         _ => Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: start,
+                            char_idx: start,
                         }),
                     }
                 }
@@ -603,45 +599,45 @@ impl<'a> Lexer<'a> {
                     // could also let parser deal with it
                     self.iter.next();
                     if self.consume_char('=') {
-                        Ok(Token::new(Op(Ne), start, self.iter.position))
+                        Ok(Token::new(Op(Ne), start, self.iter.char_idx))
                     } else {
                         Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: start,
+                            char_idx: start,
                         })
                     }
                 }
                 '<' => {
                     self.iter.next();
                     if self.consume_char('=') {
-                        Ok(Token::new(Op(Lte), start, self.iter.position))
+                        Ok(Token::new(Op(Lte), start, self.iter.char_idx))
                     } else {
-                        Ok(Token::new(Op(Lt), start, self.iter.position))
+                        Ok(Token::new(Op(Lt), start, self.iter.char_idx))
                     }
                 }
                 '>' => {
                     self.iter.next();
                     if self.consume_char('=') {
-                        Ok(Token::new(Op(Gte), start, self.iter.position))
+                        Ok(Token::new(Op(Gte), start, self.iter.char_idx))
                     } else {
-                        Ok(Token::new(Op(Gt), start, self.iter.position))
+                        Ok(Token::new(Op(Gt), start, self.iter.char_idx))
                     }
                 }
                 '(' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Lparen), start, self.iter.position))
+                    Ok(Token::new(Punctuator(Lparen), start, self.iter.char_idx))
                 }
                 ')' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Rparen), start, self.iter.position))
+                    Ok(Token::new(Punctuator(Rparen), start, self.iter.char_idx))
                 }
                 '{' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Lcurly), start, self.iter.position))
+                    Ok(Token::new(Punctuator(Lcurly), start, self.iter.char_idx))
                 }
                 '}' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Rcurly), start, self.iter.position))
+                    Ok(Token::new(Punctuator(Rcurly), start, self.iter.char_idx))
                 }
                 '[' => {
                     self.iter.next();
@@ -655,25 +651,25 @@ impl<'a> Lexer<'a> {
                         if eq_count > 0 {
                             Ok(self.scan_long_string(eq_count)?)
                         } else {
-                            Ok(Token::new(Punctuator(Lbracket), start, self.iter.position))
+                            Ok(Token::new(Punctuator(Lbracket), start, self.iter.char_idx))
                         }
                     }
                 }
                 ']' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Rbracket), start, self.iter.position))
+                    Ok(Token::new(Punctuator(Rbracket), start, self.iter.char_idx))
                 }
                 ';' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Semi), start, self.iter.position))
+                    Ok(Token::new(Punctuator(Semi), start, self.iter.char_idx))
                 }
                 ':' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Colon), start, self.iter.position))
+                    Ok(Token::new(Punctuator(Colon), start, self.iter.char_idx))
                 }
                 ',' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Comma), start, self.iter.position))
+                    Ok(Token::new(Punctuator(Comma), start, self.iter.char_idx))
                 }
                 '.' => {
                     let mut dot_count = 0;
@@ -681,12 +677,12 @@ impl<'a> Lexer<'a> {
                         dot_count += 1;
                     }
                     match dot_count {
-                        1 => Ok(Token::new(Punctuator(Dot), start, self.iter.position)),
-                        2 => Ok(Token::new(Op(Concat), start, self.iter.position)),
-                        3 => Ok(Token::new(Op(Vararg), start, self.iter.position)),
+                        1 => Ok(Token::new(Punctuator(Dot), start, self.iter.char_idx)),
+                        2 => Ok(Token::new(Op(Concat), start, self.iter.char_idx)),
+                        3 => Ok(Token::new(Op(Vararg), start, self.iter.char_idx)),
                         _ => Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: start,
+                            char_idx: start,
                         }),
                     }
                 }
@@ -698,19 +694,19 @@ impl<'a> Lexer<'a> {
                     // "Unknown" tokens for stuff we don't recognize, so that it can at least take
                     // its best shot at generating documentation.
                     self.iter.next();
-                    Ok(Token::new(Unknown, start, self.iter.position))
+                    Ok(Token::new(Unknown, start, self.iter.char_idx))
                 }
             }
         } else {
             Err(LexerError {
                 kind: LexerErrorKind::EndOfInput,
-                position: start,
+                char_idx: start,
             })
         }
     }
 
     fn skip_whitespace(&mut self) {
-        while let Some(&c) = self.iter.peek() {
+        while let Some(c) = self.iter.peek() {
             match c {
                 ' ' | '\n' | '\r' | '\t' => {
                     self.iter.next();
@@ -726,7 +722,7 @@ impl<'a> Lexer<'a> {
     /// `None` if the input is valid.
     #[cfg(test)]
     fn validate(&mut self) -> Option<LexerError> {
-        if self.iter.position > 0 {
+        if self.iter.char_idx > 0 {
             panic!("validate() called on partially consumed Lexer");
         }
 
@@ -735,7 +731,7 @@ impl<'a> Lexer<'a> {
                 Err(e) => match e {
                     LexerError {
                         kind: LexerErrorKind::EndOfInput,
-                        position: _,
+                        char_idx: _,
                     } => {
                         return None;
                     }
@@ -958,28 +954,28 @@ mod tests {
             Lexer::new("3.0.1").validate(),
             Some(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                position: 3
+                char_idx: 3
             })
         );
         assert_eq!(
             Lexer::new("3e-2.1").validate(),
             Some(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                position: 4
+                char_idx: 4
             })
         );
         assert_eq!(
             Lexer::new("0xffx").validate(),
             Some(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                position: 4
+                char_idx: 4
             })
         );
         assert_eq!(
             Lexer::new("0xff.0xff").validate(),
             Some(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                position: 6
+                char_idx: 6
             })
         );
     }

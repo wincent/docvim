@@ -12,7 +12,6 @@ authors = ["Greg Hurrell <greg@hurrell.net>"]
 default-run = "docvim"
 description = "Produces Neovim/Vim help and HTML (via Markdown) documentation"
 edition = "2018"
-license = "MIT"
 license-file = "LICENSE.md"
 name = "docvim"
 version = "0.1.0"
