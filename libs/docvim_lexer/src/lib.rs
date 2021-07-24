@@ -194,13 +194,6 @@ impl fmt::Display for LexerError {
     }
 }
 
-// This is pretty useless if I can't pass char_idx/position info into it.
-impl From<LexerErrorKind> for LexerError {
-    fn from(kind: LexerErrorKind) -> LexerError {
-        LexerError::new(kind, 0)
-    }
-}
-
 pub struct Lexer<'a> {
     input: &'a str,
     iter: Peekable<'a>,
