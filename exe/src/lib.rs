@@ -1,11 +1,7 @@
 use std::fs;
 
-// TODO: would like this to be:
-// docvim::lexer::Lexer -- and later:
-// docvim::lexer::lua::Lexer -- because later will have vimscript::Lexer
-// but this underscore pattern is what rustc_* itself usess
-// use docvim_lexer::Lexer;
-use docvim_parser::Parser;
+// TODO[future]: docvim_parser::vimscript::Parser;
+use docvim_parser::lua::Parser;
 
 pub fn run(args: Vec<String>) {
     // TODO: actual arg parsing
