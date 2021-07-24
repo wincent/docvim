@@ -32,6 +32,10 @@ pub enum Statement {
     LocalDeclaration,
 }
 
+// pub struct ParserError {
+//     pub kind: ParserErrorKind,
+// }
+
 pub struct Parser<'a> {
     input: &'a str,
 }
@@ -46,14 +50,23 @@ impl<'a> Parser<'a> {
         loop {
             let result = lexer.next_token();
             match result {
-                Ok(token) => {println!("token: {:?}", token);}
-                Err(LexerError { kind: LexerErrorKind::EndOfInput, .. }) => {return Ok(());}
-                Err(err) => {return Err(err); }
+                Ok(token) => {
+                    println!("token: {:?}", token);
+                }
+                Err(LexerError {
+                    kind: LexerErrorKind::EndOfInput,
+                    ..
+                }) => {
+                    return Ok(());
+                }
+                Err(err) => {
+                    return Err(err);
+                }
             }
 
             // match token {
-                // Lexer::Token({kind: Lexer::KeywordKind}) => {}
-                // _ => {}
+            // Lexer::Token({kind: Lexer::KeywordKind}) => {}
+            // _ => {}
             // }
         }
     }

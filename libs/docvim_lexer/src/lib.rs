@@ -1,5 +1,5 @@
-use std::fmt;
 use std::error;
+use std::fmt;
 
 mod peekable;
 
@@ -192,8 +192,7 @@ impl fmt::Display for LexerError {
     }
 }
 
-impl error::Error for LexerError {
-}
+impl error::Error for LexerError {}
 
 pub struct Lexer<'a> {
     input: &'a str,
