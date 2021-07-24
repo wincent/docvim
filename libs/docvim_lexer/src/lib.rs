@@ -38,30 +38,24 @@ impl Token {
     }
 }
 
-// TODO: use builder pattern to enable us to construct a token in steps
-// ie. we can set kind, start at beginning, accumulate contents into it (optionally), and then set
-// end at end
-
 pub struct TokenBuilder {
-    kind: TokenKind,
     start: usize,
     end: usize,
     contents: Option<String>
 }
 
 impl TokenBuilder {
-    fn new(kind: TokenKind, start: usize) -> TokenBuilder {
+    fn new(start: usize) -> TokenBuilder {
         TokenBuilder {
-            kind,
             start,
             end: start,
             contents: None
         }
     }
 
-    fn build(&self) -> Token {
+    fn build(&self, kind: TokenKind) -> Token {
         Token {
-            kind: self.kind,
+            kind,
             start: self.start,
             end: self.end,
             contents: self.contents.clone()
@@ -258,26 +252,18 @@ impl<'a> Lexer<'a> {
 
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
         let start = self.iter.position - 2; // Subtract length of "--" prefix.
+        let mut builder = TokenBuilder::new(start);
+        builder.push('-'); // TODO find a better pattern for this.
+        builder.push('-');
         let mut bracket_count = 0;
-        if self.consume_char('[') { bracket_count += 1 }
-        if self.consume_char('[') { bracket_count += 1 }
+        if self.consume_char('[') { builder.push('['); bracket_count += 1 }
+        if self.consume_char('[') { builder.push('['); bracket_count += 1 }
         if bracket_count == 2 {
             // TODO: route consume through the builder, or something?, because this is all super
             // ugly; instead of passing lexer into builder, might be a sign that i should just
             // squish the builder into the lexer :ugh
-            let mut builder = TokenBuilder::new(Comment(BlockComment), start);
-            builder.push('-'); // TODO find a better pattern for this.
-            builder.push('-');
-            builder.push('[');
-            builder.push('[');
             self.scan_block_comment(&mut builder)
         } else {
-            let mut builder = TokenBuilder::new(Comment(LineComment), start);
-            builder.push('-'); // TODO find a better pattern for this.
-            builder.push('-');
-            if bracket_count == 1 {
-                builder.push('[');
-            }
             self.scan_line_comment(&mut builder)
         }
     }
@@ -302,7 +288,7 @@ impl<'a> Lexer<'a> {
                         if self.consume_char(']') { builder.push(']'); bracket_count += 1 }
                         if self.consume_char(']') { builder.push(']'); bracket_count += 1 }
                         if bracket_count == 2 {
-                            return Ok(builder.build());
+                            return Ok(builder.build(Comment(BlockComment)));
                         }
                     }
                 }
@@ -326,13 +312,13 @@ impl<'a> Lexer<'a> {
             match ch {
                 Some('\n') => {
                     builder.push('\n');
-                    return Ok(builder.build());
+                    return Ok(builder.build(Comment(LineComment)));
                 }
                 Some(ch) => {
                     builder.push(ch);
                 }
                 None => {
-                    return Ok(builder.build());
+                    return Ok(builder.build(Comment(LineComment)));
                 }
             }
         }
