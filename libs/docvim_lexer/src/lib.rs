@@ -35,12 +35,19 @@ impl<'a> Token<'a> {
     }
 }
 
-fn build_token(kind: TokenKind, input: &str, start: usize, end: usize) -> Token {
+fn build_token(
+    kind: TokenKind,
+    input: &str,
+    char_start: usize,
+    char_end: usize,
+    byte_start: usize,
+    byte_end: usize,
+) -> Token {
     Token {
         kind,
-        start,
-        end,
-        contents: Some(&input[start..end]),
+        start: char_start,
+        end: char_end,
+        contents: Some(&input[byte_start..byte_end]),
     }
 }
 
@@ -225,16 +232,21 @@ impl<'a> Lexer<'a> {
     }
 
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.char_idx - 2; // Subtract length of "--" prefix.
+        let char_start = self.iter.char_idx - 2; // Subtract length of "--" prefix.
+        let byte_start = self.iter.byte_idx - 2;
         if self.consume_char('[') && self.consume_char('[') {
-            self.scan_block_comment(start)
+            self.scan_block_comment(char_start, byte_start)
         } else {
-            self.scan_line_comment(start)
+            self.scan_line_comment(char_start, byte_start)
         }
     }
 
     /// Scans until seeing "--]]".
-    fn scan_block_comment(&mut self, start: usize) -> Result<Token, LexerError> {
+    fn scan_block_comment(
+        &mut self,
+        char_start: usize,
+        byte_start: usize,
+    ) -> Result<Token, LexerError> {
         loop {
             let ch = self.iter.next();
             match ch {
@@ -250,8 +262,10 @@ impl<'a> Lexer<'a> {
                         return Ok(build_token(
                             Comment(BlockComment),
                             self.input,
-                            start,
+                            char_start,
                             self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
                         ));
                     }
                 }
@@ -267,7 +281,11 @@ impl<'a> Lexer<'a> {
     }
 
     /// Scans until end of line, or end of input.
-    fn scan_line_comment(&mut self, start: usize) -> Result<Token, LexerError> {
+    fn scan_line_comment(
+        &mut self,
+        char_start: usize,
+        byte_start: usize,
+    ) -> Result<Token, LexerError> {
         loop {
             let ch = self.iter.next();
             match ch {
@@ -275,8 +293,10 @@ impl<'a> Lexer<'a> {
                     return Ok(build_token(
                         Comment(LineComment),
                         self.input,
-                        start,
+                        char_start,
                         self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
                     ));
                 }
                 _ => (),
@@ -750,16 +770,28 @@ impl<'a> Lexer<'a> {
 fn collect(input: &str) -> Vec<Token> {
     let mut lexer = Lexer::new(input);
     let mut vec = Vec::new();
-    while let Ok(t) = lexer.next_token() {
-        if t.contents.is_some() {
-            vec.push(build_token(t.kind, input, t.start, t.end));
+    loop {
+        let byte_start = lexer.iter.byte_idx;
+        if let Ok(t) = lexer.next_token() {
+            if t.contents.is_some() {
+                vec.push(build_token(
+                    t.kind,
+                    input,
+                    t.start,
+                    t.end,
+                    byte_start,
+                    lexer.iter.byte_idx,
+                ));
+            } else {
+                vec.push(Token {
+                    kind: t.kind,
+                    start: t.start,
+                    end: t.end,
+                    contents: None,
+                });
+            }
         } else {
-            vec.push(Token {
-                kind: t.kind,
-                start: t.start,
-                end: t.end,
-                contents: None,
-            });
+            break;
         }
     }
     vec
@@ -782,6 +814,27 @@ mod tests {
         let mut lexer = Lexer::new("print('1')");
         lexer.next_token().expect("failed to produce a token");
         lexer.validate();
+    }
+
+    #[test]
+    fn lexes_unicode() {
+        assert_lexes!(
+            "-- cañón\n-- träumen",
+            vec![
+                Token {
+                    contents: Some("-- cañón\n"),
+                    end: 9,
+                    kind: Comment(LineComment),
+                    start: 0,
+                },
+                Token {
+                    contents: Some("-- träumen"),
+                    end: 19,
+                    kind: Comment(LineComment),
+                    start: 9,
+                }
+            ]
+        );
     }
 
     #[test]
