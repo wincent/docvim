@@ -23,6 +23,8 @@ use self::TokenKind::*;
 // lifetime of parser)... perhaps String::into_boxed_str() to make a Box<str>
 // because Box<str> is relatively cheap (not a copy of the whole string), i actually could include
 // it with every single token, which might be nice
+//
+// note that we might want to swap chars() iterator for char_indices() iterarator (returns (idx, char) tuple, which we could then use to slice into the str storage)
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Token {
@@ -35,6 +37,39 @@ pub struct Token {
 impl Token {
     fn new(kind: TokenKind, start: usize, end: usize) -> Token {
         Token { kind, start, end, contents: None }
+    }
+}
+
+#[derive(Debug)]
+pub struct CheapToken<'a> {
+    pub kind: TokenKind,
+    pub start: usize,
+    pub end: usize,
+    pub contents: Option<&'a str>
+}
+
+pub struct CheapTokenBuilder<'a> {
+    start: usize,
+    end: usize,
+    input: &'a str,
+}
+
+impl<'a> CheapTokenBuilder<'a> {
+    fn new(input: &'a str, start: usize) -> CheapTokenBuilder {
+        CheapTokenBuilder {
+            input,
+            start,
+            end: start
+        }
+    }
+
+    fn build(&self, kind: TokenKind, end: usize) -> CheapToken {
+        CheapToken {
+            kind,
+            start: self.start,
+            end,
+            contents: Some(&self.input[self.start..end])
+        }
     }
 }
 
@@ -224,12 +259,20 @@ impl From<LexerErrorKind> for LexerError {
 }
 
 pub struct Lexer<'a> {
+    // testing:
+    input: &'a str,
+
     iter: Peekable<std::str::Chars<'a>>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
+            input,
+
+            // TODO: investigate changing this to char_indices()
+            // once/if I can confirm that we make cheap slice "copies" based on indices (will just
+            // test with ascii to start with, where byte index === char index)
             iter: Peekable::new(input.chars()),
         }
     }
@@ -252,6 +295,11 @@ impl<'a> Lexer<'a> {
 
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
         let start = self.iter.position - 2; // Subtract length of "--" prefix.
+
+        // testing
+        let cheap_builder = CheapTokenBuilder::new(self.input, start);
+
+
         let mut builder = TokenBuilder::new(start);
         builder.push('-'); // TODO find a better pattern for this.
         builder.push('-');
@@ -264,7 +312,10 @@ impl<'a> Lexer<'a> {
             // squish the builder into the lexer :ugh
             self.scan_block_comment(&mut builder)
         } else {
-            self.scan_line_comment(&mut builder)
+            let x = self.scan_line_comment(&mut builder);
+            println!("cheap token: {:?}",
+                cheap_builder.build(Comment(LineComment), self.iter.position));
+            x
         }
     }
 
