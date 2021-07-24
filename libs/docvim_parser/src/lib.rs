@@ -10,20 +10,20 @@ pub struct Chunk {
 }
 
 pub enum Exp {
-    Number
+    Number,
 }
 
 pub struct LocalDeclaration<'a> {
     pub namelist: Vec<Name<'a>>,
-    pub explist: Vec<Exp>
+    pub explist: Vec<Exp>,
 }
 
 pub struct Name<'a> {
-    pub text: &'a str
+    pub text: &'a str,
 }
 
 pub struct Number<'a> {
-    pub text: &'a str
+    pub text: &'a str,
 }
 
 pub enum Statement {
@@ -36,9 +36,7 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     pub fn new(input: &'a str) -> Self {
-        Self {
-            input
-        }
+        Self { input }
     }
 
     pub fn parse(&self) {

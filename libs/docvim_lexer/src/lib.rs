@@ -27,89 +27,32 @@ use self::TokenKind::*;
 // note that we might want to swap chars() iterator for char_indices() iterarator (returns (idx, char) tuple, which we could then use to slice into the str storage)
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Token {
+pub struct Token<'a> {
     pub kind: TokenKind,
     pub start: usize,
     pub end: usize,
-    pub contents: Option<String>
+    pub contents: Option<&'a str>,
 }
 
-impl Token {
-    fn new(kind: TokenKind, start: usize, end: usize) -> Token {
-        Token { kind, start, end, contents: None }
-    }
-}
-
-#[derive(Debug)]
-pub struct CheapToken<'a> {
-    pub kind: TokenKind,
-    pub start: usize,
-    pub end: usize,
-    pub contents: Option<&'a str>
-}
-
-pub struct CheapTokenBuilder<'a> {
-    start: usize,
-    end: usize,
-    input: &'a str,
-}
-
-impl<'a> CheapTokenBuilder<'a> {
-    fn new(input: &'a str, start: usize) -> CheapTokenBuilder {
-        CheapTokenBuilder {
-            input,
-            start,
-            end: start
-        }
-    }
-
-    fn build(&self, kind: TokenKind, end: usize) -> CheapToken {
-        CheapToken {
-            kind,
-            start: self.start,
-            end,
-            contents: Some(&self.input[self.start..end])
-        }
-    }
-}
-
-pub struct TokenBuilder {
-    start: usize,
-    end: usize,
-    contents: Option<String>
-}
-
-impl TokenBuilder {
-    fn new(start: usize) -> TokenBuilder {
-        TokenBuilder {
-            start,
-            end: start,
-            contents: None
-        }
-    }
-
-    fn build(&self, kind: TokenKind) -> Token {
+impl<'a> Token<'a> {
+    fn new(kind: TokenKind, start: usize, end: usize) -> Token<'a> {
         Token {
             kind,
-            start: self.start,
-            end: self.end,
-            contents: self.contents.clone()
+            start,
+            end,
+            contents: None,
         }
-    }
-
-    fn push(&mut self, ch: char) {
-        match self.contents.as_mut() {
-            Some(contents) => {
-                contents.push(ch);
-            },
-            None => {
-                self.contents = Some(ch.to_string());
-            }
-        }
-        self.end += 1;
     }
 }
 
+fn build_token(kind: TokenKind, input: &str, start: usize, end: usize) -> Token {
+    Token {
+        kind,
+        start,
+        end,
+        contents: Some(&input[start..end]),
+    }
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CommentKind {
@@ -295,56 +238,34 @@ impl<'a> Lexer<'a> {
 
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
         let start = self.iter.position - 2; // Subtract length of "--" prefix.
-
-        // testing
-        let cheap_builder = CheapTokenBuilder::new(self.input, start);
-
-
-        let mut builder = TokenBuilder::new(start);
-        builder.push('-'); // TODO find a better pattern for this.
-        builder.push('-');
-        let mut bracket_count = 0;
-        if self.consume_char('[') { builder.push('['); bracket_count += 1 }
-        if self.consume_char('[') { builder.push('['); bracket_count += 1 }
-        if bracket_count == 2 {
-            // TODO: route consume through the builder, or something?, because this is all super
-            // ugly; instead of passing lexer into builder, might be a sign that i should just
-            // squish the builder into the lexer :ugh
-            self.scan_block_comment(&mut builder)
+        if self.consume_char('[') && self.consume_char('[') {
+            self.scan_block_comment(start)
         } else {
-            let x = self.scan_line_comment(&mut builder);
-            println!("cheap token: {:?}",
-                cheap_builder.build(Comment(LineComment), self.iter.position));
-            x
+            self.scan_line_comment(start)
         }
     }
 
     /// Scans until seeing "--]]".
-    fn scan_block_comment(&mut self, builder: &mut TokenBuilder) -> Result<Token, LexerError> {
+    fn scan_block_comment(&mut self, start: usize) -> Result<Token, LexerError> {
         loop {
             let ch = self.iter.next();
             match ch {
                 Some('-') => {
-                    builder.push('-');
                     // Can't just chain `consume_char` calls here (for "-", "-", "[", and "[")
                     // because the greedy match would fail for text like "---[[" which is also a
                     // valid marker to end a block comment.
                     let mut dash_count = 1;
                     while self.consume_char('-') {
-                        builder.push('-');
                         dash_count += 1;
                     }
-                    if dash_count >= 2 {
-                        let mut bracket_count = 0;
-                        if self.consume_char(']') { builder.push(']'); bracket_count += 1 }
-                        if self.consume_char(']') { builder.push(']'); bracket_count += 1 }
-                        if bracket_count == 2 {
-                            return Ok(builder.build(Comment(BlockComment)));
-                        }
+                    if dash_count >= 2 && self.consume_char(']') && self.consume_char(']') {
+                        return Ok(build_token(
+                            Comment(BlockComment),
+                            self.input,
+                            start,
+                            self.iter.position,
+                        ));
                     }
-                }
-                Some(ch) => {
-                    builder.push(ch);
                 }
                 None => {
                     return Err(LexerError {
@@ -352,25 +273,25 @@ impl<'a> Lexer<'a> {
                         position: self.iter.position,
                     });
                 }
+                _ => (),
             }
         }
     }
 
     /// Scans until end of line, or end of input.
-    fn scan_line_comment(&mut self, builder: &mut TokenBuilder) -> Result<Token, LexerError> {
+    fn scan_line_comment(&mut self, start: usize) -> Result<Token, LexerError> {
         loop {
             let ch = self.iter.next();
             match ch {
-                Some('\n') => {
-                    builder.push('\n');
-                    return Ok(builder.build(Comment(LineComment)));
+                Some('\n') | None => {
+                    return Ok(build_token(
+                        Comment(LineComment),
+                        self.input,
+                        start,
+                        self.iter.position,
+                    ));
                 }
-                Some(ch) => {
-                    builder.push(ch);
-                }
-                None => {
-                    return Ok(builder.build(Comment(LineComment)));
-                }
+                _ => (),
             }
         }
     }
@@ -838,12 +759,24 @@ impl<'a> Lexer<'a> {
     }
 }
 
-impl<'a> std::iter::Iterator for Lexer<'a> {
-    type Item = Token;
-
-    fn next(&mut self) -> Option<Token> {
-        return self.next_token().ok();
+// Jump through some hoops to pacify the borrow-checker.
+#[cfg(test)]
+fn collect(input: &str) -> Vec<Token> {
+    let mut lexer = Lexer::new(input);
+    let mut vec = Vec::new();
+    while let Ok(t) = lexer.next_token() {
+        if t.contents.is_some() {
+            vec.push(build_token(t.kind, input, t.start, t.end));
+        } else {
+            vec.push(Token {
+                kind: t.kind,
+                start: t.start,
+                end: t.end,
+                contents: None,
+            });
+        }
     }
+    vec
 }
 
 #[cfg(test)]
@@ -853,7 +786,7 @@ mod tests {
 
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
-            assert_eq!(Lexer::new(&$input).collect::<Vec<Token>>(), $expected)
+            assert_eq!(collect($input), $expected)
         };
     }
 
@@ -870,7 +803,7 @@ mod tests {
         assert_lexes!(
             "-- TODO: something",
             vec![Token {
-                contents: Some("-- TODO: something".to_string()),
+                contents: Some("-- TODO: something"),
                 end: 18,
                 kind: Comment(LineComment),
                 start: 0,
@@ -879,7 +812,7 @@ mod tests {
         assert_lexes!(
             "--[ Almost a block comment, but not quite",
             vec![Token {
-                contents: Some("--[ Almost a block comment, but not quite".to_string()),
+                contents: Some("--[ Almost a block comment, but not quite"),
                 end: 41,
                 kind: Comment(LineComment),
                 start: 0,
@@ -892,7 +825,7 @@ mod tests {
         assert_lexes!(
             "--[[\nstuff\n--]]",
             vec![Token {
-                contents: Some("--[[\nstuff\n--]]".to_string()),
+                contents: Some("--[[\nstuff\n--]]"),
                 end: 15,
                 kind: Comment(BlockComment),
                 start: 0,
