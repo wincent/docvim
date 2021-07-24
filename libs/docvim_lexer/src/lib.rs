@@ -13,9 +13,6 @@ use self::PunctuatorKind::*;
 use self::StrKind::*;
 use self::TokenKind::*;
 
-// TODO: swap chars() iterator for char_indices() iterarator (returns (idx, char) tuple) to make
-// our string slicing correct for non-ASCII inputs
-
 #[derive(Debug, Eq, PartialEq)]
 pub struct Token<'a> {
     pub kind: TokenKind,
@@ -436,14 +433,8 @@ impl<'a> Lexer<'a> {
     }
 
     fn scan_number(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.char_idx;
-        let err = |iter: &Peekable| {
-            Err(LexerError {
-                kind: LexerErrorKind::InvalidNumberLiteral,
-                position: iter.char_idx,
-            })
-        };
-        let token = |iter: &Peekable| Ok(Token::new(Literal(Number), start, iter.char_idx));
+        let byte_start = self.iter.byte_idx;
+        let char_start = self.iter.char_idx;
         let ch = self.iter.next().unwrap();
         if ch == '0' && self.consume_char('x') {
             let mut seen_separator = false;
@@ -454,7 +445,10 @@ impl<'a> Lexer<'a> {
                     }
                     '.' => {
                         if seen_separator {
-                            return err(&self.iter);
+                            return Err(LexerError {
+                                kind: LexerErrorKind::InvalidNumberLiteral,
+                                position: self.iter.char_idx,
+                            });
                         } else {
                             seen_separator = true;
                             self.iter.next();
@@ -467,11 +461,21 @@ impl<'a> Lexer<'a> {
                         break;
                     }
                     _ => {
-                        return err(&self.iter);
+                        return Err(LexerError {
+                            kind: LexerErrorKind::InvalidNumberLiteral,
+                            position: self.iter.char_idx,
+                        });
                     }
                 }
             }
-            return token(&self.iter);
+            return Ok(build_token(
+                Literal(Number),
+                self.input,
+                char_start,
+                self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
+            ));
         } else {
             let mut seen_exp = false;
             let mut seen_separator = false;
@@ -482,7 +486,10 @@ impl<'a> Lexer<'a> {
                     }
                     '.' => {
                         if seen_separator {
-                            return err(&self.iter);
+                            return Err(LexerError {
+                                kind: LexerErrorKind::InvalidNumberLiteral,
+                                position: self.iter.char_idx,
+                            });
                         } else {
                             seen_separator = true;
                             self.iter.next();
@@ -490,7 +497,10 @@ impl<'a> Lexer<'a> {
                     }
                     'E' | 'e' => {
                         if seen_exp {
-                            return err(&self.iter);
+                            return Err(LexerError {
+                                kind: LexerErrorKind::InvalidNumberLiteral,
+                                position: self.iter.char_idx,
+                            });
                         } else {
                             self.iter.next();
                             seen_exp = true;
@@ -510,14 +520,27 @@ impl<'a> Lexer<'a> {
                                         break;
                                     }
                                     _ => {
-                                        return err(&self.iter);
+                                        return Err(LexerError {
+                                            kind: LexerErrorKind::InvalidNumberLiteral,
+                                            position: self.iter.char_idx,
+                                        });
                                     }
                                 }
                             }
                             if exp_digits_count > 0 {
-                                return token(&self.iter);
+                                return Ok(build_token(
+                                    Literal(Number),
+                                    self.input,
+                                    char_start,
+                                    self.iter.char_idx,
+                                    byte_start,
+                                    self.iter.byte_idx,
+                                ));
                             } else {
-                                return err(&self.iter);
+                                return Err(LexerError {
+                                    kind: LexerErrorKind::InvalidNumberLiteral,
+                                    position: self.iter.char_idx,
+                                });
                             }
                         }
                     }
@@ -527,25 +550,39 @@ impl<'a> Lexer<'a> {
                 }
             }
         }
-        token(&self.iter)
+        Ok(build_token(
+            Literal(Number),
+            self.input,
+            char_start,
+            self.iter.char_idx,
+            byte_start,
+            self.iter.byte_idx,
+        ))
     }
 
     fn scan_string(&mut self) -> Result<Token, LexerError> {
-        let start = self.iter.char_idx;
+        let byte_start = self.iter.byte_idx;
+        let char_start = self.iter.char_idx;
         let quote = self.iter.next().unwrap();
         while let Some(c) = self.iter.next() {
             if c == quote {
                 if quote == '"' {
-                    return Ok(Token::new(
+                    return Ok(build_token(
                         Literal(Str(DoubleQuoted)),
-                        start,
+                        self.input,
+                        char_start,
                         self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
                     ));
                 } else {
-                    return Ok(Token::new(
+                    return Ok(build_token(
                         Literal(Str(SingleQuoted)),
-                        start,
+                        self.input,
+                        char_start,
                         self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
                     ));
                 }
             }
@@ -616,7 +653,8 @@ impl<'a> Lexer<'a> {
     /// - [==[a level 2 string]==]
     ///
     fn scan_long_string(&mut self, level: usize) -> Result<Token, LexerError> {
-        let start = self.iter.char_idx - level - 2;
+        let byte_start = self.iter.byte_idx - level - 2;
+        let char_start = self.iter.char_idx - level - 2;
         while let Some(c) = self.iter.next() {
             if c == ']' {
                 let mut eq_count = 0;
@@ -628,10 +666,13 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 if eq_count == level && self.consume_char(']') {
-                    return Ok(Token::new(
+                    return Ok(build_token(
                         Literal(Str(Long { level })),
-                        start,
+                        self.input,
+                        char_start,
                         self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
                     ));
                 }
             }
@@ -962,7 +1003,7 @@ mod tests {
         assert_lexes!(
             "3",
             vec![Token {
-                contents: None,
+                contents: Some("3"),
                 end: 1,
                 kind: Literal(Number),
                 start: 0,
@@ -971,7 +1012,7 @@ mod tests {
         assert_lexes!(
             "3.0",
             vec![Token {
-                contents: None,
+                contents: Some("3.0"),
                 end: 3,
                 kind: Literal(Number),
                 start: 0,
@@ -980,7 +1021,7 @@ mod tests {
         assert_lexes!(
             "3.1416",
             vec![Token {
-                contents: None,
+                contents: Some("3.1416"),
                 end: 6,
                 kind: Literal(Number),
                 start: 0,
@@ -989,7 +1030,7 @@ mod tests {
         assert_lexes!(
             "314.16e-2",
             vec![Token {
-                contents: None,
+                contents: Some("314.16e-2"),
                 end: 9,
                 kind: Literal(Number),
                 start: 0,
@@ -998,7 +1039,7 @@ mod tests {
         assert_lexes!(
             "0.31416E1",
             vec![Token {
-                contents: None,
+                contents: Some("0.31416E1"),
                 end: 9,
                 kind: Literal(Number),
                 start: 0,
@@ -1007,7 +1048,7 @@ mod tests {
         assert_lexes!(
             "0xff",
             vec![Token {
-                contents: None,
+                contents: Some("0xff"),
                 end: 4,
                 kind: Literal(Number),
                 start: 0,
@@ -1016,7 +1057,7 @@ mod tests {
         assert_lexes!(
             "0x56",
             vec![Token {
-                contents: None,
+                contents: Some("0x56"),
                 end: 4,
                 kind: Literal(Number),
                 start: 0,
@@ -1027,7 +1068,7 @@ mod tests {
         assert_lexes!(
             "0xff.1", // ie. 255.0625
             vec![Token {
-                contents: None,
+                contents: Some("0xff.1"),
                 end: 6,
                 kind: Literal(Number),
                 start: 0,
@@ -1036,7 +1077,7 @@ mod tests {
         assert_lexes!(
             "0xff.ff", // ie. 255.99609375.
             vec![Token {
-                contents: None,
+                contents: Some("0xff.ff"),
                 end: 7,
                 kind: Literal(Number),
                 start: 0,
@@ -1045,7 +1086,7 @@ mod tests {
         assert_lexes!(
             "0xffe10", // 1048080 because "e" doesn't mean exponent here.
             vec![Token {
-                contents: None,
+                contents: Some("0xffe10"),
                 end: 7,
                 kind: Literal(Number),
                 start: 0,
@@ -1055,7 +1096,7 @@ mod tests {
             "0xffe-10", // "e" not exponent; this is `(0xffe) - 10` ie. 4084.
             vec![
                 Token {
-                    contents: None,
+                    contents: Some("0xffe"),
                     end: 5,
                     kind: Literal(Number),
                     start: 0,
@@ -1067,7 +1108,7 @@ mod tests {
                     start: 5,
                 },
                 Token {
-                    contents: None,
+                    contents: Some("10"),
                     end: 8,
                     kind: Literal(Number),
                     start: 6,
@@ -1077,7 +1118,7 @@ mod tests {
         assert_lexes!(
             "0xff.ffe2", // ie. 255.99954223633.
             vec![Token {
-                contents: None,
+                contents: Some("0xff.ffe2"),
                 end: 9,
                 kind: Literal(Number),
                 start: 0,
@@ -1122,7 +1163,7 @@ mod tests {
         assert_lexes!(
             "'hello'",
             vec![Token {
-                contents: None,
+                contents: Some("'hello'"),
                 end: 7,
                 kind: Literal(Str(SingleQuoted)),
                 start: 0,
