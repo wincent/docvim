@@ -13,18 +13,8 @@ use self::PunctuatorKind::*;
 use self::StrKind::*;
 use self::TokenKind::*;
 
-// TODO: given that we can't index efficiently into strings, i had thought that we could just store
-// start/end and do a slow extraction whenever we need to do things like report errors... of
-// course, now I realize that there are many node types where we want the token text outside of
-// error pathways. so, we need to store the text in many cases (eg. comments, literals, names etc)
-//
-// i can either make an owned String (copying) or try Box<str> (owned pointer to slice, which would
-// be faster, but harder to reason about... have to make sure lifetime of input extends beyond
-// lifetime of parser)... perhaps String::into_boxed_str() to make a Box<str>
-// because Box<str> is relatively cheap (not a copy of the whole string), i actually could include
-// it with every single token, which might be nice
-//
-// note that we might want to swap chars() iterator for char_indices() iterarator (returns (idx, char) tuple, which we could then use to slice into the str storage)
+// TODO: swap chars() iterator for char_indices() iterarator (returns (idx, char) tuple) to make
+// our string slicing correct for non-ASCII inputs
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Token<'a> {
