@@ -176,22 +176,25 @@ impl LexerErrorKind {
 #[derive(Debug, Eq, PartialEq)]
 pub struct LexerError {
     kind: LexerErrorKind,
-    char_idx: usize, // TODO: think about this.... "start" and "end" don't call out that they are char indices, so maybe we shouldn't do that here either...
+    position: usize,
 }
 
 impl LexerError {
     pub fn new(kind: LexerErrorKind, char_idx: usize) -> LexerError {
-        Self { kind, char_idx }
+        Self {
+            kind,
+            position: char_idx,
+        }
     }
 }
 
 impl fmt::Display for LexerError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "{} ({})", self.kind.to_str(), self.char_idx)
+        write!(fmt, "{} ({})", self.kind.to_str(), self.position)
     }
 }
 
-// This is pretty useless if I can't pass char_idx info into it.
+// This is pretty useless if I can't pass char_idx/position info into it.
 impl From<LexerErrorKind> for LexerError {
     fn from(kind: LexerErrorKind) -> LexerError {
         LexerError::new(kind, 0)
@@ -272,7 +275,7 @@ impl<'a> Lexer<'a> {
                 None => {
                     return Err(LexerError {
                         kind: LexerErrorKind::UnterminatedBlockComment,
-                        char_idx: self.iter.char_idx,
+                        position: self.iter.char_idx,
                     });
                 }
                 _ => (),
@@ -356,7 +359,7 @@ impl<'a> Lexer<'a> {
         let err = |iter: &Peekable| {
             Err(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                char_idx: iter.char_idx,
+                position: iter.char_idx,
             })
         };
         let token = |iter: &Peekable| Ok(Token::new(Literal(Number), start, iter.char_idx));
@@ -503,14 +506,14 @@ impl<'a> Lexer<'a> {
                             _ => {
                                 return Err(LexerError {
                                     kind: LexerErrorKind::InvalidEscapeSequence,
-                                    char_idx: self.iter.char_idx,
+                                    position: self.iter.char_idx,
                                 });
                             }
                         }
                     } else {
                         return Err(LexerError {
                             kind: LexerErrorKind::UnterminatedEscapeSequence,
-                            char_idx: self.iter.char_idx,
+                            position: self.iter.char_idx,
                         });
                     }
                 }
@@ -519,7 +522,7 @@ impl<'a> Lexer<'a> {
         }
         Err(LexerError {
             kind: LexerErrorKind::UnterminatedStringLiteral,
-            char_idx: self.iter.char_idx,
+            position: self.iter.char_idx,
         })
     }
 
@@ -554,7 +557,7 @@ impl<'a> Lexer<'a> {
         }
         Err(LexerError {
             kind: LexerErrorKind::UnterminatedStringLiteral,
-            char_idx: self.iter.char_idx,
+            position: self.iter.char_idx,
         })
     }
 
@@ -607,7 +610,7 @@ impl<'a> Lexer<'a> {
                         2 => Ok(Token::new(Op(Eq), start, self.iter.char_idx)),
                         _ => Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            char_idx: start,
+                            position: start,
                         }),
                     }
                 }
@@ -623,7 +626,7 @@ impl<'a> Lexer<'a> {
                     } else {
                         Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            char_idx: start,
+                            position: start,
                         })
                     }
                 }
@@ -702,7 +705,7 @@ impl<'a> Lexer<'a> {
                         3 => Ok(Token::new(Op(Vararg), start, self.iter.char_idx)),
                         _ => Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            char_idx: start,
+                            position: start,
                         }),
                     }
                 }
@@ -720,7 +723,7 @@ impl<'a> Lexer<'a> {
         } else {
             Err(LexerError {
                 kind: LexerErrorKind::EndOfInput,
-                char_idx: start,
+                position: start,
             })
         }
     }
@@ -751,7 +754,7 @@ impl<'a> Lexer<'a> {
                 Err(e) => match e {
                     LexerError {
                         kind: LexerErrorKind::EndOfInput,
-                        char_idx: _,
+                        position: _,
                     } => {
                         return None;
                     }
@@ -1007,28 +1010,28 @@ mod tests {
             Lexer::new("3.0.1").validate(),
             Some(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                char_idx: 3
+                position: 3
             })
         );
         assert_eq!(
             Lexer::new("3e-2.1").validate(),
             Some(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                char_idx: 4
+                position: 4
             })
         );
         assert_eq!(
             Lexer::new("0xffx").validate(),
             Some(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                char_idx: 4
+                position: 4
             })
         );
         assert_eq!(
             Lexer::new("0xff.0xff").validate(),
             Some(LexerError {
                 kind: LexerErrorKind::InvalidNumberLiteral,
-                char_idx: 6
+                position: 6
             })
         );
     }
