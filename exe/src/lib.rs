@@ -9,13 +9,14 @@ use docvim_parser::Parser;
 
 pub fn run(args: Vec<String>) {
     // TODO: actual arg parsing
+    println!("Args: {:?}", args);
     let input = "sample/init.lua";
 
     let contents = fs::read_to_string(input).expect("unable to read file");
 
     println!("Text:\n{}", contents);
 
-    let parser = Parser::new();
+    let parser = Parser::new(&contents);
 
-    parser.parse(&contents);
+    parser.parse();
 }

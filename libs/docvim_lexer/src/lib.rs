@@ -13,26 +13,82 @@ use self::PunctuatorKind::*;
 use self::StrKind::*;
 use self::TokenKind::*;
 
+// TODO: given that we can't index efficiently into strings, i had thought that we could just store
+// start/end and do a slow extraction whenever we need to do things like report errors... of
+// course, now I realize that there are many node types where we want the token text outside of
+// error pathways. so, we need to store the text in many cases (eg. comments, literals, names etc)
+//
+// i can either make an owned String (copying) or try Box<str> (owned pointer to slice, which would
+// be faster, but harder to reason about... have to make sure lifetime of input extends beyond
+// lifetime of parser)... perhaps String::into_boxed_str() to make a Box<str>
+// because Box<str> is relatively cheap (not a copy of the whole string), i actually could include
+// it with every single token, which might be nice
+
 #[derive(Debug, Eq, PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
     pub start: usize,
     pub end: usize,
+    pub contents: Option<String>
 }
 
 impl Token {
     fn new(kind: TokenKind, start: usize, end: usize) -> Token {
-        Token { kind, start, end }
+        Token { kind, start, end, contents: None }
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+// TODO: use builder pattern to enable us to construct a token in steps
+// ie. we can set kind, start at beginning, accumulate contents into it (optionally), and then set
+// end at end
+
+pub struct TokenBuilder {
+    kind: TokenKind,
+    start: usize,
+    end: usize,
+    contents: Option<String>
+}
+
+impl TokenBuilder {
+    fn new(kind: TokenKind, start: usize) -> TokenBuilder {
+        TokenBuilder {
+            kind,
+            start,
+            end: start,
+            contents: None
+        }
+    }
+
+    fn build(&self) -> Token {
+        Token {
+            kind: self.kind,
+            start: self.start,
+            end: self.end,
+            contents: self.contents.clone()
+        }
+    }
+
+    fn push(&mut self, ch: char) {
+        match self.contents.as_mut() {
+            Some(contents) => {
+                contents.push(ch);
+            },
+            None => {
+                self.contents = Some(ch.to_string());
+            }
+        }
+        self.end += 1;
+    }
+}
+
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CommentKind {
     BlockComment,
     LineComment,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum KeywordKind {
     And,
     Break,
@@ -57,13 +113,13 @@ pub enum KeywordKind {
     While,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum NameKind {
     Identifier,
     Keyword(KeywordKind),
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PunctuatorKind {
     Colon,
     Comma,
@@ -79,7 +135,7 @@ pub enum PunctuatorKind {
 
 // Note that "and" and "or" are _operators_ in Lua, but we lex them as _keywords_ (see
 // `KeywordKind`).
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum OpKind {
     Assign,  // = (assign)
     Caret,   // ^ (exponentiate)
@@ -99,20 +155,20 @@ pub enum OpKind {
     Vararg,  // ... (varargs, technically not an "operator", just syntax)
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum LiteralKind {
     Number,
     Str(StrKind),
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum StrKind {
     DoubleQuoted,
     SingleQuoted,
     Long { level: usize },
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TokenKind {
     Op(OpKind),
     Comment(CommentKind),
@@ -200,42 +256,58 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    // fn DEAD_CODE_expect_char(&mut self, ch: char, err: LexerErrorKind) -> Result<char, LexerError> {
-    //     let next = self.iter.next().ok_or(err)?;
-    //     if next == ch {
-    //         Ok(ch)
-    //     } else {
-    //         Err(LexerError::from(err))
-    //     }
-    // }
-
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
         let start = self.iter.position - 2; // Subtract length of "--" prefix.
-        if self.consume_char('[') && self.consume_char('[') {
-            self.scan_block_comment(start)
+        let mut bracket_count = 0;
+        if self.consume_char('[') { bracket_count += 1 }
+        if self.consume_char('[') { bracket_count += 1 }
+        if bracket_count == 2 {
+            // TODO: route consume through the builder, or something?, because this is all super
+            // ugly; instead of passing lexer into builder, might be a sign that i should just
+            // squish the builder into the lexer :ugh
+            let mut builder = TokenBuilder::new(Comment(BlockComment), start);
+            builder.push('-'); // TODO find a better pattern for this.
+            builder.push('-');
+            builder.push('[');
+            builder.push('[');
+            self.scan_block_comment(&mut builder)
         } else {
-            self.scan_line_comment(start)
+            let mut builder = TokenBuilder::new(Comment(LineComment), start);
+            builder.push('-'); // TODO find a better pattern for this.
+            builder.push('-');
+            if bracket_count == 1 {
+                builder.push('[');
+            }
+            self.scan_line_comment(&mut builder)
         }
     }
 
     /// Scans until seeing "--]]".
-    fn scan_block_comment(&mut self, start: usize) -> Result<Token, LexerError> {
+    fn scan_block_comment(&mut self, builder: &mut TokenBuilder) -> Result<Token, LexerError> {
         loop {
-            match self.iter.next() {
+            let ch = self.iter.next();
+            match ch {
                 Some('-') => {
+                    builder.push('-');
                     // Can't just chain `consume_char` calls here (for "-", "-", "[", and "[")
                     // because the greedy match would fail for text like "---[[" which is also a
                     // valid marker to end a block comment.
                     let mut dash_count = 1;
                     while self.consume_char('-') {
+                        builder.push('-');
                         dash_count += 1;
                     }
-                    if dash_count >= 2 && self.consume_char(']') && self.consume_char(']') {
-                        return Ok(Token::new(Comment(BlockComment), start, self.iter.position));
+                    if dash_count >= 2 {
+                        let mut bracket_count = 0;
+                        if self.consume_char(']') { builder.push(']'); bracket_count += 1 }
+                        if self.consume_char(']') { builder.push(']'); bracket_count += 1 }
+                        if bracket_count == 2 {
+                            return Ok(builder.build());
+                        }
                     }
                 }
-                Some(_) => {
-                    ();
+                Some(ch) => {
+                    builder.push(ch);
                 }
                 None => {
                     return Err(LexerError {
@@ -248,13 +320,20 @@ impl<'a> Lexer<'a> {
     }
 
     /// Scans until end of line, or end of input.
-    fn scan_line_comment(&mut self, start: usize) -> Result<Token, LexerError> {
+    fn scan_line_comment(&mut self, builder: &mut TokenBuilder) -> Result<Token, LexerError> {
         loop {
-            match self.iter.next() {
-                Some('\n') | None => {
-                    return Ok(Token::new(Comment(LineComment), start, self.iter.position));
+            let ch = self.iter.next();
+            match ch {
+                Some('\n') => {
+                    builder.push('\n');
+                    return Ok(builder.build());
                 }
-                _ => (),
+                Some(ch) => {
+                    builder.push(ch);
+                }
+                None => {
+                    return Ok(builder.build());
+                }
             }
         }
     }
@@ -754,17 +833,19 @@ mod tests {
         assert_lexes!(
             "-- TODO: something",
             vec![Token {
+                contents: Some("-- TODO: something".to_string()),
+                end: 18,
                 kind: Comment(LineComment),
                 start: 0,
-                end: 18,
             }]
         );
         assert_lexes!(
             "--[ Almost a block comment, but not quite",
             vec![Token {
+                contents: Some("--[ Almost a block comment, but not quite".to_string()),
+                end: 41,
                 kind: Comment(LineComment),
                 start: 0,
-                end: 41,
             }]
         );
     }
@@ -774,9 +855,10 @@ mod tests {
         assert_lexes!(
             "--[[\nstuff\n--]]",
             vec![Token {
+                contents: Some("--[[\nstuff\n--]]".to_string()),
+                end: 15,
                 kind: Comment(BlockComment),
                 start: 0,
-                end: 15,
             }]
         );
     }
@@ -787,57 +869,64 @@ mod tests {
         assert_lexes!(
             "3",
             vec![Token {
+                contents: None,
+                end: 1,
                 kind: Literal(Number),
                 start: 0,
-                end: 1,
             }]
         );
         assert_lexes!(
             "3.0",
             vec![Token {
+                contents: None,
+                end: 3,
                 kind: Literal(Number),
                 start: 0,
-                end: 3,
             }]
         );
         assert_lexes!(
             "3.1416",
             vec![Token {
+                contents: None,
+                end: 6,
                 kind: Literal(Number),
                 start: 0,
-                end: 6,
             }]
         );
         assert_lexes!(
             "314.16e-2",
             vec![Token {
+                contents: None,
+                end: 9,
                 kind: Literal(Number),
                 start: 0,
-                end: 9,
             }]
         );
         assert_lexes!(
             "0.31416E1",
             vec![Token {
+                contents: None,
+                end: 9,
                 kind: Literal(Number),
                 start: 0,
-                end: 9,
             }]
         );
         assert_lexes!(
             "0xff",
             vec![Token {
+                contents: None,
+                end: 4,
                 kind: Literal(Number),
                 start: 0,
-                end: 4,
             }]
         );
         assert_lexes!(
             "0x56",
             vec![Token {
+                contents: None,
+                end: 4,
                 kind: Literal(Number),
                 start: 0,
-                end: 4,
             }]
         );
 
@@ -845,53 +934,60 @@ mod tests {
         assert_lexes!(
             "0xff.1", // ie. 255.0625
             vec![Token {
+                contents: None,
+                end: 6,
                 kind: Literal(Number),
                 start: 0,
-                end: 6,
             }]
         );
         assert_lexes!(
             "0xff.ff", // ie. 255.99609375.
             vec![Token {
+                contents: None,
+                end: 7,
                 kind: Literal(Number),
                 start: 0,
-                end: 7,
             }]
         );
         assert_lexes!(
             "0xffe10", // 1048080 because "e" doesn't mean exponent here.
             vec![Token {
+                contents: None,
+                end: 7,
                 kind: Literal(Number),
                 start: 0,
-                end: 7,
             }]
         );
         assert_lexes!(
             "0xffe-10", // "e" not exponent; this is `(0xffe) - 10` ie. 4084.
             vec![
                 Token {
+                    contents: None,
+                    end: 5,
                     kind: Literal(Number),
                     start: 0,
-                    end: 5,
                 },
                 Token {
+                    contents: None,
+                    end: 6,
                     kind: Op(Minus),
                     start: 5,
-                    end: 6,
                 },
                 Token {
+                    contents: None,
+                    end: 8,
                     kind: Literal(Number),
                     start: 6,
-                    end: 8
                 }
             ]
         );
         assert_lexes!(
             "0xff.ffe2", // ie. 255.99954223633.
             vec![Token {
+                contents: None,
+                end: 9,
                 kind: Literal(Number),
                 start: 0,
-                end: 9,
             }]
         );
     }
@@ -933,9 +1029,10 @@ mod tests {
         assert_lexes!(
             "'hello'",
             vec![Token {
+                contents: None,
+                end: 7,
                 kind: Literal(Str(SingleQuoted)),
                 start: 0,
-                end: 7,
             }]
         );
     }
