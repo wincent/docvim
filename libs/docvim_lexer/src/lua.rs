@@ -478,7 +478,6 @@ impl<'a> Lexer<'a> {
                 self.iter.byte_idx,
             ));
         } else {
-            let mut seen_exp = false;
             let mut seen_separator = false;
             while let Some(next) = self.iter.peek() {
                 match next {
@@ -497,52 +496,43 @@ impl<'a> Lexer<'a> {
                         }
                     }
                     'E' | 'e' => {
-                        if seen_exp {
+                        self.iter.next();
+                        self.consume_char('-');
+                        let mut exp_digits_count = 0;
+                        while let Some(next) = self.iter.peek() {
+                            match next {
+                                '0'..='9' => {
+                                    exp_digits_count += 1;
+                                    self.iter.next();
+                                }
+                                | ' ' | '\n' | '\t' | '\r' // whitespace
+                                | ':' | ',' | '{' | '(' | '[' |  '}' | ')' | ']' | ';' | '\\' // punctuators
+                                | '=' | '^' | '>' | '<' | '-' | '%' | '+' | '/' | '*' // operators
+                                => {
+                                    break;
+                                }
+                                _ => {
+                                    return Err(LexerError {
+                                        kind: LexerErrorKind::InvalidNumberLiteral,
+                                        position: self.iter.char_idx,
+                                    });
+                                }
+                            }
+                        }
+                        if exp_digits_count > 0 {
+                            return Ok(build_token(
+                                Literal(Number),
+                                self.input,
+                                char_start,
+                                self.iter.char_idx,
+                                byte_start,
+                                self.iter.byte_idx,
+                            ));
+                        } else {
                             return Err(LexerError {
                                 kind: LexerErrorKind::InvalidNumberLiteral,
                                 position: self.iter.char_idx,
                             });
-                        } else {
-                            self.iter.next();
-                            seen_exp = true;
-                            seen_separator = false;
-                            self.consume_char('-');
-                            let mut exp_digits_count = 0;
-                            while let Some(next) = self.iter.peek() {
-                                match next {
-                                    '0'..='9' => {
-                                        exp_digits_count += 1;
-                                        self.iter.next();
-                                    }
-                                    | ' ' | '\n' | '\t' | '\r' // whitespace
-                                    | ':' | ',' | '{' | '(' | '[' |  '}' | ')' | ']' | ';' | '\\' // punctuators
-                                    | '=' | '^' | '>' | '<' | '-' | '%' | '+' | '/' | '*' // operators
-                                    => {
-                                        break;
-                                    }
-                                    _ => {
-                                        return Err(LexerError {
-                                            kind: LexerErrorKind::InvalidNumberLiteral,
-                                            position: self.iter.char_idx,
-                                        });
-                                    }
-                                }
-                            }
-                            if exp_digits_count > 0 {
-                                return Ok(build_token(
-                                    Literal(Number),
-                                    self.input,
-                                    char_start,
-                                    self.iter.char_idx,
-                                    byte_start,
-                                    self.iter.byte_idx,
-                                ));
-                            } else {
-                                return Err(LexerError {
-                                    kind: LexerErrorKind::InvalidNumberLiteral,
-                                    position: self.iter.char_idx,
-                                });
-                            }
                         }
                     }
                     _ => {

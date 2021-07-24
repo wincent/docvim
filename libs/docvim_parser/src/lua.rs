@@ -1,4 +1,4 @@
-use std::error::Error;
+// use std::error::Error;
 
 use docvim_lexer::lua::{Lexer, LexerError, LexerErrorKind}; // later on will want token types etc
 
@@ -72,12 +72,15 @@ impl<'a> Parser<'a> {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn parses_a_statement() {
         let ast = Parser::new("local x = 1").parse();
+
+        assert_eq!(ast.unwrap(), ());
 
         // chunk [
         //   statement = LocalDeclaration,
