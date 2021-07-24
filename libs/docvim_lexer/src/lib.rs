@@ -1,4 +1,5 @@
 use std::fmt;
+use std::error;
 
 mod peekable;
 
@@ -172,8 +173,8 @@ impl LexerErrorKind {
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct LexerError {
-    kind: LexerErrorKind,
-    position: usize,
+    pub kind: LexerErrorKind,
+    pub position: usize,
 }
 
 impl LexerError {
@@ -189,6 +190,9 @@ impl fmt::Display for LexerError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(fmt, "{} ({})", self.kind.to_str(), self.position)
     }
+}
+
+impl error::Error for LexerError {
 }
 
 pub struct Lexer<'a> {

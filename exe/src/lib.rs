@@ -18,5 +18,6 @@ pub fn run(args: Vec<String>) {
 
     let parser = Parser::new(&contents);
 
-    parser.parse();
+    // TODO: pretty print this error
+    parser.parse().expect("Failed to parse");
 }

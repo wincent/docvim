@@ -1,4 +1,6 @@
-use docvim_lexer::Lexer; // later on will want token types etc
+use std::error::Error;
+
+use docvim_lexer::{Lexer, LexerError, LexerErrorKind}; // later on will want token types etc
 
 // A note on storing str slices in AST nodes: given that Rust doesn't have fast access based on
 // index, instead of storing indices into the original input, we actually copy the strings.
@@ -39,16 +41,20 @@ impl<'a> Parser<'a> {
         Self { input }
     }
 
-    pub fn parse(&self) {
+    pub fn parse(&self) -> Result<(), LexerError> {
         let mut lexer = Lexer::new(self.input);
         loop {
-            match lexer.next_token() {
-                Ok(t) => println!("token: {:?}", t),
-                Err(e) => {
-                    println!("error: {}", e);
-                    break;
-                }
+            let result = lexer.next_token();
+            match result {
+                Ok(token) => {println!("token: {:?}", token);}
+                Err(LexerError { kind: LexerErrorKind::EndOfInput, .. }) => {return Ok(());}
+                Err(err) => {return Err(err); }
             }
+
+            // match token {
+                // Lexer::Token({kind: Lexer::KeywordKind}) => {}
+                // _ => {}
+            // }
         }
     }
 }
