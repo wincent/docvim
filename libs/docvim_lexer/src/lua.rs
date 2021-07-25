@@ -143,14 +143,11 @@ pub enum LexerErrorKind {
     UnterminatedBlockComment,
     UnterminatedEscapeSequence,
     UnterminatedStringLiteral,
-
-    EndOfInput, // Not a real error; just used to signify we got to the end.
 }
 
 impl LexerErrorKind {
     fn to_str(&self) -> &'static str {
         match *self {
-            LexerErrorKind::EndOfInput => "end of input",
             LexerErrorKind::InvalidEscapeSequence => "invalid escape sequence",
             LexerErrorKind::InvalidNumberLiteral => "invalid number literal",
             LexerErrorKind::InvalidOperator => "invalid operator",
@@ -695,336 +692,6 @@ impl<'a> Lexer<'a> {
         })
     }
 
-    pub fn next_token(&mut self) -> Result<Token, LexerError> {
-        self.skip_whitespace();
-        let char_start = self.iter.char_idx;
-        let byte_start = self.iter.byte_idx;
-        if let Some(c) = self.iter.peek() {
-            match c {
-                '-' => {
-                    self.iter.next();
-                    if self.consume_char('-') {
-                        Ok(self.scan_comment()?)
-                    } else {
-                        Ok(Token::new(
-                            Op(Minus),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))
-                    }
-                }
-                '+' => {
-                    // TODO: make macro to reduce verbosity here (once overall shape has settled
-                    // down).
-                    self.iter.next();
-                    Ok(Token::new(
-                        Op(Plus),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '*' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Op(Star),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '/' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Op(Slash),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '%' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Op(Percent),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '^' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Op(Caret),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '#' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Op(Hash),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '=' => {
-                    let mut eq_count = 0;
-                    while self.consume_char('=') {
-                        eq_count += 1;
-                    }
-                    match eq_count {
-                        1 => Ok(Token::new(
-                            Op(Assign),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )),
-                        2 => Ok(Token::new(
-                            Op(Eq),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )),
-                        _ => Err(LexerError {
-                            kind: LexerErrorKind::InvalidOperator,
-                            position: char_start,
-                        }),
-                    }
-                }
-                '~' => {
-                    // TODO might want to think about some general rules here instead of coding
-                    // these one at a time... as in, having punctuators or operators one after the
-                    // other, is almost certainly invalid except for rare cases(? eg. ;;;; or x=-1)
-                    // eg. (1) + (-1) is legit, luajit accepts `(1+-1)`
-                    // could also let parser deal with it
-                    self.iter.next();
-                    if self.consume_char('=') {
-                        Ok(Token::new(
-                            Op(Ne),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))
-                    } else {
-                        Err(LexerError {
-                            kind: LexerErrorKind::InvalidOperator,
-                            position: char_start,
-                        })
-                    }
-                }
-                '<' => {
-                    self.iter.next();
-                    if self.consume_char('=') {
-                        Ok(Token::new(
-                            Op(Lte),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))
-                    } else {
-                        Ok(Token::new(
-                            Op(Lt),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))
-                    }
-                }
-                '>' => {
-                    self.iter.next();
-                    if self.consume_char('=') {
-                        Ok(Token::new(
-                            Op(Gte),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))
-                    } else {
-                        Ok(Token::new(
-                            Op(Gt),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))
-                    }
-                }
-                '(' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Punctuator(Lparen),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                ')' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Punctuator(Rparen),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '{' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Punctuator(Lcurly),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '}' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Punctuator(Rcurly),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '[' => {
-                    self.iter.next();
-                    if self.consume_char('[') {
-                        Ok(self.scan_long_string(0)?)
-                    } else {
-                        let mut eq_count = 0;
-                        while self.consume_char('=') {
-                            eq_count += 1;
-                        }
-                        if eq_count > 0 {
-                            Ok(self.scan_long_string(eq_count)?)
-                        } else {
-                            Ok(Token::new(
-                                Punctuator(Lbracket),
-                                char_start,
-                                self.iter.char_idx,
-                                byte_start,
-                                self.iter.byte_idx,
-                            ))
-                        }
-                    }
-                }
-                ']' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Punctuator(Rbracket),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                ';' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Punctuator(Semi),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                ':' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Punctuator(Colon),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                ',' => {
-                    self.iter.next();
-                    Ok(Token::new(
-                        Punctuator(Comma),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-                '.' => {
-                    let mut dot_count = 0;
-                    while self.consume_char('.') {
-                        dot_count += 1;
-                    }
-                    match dot_count {
-                        1 => Ok(Token::new(
-                            Punctuator(Dot),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )),
-                        2 => Ok(Token::new(
-                            Op(Concat),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )),
-                        3 => Ok(Token::new(
-                            Op(Vararg),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )),
-                        _ => Err(LexerError {
-                            kind: LexerErrorKind::InvalidOperator,
-                            position: char_start,
-                        }),
-                    }
-                }
-                '\'' | '"' => Ok(self.scan_string()?),
-                '0'..='9' => Ok(self.scan_number()?),
-                'A'..='Z' | 'a'..='z' | '_' => Ok(self.scan_name()?),
-                _ => {
-                    // For docvim's purposes it is better to fail gracefully and emit some
-                    // "Unknown" tokens for stuff we don't recognize, so that it can at least take
-                    // its best shot at generating documentation.
-                    self.iter.next();
-                    Ok(Token::new(
-                        Unknown,
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ))
-                }
-            }
-        } else {
-            Err(LexerError {
-                kind: LexerErrorKind::EndOfInput,
-                position: char_start,
-            })
-        }
-    }
-
     fn skip_whitespace(&mut self) {
         while let Some(c) = self.iter.peek() {
             match c {
@@ -1039,9 +706,10 @@ impl<'a> Lexer<'a> {
     }
 
     // TODO: Probably don't need this; as tests show, can just do `lexer.input[..]` directly.
-    fn slice(&self, byte_start: usize, byte_end: usize) -> &str {
-        &self.input[byte_start..byte_end]
-    }
+    // #[cfg(test)]
+    // fn slice(&self, byte_start: usize, byte_end: usize) -> &str {
+    //     &self.input[byte_start..byte_end]
+    // }
 
     // TODO: consider something like this...
     // pub fn str_for_token(&self, token: Token) -> &str {
@@ -1057,18 +725,13 @@ impl<'a> Lexer<'a> {
         }
 
         loop {
-            match self.next_token() {
-                Err(e) => match e {
-                    LexerError {
-                        kind: LexerErrorKind::EndOfInput,
-                        position: _,
-                    } => {
-                        return None;
-                    }
-                    _ => {
-                        return Some(e);
-                    }
-                },
+            match self.next() {
+                Some(Err(e)) => {
+                    return Some(e);
+                }
+                None => {
+                    return None;
+                }
                 _ => (),
             }
         }
@@ -1076,10 +739,333 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> std::iter::Iterator for Lexer<'a> {
-    type Item = Token;
+    type Item = Result<Token, LexerError>;
 
-    fn next(&mut self) -> Option<Token> {
-        self.next_token().ok()
+    fn next(&mut self) -> Option<Result<Token, LexerError>> {
+        self.skip_whitespace();
+        let char_start = self.iter.char_idx;
+        let byte_start = self.iter.byte_idx;
+        if let Some(c) = self.iter.peek() {
+            match c {
+                '-' => {
+                    self.iter.next();
+                    if self.consume_char('-') {
+                        Some(self.scan_comment())
+                    } else {
+                        Some(Ok(Token::new(
+                            Op(Minus),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )))
+                    }
+                }
+                '+' => {
+                    // TODO: make macro to reduce verbosity here (once overall shape has settled
+                    // down).
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Op(Plus),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '*' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Op(Star),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '/' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Op(Slash),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '%' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Op(Percent),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '^' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Op(Caret),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '#' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Op(Hash),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '=' => {
+                    let mut eq_count = 0;
+                    while self.consume_char('=') {
+                        eq_count += 1;
+                    }
+                    match eq_count {
+                        1 => Some(Ok(Token::new(
+                            Op(Assign),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))),
+                        2 => Some(Ok(Token::new(
+                            Op(Eq),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))),
+                        _ => Some(Err(LexerError {
+                            kind: LexerErrorKind::InvalidOperator,
+                            position: char_start,
+                        })),
+                    }
+                }
+                '~' => {
+                    // TODO might want to think about some general rules here instead of coding
+                    // these one at a time... as in, having punctuators or operators one after the
+                    // other, is almost certainly invalid except for rare cases(? eg. ;;;; or x=-1)
+                    // eg. (1) + (-1) is legit, luajit accepts `(1+-1)`
+                    // could also let parser deal with it
+                    self.iter.next();
+                    if self.consume_char('=') {
+                        Some(Ok(Token::new(
+                            Op(Ne),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )))
+                    } else {
+                        Some(Err(LexerError {
+                            kind: LexerErrorKind::InvalidOperator,
+                            position: char_start,
+                        }))
+                    }
+                }
+                '<' => {
+                    self.iter.next();
+                    if self.consume_char('=') {
+                        Some(Ok(Token::new(
+                            Op(Lte),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )))
+                    } else {
+                        Some(Ok(Token::new(
+                            Op(Lt),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )))
+                    }
+                }
+                '>' => {
+                    self.iter.next();
+                    if self.consume_char('=') {
+                        Some(Ok(Token::new(
+                            Op(Gte),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )))
+                    } else {
+                        Some(Ok(Token::new(
+                            Op(Gt),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )))
+                    }
+                }
+                '(' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Punctuator(Lparen),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                ')' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Punctuator(Rparen),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '{' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Punctuator(Lcurly),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '}' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Punctuator(Rcurly),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '[' => {
+                    self.iter.next();
+                    if self.consume_char('[') {
+                        Some(self.scan_long_string(0))
+                    } else {
+                        let mut eq_count = 0;
+                        while self.consume_char('=') {
+                            eq_count += 1;
+                        }
+                        if eq_count > 0 {
+                            Some(self.scan_long_string(eq_count))
+                        } else {
+                            Some(Ok(Token::new(
+                                Punctuator(Lbracket),
+                                char_start,
+                                self.iter.char_idx,
+                                byte_start,
+                                self.iter.byte_idx,
+                            )))
+                        }
+                    }
+                }
+                ']' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Punctuator(Rbracket),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                ';' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Punctuator(Semi),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                ':' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Punctuator(Colon),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                ',' => {
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Punctuator(Comma),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+                '.' => {
+                    let mut dot_count = 0;
+                    while self.consume_char('.') {
+                        dot_count += 1;
+                    }
+                    match dot_count {
+                        1 => Some(Ok(Token::new(
+                            Punctuator(Dot),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))),
+                        2 => Some(Ok(Token::new(
+                            Op(Concat),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))),
+                        3 => Some(Ok(Token::new(
+                            Op(Vararg),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))),
+                        _ => Some(Err(LexerError {
+                            kind: LexerErrorKind::InvalidOperator,
+                            position: char_start,
+                        })),
+                    }
+                }
+                '\'' | '"' => Some(self.scan_string()),
+                '0'..='9' => Some(self.scan_number()),
+                'A'..='Z' | 'a'..='z' | '_' => Some(self.scan_name()),
+                _ => {
+                    // For docvim's purposes it is better to fail gracefully and emit some
+                    // "Unknown" tokens for stuff we don't recognize, so that it can at least take
+                    // its best shot at generating documentation.
+                    self.iter.next();
+                    Some(Ok(Token::new(
+                        Unknown,
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    )))
+                }
+            }
+        } else {
+            None
+        }
     }
 }
 
@@ -1090,7 +1076,12 @@ mod tests {
 
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
-            assert_eq!(Lexer::new(&$input).collect::<Vec<Token>>(), $expected)
+            assert_eq!(
+                Lexer::new(&$input)
+                    .map(|x| x.unwrap())
+                    .collect::<Vec<Token>>(),
+                $expected
+            )
         };
     }
 
@@ -1098,7 +1089,7 @@ mod tests {
     #[test]
     fn validate_panics_if_iteration_has_started() {
         let mut lexer = Lexer::new("print('1')");
-        lexer.next_token().expect("failed to produce a token");
+        lexer.next().unwrap().expect("failed to produce a token");
         lexer.validate();
     }
 
@@ -1361,7 +1352,7 @@ mod tests {
 
         // True even if lexer itself is mutable.
         let mut lexer = Lexer::new("local foo = 1");
-        lexer.next_token().expect("next_token() must yield a token");
+        lexer.next().unwrap().expect("must yield a token");
         assert_eq!(&lexer.input[6..9], "foo");
     }
 
@@ -1369,8 +1360,8 @@ mod tests {
     // #[test]
     // fn returns_text_for_a_token() {
     //     let mut lexer = Lexer::new("local foo = 1");
-    //     lexer.next_token().expect("must yield a token");
-    //     let token = lexer.next_token().expect("must yield a token");
+    //     lexer.next().unwrap().expect("must yield a token");
+    //     let token = lexer.next().unwrap().expect("must yield a token");
     //     assert_eq!(lexer.str_for_token(token), "foo");
     // }
 }

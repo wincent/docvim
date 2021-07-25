@@ -3,7 +3,7 @@ use std::error::Error;
 use docvim_lexer::lua::KeywordKind::*;
 use docvim_lexer::lua::NameKind::*;
 use docvim_lexer::lua::TokenKind::*;
-use docvim_lexer::lua::{Lexer, LexerError, LexerErrorKind, Token};
+use docvim_lexer::lua::{Lexer, Token};
 
 // TODO these node types will eventually wind up in another file, and end up referring specifically
 // to Lua, but for now developing them "in situ".
@@ -59,41 +59,26 @@ impl<'a> Parser<'a> {
 
     pub fn parse(&mut self) -> Result<(), Box<dyn Error>> {
         loop {
-            // TODO: make lexer implement Iterator trait after all?, as we are going to want to
-            // peek at tokens much like the lexer needs to peek at characters.
-
-            // TODO: think about changing return type to: Option<Result<Token, LexerError>>
-            // so I can just use iterator trait:
-            // let result = self.lexer.next();
-            // ie. None = end of input reached
-            //     Some(Err(...)) = something went wrong
-            //     Some(Ok(Token)) = all good
-            //
-            // that way, i am not overloading Errors to mean "something went wrong OR i got to the
-            // end just fine)
-            let result = self.lexer.next_token();
+            let result = self.lexer.next();
             match result {
-                Ok(
+                Some(Ok(
                     token
                     @
                     Token {
                         kind: Name(Keyword(Local)),
                         ..
                     },
-                ) => {
+                )) => {
                     self.parse_local();
                 }
-                Ok(token) => {
+                Some(Ok(token)) => {
                     println!("token: {:?}", token);
                 }
-                Err(LexerError {
-                    kind: LexerErrorKind::EndOfInput,
-                    ..
-                }) => {
-                    return Ok(());
-                }
-                Err(err) => {
+                Some(Err(err)) => {
                     return Err(Box::new(err));
+                }
+                None => {
+                    return Ok(());
                 }
             }
         }
