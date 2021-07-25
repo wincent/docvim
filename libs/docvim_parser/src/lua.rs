@@ -61,6 +61,16 @@ impl<'a> Parser<'a> {
         loop {
             // TODO: make lexer implement Iterator trait after all?, as we are going to want to
             // peek at tokens much like the lexer needs to peek at characters.
+
+            // TODO: think about changing return type to: Option<Result<Token, LexerError>>
+            // so I can just use iterator trait:
+            // let result = self.lexer.next();
+            // ie. None = end of input reached
+            //     Some(Err(...)) = something went wrong
+            //     Some(Ok(Token)) = all good
+            //
+            // that way, i am not overloading Errors to mean "something went wrong OR i got to the
+            // end just fine)
             let result = self.lexer.next_token();
             match result {
                 Ok(
