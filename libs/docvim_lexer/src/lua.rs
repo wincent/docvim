@@ -12,7 +12,7 @@ use self::PunctuatorKind::*;
 use self::StrKind::*;
 use self::TokenKind::*;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
     pub char_start: usize,
@@ -158,7 +158,7 @@ impl LexerErrorKind {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct LexerError {
     pub kind: LexerErrorKind,
     pub position: usize,

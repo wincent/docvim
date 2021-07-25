@@ -8,7 +8,8 @@ use docvim_lexer::lua::{Lexer, Token};
 // TODO these node types will eventually wind up in another file, and end up referring specifically
 // to Lua, but for now developing them "in situ".
 
-/// Root AST node for a compilation unit (eg. a file).
+/// Root AST node for a compilation unit (eg. a file, in the case of docvim; in other contexts,
+/// could also be a string to be dynamically compiled and evaluated by the Lua virtual machine).
 pub struct Chunk {
     pub block: Block,
 }
@@ -58,30 +59,31 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&mut self) -> Result<(), Box<dyn Error>> {
-        let mut tokens = self.lexer.tokens(); //.peekable();
+        let mut tokens = self.lexer.tokens().peekable();
         loop {
-            let result = tokens.next();
-            match result {
-                Some(Ok(
-                    token
-                    @
-                    Token {
-                        kind: Name(Keyword(Local)),
-                        ..
-                    },
-                )) => {
-                    self.parse_local();
+            if let Some(&result) = tokens.peek() {
+                match result {
+                    Ok(
+                        token
+                        @
+                        Token {
+                            kind: Name(Keyword(Local)),
+                            ..
+                        },
+                    ) => {
+                        self.parse_local();
+                    }
+                    Ok(token) => {
+                        println!("token: {:?}", token);
+                    }
+                    Err(err) => {
+                        return Err(Box::new(err));
+                    }
                 }
-                Some(Ok(token)) => {
-                    println!("token: {:?}", token);
-                }
-                Some(Err(err)) => {
-                    return Err(Box::new(err));
-                }
-                None => {
-                    return Ok(());
-                }
+            } else {
+                return Ok(());
             }
+            tokens.next();
         }
     }
 
