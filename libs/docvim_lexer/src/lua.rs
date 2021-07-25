@@ -213,13 +213,9 @@ impl<'a> Lexer<'a> {
     /// consumed.
     fn consume_char(&mut self, ch: char) -> bool {
         match self.iter.peek() {
-            Some(seen) => {
-                if seen == ch {
-                    self.iter.next();
-                    true
-                } else {
-                    false
-                }
+            Some(seen) if seen == ch => {
+                self.iter.next();
+                true
             }
             _ => false,
         }
