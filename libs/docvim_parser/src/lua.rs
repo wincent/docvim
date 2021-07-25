@@ -58,8 +58,9 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&mut self) -> Result<(), Box<dyn Error>> {
+        let mut tokens = self.lexer.tokens(); //.peekable();
         loop {
-            let result = self.lexer.next();
+            let result = tokens.next();
             match result {
                 Some(Ok(
                     token
@@ -84,7 +85,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse_local(&mut self) {}
+    pub fn parse_local(&self) {}
 }
 
 #[cfg(test)]
@@ -93,8 +94,10 @@ mod tests {
 
     #[test]
     fn parses_a_statement() {
-        let ast = Parser::new("local x = 1").parse();
+        let ast = Parser::new("local foo").parse();
+        assert_eq!(ast.unwrap(), ());
 
+        let ast = Parser::new("local x = 1").parse();
         assert_eq!(ast.unwrap(), ());
 
         // chunk [

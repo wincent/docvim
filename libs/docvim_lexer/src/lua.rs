@@ -183,21 +183,54 @@ impl error::Error for LexerError {}
 
 pub struct Lexer<'a> {
     pub input: &'a str,
-    iter: Peekable<'a>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
-        Self {
-            input,
+        Self { input }
+    }
 
-            // TODO: investigate changing this to char_indices()
-            // once/if I can confirm that we make cheap slice "copies" based on indices (will just
-            // test with ascii to start with, where byte index === char index)
-            iter: Peekable::new(input),
+    /// Returns an iterator over the tokens produced by the lexer.
+    pub fn tokens(&self) -> Tokens<'_> {
+        Tokens {
+            iter: Peekable::new(self.input),
         }
     }
 
+    // TODO: Probably don't need this; as tests show, can just do `lexer.input[..]` directly.
+    // #[cfg(test)]
+    // fn slice(&self, byte_start: usize, byte_end: usize) -> &str {
+    //     &self.input[byte_start..byte_end]
+    // }
+
+    // TODO: consider something like this...
+    // pub fn str_for_token(&self, token: Token) -> &str {
+    //     &self.input[token.start..token.end]
+    // }
+
+    /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
+    /// `None` if the input is valid.
+    #[cfg(test)]
+    fn validate(&mut self) -> Option<LexerError> {
+        loop {
+            match self.tokens().next() {
+                Some(Err(e)) => {
+                    return Some(e);
+                }
+                None => {
+                    return None;
+                }
+                _ => (),
+            }
+        }
+    }
+}
+
+pub struct Tokens<'a> {
+    iter: Peekable<'a>,
+}
+
+impl<'a> Tokens<'a> {
     /// Consumes the specified `char`, returning `true` on success and `false` if nothing was
     /// consumed.
     fn consume_char(&mut self, ch: char) -> bool {
@@ -704,41 +737,9 @@ impl<'a> Lexer<'a> {
             }
         }
     }
-
-    // TODO: Probably don't need this; as tests show, can just do `lexer.input[..]` directly.
-    // #[cfg(test)]
-    // fn slice(&self, byte_start: usize, byte_end: usize) -> &str {
-    //     &self.input[byte_start..byte_end]
-    // }
-
-    // TODO: consider something like this...
-    // pub fn str_for_token(&self, token: Token) -> &str {
-    //     &self.input[token.start..token.end]
-    // }
-
-    /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
-    /// `None` if the input is valid.
-    #[cfg(test)]
-    fn validate(&mut self) -> Option<LexerError> {
-        if self.iter.char_idx > 0 {
-            panic!("validate() called on partially consumed Lexer");
-        }
-
-        loop {
-            match self.next() {
-                Some(Err(e)) => {
-                    return Some(e);
-                }
-                None => {
-                    return None;
-                }
-                _ => (),
-            }
-        }
-    }
 }
 
-impl<'a> std::iter::Iterator for Lexer<'a> {
+impl<'a> Iterator for Tokens<'a> {
     type Item = Result<Token, LexerError>;
 
     fn next(&mut self) -> Option<Result<Token, LexerError>> {
@@ -1078,19 +1079,12 @@ mod tests {
         ($input:expr, $expected:expr) => {
             assert_eq!(
                 Lexer::new(&$input)
+                    .tokens()
                     .map(|x| x.unwrap())
                     .collect::<Vec<Token>>(),
                 $expected
             )
         };
-    }
-
-    #[should_panic(expected = "called on partially consumed Lexer")]
-    #[test]
-    fn validate_panics_if_iteration_has_started() {
-        let mut lexer = Lexer::new("print('1')");
-        lexer.next().unwrap().expect("failed to produce a token");
-        lexer.validate();
     }
 
     #[test]
@@ -1348,11 +1342,6 @@ mod tests {
         // This shows that we don't need tokens to embed a copy of their text, because we can
         // borrow an immutable slice whenever we want.
         let lexer = Lexer::new("local foo = 1");
-        assert_eq!(&lexer.input[6..9], "foo");
-
-        // True even if lexer itself is mutable.
-        let mut lexer = Lexer::new("local foo = 1");
-        lexer.next().unwrap().expect("must yield a token");
         assert_eq!(&lexer.input[6..9], "foo");
     }
 
