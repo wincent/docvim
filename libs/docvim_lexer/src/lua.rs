@@ -211,7 +211,7 @@ impl<'a> Lexer<'a> {
     /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
     /// `None` if the input is valid.
     #[cfg(test)]
-    fn validate(&mut self) -> Option<LexerError> {
+    fn validate(&self) -> Option<LexerError> {
         loop {
             match self.tokens().next() {
                 Some(Err(e)) => {

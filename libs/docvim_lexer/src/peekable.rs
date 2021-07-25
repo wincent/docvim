@@ -18,10 +18,13 @@ impl<'a> Peekable<'a> {
         }
     }
 
+    // BUG: Technically, peek is supposed to return a reference to the item type (ie.
+    // `Option<&char>` instead of `Option<char>`), but I couldn't figure out how to do that; see:
+    // https://doc.rust-lang.org/stable/std/iter/struct.Peekable.html
     pub fn peek(&mut self) -> Option<char> {
         match self.iter.peek() {
+            Some(&(_, ch)) => Some(ch),
             None => None,
-            Some((_, ch)) => Some(*ch),
         }
     }
 }
@@ -31,12 +34,12 @@ impl<'a> std::iter::Iterator for Peekable<'a> {
 
     fn next(&mut self) -> Option<char> {
         match self.iter.next() {
-            None => None,
             Some((i, ch)) => {
                 self.char_idx += 1;
                 self.byte_idx = i + ch.len_utf8();
                 Some(ch)
             }
+            None => None,
         }
     }
 }
