@@ -1,4 +1,4 @@
-// use std::error::Error;
+use std::error::Error;
 
 use docvim_lexer::lua::KeywordKind::*;
 use docvim_lexer::lua::NameKind::*;
@@ -7,8 +7,14 @@ use docvim_lexer::lua::{Lexer, LexerError, LexerErrorKind, Token};
 
 // TODO these node types will eventually wind up in another file, and end up referring specifically
 // to Lua, but for now developing them "in situ".
+
+/// Root AST node for a compilation unit (eg. a file).
 pub struct Chunk {
-    pub statments: Vec<Statement>,
+    pub block: Block,
+}
+
+pub struct Block {
+    pub statements: Vec<Statement>,
 }
 
 pub enum Exp {
@@ -37,18 +43,25 @@ pub enum Statement {
 // }
 
 pub struct Parser<'a> {
-    input: &'a str,
+    lexer: Lexer<'a>,
+    ast: Chunk,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(input: &'a str) -> Self {
-        Self { input }
+        Self {
+            lexer: Lexer::new(input),
+            ast: Chunk {
+                block: Block { statements: vec![] },
+            },
+        }
     }
 
-    pub fn parse(&self) -> Result<(), LexerError> {
-        let mut lexer = Lexer::new(self.input);
+    pub fn parse(&mut self) -> Result<(), Box<dyn Error>> {
         loop {
-            let result = lexer.next_token();
+            // TODO: make lexer implement Iterator trait after all?, as we are going to want to
+            // peek at tokens much like the lexer needs to peek at characters.
+            let result = self.lexer.next_token();
             match result {
                 Ok(
                     token
@@ -58,7 +71,7 @@ impl<'a> Parser<'a> {
                         ..
                     },
                 ) => {
-                    println!("[local]: {:?}", token);
+                    self.parse_local();
                 }
                 Ok(token) => {
                     println!("token: {:?}", token);
@@ -70,16 +83,13 @@ impl<'a> Parser<'a> {
                     return Ok(());
                 }
                 Err(err) => {
-                    return Err(err);
+                    return Err(Box::new(err));
                 }
             }
-
-            // match token {
-            // Lexer::Token({kind: Lexer::KeywordKind}) => {}
-            // _ => {}
-            // }
         }
     }
+
+    pub fn parse_local(&mut self) {}
 }
 
 #[cfg(test)]

@@ -13,37 +13,29 @@ use self::StrKind::*;
 use self::TokenKind::*;
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Token<'a> {
+pub struct Token {
     pub kind: TokenKind,
-    pub start: usize,
-    pub end: usize,
-    pub contents: Option<&'a str>,
+    pub char_start: usize,
+    pub char_end: usize,
+    pub byte_start: usize,
+    pub byte_end: usize,
 }
 
-impl<'a> Token<'a> {
-    fn new(kind: TokenKind, start: usize, end: usize) -> Token<'a> {
+impl Token {
+    fn new(
+        kind: TokenKind,
+        char_start: usize,
+        char_end: usize,
+        byte_start: usize,
+        byte_end: usize,
+    ) -> Token {
         Token {
             kind,
-            start,
-            end,
-            contents: None,
+            char_start,
+            char_end,
+            byte_start,
+            byte_end,
         }
-    }
-}
-
-fn build_token(
-    kind: TokenKind,
-    input: &str,
-    char_start: usize,
-    char_end: usize,
-    byte_start: usize,
-    byte_end: usize,
-) -> Token {
-    Token {
-        kind,
-        start: char_start,
-        end: char_end,
-        contents: Some(&input[byte_start..byte_end]),
     }
 }
 
@@ -193,7 +185,7 @@ impl fmt::Display for LexerError {
 impl error::Error for LexerError {}
 
 pub struct Lexer<'a> {
-    input: &'a str,
+    pub input: &'a str,
     iter: Peekable<'a>,
 }
 
@@ -249,9 +241,8 @@ impl<'a> Lexer<'a> {
                         dash_count += 1;
                     }
                     if dash_count >= 2 && self.consume_char(']') && self.consume_char(']') {
-                        return Ok(build_token(
+                        return Ok(Token::new(
                             Comment(BlockComment),
-                            self.input,
                             char_start,
                             self.iter.char_idx,
                             byte_start,
@@ -280,9 +271,8 @@ impl<'a> Lexer<'a> {
             let ch = self.iter.next();
             match ch {
                 Some('\n') | None => {
-                    return Ok(build_token(
+                    return Ok(Token::new(
                         Comment(LineComment),
-                        self.input,
                         char_start,
                         self.iter.char_idx,
                         byte_start,
@@ -317,110 +307,151 @@ impl<'a> Lexer<'a> {
                 Name(Keyword(And)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "break" => Ok(Token::new(
                 Name(Keyword(Break)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "do" => Ok(Token::new(
                 Name(Keyword(Do)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "else" => Ok(Token::new(
                 Name(Keyword(Else)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "elseif" => Ok(Token::new(
                 Name(Keyword(Elseif)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "end" => Ok(Token::new(
                 Name(Keyword(End)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "false" => Ok(Token::new(
                 Name(Keyword(False)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "for" => Ok(Token::new(
                 Name(Keyword(For)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "function" => Ok(Token::new(
                 Name(Keyword(Function)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "if" => Ok(Token::new(
                 Name(Keyword(If)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "in" => Ok(Token::new(
                 Name(Keyword(In)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "local" => Ok(Token::new(
                 Name(Keyword(Local)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "nil" => Ok(Token::new(
                 Name(Keyword(Nil)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "not" => Ok(Token::new(
                 Name(Keyword(Not)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "or" => Ok(Token::new(
                 Name(Keyword(Or)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "repeat" => Ok(Token::new(
                 Name(Keyword(Repeat)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "return" => Ok(Token::new(
                 Name(Keyword(Return)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "then" => Ok(Token::new(
                 Name(Keyword(Then)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "true" => Ok(Token::new(
                 Name(Keyword(True)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "until" => Ok(Token::new(
                 Name(Keyword(Until)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
             "while" => Ok(Token::new(
                 Name(Keyword(While)),
                 char_start,
                 self.iter.char_idx,
+                byte_start,
+                self.iter.byte_idx,
             )),
-            _ => Ok(build_token(
+            _ => Ok(Token::new(
                 Name(Identifier),
-                self.input,
                 char_start,
                 self.iter.char_idx,
                 byte_start,
@@ -465,9 +496,8 @@ impl<'a> Lexer<'a> {
                     }
                 }
             }
-            return Ok(build_token(
+            return Ok(Token::new(
                 Literal(Number),
-                self.input,
                 char_start,
                 self.iter.char_idx,
                 byte_start,
@@ -516,9 +546,8 @@ impl<'a> Lexer<'a> {
                             }
                         }
                         if exp_digits_count > 0 {
-                            return Ok(build_token(
+                            return Ok(Token::new(
                                 Literal(Number),
-                                self.input,
                                 char_start,
                                 self.iter.char_idx,
                                 byte_start,
@@ -537,9 +566,8 @@ impl<'a> Lexer<'a> {
                 }
             }
         }
-        Ok(build_token(
+        Ok(Token::new(
             Literal(Number),
-            self.input,
             char_start,
             self.iter.char_idx,
             byte_start,
@@ -554,18 +582,16 @@ impl<'a> Lexer<'a> {
         while let Some(c) = self.iter.next() {
             if c == quote {
                 if quote == '"' {
-                    return Ok(build_token(
+                    return Ok(Token::new(
                         Literal(Str(DoubleQuoted)),
-                        self.input,
                         char_start,
                         self.iter.char_idx,
                         byte_start,
                         self.iter.byte_idx,
                     ));
                 } else {
-                    return Ok(build_token(
+                    return Ok(Token::new(
                         Literal(Str(SingleQuoted)),
-                        self.input,
                         char_start,
                         self.iter.char_idx,
                         byte_start,
@@ -653,9 +679,8 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 if eq_count == level && self.consume_char(']') {
-                    return Ok(build_token(
+                    return Ok(Token::new(
                         Literal(Str(Long { level })),
-                        self.input,
                         char_start,
                         self.iter.char_idx,
                         byte_start,
@@ -672,7 +697,8 @@ impl<'a> Lexer<'a> {
 
     pub fn next_token(&mut self) -> Result<Token, LexerError> {
         self.skip_whitespace();
-        let start = self.iter.char_idx;
+        let char_start = self.iter.char_idx;
+        let byte_start = self.iter.byte_idx;
         if let Some(c) = self.iter.peek() {
             match c {
                 '-' => {
@@ -680,34 +706,76 @@ impl<'a> Lexer<'a> {
                     if self.consume_char('-') {
                         Ok(self.scan_comment()?)
                     } else {
-                        Ok(Token::new(Op(Minus), start, self.iter.char_idx))
+                        Ok(Token::new(
+                            Op(Minus),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))
                     }
                 }
                 '+' => {
                     // TODO: make macro to reduce verbosity here (once overall shape has settled
                     // down).
                     self.iter.next();
-                    Ok(Token::new(Op(Plus), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Op(Plus),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '*' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Star), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Op(Star),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '/' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Slash), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Op(Slash),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '%' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Percent), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Op(Percent),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '^' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Caret), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Op(Caret),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '#' => {
                     self.iter.next();
-                    Ok(Token::new(Op(Hash), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Op(Hash),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '=' => {
                     let mut eq_count = 0;
@@ -715,11 +783,23 @@ impl<'a> Lexer<'a> {
                         eq_count += 1;
                     }
                     match eq_count {
-                        1 => Ok(Token::new(Op(Assign), start, self.iter.char_idx)),
-                        2 => Ok(Token::new(Op(Eq), start, self.iter.char_idx)),
+                        1 => Ok(Token::new(
+                            Op(Assign),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )),
+                        2 => Ok(Token::new(
+                            Op(Eq),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )),
                         _ => Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: start,
+                            position: char_start,
                         }),
                     }
                 }
@@ -731,45 +811,99 @@ impl<'a> Lexer<'a> {
                     // could also let parser deal with it
                     self.iter.next();
                     if self.consume_char('=') {
-                        Ok(Token::new(Op(Ne), start, self.iter.char_idx))
+                        Ok(Token::new(
+                            Op(Ne),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))
                     } else {
                         Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: start,
+                            position: char_start,
                         })
                     }
                 }
                 '<' => {
                     self.iter.next();
                     if self.consume_char('=') {
-                        Ok(Token::new(Op(Lte), start, self.iter.char_idx))
+                        Ok(Token::new(
+                            Op(Lte),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))
                     } else {
-                        Ok(Token::new(Op(Lt), start, self.iter.char_idx))
+                        Ok(Token::new(
+                            Op(Lt),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))
                     }
                 }
                 '>' => {
                     self.iter.next();
                     if self.consume_char('=') {
-                        Ok(Token::new(Op(Gte), start, self.iter.char_idx))
+                        Ok(Token::new(
+                            Op(Gte),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))
                     } else {
-                        Ok(Token::new(Op(Gt), start, self.iter.char_idx))
+                        Ok(Token::new(
+                            Op(Gt),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        ))
                     }
                 }
                 '(' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Lparen), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Punctuator(Lparen),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 ')' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Rparen), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Punctuator(Rparen),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '{' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Lcurly), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Punctuator(Lcurly),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '}' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Rcurly), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Punctuator(Rcurly),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '[' => {
                     self.iter.next();
@@ -783,25 +917,55 @@ impl<'a> Lexer<'a> {
                         if eq_count > 0 {
                             Ok(self.scan_long_string(eq_count)?)
                         } else {
-                            Ok(Token::new(Punctuator(Lbracket), start, self.iter.char_idx))
+                            Ok(Token::new(
+                                Punctuator(Lbracket),
+                                char_start,
+                                self.iter.char_idx,
+                                byte_start,
+                                self.iter.byte_idx,
+                            ))
                         }
                     }
                 }
                 ']' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Rbracket), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Punctuator(Rbracket),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 ';' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Semi), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Punctuator(Semi),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 ':' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Colon), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Punctuator(Colon),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 ',' => {
                     self.iter.next();
-                    Ok(Token::new(Punctuator(Comma), start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Punctuator(Comma),
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
                 '.' => {
                     let mut dot_count = 0;
@@ -809,12 +973,30 @@ impl<'a> Lexer<'a> {
                         dot_count += 1;
                     }
                     match dot_count {
-                        1 => Ok(Token::new(Punctuator(Dot), start, self.iter.char_idx)),
-                        2 => Ok(Token::new(Op(Concat), start, self.iter.char_idx)),
-                        3 => Ok(Token::new(Op(Vararg), start, self.iter.char_idx)),
+                        1 => Ok(Token::new(
+                            Punctuator(Dot),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )),
+                        2 => Ok(Token::new(
+                            Op(Concat),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )),
+                        3 => Ok(Token::new(
+                            Op(Vararg),
+                            char_start,
+                            self.iter.char_idx,
+                            byte_start,
+                            self.iter.byte_idx,
+                        )),
                         _ => Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: start,
+                            position: char_start,
                         }),
                     }
                 }
@@ -826,13 +1008,19 @@ impl<'a> Lexer<'a> {
                     // "Unknown" tokens for stuff we don't recognize, so that it can at least take
                     // its best shot at generating documentation.
                     self.iter.next();
-                    Ok(Token::new(Unknown, start, self.iter.char_idx))
+                    Ok(Token::new(
+                        Unknown,
+                        char_start,
+                        self.iter.char_idx,
+                        byte_start,
+                        self.iter.byte_idx,
+                    ))
                 }
             }
         } else {
             Err(LexerError {
                 kind: LexerErrorKind::EndOfInput,
-                position: start,
+                position: char_start,
             })
         }
     }
@@ -849,6 +1037,16 @@ impl<'a> Lexer<'a> {
             }
         }
     }
+
+    // TODO: Probably don't need this; as tests show, can just do `lexer.input[..]` directly.
+    fn slice(&self, byte_start: usize, byte_end: usize) -> &str {
+        &self.input[byte_start..byte_end]
+    }
+
+    // TODO: consider something like this...
+    // pub fn str_for_token(&self, token: Token) -> &str {
+    //     &self.input[token.start..token.end]
+    // }
 
     /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
     /// `None` if the input is valid.
@@ -877,36 +1075,12 @@ impl<'a> Lexer<'a> {
     }
 }
 
-// Jump through some hoops to pacify the borrow-checker.
-#[cfg(test)]
-fn collect(input: &str) -> Vec<Token> {
-    let mut lexer = Lexer::new(input);
-    let mut vec = Vec::new();
-    loop {
-        let byte_start = lexer.iter.byte_idx;
-        if let Ok(t) = lexer.next_token() {
-            if t.contents.is_some() {
-                vec.push(build_token(
-                    t.kind,
-                    input,
-                    t.start,
-                    t.end,
-                    byte_start,
-                    lexer.iter.byte_idx,
-                ));
-            } else {
-                vec.push(Token {
-                    kind: t.kind,
-                    start: t.start,
-                    end: t.end,
-                    contents: None,
-                });
-            }
-        } else {
-            break;
-        }
+impl<'a> std::iter::Iterator for Lexer<'a> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Token> {
+        self.next_token().ok()
     }
-    vec
 }
 
 #[cfg(test)]
@@ -916,7 +1090,7 @@ mod tests {
 
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
-            assert_eq!(collect($input), $expected)
+            assert_eq!(Lexer::new(&$input).collect::<Vec<Token>>(), $expected)
         };
     }
 
@@ -934,16 +1108,18 @@ mod tests {
             "-- cañón\n-- träumen",
             vec![
                 Token {
-                    contents: Some("-- cañón\n"),
-                    end: 9,
+                    byte_end: 11,
+                    byte_start: 0,
+                    char_end: 9,
+                    char_start: 0,
                     kind: Comment(LineComment),
-                    start: 0,
                 },
                 Token {
-                    contents: Some("-- träumen"),
-                    end: 19,
+                    byte_end: 22,
+                    byte_start: 11,
+                    char_end: 19,
+                    char_start: 9,
                     kind: Comment(LineComment),
-                    start: 9,
                 }
             ]
         );
@@ -954,19 +1130,21 @@ mod tests {
         assert_lexes!(
             "-- TODO: something",
             vec![Token {
-                contents: Some("-- TODO: something"),
-                end: 18,
+                byte_end: 18,
+                byte_start: 0,
+                char_end: 18,
+                char_start: 0,
                 kind: Comment(LineComment),
-                start: 0,
             }]
         );
         assert_lexes!(
             "--[ Almost a block comment, but not quite",
             vec![Token {
-                contents: Some("--[ Almost a block comment, but not quite"),
-                end: 41,
+                byte_end: 41,
+                byte_start: 0,
+                char_end: 41,
+                char_start: 0,
                 kind: Comment(LineComment),
-                start: 0,
             }]
         );
     }
@@ -976,10 +1154,11 @@ mod tests {
         assert_lexes!(
             "--[[\nstuff\n--]]",
             vec![Token {
-                contents: Some("--[[\nstuff\n--]]"),
-                end: 15,
+                byte_end: 15,
+                byte_start: 0,
+                char_end: 15,
+                char_start: 0,
                 kind: Comment(BlockComment),
-                start: 0,
             }]
         );
     }
@@ -990,64 +1169,71 @@ mod tests {
         assert_lexes!(
             "3",
             vec![Token {
-                contents: Some("3"),
-                end: 1,
+                byte_end: 1,
+                byte_start: 0,
+                char_end: 1,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
         assert_lexes!(
             "3.0",
             vec![Token {
-                contents: Some("3.0"),
-                end: 3,
+                byte_end: 3,
+                byte_start: 0,
+                char_end: 3,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
         assert_lexes!(
             "3.1416",
             vec![Token {
-                contents: Some("3.1416"),
-                end: 6,
+                byte_end: 6,
+                byte_start: 0,
+                char_end: 6,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
         assert_lexes!(
             "314.16e-2",
             vec![Token {
-                contents: Some("314.16e-2"),
-                end: 9,
+                byte_end: 9,
+                byte_start: 0,
+                char_end: 9,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
         assert_lexes!(
             "0.31416E1",
             vec![Token {
-                contents: Some("0.31416E1"),
-                end: 9,
+                byte_end: 9,
+                byte_start: 0,
+                char_end: 9,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
         assert_lexes!(
             "0xff",
             vec![Token {
-                contents: Some("0xff"),
-                end: 4,
+                byte_end: 4,
+                byte_start: 0,
+                char_end: 4,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
         assert_lexes!(
             "0x56",
             vec![Token {
-                contents: Some("0x56"),
-                end: 4,
+                byte_end: 4,
+                byte_start: 0,
+                char_end: 4,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
 
@@ -1055,60 +1241,67 @@ mod tests {
         assert_lexes!(
             "0xff.1", // ie. 255.0625
             vec![Token {
-                contents: Some("0xff.1"),
-                end: 6,
+                byte_end: 6,
+                byte_start: 0,
+                char_end: 6,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
         assert_lexes!(
             "0xff.ff", // ie. 255.99609375.
             vec![Token {
-                contents: Some("0xff.ff"),
-                end: 7,
+                byte_end: 7,
+                byte_start: 0,
+                char_end: 7,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
         assert_lexes!(
             "0xffe10", // 1048080 because "e" doesn't mean exponent here.
             vec![Token {
-                contents: Some("0xffe10"),
-                end: 7,
+                byte_end: 7,
+                byte_start: 0,
+                char_end: 7,
+                char_start: 0,
                 kind: Literal(Number),
-                start: 0,
             }]
         );
         assert_lexes!(
             "0xffe-10", // "e" not exponent; this is `(0xffe) - 10` ie. 4084.
             vec![
                 Token {
-                    contents: Some("0xffe"),
-                    end: 5,
+                    byte_end: 5,
+                    byte_start: 0,
+                    char_end: 5,
+                    char_start: 0,
                     kind: Literal(Number),
-                    start: 0,
                 },
                 Token {
-                    contents: None,
-                    end: 6,
+                    byte_end: 6,
+                    byte_start: 5,
+                    char_end: 6,
+                    char_start: 5,
                     kind: Op(Minus),
-                    start: 5,
                 },
                 Token {
-                    contents: Some("10"),
-                    end: 8,
+                    byte_end: 8,
+                    byte_start: 6,
+                    char_end: 8,
+                    char_start: 6,
                     kind: Literal(Number),
-                    start: 6,
                 }
             ]
         );
         assert_lexes!(
             "0xff.ffe2", // ie. 255.99954223633.
             vec![Token {
-                contents: Some("0xff.ffe2"),
-                end: 9,
+                byte_end: 9,
+                char_end: 9,
                 kind: Literal(Number),
-                start: 0,
+                char_start: 0,
+                byte_start: 0,
             }]
         );
     }
@@ -1150,11 +1343,34 @@ mod tests {
         assert_lexes!(
             "'hello'",
             vec![Token {
-                contents: Some("'hello'"),
-                end: 7,
                 kind: Literal(Str(SingleQuoted)),
-                start: 0,
+                char_start: 0,
+                char_end: 7,
+                byte_start: 0,
+                byte_end: 7,
             }]
         );
     }
+
+    #[test]
+    fn can_extract_a_slice() {
+        // This shows that we don't need tokens to embed a copy of their text, because we can
+        // borrow an immutable slice whenever we want.
+        let lexer = Lexer::new("local foo = 1");
+        assert_eq!(&lexer.input[6..9], "foo");
+
+        // True even if lexer itself is mutable.
+        let mut lexer = Lexer::new("local foo = 1");
+        lexer.next_token().expect("next_token() must yield a token");
+        assert_eq!(&lexer.input[6..9], "foo");
+    }
+
+    // TODO: consider something like this...
+    // #[test]
+    // fn returns_text_for_a_token() {
+    //     let mut lexer = Lexer::new("local foo = 1");
+    //     lexer.next_token().expect("must yield a token");
+    //     let token = lexer.next_token().expect("must yield a token");
+    //     assert_eq!(lexer.str_for_token(token), "foo");
+    // }
 }
