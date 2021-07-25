@@ -1,6 +1,33 @@
 // use std::error::Error;
 
-use docvim_lexer::lua::{Lexer, LexerError, LexerErrorKind}; // later on will want token types etc
+use docvim_lexer::lua::{
+    KeywordKind, Lexer, LexerError, LexerErrorKind, NameKind, Token, TokenKind,
+};
+
+// If I do this:
+//
+//      use docvim_lexer::lua::KeywordKind::*;
+//      use docvim_lexer::lua::NameKind::*;
+//      use docvim_lexer::lua::TokenKind::*;
+//
+// Then I can write:
+//
+//      Ok(Token {kind: Name(Keyword(Local)), ..}) => {
+//
+// instead of:
+//
+//      Ok(Token {kind: TokenKind::Name(NameKind::Keyword(KeywordKind::Local)), ..}) => {
+//
+// and change:
+//
+//      use docvim_lexer::lua::{KeywordKind, Lexer, LexerError, LexerErrorKind, NameKind, Token, TokenKind};
+//
+// to:
+//
+//      use docvim_lexer::lua::{Lexer, LexerError, LexerErrorKind, Token};
+//
+// but I am going to have to be careful to not haven colliding names of lexer token structs/enums
+// vs parser ast structs/enums... 🤦
 
 // A note on storing str slices in AST nodes: given that Rust doesn't have fast access based on
 // index, instead of storing indices into the original input, we actually copy the strings.
@@ -50,6 +77,18 @@ impl<'a> Parser<'a> {
         loop {
             let result = lexer.next_token();
             match result {
+                // TODO: Ugh...
+                Ok(
+                    token
+                    @
+                    Token {
+                        kind: TokenKind::Name(NameKind::Keyword(KeywordKind::Local)),
+                        ..
+                    },
+                ) => {
+                    //Ok(token @ Token {kind: Name(Keyword(Local)), ..}) => {
+                    println!("[local]: {:?}", token);
+                }
                 Ok(token) => {
                     println!("token: {:?}", token);
                 }
