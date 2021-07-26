@@ -170,7 +170,8 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     if options.generate_output {
         for input in files(options.directory)? {
             // let input = "sample/init.lua";
-            let contents = fs::read_to_string(input).expect("unable to read file");
+            // let contents = fs::read_to_string(input).expect("unable to read file");
+            let contents = "local foo, bar = 1, 2";
 
             // println!("Text:\n{}", contents);
 
