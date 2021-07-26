@@ -46,10 +46,7 @@ pub struct Name<'a>(&'a str);
 
 #[derive(Debug)]
 pub enum Statement<'a> {
-    LocalDeclaration {
-        namelist: Vec<Name<'a>>,
-        explist: Vec<Exp<'a>>,
-    },
+    LocalDeclaration { namelist: Vec<Name<'a>>, explist: Vec<Exp<'a>> },
 }
 
 #[derive(Debug)]
@@ -88,10 +85,7 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     pub fn new(input: &'a str) -> Self {
-        Self {
-            lexer: Lexer::new(input),
-            ast: Chunk(Block(vec![])),
-        }
+        Self { lexer: Lexer::new(input), ast: Chunk(Block(vec![])) }
     }
 
     pub fn parse(&mut self) -> Result<(), Box<dyn Error>> {
@@ -99,14 +93,7 @@ impl<'a> Parser<'a> {
         loop {
             if let Some(&result) = tokens.peek() {
                 match result {
-                    Ok(
-                        token
-                        @
-                        Token {
-                            kind: NameToken(KeywordToken(LocalToken)),
-                            ..
-                        },
-                    ) => {
+                    Ok(token @ Token { kind: NameToken(KeywordToken(LocalToken)), .. }) => {
                         let node = self.parse_local(&mut tokens)?;
                         // println!("{:?}", node);
                         self.ast.0 .0.push(node);
@@ -155,14 +142,7 @@ impl<'a> Parser<'a> {
             if let Some(&token) = tokens.peek() {
                 previous = token.ok().unwrap();
                 match token {
-                    Ok(
-                        token
-                        @
-                        Token {
-                            kind: NameToken(IdentifierToken),
-                            ..
-                        },
-                    ) => {
+                    Ok(token @ Token { kind: NameToken(IdentifierToken), .. }) => {
                         if expect_name {
                             tokens.next();
                             namelist
@@ -172,20 +152,10 @@ impl<'a> Parser<'a> {
                             expect_name = false;
                             expect_semi = true;
                         } else {
-                            return Ok(Statement::LocalDeclaration {
-                                explist: vec![],
-                                namelist,
-                            });
+                            return Ok(Statement::LocalDeclaration { explist: vec![], namelist });
                         }
                     }
-                    Ok(
-                        token
-                        @
-                        Token {
-                            kind: OpToken(AssignToken),
-                            ..
-                        },
-                    ) => {
+                    Ok(token @ Token { kind: OpToken(AssignToken), .. }) => {
                         if expect_assign {
                             tokens.next();
                             break;
@@ -196,14 +166,7 @@ impl<'a> Parser<'a> {
                             }));
                         }
                     }
-                    Ok(
-                        token
-                        @
-                        Token {
-                            kind: PunctuatorToken(CommaToken),
-                            ..
-                        },
-                    ) => {
+                    Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. }) => {
                         if expect_comma {
                             tokens.next();
                             expect_assign = false;
@@ -217,20 +180,10 @@ impl<'a> Parser<'a> {
                             }));
                         }
                     }
-                    Ok(
-                        token
-                        @
-                        Token {
-                            kind: PunctuatorToken(SemiToken),
-                            ..
-                        },
-                    ) => {
+                    Ok(token @ Token { kind: PunctuatorToken(SemiToken), .. }) => {
                         if expect_semi {
                             tokens.next();
-                            return Ok(Statement::LocalDeclaration {
-                                explist: vec![],
-                                namelist,
-                            });
+                            return Ok(Statement::LocalDeclaration { explist: vec![], namelist });
                         } else {
                             return Err(Box::new(ParserError {
                                 kind: ParserErrorKind::UnexpectedToken,
@@ -273,14 +226,7 @@ impl<'a> Parser<'a> {
         loop {
             if let Some(&token) = tokens.peek() {
                 match token {
-                    Ok(
-                        token
-                        @
-                        Token {
-                            kind: LiteralToken(NumberToken),
-                            ..
-                        },
-                    ) => {
+                    Ok(token @ Token { kind: LiteralToken(NumberToken), .. }) => {
                         if expect_name {
                             tokens.next();
                             // TODO: see if I can make this Number instead of Exp::Number
@@ -294,14 +240,7 @@ impl<'a> Parser<'a> {
                             return Ok(Statement::LocalDeclaration { explist, namelist });
                         }
                     }
-                    Ok(
-                        token
-                        @
-                        Token {
-                            kind: PunctuatorToken(CommaToken),
-                            ..
-                        },
-                    ) => {
+                    Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. }) => {
                         if expect_comma {
                             tokens.next();
                             expect_comma = false;
@@ -314,14 +253,7 @@ impl<'a> Parser<'a> {
                             }));
                         }
                     }
-                    Ok(
-                        token
-                        @
-                        Token {
-                            kind: PunctuatorToken(SemiToken),
-                            ..
-                        },
-                    ) => {
+                    Ok(token @ Token { kind: PunctuatorToken(SemiToken), .. }) => {
                         if expect_semi {
                             tokens.next();
                             return Ok(Statement::LocalDeclaration { explist, namelist });

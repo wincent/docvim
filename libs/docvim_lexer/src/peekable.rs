@@ -11,11 +11,7 @@ pub struct Peekable<'a> {
 
 impl<'a> Peekable<'a> {
     pub fn new(input: &'a str) -> Self {
-        Peekable {
-            byte_idx: 0,
-            char_idx: 0,
-            iter: input.char_indices().peekable(),
-        }
+        Peekable { byte_idx: 0, char_idx: 0, iter: input.char_indices().peekable() }
     }
 
     // BUG: Technically, peek is supposed to return a reference to the item type (ie.

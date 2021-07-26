@@ -87,9 +87,7 @@ fn version() {
 }
 
 fn parse_args(args: Vec<String>) -> Result<Options, OptionsError> {
-    let mut options = Options {
-        ..Default::default()
-    };
+    let mut options = Options { ..Default::default() };
     let mut iter = args.iter();
     let mut seen_executable = false;
     while let Some(arg) = iter.next() {
@@ -101,17 +99,13 @@ fn parse_args(args: Vec<String>) -> Result<Options, OptionsError> {
             match iter.next() {
                 Some(directory) => {
                     if directory.starts_with("-") {
-                        return Err(OptionsError {
-                            kind: OptionsErrorKind::IllegalArgument,
-                        });
+                        return Err(OptionsError { kind: OptionsErrorKind::IllegalArgument });
                     } else {
                         options.directory = Path::new(directory).to_path_buf();
                     }
                 }
                 None => {
-                    return Err(OptionsError {
-                        kind: OptionsErrorKind::MissingRequiredArgument,
-                    });
+                    return Err(OptionsError { kind: OptionsErrorKind::MissingRequiredArgument });
                 }
             };
         } else if arg == "-d" || arg == "--debug" {
@@ -125,9 +119,7 @@ fn parse_args(args: Vec<String>) -> Result<Options, OptionsError> {
             options.generate_output = false;
             options.show_version = true;
         } else if arg.starts_with("-") {
-            return Err(OptionsError {
-                kind: OptionsErrorKind::UnrecognizedOption,
-            });
+            return Err(OptionsError { kind: OptionsErrorKind::UnrecognizedOption });
         } else {
             options.outfiles.push(Path::new(arg).to_path_buf());
         }

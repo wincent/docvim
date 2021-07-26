@@ -29,13 +29,7 @@ impl Token {
         byte_start: usize,
         byte_end: usize,
     ) -> Token {
-        Token {
-            kind,
-            char_start,
-            char_end,
-            byte_start,
-            byte_end,
-        }
+        Token { kind, char_start, char_end, byte_start, byte_end }
     }
 }
 
@@ -166,10 +160,7 @@ pub struct LexerError {
 
 impl LexerError {
     pub fn new(kind: LexerErrorKind, char_idx: usize) -> LexerError {
-        Self {
-            kind,
-            position: char_idx,
-        }
+        Self { kind, position: char_idx }
     }
 }
 
@@ -192,9 +183,7 @@ impl<'a> Lexer<'a> {
 
     /// Returns an iterator over the tokens produced by the lexer.
     pub fn tokens(&self) -> Tokens<'_> {
-        Tokens {
-            iter: Peekable::new(self.input),
-        }
+        Tokens { iter: Peekable::new(self.input) }
     }
 
     // TODO: Probably don't need this; as tests show, can just do `lexer.input[..]` directly.
@@ -1078,10 +1067,7 @@ mod tests {
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
             assert_eq!(
-                Lexer::new(&$input)
-                    .tokens()
-                    .map(|x| x.unwrap())
-                    .collect::<Vec<Token>>(),
+                Lexer::new(&$input).tokens().map(|x| x.unwrap()).collect::<Vec<Token>>(),
                 $expected
             )
         };
@@ -1263,13 +1249,7 @@ mod tests {
                     char_start: 0,
                     kind: Literal(Number),
                 },
-                Token {
-                    byte_end: 6,
-                    byte_start: 5,
-                    char_end: 6,
-                    char_start: 5,
-                    kind: Op(Minus),
-                },
+                Token { byte_end: 6, byte_start: 5, char_end: 6, char_start: 5, kind: Op(Minus) },
                 Token {
                     byte_end: 8,
                     byte_start: 6,
@@ -1295,31 +1275,19 @@ mod tests {
     fn rejects_invalid_numbers() {
         assert_eq!(
             Lexer::new("3.0.1").validate(),
-            Some(LexerError {
-                kind: LexerErrorKind::InvalidNumberLiteral,
-                position: 3
-            })
+            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, position: 3 })
         );
         assert_eq!(
             Lexer::new("3e-2.1").validate(),
-            Some(LexerError {
-                kind: LexerErrorKind::InvalidNumberLiteral,
-                position: 4
-            })
+            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, position: 4 })
         );
         assert_eq!(
             Lexer::new("0xffx").validate(),
-            Some(LexerError {
-                kind: LexerErrorKind::InvalidNumberLiteral,
-                position: 4
-            })
+            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, position: 4 })
         );
         assert_eq!(
             Lexer::new("0xff.0xff").validate(),
-            Some(LexerError {
-                kind: LexerErrorKind::InvalidNumberLiteral,
-                position: 6
-            })
+            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, position: 6 })
         );
     }
 
