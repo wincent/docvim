@@ -2,9 +2,9 @@ use std::error;
 use std::error::Error;
 use std::fmt;
 
-use docvim_lexer::lua::KeywordKind::*;
-use docvim_lexer::lua::NameKind::*;
-use docvim_lexer::lua::TokenKind::*;
+use docvim_lexer::lua::KeywordKind;
+use docvim_lexer::lua::NameKind;
+use docvim_lexer::lua::TokenKind;
 use docvim_lexer::lua::{Lexer, Token, Tokens};
 
 // TODO these node types will eventually wind up in another file, and end up referring specifically
@@ -13,14 +13,10 @@ use docvim_lexer::lua::{Lexer, Token, Tokens};
 /// Root AST node for a compilation unit (eg. a file, in the case of docvim; in other contexts,
 /// could also be a string to be dynamically compiled and evaluated by the Lua virtual machine).
 #[derive(Debug)]
-pub struct Chunk<'a> {
-    pub block: Block<'a>,
-}
+pub struct Chunk<'a>(Block<'a>);
 
 #[derive(Debug)]
-pub struct Block<'a> {
-    pub statements: Vec<Statement<'a>>,
-}
+pub struct Block<'a>(Vec<Statement<'a>>);
 
 #[derive(Debug)]
 pub enum Exp {
@@ -33,13 +29,9 @@ pub enum Exp {
 // }
 
 #[derive(Debug)]
-pub struct Name<'a> {
-    pub text: &'a str,
-}
+pub struct Name<'a>(&'a str);
 
-pub struct Number<'a> {
-    pub text: &'a str,
-}
+pub struct Number<'a>(&'a str);
 
 #[derive(Debug)]
 pub enum Statement<'a> {
@@ -84,9 +76,7 @@ impl<'a> Parser<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
             lexer: Lexer::new(input),
-            ast: Chunk {
-                block: Block { statements: vec![] },
-            },
+            ast: Chunk(Block(vec![])),
         }
     }
 
@@ -99,13 +89,13 @@ impl<'a> Parser<'a> {
                         token
                         @
                         Token {
-                            kind: Name(Keyword(Local)),
+                            kind: TokenKind::Name(NameKind::Keyword(KeywordKind::Local)),
                             ..
                         },
                     ) => {
                         let node = self.parse_local(&mut tokens)?;
                         println!("{:?}", node);
-                        self.ast.block.statements.push(node);
+                        self.ast.0.0.push(node);
                     }
                     Ok(token) => {
                         // println!("token: {:?}", token);
@@ -137,15 +127,13 @@ impl<'a> Parser<'a> {
                 token
                 @
                 Token {
-                    kind: Name(Identifier),
+                    kind: TokenKind::Name(NameKind::Identifier),
                     ..
                 },
             )) => {
                 return Ok(Statement::LocalDeclaration {
                     explist: vec![],
-                    namelist: vec![Name {
-                        text: &self.lexer.input[token.byte_start..token.byte_end],
-                    }],
+                    namelist: vec![Name(&self.lexer.input[token.byte_start..token.byte_end])],
                 });
             }
             // could also just do UnexpectedEndOfInput
