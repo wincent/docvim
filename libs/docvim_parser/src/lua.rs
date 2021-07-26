@@ -5,11 +5,10 @@ use std::fmt;
 // Lexer token types are imported aliased to avoid collisions with parser node types of the same
 // name.
 use docvim_lexer::lua::KeywordKind::Local as LocalToken;
-use docvim_lexer::lua::NameKind::Keyword as KeywordToken;
 use docvim_lexer::lua::NameKind::Identifier as IdentifierToken;
+use docvim_lexer::lua::NameKind::Keyword as KeywordToken;
 use docvim_lexer::lua::TokenKind::Name as NameToken;
 use docvim_lexer::lua::{Lexer, Token, Tokens};
-
 
 // TODO these node types will eventually wind up in another file, and end up referring specifically
 // to Lua, but for now developing them "in situ".
@@ -99,7 +98,7 @@ impl<'a> Parser<'a> {
                     ) => {
                         let node = self.parse_local(&mut tokens)?;
                         println!("{:?}", node);
-                        self.ast.0.0.push(node);
+                        self.ast.0 .0.push(node);
                     }
                     Ok(token) => {
                         // println!("token: {:?}", token);
