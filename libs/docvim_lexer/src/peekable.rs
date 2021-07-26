@@ -7,20 +7,24 @@ pub struct Peekable<'a> {
     pub byte_idx: usize,
     pub char_idx: usize,
     iter: std::iter::Peekable<CharIndices<'a>>,
+    peeked: Option<Option<char>>,
 }
 
 impl<'a> Peekable<'a> {
     pub fn new(input: &'a str) -> Self {
-        Peekable { byte_idx: 0, char_idx: 0, iter: input.char_indices().peekable() }
+        Peekable { byte_idx: 0, char_idx: 0, iter: input.char_indices().peekable(), peeked: None }
     }
 
-    // BUG: Technically, peek is supposed to return a reference to the item type (ie.
-    // `Option<&char>` instead of `Option<char>`), but I couldn't figure out how to do that; see:
-    // https://doc.rust-lang.org/stable/std/iter/struct.Peekable.html
-    pub fn peek(&mut self) -> Option<char> {
+    pub fn peek(&mut self) -> Option<&char> {
         match self.iter.peek() {
-            Some(&(_, ch)) => Some(ch),
-            None => None,
+            Some(&(_, ch)) => {
+                // Hoop-jumping required to return Option<&Item> type (Option<&char>).
+                self.peeked.insert(Some(ch)).as_ref()
+            }
+            None => {
+                self.peeked = Some(None);
+                None
+            }
         }
     }
 }
@@ -48,7 +52,7 @@ mod tests {
     fn tracks_byte_idx() {
         let mut iter = Peekable::new("cañón");
         assert_eq!(iter.byte_idx, 0);
-        assert_eq!(iter.peek().unwrap(), 'c');
+        assert_eq!(*iter.peek().unwrap(), 'c');
         assert_eq!(iter.byte_idx, 0);
         assert_eq!(iter.next(), Some('c'));
         assert_eq!(iter.byte_idx, 1);
@@ -68,7 +72,7 @@ mod tests {
     fn tracks_char_idx() {
         let mut iter = Peekable::new("cañón");
         assert_eq!(iter.char_idx, 0);
-        assert_eq!(iter.peek().unwrap(), 'c');
+        assert_eq!(*iter.peek().unwrap(), 'c');
         assert_eq!(iter.char_idx, 0);
         assert_eq!(iter.next(), Some('c'));
         assert_eq!(iter.char_idx, 1);

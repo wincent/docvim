@@ -224,7 +224,7 @@ impl<'a> Tokens<'a> {
     /// consumed.
     fn consume_char(&mut self, ch: char) -> bool {
         match self.iter.peek() {
-            Some(seen) if seen == ch => {
+            Some(&seen) if seen == ch => {
                 self.iter.next();
                 true
             }
@@ -306,11 +306,12 @@ impl<'a> Tokens<'a> {
     // From Lua docs: "The definition of letter depends on the current locale: any character
     // considered alphabetic by the current locale can be used in an identifier", so the below
     // could use a bit of work...
+    // See: https://stackoverflow.com/a/4843653/2103996
     fn scan_name(&mut self) -> Result<Token, LexerError> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
         let mut name = Vec::new();
-        while let Some(c) = self.iter.peek() {
+        while let Some(&c) = self.iter.peek() {
             match c {
                 'A'..='Z' | 'a'..='z' | '0'..='9' | '_' => {
                     name.push(self.iter.next().unwrap());
@@ -485,7 +486,7 @@ impl<'a> Tokens<'a> {
         let ch = self.iter.next().unwrap();
         if ch == '0' && self.consume_char('x') {
             let mut seen_separator = false;
-            while let Some(next) = self.iter.peek() {
+            while let Some(&next) = self.iter.peek() {
                 match next {
                     '0'..='9' | 'A'..='F' | 'a'..='f' => {
                         self.iter.next();
@@ -524,7 +525,7 @@ impl<'a> Tokens<'a> {
             ));
         } else {
             let mut seen_separator = false;
-            while let Some(next) = self.iter.peek() {
+            while let Some(&next) = self.iter.peek() {
                 match next {
                     '0'..='9' => {
                         self.iter.next();
@@ -544,7 +545,7 @@ impl<'a> Tokens<'a> {
                         self.iter.next();
                         self.consume_char('-');
                         let mut exp_digits_count = 0;
-                        while let Some(next) = self.iter.peek() {
+                        while let Some(&next) = self.iter.peek() {
                             match next {
                                 '0'..='9' => {
                                     exp_digits_count += 1;
@@ -638,7 +639,7 @@ impl<'a> Tokens<'a> {
                                 let mut digit_count = 1;
                                 while digit_count < 3 {
                                     // TODO: make is_digit helper fn
-                                    if let Some(digit) = self.iter.peek() {
+                                    if let Some(&digit) = self.iter.peek() {
                                         match digit {
                                             '0'..='9' => {
                                                 self.iter.next();
@@ -715,7 +716,7 @@ impl<'a> Tokens<'a> {
     }
 
     fn skip_whitespace(&mut self) {
-        while let Some(c) = self.iter.peek() {
+        while let Some(&c) = self.iter.peek() {
             match c {
                 ' ' | '\n' | '\r' | '\t' => {
                     self.iter.next();
@@ -735,7 +736,7 @@ impl<'a> Iterator for Tokens<'a> {
         self.skip_whitespace();
         let char_start = self.iter.char_idx;
         let byte_start = self.iter.byte_idx;
-        if let Some(c) = self.iter.peek() {
+        if let Some(&c) = self.iter.peek() {
             match c {
                 '-' => {
                     self.iter.next();
