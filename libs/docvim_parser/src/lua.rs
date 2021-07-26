@@ -2,10 +2,14 @@ use std::error;
 use std::error::Error;
 use std::fmt;
 
-use docvim_lexer::lua::KeywordKind;
-use docvim_lexer::lua::NameKind;
-use docvim_lexer::lua::TokenKind;
+// Lexer token types are imported aliased to avoid collisions with parser node types of the same
+// name.
+use docvim_lexer::lua::KeywordKind::Local as LocalToken;
+use docvim_lexer::lua::NameKind::Keyword as KeywordToken;
+use docvim_lexer::lua::NameKind::Identifier as IdentifierToken;
+use docvim_lexer::lua::TokenKind::Name as NameToken;
 use docvim_lexer::lua::{Lexer, Token, Tokens};
+
 
 // TODO these node types will eventually wind up in another file, and end up referring specifically
 // to Lua, but for now developing them "in situ".
@@ -89,7 +93,7 @@ impl<'a> Parser<'a> {
                         token
                         @
                         Token {
-                            kind: TokenKind::Name(NameKind::Keyword(KeywordKind::Local)),
+                            kind: NameToken(KeywordToken(LocalToken)),
                             ..
                         },
                     ) => {
@@ -127,7 +131,7 @@ impl<'a> Parser<'a> {
                 token
                 @
                 Token {
-                    kind: TokenKind::Name(NameKind::Identifier),
+                    kind: NameToken(IdentifierToken),
                     ..
                 },
             )) => {
