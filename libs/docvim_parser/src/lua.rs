@@ -4,13 +4,20 @@ use std::fmt;
 
 // Lexer token types are imported aliased to avoid collisions with parser node types of the same
 // name.
+use docvim_lexer::lua::KeywordKind::False as FalseToken;
 use docvim_lexer::lua::KeywordKind::Local as LocalToken;
+use docvim_lexer::lua::KeywordKind::Nil as NilToken;
+use docvim_lexer::lua::KeywordKind::True as TrueToken;
 use docvim_lexer::lua::LiteralKind::Number as NumberToken;
+use docvim_lexer::lua::LiteralKind::Str as StrToken;
 use docvim_lexer::lua::NameKind::Identifier as IdentifierToken;
 use docvim_lexer::lua::NameKind::Keyword as KeywordToken;
 use docvim_lexer::lua::OpKind::Assign as AssignToken;
 use docvim_lexer::lua::PunctuatorKind::Comma as CommaToken;
 use docvim_lexer::lua::PunctuatorKind::Semi as SemiToken;
+use docvim_lexer::lua::StrKind::DoubleQuoted as DoubleQuotedToken;
+use docvim_lexer::lua::StrKind::Long as LongToken;
+use docvim_lexer::lua::StrKind::SingleQuoted as SingleQuotedToken;
 use docvim_lexer::lua::TokenKind::Literal as LiteralToken;
 use docvim_lexer::lua::TokenKind::Name as NameToken;
 use docvim_lexer::lua::TokenKind::Op as OpToken;
@@ -30,19 +37,15 @@ pub struct Block<'a>(Vec<Statement<'a>>);
 
 #[derive(Debug, PartialEq)]
 pub enum Exp<'a> {
-    // Number,
+    False,
+    Nil,
     Number(&'a str),
+    Str(&'a str),
+    True,
 }
-
-// pub struct LocalDeclaration<'a> {
-//     pub namelist: Vec<Name<'a>>,
-//     pub explist: Vec<Exp>,
-// }
 
 #[derive(Debug, PartialEq)]
 pub struct Name<'a>(&'a str);
-
-// pub struct Number<'a>(&'a str);
 
 #[derive(Debug, PartialEq)]
 pub enum Statement<'a> {
@@ -220,13 +223,13 @@ impl<'a> Parser<'a> {
         loop {
             if let Some(&token) = tokens.peek() {
                 match token {
-                    Ok(token @ Token { kind: LiteralToken(NumberToken), .. }) => {
+                    Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })
+                    | Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })
+                    | Ok(Token { kind: LiteralToken(NumberToken), .. })
+                    | Ok(Token { kind: LiteralToken(StrToken(_)), .. })
+                    | Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. }) => {
                         if expect_name {
-                            tokens.next();
-                            // TODO: see if I can make this Number instead of Exp::Number
-                            explist.push(Exp::Number(
-                                &self.lexer.input[token.byte_start..token.byte_end],
-                            ));
+                            explist.push(self.parse_exp(tokens)?);
                             expect_comma = true;
                             expect_name = false;
                             expect_semi = true;
@@ -288,6 +291,32 @@ impl<'a> Parser<'a> {
 
         return Ok(Statement::LocalDeclaration { explist, namelist });
     }
+
+    fn parse_exp(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Exp<'a>, Box<dyn Error>> {
+        let token = tokens.next().unwrap()?;
+        match token {
+            Token { kind: NameToken(KeywordToken(FalseToken)), .. } => Ok(Exp::False),
+            Token { kind: NameToken(KeywordToken(NilToken)), .. } => Ok(Exp::Nil),
+            Token { kind: LiteralToken(NumberToken), .. } => {
+                Ok(Exp::Number(&self.lexer.input[token.byte_start..token.byte_end]))
+            }
+
+            // TODO: may want to subdivide these by type (single quoted, double quoted, and long
+            Token { kind: LiteralToken(StrToken(_)), .. } => {
+                Ok(Exp::Str(&self.lexer.input[token.byte_start..token.byte_end]))
+            }
+            Token { kind: NameToken(KeywordToken(TrueToken)), .. } => Ok(Exp::True),
+
+            // TODO: not yet implemented
+            _ => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedToken,
+                position: token.char_start,
+            })),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -306,13 +335,73 @@ mod tests {
             }]))
         );
 
-        let mut parser = Parser::new("local x = 1");
+        let mut parser = Parser::new("local bar = false");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("bar")],
+                explist: vec![Exp::False],
+            }]))
+        );
+
+        let mut parser = Parser::new("local baz = nil");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("baz")],
+                explist: vec![Exp::Nil],
+            }]))
+        );
+
+        let mut parser = Parser::new("local w = 1");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("w")],
+                explist: vec![Exp::Number("1")],
+            }]))
+        );
+
+        let mut parser = Parser::new("local x = 'wat'");
         let ast = parser.parse();
         assert_eq!(
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("x")],
-                explist: vec![Exp::Number("1")],
+                explist: vec![Exp::Str("'wat'")],
+            }]))
+        );
+
+        let mut parser = Parser::new("local y = \"huh\"");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("y")],
+                explist: vec![Exp::Str("\"huh\"")],
+            }]))
+        );
+
+        let mut parser = Parser::new("local z = [[loooong]]");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("z")],
+                explist: vec![Exp::Str("[[loooong]]")],
+            }]))
+        );
+
+        let mut parser = Parser::new("local qux = true");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("qux")],
+                explist: vec![Exp::True],
             }]))
         );
     }
