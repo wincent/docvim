@@ -68,14 +68,18 @@ impl error::Error for ParserError {}
 
 #[derive(Debug)]
 pub enum ParserErrorKind {
+    InvalidEscapeSequence,
     LocalDeclarationWithoutName,
+    UnexpectedEndOfInput,
     UnexpectedToken, // TODO: this is a bit of a catch-all; replace with more specific things
 }
 
 impl ParserErrorKind {
     fn to_str(&self) -> &'static str {
         match *self {
+            ParserErrorKind::InvalidEscapeSequence => "invalid escape sequence",
             ParserErrorKind::LocalDeclarationWithoutName => "local declaration without name",
+            ParserErrorKind::UnexpectedEndOfInput => "unexpected end-of-input",
             ParserErrorKind::UnexpectedToken => "unexpected token",
         }
     }
@@ -303,10 +307,83 @@ impl<'a> Parser<'a> {
             Token { kind: LiteralToken(NumberToken), .. } => {
                 Ok(Exp::Number(&self.lexer.input[token.byte_start..token.byte_end]))
             }
+            Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }
+            | Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. } => {
+                // TODO: will want to extract this somewhere.
+                let byte_start = token.byte_start + 1;
+                let byte_end = token.byte_end - 1;
+                let char_start = token.char_start + 1;
+                let mut escaped = self.lexer.input[byte_start..byte_end].char_indices().peekable();
+                let mut unescaped = String::with_capacity(byte_end - byte_start);
+                while let Some((idx, ch)) = escaped.next() {
+                    let unescaped_char = match ch {
+                        '\\' => {
+                            if let Some((_, next)) = escaped.next() {
+                                match next {
+                                    'a' => '\x07', // bell
+                                    'b' => '\x08', // backspace
+                                    'f' => '\x0c', // line feed
+                                    'n' => '\n',
+                                    'r' => '\r',
+                                    't' => '\t',
+                                    'v' => '\x0b', // vertical tab
+                                    '\\' => '\\',
+                                    '"' => '"',
+                                    '\'' => '\'',
+                                    '\n' => '\n',
+                                    '0'..='9' => {
+                                        let mut digits = vec![next as u8];
+                                        // TODO: DRY this up; it is a bit similar to what we have in the
+                                        // lexer.
+                                        let mut digit_count = 1;
+                                        while digit_count < 3 {
+                                            if let Some(&(_, digit)) = escaped.peek() {
+                                                match digit {
+                                                    '0'..='9' => {
+                                                        digits.push(digit as u8);
+                                                        escaped.next();
+                                                        digit_count += 1;
+                                                    }
+                                                    _ => {
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                break;
+                                            }
+                                        }
+                                        let number = std::str::from_utf8(&digits)?.parse::<u8>()?;
+                                        number as char
+                                    }
+                                    _ => {
+                                        return Err(Box::new(ParserError {
+                                            kind: ParserErrorKind::InvalidEscapeSequence,
+                                            position: char_start + idx,
+                                        }));
+                                    }
+                                }
+                            } else {
+                                return Err(Box::new(ParserError {
+                                    kind: ParserErrorKind::UnexpectedEndOfInput,
+                                    position: token.char_start,
+                                }));
+                            }
+                        }
+                        other => other,
+                    };
+                    unescaped.push(unescaped_char);
+                }
 
-            // TODO: may want to subdivide these by type (single quoted, double quoted, and long
-            Token { kind: LiteralToken(StrToken(_)), .. } => {
-                Ok(Exp::Str(&self.lexer.input[token.byte_start..token.byte_end]))
+                // Gah, can't return unescaped here (we own it; would have to return a reference,
+                // but then it won't outlive the function); problem is the type of Exp::Str, which
+                // expects a &str member.
+                // Ok(Exp::Str(unescaped))
+                Ok(Exp::Str(&self.lexer.input[byte_start..byte_end]))
+            }
+            Token { kind: LiteralToken(StrToken(LongToken { level })), .. } => {
+                let start = token.byte_start + 2 + level;
+                let end = token.byte_end - 2 - level;
+                Ok(Exp::Str(&self.lexer.input[start..end]))
             }
             Token { kind: NameToken(KeywordToken(TrueToken)), .. } => Ok(Exp::True),
 
@@ -371,17 +448,17 @@ mod tests {
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("x")],
-                explist: vec![Exp::Str("'wat'")],
+                explist: vec![Exp::Str("wat")],
             }]))
         );
 
-        let mut parser = Parser::new("local y = \"huh\"");
+        let mut parser = Parser::new("local y = \"don't say \\\"hello\\\"!\"");
         let ast = parser.parse();
         assert_eq!(
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("y")],
-                explist: vec![Exp::Str("\"huh\"")],
+                explist: vec![Exp::Str("don't say \\\"hello\\\"!")],
             }]))
         );
 
@@ -391,7 +468,7 @@ mod tests {
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("z")],
-                explist: vec![Exp::Str("[[loooong]]")],
+                explist: vec![Exp::Str("loooong")],
             }]))
         );
 
