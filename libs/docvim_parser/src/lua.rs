@@ -2,17 +2,20 @@ use std::error;
 use std::error::Error;
 use std::fmt;
 
-// Lexer token types are imported aliased to avoid collisions with parser node types of the same
-// name.
+// Lexer token types are imported aliased (all with a "Token" suffix) to avoid collisions with
+// parser node types of the same name.
 use docvim_lexer::lua::KeywordKind::False as FalseToken;
 use docvim_lexer::lua::KeywordKind::Local as LocalToken;
 use docvim_lexer::lua::KeywordKind::Nil as NilToken;
+use docvim_lexer::lua::KeywordKind::Not as NotToken;
 use docvim_lexer::lua::KeywordKind::True as TrueToken;
 use docvim_lexer::lua::LiteralKind::Number as NumberToken;
 use docvim_lexer::lua::LiteralKind::Str as StrToken;
 use docvim_lexer::lua::NameKind::Identifier as IdentifierToken;
 use docvim_lexer::lua::NameKind::Keyword as KeywordToken;
 use docvim_lexer::lua::OpKind::Assign as AssignToken;
+use docvim_lexer::lua::OpKind::Hash as HashToken;
+use docvim_lexer::lua::OpKind::Minus as MinusToken;
 use docvim_lexer::lua::PunctuatorKind::Comma as CommaToken;
 use docvim_lexer::lua::PunctuatorKind::Semi as SemiToken;
 use docvim_lexer::lua::StrKind::DoubleQuoted as DoubleQuotedToken;
@@ -43,6 +46,14 @@ pub enum Exp<'a> {
     Number(&'a str),
     RawStr(&'a str),
     True,
+    Unary { exp: Box<Exp<'a>>, op: UnOp },
+}
+
+#[derive(Debug, PartialEq)]
+pub enum UnOp {
+    Length,
+    Minus,
+    Not,
 }
 
 #[derive(Debug, PartialEq)]
@@ -228,11 +239,14 @@ impl<'a> Parser<'a> {
         loop {
             if let Some(&token) = tokens.peek() {
                 match token {
-                    Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })
-                    | Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })
-                    | Ok(Token { kind: LiteralToken(NumberToken), .. })
+                    Ok(Token { kind: LiteralToken(NumberToken), .. })
                     | Ok(Token { kind: LiteralToken(StrToken(_)), .. })
-                    | Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. }) => {
+                    | Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })
+                    | Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })
+                    | Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })
+                    | Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })
+                    | Ok(Token { kind: OpToken(HashToken), .. })
+                    | Ok(Token { kind: OpToken(MinusToken), .. }) => {
                         if expect_name {
                             explist.push(self.parse_exp(tokens)?);
                             expect_comma = true;
@@ -383,6 +397,18 @@ impl<'a> Parser<'a> {
                 Ok(Exp::RawStr(&self.lexer.input[start..end]))
             }
             Token { kind: NameToken(KeywordToken(TrueToken)), .. } => Ok(Exp::True),
+            Token { kind: NameToken(KeywordToken(NotToken)), .. } => {
+                let exp = Box::new(self.parse_exp(tokens)?);
+                Ok(Exp::Unary { exp, op: UnOp::Not })
+            }
+            Token { kind: OpToken(HashToken), .. } => {
+                let exp = Box::new(self.parse_exp(tokens)?);
+                Ok(Exp::Unary { exp, op: UnOp::Length })
+            }
+            Token { kind: OpToken(MinusToken), .. } => {
+                let exp = Box::new(self.parse_exp(tokens)?);
+                Ok(Exp::Unary { exp, op: UnOp::Minus })
+            }
 
             // TODO: not yet implemented
             _ => Err(Box::new(ParserError {
@@ -445,7 +471,7 @@ mod tests {
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("x")],
-                explist: vec![Exp::CookedStr(Box::new("wat".to_string()))],
+                explist: vec![Exp::CookedStr(Box::new(String::from("wat")))],
             }]))
         );
 
@@ -455,7 +481,7 @@ mod tests {
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("y")],
-                explist: vec![Exp::CookedStr(Box::new("don't say \"hello\"!".to_string()))],
+                explist: vec![Exp::CookedStr(Box::new(String::from("don't say \"hello\"!")))],
             }]))
         );
 
@@ -476,6 +502,39 @@ mod tests {
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("qux")],
                 explist: vec![Exp::True],
+            }]))
+        );
+
+        let mut parser = Parser::new("local neg = not true");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("neg")],
+                explist: vec![Exp::Unary { exp: Box::new(Exp::True), op: UnOp::Not }],
+            }]))
+        );
+
+        let mut parser = Parser::new("local len = #'sample'");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("len")],
+                explist: vec![Exp::Unary {
+                    exp: Box::new(Exp::CookedStr(Box::new(String::from("sample")))),
+                    op: UnOp::Length,
+                }],
+            }]))
+        );
+
+        let mut parser = Parser::new("local small = -1000");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("small")],
+                explist: vec![Exp::Unary { exp: Box::new(Exp::Number("1000")), op: UnOp::Minus }],
             }]))
         );
     }
