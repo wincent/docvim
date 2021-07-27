@@ -22,13 +22,13 @@ use docvim_lexer::lua::{Lexer, Token, Tokens};
 
 /// Root AST node for a compilation unit (eg. a file, in the case of docvim; in other contexts,
 /// could also be a string to be dynamically compiled and evaluated by the Lua virtual machine).
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Chunk<'a>(Block<'a>);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Block<'a>(Vec<Statement<'a>>);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Exp<'a> {
     // Number,
     Number(&'a str),
@@ -39,12 +39,12 @@ pub enum Exp<'a> {
 //     pub explist: Vec<Exp>,
 // }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Name<'a>(&'a str);
 
 // pub struct Number<'a>(&'a str);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Statement<'a> {
     LocalDeclaration { namelist: Vec<Name<'a>>, explist: Vec<Exp<'a>> },
 }
@@ -88,30 +88,24 @@ impl<'a> Parser<'a> {
         Self { lexer: Lexer::new(input), ast: Chunk(Block(vec![])) }
     }
 
-    pub fn parse(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn parse(&mut self) -> Result<&Chunk, Box<dyn Error>> {
         let mut tokens = self.lexer.tokens().peekable();
-        loop {
-            if let Some(&result) = tokens.peek() {
-                match result {
-                    Ok(token @ Token { kind: NameToken(KeywordToken(LocalToken)), .. }) => {
-                        let node = self.parse_local(&mut tokens)?;
-                        // println!("{:?}", node);
-                        self.ast.0 .0.push(node);
-                    }
-                    Ok(token) => {
-                        // println!("token: {:?}", token);
-                        tokens.next(); // TODO: move this
-                    }
-                    Err(err) => {
-                        return Err(Box::new(err));
-                    }
+        while let Some(&result) = tokens.peek() {
+            match result {
+                Ok(token @ Token { kind: NameToken(KeywordToken(LocalToken)), .. }) => {
+                    let node = self.parse_local(&mut tokens)?;
+                    self.ast.0 .0.push(node);
                 }
-            } else {
-                // TODO: return the AST
-                println!("ast: {:?}", self.ast);
-                return Ok(());
+                Ok(token) => {
+                    tokens.next(); // TODO: move this
+                }
+                Err(err) => {
+                    return Err(Box::new(err));
+                }
             }
         }
+
+        Ok(&self.ast)
     }
 
     // passing in tokens as a param because I can't seem to read it off self (because it won't
@@ -301,24 +295,25 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_a_statement() {
-        let ast = Parser::new("local foo").parse();
-        assert_eq!(ast.unwrap(), ());
+    fn parses_local_declarations() {
+        let mut parser = Parser::new("local foo");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("foo")],
+                explist: vec![],
+            }]))
+        );
 
-        let ast = Parser::new("local x = 1").parse();
-        assert_eq!(ast.unwrap(), ());
-
-        // chunk [
-        //   statement = LocalDeclaration,
-        //   ...
-        // ]
-        //
-        // where LocalDeclaration
-        //      namelist = (optional) explist
-        //
-        // where namelist = [Name, ...]
-        //       explist = [exp, ...]
-        //
-        // where exp = lots of things, but we'll start with... number
+        let mut parser = Parser::new("local x = 1");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("x")],
+                explist: vec![Exp::Number("1")],
+            }]))
+        );
     }
 }
