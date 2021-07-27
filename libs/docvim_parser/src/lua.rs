@@ -37,10 +37,11 @@ pub struct Block<'a>(Vec<Statement<'a>>);
 
 #[derive(Debug, PartialEq)]
 pub enum Exp<'a> {
+    CookedStr(Box<String>),
     False,
     Nil,
     Number(&'a str),
-    Str(&'a str),
+    RawStr(&'a str),
     True,
 }
 
@@ -374,16 +375,12 @@ impl<'a> Parser<'a> {
                     unescaped.push(unescaped_char);
                 }
 
-                // Gah, can't return unescaped here (we own it; would have to return a reference,
-                // but then it won't outlive the function); problem is the type of Exp::Str, which
-                // expects a &str member.
-                // Ok(Exp::Str(unescaped))
-                Ok(Exp::Str(&self.lexer.input[byte_start..byte_end]))
+                Ok(Exp::CookedStr(Box::new(unescaped)))
             }
             Token { kind: LiteralToken(StrToken(LongToken { level })), .. } => {
                 let start = token.byte_start + 2 + level;
                 let end = token.byte_end - 2 - level;
-                Ok(Exp::Str(&self.lexer.input[start..end]))
+                Ok(Exp::RawStr(&self.lexer.input[start..end]))
             }
             Token { kind: NameToken(KeywordToken(TrueToken)), .. } => Ok(Exp::True),
 
@@ -448,7 +445,7 @@ mod tests {
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("x")],
-                explist: vec![Exp::Str("wat")],
+                explist: vec![Exp::CookedStr(Box::new("wat".to_string()))],
             }]))
         );
 
@@ -458,7 +455,7 @@ mod tests {
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("y")],
-                explist: vec![Exp::Str("don't say \\\"hello\\\"!")],
+                explist: vec![Exp::CookedStr(Box::new("don't say \"hello\"!".to_string()))],
             }]))
         );
 
@@ -468,7 +465,7 @@ mod tests {
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("z")],
-                explist: vec![Exp::Str("loooong")],
+                explist: vec![Exp::RawStr("loooong")],
             }]))
         );
 
