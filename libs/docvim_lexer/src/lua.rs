@@ -186,17 +186,6 @@ impl<'a> Lexer<'a> {
         Tokens { iter: Peekable::new(self.input) }
     }
 
-    // TODO: Probably don't need this; as tests show, can just do `lexer.input[..]` directly.
-    // #[cfg(test)]
-    // fn slice(&self, byte_start: usize, byte_end: usize) -> &str {
-    //     &self.input[byte_start..byte_end]
-    // }
-
-    // TODO: consider something like this...
-    // pub fn str_for_token(&self, token: Token) -> &str {
-    //     &self.input[token.start..token.end]
-    // }
-
     /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
     /// `None` if the input is valid.
     #[cfg(test)]
@@ -322,162 +311,31 @@ impl<'a> Tokens<'a> {
             }
         }
         let name: String = name.into_iter().collect();
-        match &name[..] {
-            "and" => Ok(Token::new(
-                Name(Keyword(And)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "break" => Ok(Token::new(
-                Name(Keyword(Break)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "do" => Ok(Token::new(
-                Name(Keyword(Do)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "else" => Ok(Token::new(
-                Name(Keyword(Else)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "elseif" => Ok(Token::new(
-                Name(Keyword(Elseif)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "end" => Ok(Token::new(
-                Name(Keyword(End)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "false" => Ok(Token::new(
-                Name(Keyword(False)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "for" => Ok(Token::new(
-                Name(Keyword(For)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "function" => Ok(Token::new(
-                Name(Keyword(Function)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "if" => Ok(Token::new(
-                Name(Keyword(If)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "in" => Ok(Token::new(
-                Name(Keyword(In)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "local" => Ok(Token::new(
-                Name(Keyword(Local)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "nil" => Ok(Token::new(
-                Name(Keyword(Nil)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "not" => Ok(Token::new(
-                Name(Keyword(Not)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "or" => Ok(Token::new(
-                Name(Keyword(Or)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "repeat" => Ok(Token::new(
-                Name(Keyword(Repeat)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "return" => Ok(Token::new(
-                Name(Keyword(Return)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "then" => Ok(Token::new(
-                Name(Keyword(Then)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "true" => Ok(Token::new(
-                Name(Keyword(True)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "until" => Ok(Token::new(
-                Name(Keyword(Until)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            "while" => Ok(Token::new(
-                Name(Keyword(While)),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-            _ => Ok(Token::new(
-                Name(Identifier),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-            )),
-        }
+        let kind = match &name[..] {
+            "and" => Name(Keyword(And)),
+            "break" => Name(Keyword(Break)),
+            "do" => Name(Keyword(Do)),
+            "else" => Name(Keyword(Else)),
+            "elseif" => Name(Keyword(Elseif)),
+            "end" => Name(Keyword(End)),
+            "false" => Name(Keyword(False)),
+            "for" => Name(Keyword(For)),
+            "function" => Name(Keyword(Function)),
+            "if" => Name(Keyword(If)),
+            "in" => Name(Keyword(In)),
+            "local" => Name(Keyword(Local)),
+            "nil" => Name(Keyword(Nil)),
+            "not" => Name(Keyword(Not)),
+            "or" => Name(Keyword(Or)),
+            "repeat" => Name(Keyword(Repeat)),
+            "return" => Name(Keyword(Return)),
+            "then" => Name(Keyword(Then)),
+            "true" => Name(Keyword(True)),
+            "until" => Name(Keyword(Until)),
+            "while" => Name(Keyword(While)),
+            _ => Name(Identifier),
+        };
+        Ok(Token::new(kind, char_start, self.iter.char_idx, byte_start, self.iter.byte_idx))
     }
 
     fn scan_number(&mut self) -> Result<Token, LexerError> {
@@ -1313,13 +1171,4 @@ mod tests {
         let lexer = Lexer::new("local foo = 1");
         assert_eq!(&lexer.input[6..9], "foo");
     }
-
-    // TODO: consider something like this...
-    // #[test]
-    // fn returns_text_for_a_token() {
-    //     let mut lexer = Lexer::new("local foo = 1");
-    //     lexer.next().unwrap().expect("must yield a token");
-    //     let token = lexer.next().unwrap().expect("must yield a token");
-    //     assert_eq!(lexer.str_for_token(token), "foo");
-    // }
 }
