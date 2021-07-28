@@ -1,21 +1,34 @@
-use std::error;
 use std::error::Error;
 use std::fmt;
 
 // Lexer token types are imported aliased (all with a "Token" suffix) to avoid collisions with
 // parser node types of the same name.
+use docvim_lexer::lua::KeywordKind::And as AndToken;
 use docvim_lexer::lua::KeywordKind::False as FalseToken;
 use docvim_lexer::lua::KeywordKind::Local as LocalToken;
 use docvim_lexer::lua::KeywordKind::Nil as NilToken;
 use docvim_lexer::lua::KeywordKind::Not as NotToken;
+use docvim_lexer::lua::KeywordKind::Or as OrToken;
 use docvim_lexer::lua::KeywordKind::True as TrueToken;
 use docvim_lexer::lua::LiteralKind::Number as NumberToken;
 use docvim_lexer::lua::LiteralKind::Str as StrToken;
 use docvim_lexer::lua::NameKind::Identifier as IdentifierToken;
 use docvim_lexer::lua::NameKind::Keyword as KeywordToken;
 use docvim_lexer::lua::OpKind::Assign as AssignToken;
+use docvim_lexer::lua::OpKind::Caret as CaretToken;
+use docvim_lexer::lua::OpKind::Concat as ConcatToken;
+use docvim_lexer::lua::OpKind::Eq as EqToken;
+use docvim_lexer::lua::OpKind::Gt as GtToken;
+use docvim_lexer::lua::OpKind::Gte as GteToken;
 use docvim_lexer::lua::OpKind::Hash as HashToken;
+use docvim_lexer::lua::OpKind::Lt as LtToken;
+use docvim_lexer::lua::OpKind::Lte as LteToken;
 use docvim_lexer::lua::OpKind::Minus as MinusToken;
+use docvim_lexer::lua::OpKind::Ne as NeToken;
+use docvim_lexer::lua::OpKind::Percent as PercentToken;
+use docvim_lexer::lua::OpKind::Plus as PlusToken;
+use docvim_lexer::lua::OpKind::Slash as SlashToken;
+use docvim_lexer::lua::OpKind::Star as StarToken;
 use docvim_lexer::lua::PunctuatorKind::Comma as CommaToken;
 use docvim_lexer::lua::PunctuatorKind::Semi as SemiToken;
 use docvim_lexer::lua::StrKind::DoubleQuoted as DoubleQuotedToken;
@@ -36,10 +49,30 @@ use docvim_lexer::lua::{Lexer, Token, Tokens};
 pub struct Chunk<'a>(Block<'a>);
 
 #[derive(Debug, PartialEq)]
+pub enum BinOp {
+    And,
+    Caret,
+    Concat,
+    Eq,
+    Gt,
+    Gte,
+    Lt,
+    Lte,
+    Minus,
+    Ne,
+    Or,
+    Percent,
+    Plus,
+    Slash,
+    Star,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct Block<'a>(Vec<Statement<'a>>);
 
 #[derive(Debug, PartialEq)]
 pub enum Exp<'a> {
+    Binary { lexp: Box<Exp<'a>>, op: BinOp, rexp: Box<Exp<'a>> },
     CookedStr(Box<String>),
     False,
     Nil,
@@ -76,7 +109,8 @@ impl fmt::Display for ParserError {
         write!(fmt, "{}", self.kind.to_str())
     }
 }
-impl error::Error for ParserError {}
+
+impl Error for ParserError {}
 
 #[derive(Debug)]
 pub enum ParserErrorKind {
@@ -111,11 +145,11 @@ impl<'a> Parser<'a> {
         let mut tokens = self.lexer.tokens().peekable();
         while let Some(&result) = tokens.peek() {
             match result {
-                Ok(token @ Token { kind: NameToken(KeywordToken(LocalToken)), .. }) => {
+                Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. }) => {
                     let node = self.parse_local(&mut tokens)?;
                     self.ast.0 .0.push(node);
                 }
-                Ok(token) => {
+                Ok(_) => {
                     tokens.next(); // TODO: move this
                 }
                 Err(err) => {
@@ -316,11 +350,11 @@ impl<'a> Parser<'a> {
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Exp<'a>, Box<dyn Error>> {
         let token = tokens.next().unwrap()?;
-        match token {
-            Token { kind: NameToken(KeywordToken(FalseToken)), .. } => Ok(Exp::False),
-            Token { kind: NameToken(KeywordToken(NilToken)), .. } => Ok(Exp::Nil),
+        let exp = match token {
+            Token { kind: NameToken(KeywordToken(FalseToken)), .. } => Exp::False,
+            Token { kind: NameToken(KeywordToken(NilToken)), .. } => Exp::Nil,
             Token { kind: LiteralToken(NumberToken), .. } => {
-                Ok(Exp::Number(&self.lexer.input[token.byte_start..token.byte_end]))
+                Exp::Number(&self.lexer.input[token.byte_start..token.byte_end])
             }
             Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }
             | Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. } => {
@@ -389,33 +423,165 @@ impl<'a> Parser<'a> {
                     unescaped.push(unescaped_char);
                 }
 
-                Ok(Exp::CookedStr(Box::new(unescaped)))
+                Exp::CookedStr(Box::new(unescaped))
             }
             Token { kind: LiteralToken(StrToken(LongToken { level })), .. } => {
                 let start = token.byte_start + 2 + level;
                 let end = token.byte_end - 2 - level;
-                Ok(Exp::RawStr(&self.lexer.input[start..end]))
+                Exp::RawStr(&self.lexer.input[start..end])
             }
-            Token { kind: NameToken(KeywordToken(TrueToken)), .. } => Ok(Exp::True),
+            Token { kind: NameToken(KeywordToken(TrueToken)), .. } => (Exp::True),
             Token { kind: NameToken(KeywordToken(NotToken)), .. } => {
                 let exp = Box::new(self.parse_exp(tokens)?);
-                Ok(Exp::Unary { exp, op: UnOp::Not })
+                Exp::Unary { exp, op: UnOp::Not }
             }
             Token { kind: OpToken(HashToken), .. } => {
                 let exp = Box::new(self.parse_exp(tokens)?);
-                Ok(Exp::Unary { exp, op: UnOp::Length })
+                Exp::Unary { exp, op: UnOp::Length }
             }
             Token { kind: OpToken(MinusToken), .. } => {
                 let exp = Box::new(self.parse_exp(tokens)?);
-                Ok(Exp::Unary { exp, op: UnOp::Minus })
+                Exp::Unary { exp, op: UnOp::Minus }
             }
 
-            // TODO: not yet implemented
-            _ => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedToken,
-                position: token.char_start,
-            })),
+            // TODO: handle other expression types instead of erroring
+            _ => {
+                return Err(Box::new(ParserError {
+                    kind: ParserErrorKind::UnexpectedToken,
+                    position: token.char_start,
+                }));
+            }
+        };
+
+        // Peek ahead to see if there's a binary operator.
+        if let Some(&Ok(token)) = tokens.peek() {
+            match token {
+                // TODO: deal with associativity
+                Token { kind: NameToken(KeywordToken(AndToken)), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::And,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: NameToken(KeywordToken(OrToken)), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Or,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(CaretToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Caret,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(ConcatToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Concat,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(EqToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Eq,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(GtToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Gt,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(GteToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Gte,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(LtToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Lt,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(LteToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Lte,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(MinusToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Minus,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(NeToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Ne,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(PercentToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Percent,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(PlusToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Plus,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(SlashToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Slash,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                Token { kind: OpToken(StarToken), .. } => {
+                    tokens.next();
+                    return Ok(Exp::Binary {
+                        lexp: Box::new(exp),
+                        op: BinOp::Star,
+                        rexp: Box::new(self.parse_exp(tokens)?),
+                    });
+                }
+                _ => (),
+            }
         }
+
+        Ok(exp)
     }
 }
 
@@ -537,5 +703,52 @@ mod tests {
                 explist: vec![Exp::Unary { exp: Box::new(Exp::Number("1000")), op: UnOp::Minus }],
             }]))
         );
+
+        let mut parser = Parser::new("local sum = 7 + 8");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("sum")],
+                explist: vec![Exp::Binary {
+                    lexp: Box::new(Exp::Number("7")),
+                    op: BinOp::Plus,
+                    rexp: Box::new(Exp::Number("8"))
+                }],
+            }]))
+        );
+
+        // TODO: write a test for input like this, motivating the implementation of associativity:
+        //      let mut parser = Parser::new("local complex = 7 + #'foo' * -100");
+        // eg. all binops are left associative except fro "^" and "..", so that is equivalent to:
+        //      ((7 + (#'foo')) * (-100))
+        // at the moment that parses as right associative; ie:
+        //      (7 + (#('foo' * (-100))))
+        //      Chunk(
+        //          Block(
+        //              [
+        //                  LocalDeclaration {
+        //                      namelist: [Name("complex")],
+        //                      explist: [
+        //                          Binary {
+        //                              lexp: Number("7"),
+        //                              op: Plus,
+        //                              rexp: Unary {
+        //                                  exp: Binary {
+        //                                      lexp: CookedStr("foo"),
+        //                                      op: Star,
+        //                                      rexp: Unary {
+        //                                          exp: Number("100"),
+        //                                          op: Minus
+        //                                      }
+        //                                  },
+        //                                  op: Length
+        //                              }
+        //                          }
+        //                      ]
+        //                  }
+        //              ]
+        //          )
+        //      )`,
     }
 }

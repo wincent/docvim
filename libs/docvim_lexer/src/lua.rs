@@ -98,7 +98,7 @@ pub enum OpKind {
     Lt,      // < (less than)
     Lte,     // <= (less than or equal)
     Minus,   // - (negate, unary / subtract, binary)
-    Ne,      // == (not equal)
+    Ne,      // ~= (not equal)
     Percent, // % (modulo)
     Plus,    // + (add)
     Slash,   // / (divide)
