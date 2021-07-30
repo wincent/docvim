@@ -1,5 +1,7 @@
 pub mod lua;
 
+mod error;
+
 #[cfg(test)]
 mod tests {
     #[test]

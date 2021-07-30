@@ -1,5 +1,6 @@
 pub mod lua;
 
+mod error;
 mod peekable;
 
 #[cfg(test)]
