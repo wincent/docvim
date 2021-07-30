@@ -170,7 +170,9 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
             let mut parser = Parser::new(&contents);
 
             // TODO: pretty print this error
-            parser.parse().expect("Failed to parse");
+            let ast = parser.parse()?;
+
+            println!("AST:\n{:#?}", ast);
         }
     }
 
