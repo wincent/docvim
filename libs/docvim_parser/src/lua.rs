@@ -100,36 +100,36 @@ pub enum Statement<'a> {
     LocalDeclaration { namelist: Vec<Name<'a>>, explist: Vec<Exp<'a>> },
 }
 
-pub enum Op {
-    BinOp(BinOp),
-    UnOp(UnOp),
-}
-
 /// Returns the left and right "binding" power for a given operator, which enables us to parse
 /// binary and unary expressions with left or right associativity via Pratt's "Top Down Operator
 /// Precendence" algorithm, as described in doc/lua.md.
-fn operator_binding(op: Op) -> (Option<u8>, Option<u8>) {
+///
+/// See also unop_binding.
+fn binop_binding(op: BinOp) -> (u8, u8) {
     match op {
-        Op::BinOp(op) => match op {
-            BinOp::Or => (Some(1), Some(2)),
-            BinOp::And => (Some(3), Some(4)),
-            BinOp::Eq => (Some(5), Some(6)),
-            BinOp::Gt => (Some(5), Some(6)),
-            BinOp::Gte => (Some(5), Some(6)),
-            BinOp::Lt => (Some(5), Some(6)),
-            BinOp::Lte => (Some(5), Some(6)),
-            BinOp::Ne => (Some(5), Some(6)),
-            BinOp::Concat => (Some(8), Some(7)), // Right-associative.
-            BinOp::Plus => (Some(9), Some(10)),
-            BinOp::Minus => (Some(11), Some(12)),
-            BinOp::Percent => (Some(13), Some(14)),
-            BinOp::Slash => (Some(13), Some(14)),
-            BinOp::Star => (Some(13), Some(14)),
-            BinOp::Caret => (Some(18), Some(17)), // Right-associative.
-        },
-        Op::UnOp(op) => match op {
-            UnOp::Length | UnOp::Minus | UnOp::Not => (None, Some(15)),
-        },
+        BinOp::Or => (1, 2),
+        BinOp::And => (3, 4),
+        BinOp::Eq => (5, 6),
+        BinOp::Gt => (5, 6),
+        BinOp::Gte => (5, 6),
+        BinOp::Lt => (5, 6),
+        BinOp::Lte => (5, 6),
+        BinOp::Ne => (5, 6),
+        BinOp::Concat => (8, 7), // Right-associative.
+        BinOp::Plus => (9, 10),
+        BinOp::Minus => (11, 12),
+        BinOp::Percent => (13, 14),
+        BinOp::Slash => (13, 14),
+        BinOp::Star => (13, 14),
+        BinOp::Caret => (18, 17), // Right-associative.
+    }
+}
+
+fn unop_binding(op: UnOp) -> u8 {
+    match op {
+        UnOp::Length => 15,
+        UnOp::Minus => 15,
+        UnOp::Not => 15,
     }
 }
 
@@ -443,7 +443,7 @@ impl<'a> Parser<'a> {
                             kind: ParserErrorKind::UnexpectedEndOfInput,
                             // BUG: this is location of the "(", and ignores recursive call to lhs.
                             position: char_start,
-                        }))
+                        }));
                     }
                 }
             }
@@ -494,28 +494,21 @@ impl<'a> Parser<'a> {
 
             // TODO: can we DRY this up if we re-jig the types?
             Some(Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })) => {
-                // TODO: maybe it's a smell that I need `if let` here, and the following panic!
-                if let (_, Some(bp)) = operator_binding(Op::UnOp(UnOp::Not)) {
-                    let rhs = self.parse_exp(tokens, bp)?;
-                    return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Not });
-                }
-                panic!();
+                let bp = unop_binding(UnOp::Not);
+                let rhs = self.parse_exp(tokens, bp)?;
+                return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Not });
             }
 
             Some(Ok(Token { kind: OpToken(HashToken), .. })) => {
-                if let (None, Some(bp)) = operator_binding(Op::UnOp(UnOp::Length)) {
-                    let rhs = self.parse_exp(tokens, bp)?;
-                    return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Length });
-                }
-                panic!();
+                let bp = unop_binding(UnOp::Length);
+                let rhs = self.parse_exp(tokens, bp)?;
+                return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Length });
             }
 
             Some(Ok(Token { kind: OpToken(MinusToken), .. })) => {
-                if let (None, Some(bp)) = operator_binding(Op::UnOp(UnOp::Minus)) {
-                    let rhs = self.parse_exp(tokens, bp)?;
-                    return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Minus });
-                }
-                panic!();
+                let bp = unop_binding(UnOp::Minus);
+                let rhs = self.parse_exp(tokens, bp)?;
+                return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Minus });
             }
 
             // TODO: handle remaining "primaries" before getting here:
@@ -541,41 +534,32 @@ impl<'a> Parser<'a> {
             // TODO: find a way to DRY this up; probably have to re-jig the types...
             match tokens.peek() {
                 Some(&Ok(Token { kind: NameToken(KeywordToken(AndToken)), .. })) => {
-                    // TODO: here again the smell of the `if let` + `panic!()` (and `unwrap` might
-                    // not smell much better).
-                    if let (Some(left_bp), Some(right_bp)) = operator_binding(Op::BinOp(BinOp::And))
-                    {
-                        if left_bp < minimum_bp {
-                            break;
-                        } else {
-                            tokens.next();
-                            let rhs = self.parse_exp(tokens, right_bp)?;
-                            return Ok(Exp::Binary {
-                                lexp: Box::new(lhs),
-                                op: BinOp::And,
-                                rexp: Box::new(rhs),
-                            });
-                        }
+                    let (left_bp, right_bp) = binop_binding(BinOp::And);
+                    if left_bp < minimum_bp {
+                        break;
+                    } else {
+                        tokens.next();
+                        let rhs = self.parse_exp(tokens, right_bp)?;
+                        return Ok(Exp::Binary {
+                            lexp: Box::new(lhs),
+                            op: BinOp::And,
+                            rexp: Box::new(rhs),
+                        });
                     }
-                    panic!();
                 }
                 Some(&Ok(Token { kind: OpToken(PlusToken), .. })) => {
-                    if let (Some(left_bp), Some(right_bp)) =
-                        operator_binding(Op::BinOp(BinOp::Plus))
-                    {
-                        if left_bp < minimum_bp {
-                            break;
-                        } else {
-                            tokens.next();
-                            let rhs = self.parse_exp(tokens, right_bp)?;
-                            return Ok(Exp::Binary {
-                                lexp: Box::new(lhs),
-                                op: BinOp::Plus,
-                                rexp: Box::new(rhs),
-                            });
-                        }
+                    let (left_bp, right_bp) = binop_binding(BinOp::Plus);
+                    if left_bp < minimum_bp {
+                        break;
+                    } else {
+                        tokens.next();
+                        let rhs = self.parse_exp(tokens, right_bp)?;
+                        return Ok(Exp::Binary {
+                            lexp: Box::new(lhs),
+                            op: BinOp::Plus,
+                            rexp: Box::new(rhs),
+                        });
                     }
-                    panic!();
                 }
                 None => break, // End of input.
                 Some(&Ok(token)) => {
