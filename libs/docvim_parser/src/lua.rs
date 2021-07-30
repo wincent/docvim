@@ -431,7 +431,7 @@ impl<'a> Parser<'a> {
         tokens: &mut std::iter::Peekable<Tokens>,
         minimum_bp: u8,
     ) -> Result<Exp<'a>, Box<dyn Error>> {
-        let lhs = match tokens.next() {
+        let mut lhs = match tokens.next() {
             //
             // Punctuators (parens).
             //
@@ -531,45 +531,34 @@ impl<'a> Parser<'a> {
         };
 
         loop {
-            // TODO: find a way to DRY this up; probably have to re-jig the types...
-            match tokens.peek() {
+            let token = tokens.peek();
+            let op = match token {
                 Some(&Ok(Token { kind: NameToken(KeywordToken(AndToken)), .. })) => {
-                    let (left_bp, right_bp) = binop_binding(BinOp::And);
-                    if left_bp < minimum_bp {
-                        break;
-                    } else {
-                        tokens.next();
-                        let rhs = self.parse_exp(tokens, right_bp)?;
-                        return Ok(Exp::Binary {
-                            lexp: Box::new(lhs),
-                            op: BinOp::And,
-                            rexp: Box::new(rhs),
-                        });
-                    }
+                    Some(BinOp::And)
                 }
-                Some(&Ok(Token { kind: OpToken(PlusToken), .. })) => {
-                    let (left_bp, right_bp) = binop_binding(BinOp::Plus);
-                    if left_bp < minimum_bp {
-                        break;
-                    } else {
-                        tokens.next();
-                        let rhs = self.parse_exp(tokens, right_bp)?;
-                        return Ok(Exp::Binary {
-                            lexp: Box::new(lhs),
-                            op: BinOp::Plus,
-                            rexp: Box::new(rhs),
-                        });
-                    }
-                }
-                None => break, // End of input.
+                Some(&Ok(Token { kind: OpToken(PlusToken), .. })) => Some(BinOp::Plus),
                 Some(&Ok(token)) => {
                     return Err(Box::new(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
                         position: token.char_start,
-                    }))
+                    }));
                 }
                 Some(&Err(err)) => return Err(Box::new(err)),
+                None => None, // End of input.
             };
+
+            if let Some(op) = op {
+                tokens.next();
+                let (left_bp, right_bp) = binop_binding(op);
+                if left_bp < minimum_bp {
+                    break;
+                } else {
+                    let rhs = self.parse_exp(tokens, right_bp)?;
+                    lhs = Exp::Binary { lexp: Box::new(lhs), op, rexp: Box::new(rhs) };
+                }
+            } else {
+                break;
+            }
         }
 
         Ok(lhs)
