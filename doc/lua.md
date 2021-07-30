@@ -167,55 +167,55 @@ Applying the Pratt algorithm to this means proceeding from left to right making 
 In operation on the example input, the execution looks like this:
 
 1. Call subroutine with minimum power of 0:
-1. Next token is a primary (`1`); that becomes our LHS.
-1. Peek at next token (`*`) → binding powers are `13` and `14`.
-1. As left power (`13`) isn't smaller than current minimum (`0`), recurse to obtain RHS, passing right power (`14`) as minimum:
-1. Next token is a primary (`2`) → LHS.
-1. Peek at `+` → binding powers `9` and `10`.
-1. As left power (`9`) is less than current minimum (`14`), return LHS (`2`).
-1. Produce node from LHS (`1`) + operator (`*`) + RHS (`2`); this (`(1 * 2)`) becomes the new LHS.
-1. Peek at next token (`+`) → binding powers `9` and `10`.
-1. As left power (`9`) isn't smaller than current minimum (`0`), recurse to obtain RHS, passing right power (`10`) as minimum:
-1. Next token is a primary (`3`) → LHS.
-1. Peek at `-` → binding powers `11` and `12`.
-1. As left power (`11`) isn't smaller than current minimum (`10`), recurse to obtain RHS, passing right power (`12`) as minimum:
-1. Next token is a primary (`4`) → LHS.
-1. Peek at next token (`/`) → binding powers `13` and `14`.
-1. As left power (`13`) isn't smaller than current minimum (`12`), recurse to obtain RHS, passing right power (`14`) as minimum:
-1. Next token is a primary (`5`) → LHS.
-1. Peek at next token (`^`) → binding powers `18` and `17`.
-1. As left power (`18`) isn't smaller than current minimum (`14`), recurse to obtain RHS, passing right power (`17`) as minimum:
-1. Next token is a unary operator (`-`); recurse to obtain RHS, passing right power (`15`) as minimum:
-1. Next token is a primary (`6`) → LHS.
-1. Peek at next token (`>`) → binding powers `5` and `6`.
-1. As left power (`5`) is less than current minimum (`15`), return LHS (`6`).
-1. Produce node from operator (unary `-`) + RHS (`6`); this (`(-6)`) becomes the new LHS.
-1. Peek at next token (`>`) → binding powers `5` and `6`.
-1. As left power (`5`) is less than current minimum (`15`), return LHS (`(-6)`).
-1. Produce node from LHS (`5`) + operator (`^`) + RHS (`(-6)`); this (`(5 ^ (-6))`) becomes the new LHS.
-1. Peek at next token (`>`) → binding powers `5` and `6`.
-1. As left power (`5`) is less than current minimum (`14`), return LHS (`(5 ^ (-6))`).
-1. Produce node from LHS (`4`) + operator (`/`) + RHS (`(5 ^ (-6))`); this (`(4 / (5 ^ (-6))`) becomes the new LHS.
-1. Peek at next token (`>`) → binding powers `5` and `6`.
-1. As left power (`5`) is less than current minimum (`12`), return LHS (`(4 / (5 ^ (-6))`).
-1. Produce node from LHS (`3`) + operator (`-`) + RHS (`(4 / (5 ^ (-6))`); this (`(3 - (4 / (5 ^ (-6))))`) becomes the new LHS.
-1. Peek at next token (`>`) → binding powers `5` and `6`.
-1. As left power (`5`) is less than current minimum (`10`), return LHS (`(3 - (4 / (5 ^ (-6)))`).
-1. Produce node from LHS (`(1 * 2)`) + operator (`+`) + RHS (`(3 + (4 / (5 ^ (-6))))`); this (`((1 * 2) + (3 - (4 / (5 ^ (-6)))))`) becomes the new LHS.
-1. Peek at next token (`>`) → binding powers `5` and `6`.
-1. As left power (`5`) isn't smaller than current minimum (`0`), recurse to obtain RHS, passing right power (`6`) as minimum:
-1. Next token is a unary operator (`-`); recurse to obtain RHS, passing right power (`15`) as minimum:
-1. Next token is a primary (`7`) → LHS.
-1. Peek at next token (`^`) → binding powers are `18` and `17`.
-1. As left power (`18`) isn't smaller than current minmum (`15`), recurse to obtain RHS, passing right power (`17`) as minimum:
-1. Next token is a primary (`8`) → LHS.
-1. Peek at next token → it's the end of input, so return LHS (`8`).
-1. Produce node from LHS (`7`) + operator (`^`) + RHS (`8`); this (`(7 ^ 8)`) becomes the new LHS.
-1. Peek at next token → it's the end of input, so return LHS (`(7 ^ 8)`).
-1. Produce node from operator (unary `-`) + RHS (`(7 ^ 8)`); this (`(-(7 ^ 8))`) becomes the new LHS.
-1. Peek at next token → it's the end of input, so return LHS (`(-(7 ^ 8))`).
-1. Produce node from LHS (`((1 * 2) + (3 - (4 / (5 ^ (-6)))))`) + operator (`>`) + RHS (`(-(7 ^ 8))`); this (`(((1 * 2) + (3 - (4 / (5 ^ (-6))))) > (-(7 ^ 8)))`) becomes the new LHS.
-1. Peek at next token → it's the end of input, so return LHS (`(((1 * 2) + (3 - (4 / (5 ^ (-6))))) > (-(7 ^ 8)))`).
+  1. Next token is a primary (`1`); that becomes our LHS.
+  1. Peek at next token (`*`) → binding powers are `13` and `14`.
+  1. As left power (`13`) isn't smaller than current minimum (`0`), recurse to obtain RHS, passing right power (`14`) as minimum:
+    1. Next token is a primary (`2`) → LHS.
+    1. Peek at `+` → binding powers `9` and `10`.
+    1. As left power (`9`) is less than current minimum (`14`), return LHS (`2`).
+  1. Produce node from LHS (`1`) + operator (`*`) + RHS (`2`); this (`(1 * 2)`) becomes the new LHS.
+  1. Peek at next token (`+`) → binding powers `9` and `10`.
+  1. As left power (`9`) isn't smaller than current minimum (`0`), recurse to obtain RHS, passing right power (`10`) as minimum:
+    1. Next token is a primary (`3`) → LHS.
+    1. Peek at `-` → binding powers `11` and `12`.
+    1. As left power (`11`) isn't smaller than current minimum (`10`), recurse to obtain RHS, passing right power (`12`) as minimum:
+      1. Next token is a primary (`4`) → LHS.
+      1. Peek at next token (`/`) → binding powers `13` and `14`.
+      1. As left power (`13`) isn't smaller than current minimum (`12`), recurse to obtain RHS, passing right power (`14`) as minimum:
+        1. Next token is a primary (`5`) → LHS.
+        1. Peek at next token (`^`) → binding powers `18` and `17`.
+        1. As left power (`18`) isn't smaller than current minimum (`14`), recurse to obtain RHS, passing right power (`17`) as minimum:
+          1. Next token is a unary operator (`-`); recurse to obtain RHS, passing right power (`15`) as minimum:
+            1. Next token is a primary (`6`) → LHS.
+            1. Peek at next token (`>`) → binding powers `5` and `6`.
+            1. As left power (`5`) is less than current minimum (`15`), return LHS (`6`).
+          1. Produce node from operator (unary `-`) + RHS (`6`); this (`(-6)`) becomes the new LHS.
+          1. Peek at next token (`>`) → binding powers `5` and `6`.
+          1. As left power (`5`) is less than current minimum (`15`), return LHS (`(-6)`).
+        1. Produce node from LHS (`5`) + operator (`^`) + RHS (`(-6)`); this (`(5 ^ (-6))`) becomes the new LHS.
+        1. Peek at next token (`>`) → binding powers `5` and `6`.
+        1. As left power (`5`) is less than current minimum (`14`), return LHS (`(5 ^ (-6))`).
+      1. Produce node from LHS (`4`) + operator (`/`) + RHS (`(5 ^ (-6))`); this (`(4 / (5 ^ (-6))`) becomes the new LHS.
+      1. Peek at next token (`>`) → binding powers `5` and `6`.
+      1. As left power (`5`) is less than current minimum (`12`), return LHS (`(4 / (5 ^ (-6))`).
+    1. Produce node from LHS (`3`) + operator (`-`) + RHS (`(4 / (5 ^ (-6))`); this (`(3 - (4 / (5 ^ (-6))))`) becomes the new LHS.
+    1. Peek at next token (`>`) → binding powers `5` and `6`.
+    1. As left power (`5`) is less than current minimum (`10`), return LHS (`(3 - (4 / (5 ^ (-6)))`).
+  1. Produce node from LHS (`(1 * 2)`) + operator (`+`) + RHS (`(3 + (4 / (5 ^ (-6))))`); this (`((1 * 2) + (3 - (4 / (5 ^ (-6)))))`) becomes the new LHS.
+  1. Peek at next token (`>`) → binding powers `5` and `6`.
+  1. As left power (`5`) isn't smaller than current minimum (`0`), recurse to obtain RHS, passing right power (`6`) as minimum:
+    1. Next token is a unary operator (`-`); recurse to obtain RHS, passing right power (`15`) as minimum:
+      1. Next token is a primary (`7`) → LHS.
+      1. Peek at next token (`^`) → binding powers are `18` and `17`.
+      1. As left power (`18`) isn't smaller than current minmum (`15`), recurse to obtain RHS, passing right power (`17`) as minimum:
+        1. Next token is a primary (`8`) → LHS.
+        1. Peek at next token → it's the end of input, so return LHS (`8`).
+        1. Produce node from LHS (`7`) + operator (`^`) + RHS (`8`); this (`(7 ^ 8)`) becomes the new LHS.
+      1. Peek at next token → it's the end of input, so return LHS (`(7 ^ 8)`).
+      1. Produce node from operator (unary `-`) + RHS (`(7 ^ 8)`); this (`(-(7 ^ 8))`) becomes the new LHS.
+    1. Peek at next token → it's the end of input, so return LHS (`(-(7 ^ 8))`).
+  1. Produce node from LHS (`((1 * 2) + (3 - (4 / (5 ^ (-6)))))`) + operator (`>`) + RHS (`(-(7 ^ 8))`); this (`(((1 * 2) + (3 - (4 / (5 ^ (-6))))) > (-(7 ^ 8)))`) becomes the new LHS.
+  1. Peek at next token → it's the end of input, so return LHS (`(((1 * 2) + (3 - (4 / (5 ^ (-6))))) > (-(7 ^ 8)))`).
 
 And, tedious though the demonstration was, the output:
 
