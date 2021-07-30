@@ -51,7 +51,7 @@ use docvim_lexer::lua::{Lexer, Token, Tokens};
 #[derive(Debug, PartialEq)]
 pub struct Chunk<'a>(Block<'a>);
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum BinOp {
     And,
     Caret,
@@ -85,7 +85,7 @@ pub enum Exp<'a> {
     Unary { exp: Box<Exp<'a>>, op: UnOp },
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum UnOp {
     Length,
     Minus,
@@ -415,6 +415,16 @@ impl<'a> Parser<'a> {
         Ok(Exp::CookedStr(Box::new(unescaped)))
     }
 
+    fn parse_unop_exp(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+        op: UnOp,
+    ) -> Result<Exp<'a>, Box<dyn Error>> {
+        let bp = unop_binding(op);
+        let rhs = self.parse_exp(tokens, bp)?;
+        Ok(Exp::Unary { exp: Box::new(rhs), op })
+    }
+
     /// See doc/lua.md for an explanation of `minimum_bp`.
     fn parse_exp(
         &self,
@@ -491,24 +501,14 @@ impl<'a> Parser<'a> {
             //
             // Unary operators.
             //
-
-            // TODO: can we DRY this up if we re-jig the types?
             Some(Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })) => {
-                let bp = unop_binding(UnOp::Not);
-                let rhs = self.parse_exp(tokens, bp)?;
-                return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Not });
+                return self.parse_unop_exp(tokens, UnOp::Not)
             }
-
             Some(Ok(Token { kind: OpToken(HashToken), .. })) => {
-                let bp = unop_binding(UnOp::Length);
-                let rhs = self.parse_exp(tokens, bp)?;
-                return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Length });
+                return self.parse_unop_exp(tokens, UnOp::Length)
             }
-
             Some(Ok(Token { kind: OpToken(MinusToken), .. })) => {
-                let bp = unop_binding(UnOp::Minus);
-                let rhs = self.parse_exp(tokens, bp)?;
-                return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Minus });
+                return self.parse_unop_exp(tokens, UnOp::Minus)
             }
 
             // TODO: handle remaining "primaries" before getting here:
