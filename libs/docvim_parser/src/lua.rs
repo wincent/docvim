@@ -31,6 +31,8 @@ use docvim_lexer::lua::OpKind::Plus as PlusToken;
 use docvim_lexer::lua::OpKind::Slash as SlashToken;
 use docvim_lexer::lua::OpKind::Star as StarToken;
 use docvim_lexer::lua::PunctuatorKind::Comma as CommaToken;
+use docvim_lexer::lua::PunctuatorKind::Lparen as LparenToken;
+use docvim_lexer::lua::PunctuatorKind::Rparen as RparenToken;
 use docvim_lexer::lua::PunctuatorKind::Semi as SemiToken;
 use docvim_lexer::lua::StrKind::DoubleQuoted as DoubleQuotedToken;
 use docvim_lexer::lua::StrKind::Long as LongToken;
@@ -282,7 +284,7 @@ impl<'a> Parser<'a> {
                     | Ok(Token { kind: OpToken(HashToken), .. })
                     | Ok(Token { kind: OpToken(MinusToken), .. }) => {
                         if expect_name {
-                            explist.push(self.parse_exp(tokens)?);
+                            explist.push(self.parse_exp(tokens, 0)?);
                             expect_comma = true;
                             expect_name = false;
                             expect_semi = true;
@@ -401,7 +403,7 @@ impl<'a> Parser<'a> {
                     } else {
                         return Err(Box::new(ParserError {
                             kind: ParserErrorKind::UnexpectedEndOfInput,
-                            position: token.char_start,
+                            position: char_start + idx,
                         }));
                     }
                 }
@@ -413,22 +415,67 @@ impl<'a> Parser<'a> {
         Ok(Exp::CookedStr(Box::new(unescaped)))
     }
 
+    /// See doc/lua.md for an explanation of `minimum_bp`.
     fn parse_exp(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
+        minimum_bp: u8,
     ) -> Result<Exp<'a>, Box<dyn Error>> {
-        let token = tokens.next().unwrap()?;
-        let exp = match token {
-            Token { kind: NameToken(KeywordToken(FalseToken)), .. } => Exp::False,
-            Token { kind: NameToken(KeywordToken(NilToken)), .. } => Exp::Nil,
-            Token { kind: LiteralToken(NumberToken), .. } => {
+        let lhs = match tokens.next() {
+            //
+            // Punctuators (parens).
+            //
+            Some(Ok(token @ Token { kind: PunctuatorToken(LparenToken), .. })) => {
+                let lhs = self.parse_exp(tokens, 0)?;
+                let char_start = token.char_start;
+                let token = tokens.next();
+                match token {
+                    Some(Ok(Token { kind: PunctuatorToken(RparenToken), .. })) => lhs,
+                    Some(Ok(token)) => {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedToken,
+                            position: token.char_start,
+                        }))
+                    }
+                    Some(Err(err)) => return Err(Box::new(err)),
+                    None => {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedEndOfInput,
+                            // BUG: this is location of the "(", and ignores recursive call to lhs.
+                            position: char_start,
+                        }))
+                    }
+                }
+            }
+
+            //
+            // Primaries (literals etc).
+            //
+            Some(Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })) => Exp::False,
+            Some(Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })) => Exp::Nil,
+            Some(Ok(token @ Token { kind: LiteralToken(NumberToken), .. })) => {
                 Exp::Number(&self.lexer.input[token.byte_start..token.byte_end])
             }
-            Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }
-            | Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. } => {
+            Some(Ok(token @ Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
+            | Some(Ok(token @ Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. })) => {
                 self.cook_str(token)?
             }
-            Token { kind: LiteralToken(StrToken(LongToken { level })), .. } => {
+            Some(Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
+                // Unforunate workaround needed until: https://github.com/rust-lang/rust/issues/65490
+                //
+                // Can't write: Some(Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { level })), .. }))
+                //                this: ^^^^^                             at same time as this: ^^^^^
+                //
+                // Rust says, "pattern bindings after an `@` are unstable".
+                let level = if let Token {
+                    kind: LiteralToken(StrToken(LongToken { level })), ..
+                } = token
+                {
+                    level
+                } else {
+                    panic!();
+                };
+
                 // As a convenience, Lua omits any newline at position 0 in a long format string.
                 let first = self.lexer.input.as_bytes()[token.byte_start + 2 + level];
                 let start = if first == ('\n' as u8) {
@@ -439,41 +486,113 @@ impl<'a> Parser<'a> {
                 let end = token.byte_end - 2 - level;
                 Exp::RawStr(&self.lexer.input[start..end])
             }
-            Token { kind: NameToken(KeywordToken(TrueToken)), .. } => (Exp::True),
-            Token { kind: NameToken(KeywordToken(NotToken)), .. } => {
-                let exp = Box::new(self.parse_exp(tokens)?);
-                Exp::Unary { exp, op: UnOp::Not }
-            }
-            Token { kind: OpToken(HashToken), .. } => {
-                let exp = Box::new(self.parse_exp(tokens)?);
-                Exp::Unary { exp, op: UnOp::Length }
-            }
-            Token { kind: OpToken(MinusToken), .. } => {
-                let exp = Box::new(self.parse_exp(tokens)?);
-                Exp::Unary { exp, op: UnOp::Minus }
+            Some(Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })) => (Exp::True),
+
+            //
+            // Unary operators.
+            //
+
+            // TODO: can we DRY this up if we re-jig the types?
+            Some(Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })) => {
+                // TODO: maybe it's a smell that I need `if let` here, and the following panic!
+                if let (_, Some(bp)) = operator_binding(Op::UnOp(UnOp::Not)) {
+                    let rhs = self.parse_exp(tokens, bp)?;
+                    return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Not });
+                }
+                panic!();
             }
 
-            // TODO: handle other expression types instead of erroring
-            _ => {
+            Some(Ok(Token { kind: OpToken(HashToken), .. })) => {
+                if let (None, Some(bp)) = operator_binding(Op::UnOp(UnOp::Length)) {
+                    let rhs = self.parse_exp(tokens, bp)?;
+                    return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Length });
+                }
+                panic!();
+            }
+
+            Some(Ok(Token { kind: OpToken(MinusToken), .. })) => {
+                if let (None, Some(bp)) = operator_binding(Op::UnOp(UnOp::Minus)) {
+                    let rhs = self.parse_exp(tokens, bp)?;
+                    return Ok(Exp::Unary { exp: Box::new(rhs), op: UnOp::Minus });
+                }
+                panic!();
+            }
+
+            // TODO: handle remaining "primaries" before getting here:
+            // function, tableconstructor, ..., var, functioncall
+            Some(Ok(token)) => {
                 return Err(Box::new(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
                     position: token.char_start,
-                }));
+                }))
+            }
+
+            Some(Err(err)) => return Err(Box::new(err)),
+
+            None => {
+                return Err(Box::new(ParserError {
+                    kind: ParserErrorKind::UnexpectedEndOfInput,
+                    position: self.lexer.input.chars().count(),
+                }))
             }
         };
 
-        // Peek ahead to see if there's a binary operator.
+        loop {
+            // TODO: find a way to DRY this up; probably have to re-jig the types...
+            match tokens.peek() {
+                Some(&Ok(Token { kind: NameToken(KeywordToken(AndToken)), .. })) => {
+                    // TODO: here again the smell of the `if let` + `panic!()` (and `unwrap` might
+                    // not smell much better).
+                    if let (Some(left_bp), Some(right_bp)) = operator_binding(Op::BinOp(BinOp::And))
+                    {
+                        if left_bp < minimum_bp {
+                            break;
+                        } else {
+                            tokens.next();
+                            let rhs = self.parse_exp(tokens, right_bp)?;
+                            return Ok(Exp::Binary {
+                                lexp: Box::new(lhs),
+                                op: BinOp::And,
+                                rexp: Box::new(rhs),
+                            });
+                        }
+                    }
+                    panic!();
+                }
+                Some(&Ok(Token { kind: OpToken(PlusToken), .. })) => {
+                    if let (Some(left_bp), Some(right_bp)) =
+                        operator_binding(Op::BinOp(BinOp::Plus))
+                    {
+                        if left_bp < minimum_bp {
+                            break;
+                        } else {
+                            tokens.next();
+                            let rhs = self.parse_exp(tokens, right_bp)?;
+                            return Ok(Exp::Binary {
+                                lexp: Box::new(lhs),
+                                op: BinOp::Plus,
+                                rexp: Box::new(rhs),
+                            });
+                        }
+                    }
+                    panic!();
+                }
+                None => break, // End of input.
+                Some(&Ok(token)) => {
+                    return Err(Box::new(ParserError {
+                        kind: ParserErrorKind::UnexpectedToken,
+                        position: token.char_start,
+                    }))
+                }
+                Some(&Err(err)) => return Err(Box::new(err)),
+            };
+        }
+
+        Ok(lhs)
+
+        /*
         if let Some(&Ok(token)) = tokens.peek() {
             match token {
-                // TODO: deal with associativity
-                Token { kind: NameToken(KeywordToken(AndToken)), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::And,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
                 Token { kind: NameToken(KeywordToken(OrToken)), .. } => {
                     tokens.next();
                     return Ok(Exp::Binary {
@@ -562,14 +681,6 @@ impl<'a> Parser<'a> {
                         rexp: Box::new(self.parse_exp(tokens)?),
                     });
                 }
-                Token { kind: OpToken(PlusToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Plus,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
                 Token { kind: OpToken(SlashToken), .. } => {
                     tokens.next();
                     return Ok(Exp::Binary {
@@ -589,8 +700,7 @@ impl<'a> Parser<'a> {
                 _ => (),
             }
         }
-
-        Ok(exp)
+        */
     }
 }
 
