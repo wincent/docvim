@@ -1,4 +1,6 @@
 -- Example.
+local intro = [[hi!]]
+
 local docs = [[
   Long format string here
 ]]
@@ -8,7 +10,7 @@ local more_docs = [==[
 ]==]
 
 if true then
-  print('hello' .. "world")
+  print(intro .. "world")
   print(docs)
   print(more_docs)
 end

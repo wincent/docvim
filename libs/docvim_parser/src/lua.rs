@@ -429,7 +429,13 @@ impl<'a> Parser<'a> {
                 self.cook_str(token)?
             }
             Token { kind: LiteralToken(StrToken(LongToken { level })), .. } => {
-                let start = token.byte_start + 2 + level;
+                // As a convenience, Lua omits any newline at position 0 in a long format string.
+                let first = self.lexer.input.as_bytes()[token.byte_start + 2 + level];
+                let start = if first == ('\n' as u8) {
+                    token.byte_start + 2 + level + 1
+                } else {
+                    token.byte_start + 2 + level
+                };
                 let end = token.byte_end - 2 - level;
                 Exp::RawStr(&self.lexer.input[start..end])
             }

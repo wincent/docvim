@@ -765,7 +765,14 @@ impl<'a> Iterator for Tokens<'a> {
                             eq_count += 1;
                         }
                         if eq_count > 0 {
-                            Some(self.scan_long_string(eq_count))
+                            if self.consume_char('[') {
+                                Some(self.scan_long_string(eq_count))
+                            } else {
+                                Some(Err(LexerError {
+                                    kind: LexerErrorKind::InvalidOperator,
+                                    position: char_start,
+                                }))
+                            }
                         } else {
                             Some(Ok(Token::new(
                                 Punctuator(Lbracket),
@@ -1115,6 +1122,40 @@ mod tests {
                 char_end: 7,
                 byte_start: 0,
                 byte_end: 7,
+            }]
+        );
+        assert_lexes!(
+            "\"foo\"",
+            vec![Token {
+                kind: Literal(Str(DoubleQuoted)),
+                char_start: 0,
+                char_end: 5,
+                byte_start: 0,
+                byte_end: 5,
+            }]
+        );
+    }
+
+    #[test]
+    fn lexes_long_strings() {
+        assert_lexes!(
+            "[[hello]]",
+            vec![Token {
+                kind: Literal(Str(Long { level: 0 })),
+                char_start: 0,
+                char_end: 9,
+                byte_start: 0,
+                byte_end: 9,
+            }]
+        );
+        assert_lexes!(
+            "[===[there]===]",
+            vec![Token {
+                kind: Literal(Str(Long { level: 3 })),
+                char_start: 0,
+                char_end: 15,
+                byte_start: 0,
+                byte_end: 15,
             }]
         );
     }
