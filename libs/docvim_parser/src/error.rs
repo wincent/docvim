@@ -22,7 +22,6 @@ pub enum ParserErrorKind {
     LocalDeclarationWithoutName,
     UnexpectedEndOfInput,
     UnexpectedToken, // TODO: this is a bit of a catch-all; replace with more specific things
-    UnterminatedParenExp,
 }
 
 impl ParserErrorKind {
@@ -32,7 +31,6 @@ impl ParserErrorKind {
             ParserErrorKind::LocalDeclarationWithoutName => "local declaration without name",
             ParserErrorKind::UnexpectedEndOfInput => "unexpected end-of-input",
             ParserErrorKind::UnexpectedToken => "unexpected token",
-            ParserErrorKind::UnterminatedParenExp => "unterminated parenthesized expression",
         }
     }
 }

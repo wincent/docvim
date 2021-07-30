@@ -51,6 +51,8 @@ use docvim_lexer::lua::{Lexer, Token, Tokens};
 #[derive(Debug, PartialEq)]
 pub struct Chunk<'a>(Block<'a>);
 
+// TODO: rename these to reflect operation instead of token; eg "Add" insted of "Plus", "Multiply"
+// instead of "Star", "Divide" instead of "Slash" etc.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum BinOp {
     And,
@@ -502,13 +504,13 @@ impl<'a> Parser<'a> {
             // Unary operators.
             //
             Some(Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })) => {
-                return self.parse_unop_exp(tokens, UnOp::Not)
+                self.parse_unop_exp(tokens, UnOp::Not)?
             }
             Some(Ok(Token { kind: OpToken(HashToken), .. })) => {
-                return self.parse_unop_exp(tokens, UnOp::Length)
+                self.parse_unop_exp(tokens, UnOp::Length)?
             }
             Some(Ok(Token { kind: OpToken(MinusToken), .. })) => {
-                return self.parse_unop_exp(tokens, UnOp::Minus)
+                self.parse_unop_exp(tokens, UnOp::Minus)?
             }
 
             // TODO: handle remaining "primaries" before getting here:
@@ -536,23 +538,31 @@ impl<'a> Parser<'a> {
                 Some(&Ok(Token { kind: NameToken(KeywordToken(AndToken)), .. })) => {
                     Some(BinOp::And)
                 }
+                Some(&Ok(Token { kind: NameToken(KeywordToken(OrToken)), .. })) => Some(BinOp::Or),
+                Some(&Ok(Token { kind: OpToken(CaretToken), .. })) => Some(BinOp::Caret),
+                Some(&Ok(Token { kind: OpToken(ConcatToken), .. })) => Some(BinOp::Concat),
+                Some(&Ok(Token { kind: OpToken(EqToken), .. })) => Some(BinOp::Eq),
+                Some(&Ok(Token { kind: OpToken(GtToken), .. })) => Some(BinOp::Gt),
+                Some(&Ok(Token { kind: OpToken(GteToken), .. })) => Some(BinOp::Gte),
+                Some(&Ok(Token { kind: OpToken(LtToken), .. })) => Some(BinOp::Lt),
+                Some(&Ok(Token { kind: OpToken(LteToken), .. })) => Some(BinOp::Lte),
+                Some(&Ok(Token { kind: OpToken(MinusToken), .. })) => Some(BinOp::Minus),
+                Some(&Ok(Token { kind: OpToken(NeToken), .. })) => Some(BinOp::Ne),
+                Some(&Ok(Token { kind: OpToken(PercentToken), .. })) => Some(BinOp::Percent),
                 Some(&Ok(Token { kind: OpToken(PlusToken), .. })) => Some(BinOp::Plus),
-                Some(&Ok(token)) => {
-                    return Err(Box::new(ParserError {
-                        kind: ParserErrorKind::UnexpectedToken,
-                        position: token.char_start,
-                    }));
-                }
+                Some(&Ok(Token { kind: OpToken(SlashToken), .. })) => Some(BinOp::Slash),
+                Some(&Ok(Token { kind: OpToken(StarToken), .. })) => Some(BinOp::Star),
+                Some(&Ok(_)) => None, // No operator, we're done, will return lhs.
                 Some(&Err(err)) => return Err(Box::new(err)),
-                None => None, // End of input.
+                None => None, // End of input, will return lhs.
             };
 
             if let Some(op) = op {
-                tokens.next();
                 let (left_bp, right_bp) = binop_binding(op);
                 if left_bp < minimum_bp {
                     break;
                 } else {
+                    tokens.next();
                     let rhs = self.parse_exp(tokens, right_bp)?;
                     lhs = Exp::Binary { lexp: Box::new(lhs), op, rexp: Box::new(rhs) };
                 }
@@ -562,118 +572,6 @@ impl<'a> Parser<'a> {
         }
 
         Ok(lhs)
-
-        /*
-        if let Some(&Ok(token)) = tokens.peek() {
-            match token {
-                Token { kind: NameToken(KeywordToken(OrToken)), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Or,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(CaretToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Caret,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(ConcatToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Concat,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(EqToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Eq,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(GtToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Gt,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(GteToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Gte,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(LtToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Lt,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(LteToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Lte,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(MinusToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Minus,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(NeToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Ne,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(PercentToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Percent,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(SlashToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Slash,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                Token { kind: OpToken(StarToken), .. } => {
-                    tokens.next();
-                    return Ok(Exp::Binary {
-                        lexp: Box::new(exp),
-                        op: BinOp::Star,
-                        rexp: Box::new(self.parse_exp(tokens)?),
-                    });
-                }
-                _ => (),
-            }
-        }
-        */
     }
 }
 
@@ -810,37 +708,74 @@ mod tests {
             }]))
         );
 
-        // TODO: write a test for input like this, motivating the implementation of associativity:
-        //      let mut parser = Parser::new("local complex = 7 + #'foo' * -100");
-        // eg. all binops are left associative except fro "^" and "..", so that is equivalent to:
-        //      ((7 + (#'foo')) * (-100))
-        // at the moment that parses as right associative; ie:
-        //      (7 + (#('foo' * (-100))))
-        //      Chunk(
-        //          Block(
-        //              [
-        //                  LocalDeclaration {
-        //                      namelist: [Name("complex")],
-        //                      explist: [
-        //                          Binary {
-        //                              lexp: Number("7"),
-        //                              op: Plus,
-        //                              rexp: Unary {
-        //                                  exp: Binary {
-        //                                      lexp: CookedStr("foo"),
-        //                                      op: Star,
-        //                                      rexp: Unary {
-        //                                          exp: Number("100"),
-        //                                          op: Minus
-        //                                      }
-        //                                  },
-        //                                  op: Length
-        //                              }
-        //                          }
-        //                      ]
-        //                  }
-        //              ]
-        //          )
-        //      )`,
+        // Based on the example from doc/lua.md plus some extra parens and a "not" thrown in for
+        // good measure:
+        //
+        //      not (1 * 2 + 3 - 4 / 5 ^ -6 > -7 ^ 8 + (9 - 10) * 11)
+        //
+        // equivalent to:
+        //
+        //      not (((1 * 2) + (3 - (4 / (5 ^ (-6))))) > (-(7 ^ 8) + ((9 - 10) * 11)))
+        //
+        let mut parser =
+            Parser::new("local demo =  not (1 * 2 + 3 - 4 / 5 ^ -6 > -7 ^ 8 + (9 - 10) * 11)");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            // TODO pretty-print these; maybe do golden testing
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("demo")],
+                explist: vec![Exp::Unary {
+                    exp: Box::new(Exp::Binary {
+                        lexp: Box::new(Exp::Binary {
+                            lexp: Box::new(Exp::Binary {
+                                lexp: Box::new(Exp::Number("1")),
+                                op: BinOp::Star,
+                                rexp: Box::new(Exp::Number("2")),
+                            }),
+                            op: BinOp::Plus,
+                            rexp: Box::new(Exp::Binary {
+                                lexp: Box::new(Exp::Number("3")),
+                                op: BinOp::Minus,
+                                rexp: Box::new(Exp::Binary {
+                                    lexp: Box::new(Exp::Number("4")),
+                                    op: BinOp::Slash,
+                                    rexp: Box::new(Exp::Binary {
+                                        lexp: Box::new(Exp::Number("5")),
+                                        op: BinOp::Caret,
+                                        rexp: Box::new(Exp::Unary {
+                                            exp: Box::new(Exp::Number("6")),
+                                            op: UnOp::Minus,
+                                        })
+                                    })
+                                })
+                            })
+                        }),
+                        op: BinOp::Gt,
+                        rexp: Box::new(Exp::Binary {
+                            lexp: Box::new(Exp::Unary {
+                                exp: Box::new(Exp::Binary {
+                                    lexp: Box::new(Exp::Number("7")),
+                                    op: BinOp::Caret,
+                                    rexp: Box::new(Exp::Number("8")),
+                                }),
+                                op: UnOp::Minus,
+                            }),
+                            op: BinOp::Plus,
+                            rexp: Box::new(Exp::Binary {
+                                lexp: Box::new(Exp::Binary {
+                                    lexp: Box::new(Exp::Number("9")),
+                                    op: BinOp::Minus,
+                                    rexp: Box::new(Exp::Number("10")),
+                                }),
+                                op: BinOp::Star,
+                                rexp: Box::new(Exp::Number("11"))
+                            })
+                        })
+                    }),
+                    op: UnOp::Not
+                }]
+            }]))
+        );
     }
 }
