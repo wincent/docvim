@@ -97,6 +97,39 @@ pub enum Statement<'a> {
     LocalDeclaration { namelist: Vec<Name<'a>>, explist: Vec<Exp<'a>> },
 }
 
+pub enum Op {
+    BinOp(BinOp),
+    UnOp(UnOp),
+}
+
+/// Returns the left and right "binding" power for a given operator, which enables us to parse
+/// binary and unary expressions with left or right associativity via Pratt's "Top Down Operator
+/// Precendence" algorithm, as described in doc/lua.md.
+fn operator_binding(op: Op) -> (Option<u8>, Option<u8>) {
+    match op {
+        Op::BinOp(op) => match op {
+            BinOp::Or => (Some(1), Some(2)),
+            BinOp::And => (Some(3), Some(4)),
+            BinOp::Eq => (Some(5), Some(6)),
+            BinOp::Gt => (Some(5), Some(6)),
+            BinOp::Gte => (Some(5), Some(6)),
+            BinOp::Lt => (Some(5), Some(6)),
+            BinOp::Lte => (Some(5), Some(6)),
+            BinOp::Ne => (Some(5), Some(6)),
+            BinOp::Concat => (Some(8), Some(7)), // Right-associative.
+            BinOp::Plus => (Some(9), Some(10)),
+            BinOp::Minus => (Some(11), Some(12)),
+            BinOp::Percent => (Some(13), Some(14)),
+            BinOp::Slash => (Some(13), Some(14)),
+            BinOp::Star => (Some(13), Some(14)),
+            BinOp::Caret => (Some(18), Some(17)), // Right-associative.
+        },
+        Op::UnOp(op) => match op {
+            UnOp::Length | UnOp::Minus | UnOp::Not => (None, Some(15)),
+        },
+    }
+}
+
 #[derive(Debug)]
 pub struct ParserError {
     pub kind: ParserErrorKind,
@@ -345,6 +378,74 @@ impl<'a> Parser<'a> {
         return Ok(Statement::LocalDeclaration { explist, namelist });
     }
 
+    fn cook_str(&self, token: Token) -> Result<Exp<'a>, Box<dyn Error>> {
+        let byte_start = token.byte_start + 1;
+        let byte_end = token.byte_end - 1;
+        let char_start = token.char_start + 1;
+        let mut escaped = self.lexer.input[byte_start..byte_end].char_indices().peekable();
+        let mut unescaped = String::with_capacity(byte_end - byte_start);
+        while let Some((idx, ch)) = escaped.next() {
+            let unescaped_char = match ch {
+                '\\' => {
+                    if let Some((_, next)) = escaped.next() {
+                        match next {
+                            'a' => '\x07', // bell
+                            'b' => '\x08', // backspace
+                            'f' => '\x0c', // line feed
+                            'n' => '\n',
+                            'r' => '\r',
+                            't' => '\t',
+                            'v' => '\x0b', // vertical tab
+                            '\\' => '\\',
+                            '"' => '"',
+                            '\'' => '\'',
+                            '\n' => '\n',
+                            '0'..='9' => {
+                                let mut digits = vec![next as u8];
+                                // TODO: DRY this up; it is a bit similar to what we have in the
+                                // lexer.
+                                let mut digit_count = 1;
+                                while digit_count < 3 {
+                                    if let Some(&(_, digit)) = escaped.peek() {
+                                        match digit {
+                                            '0'..='9' => {
+                                                digits.push(digit as u8);
+                                                escaped.next();
+                                                digit_count += 1;
+                                            }
+                                            _ => {
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                let number = std::str::from_utf8(&digits)?.parse::<u8>()?;
+                                number as char
+                            }
+                            _ => {
+                                return Err(Box::new(ParserError {
+                                    kind: ParserErrorKind::InvalidEscapeSequence,
+                                    position: char_start + idx,
+                                }));
+                            }
+                        }
+                    } else {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedEndOfInput,
+                            position: token.char_start,
+                        }));
+                    }
+                }
+                other => other,
+            };
+            unescaped.push(unescaped_char);
+        }
+
+        Ok(Exp::CookedStr(Box::new(unescaped)))
+    }
+
     fn parse_exp(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
@@ -358,72 +459,7 @@ impl<'a> Parser<'a> {
             }
             Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }
             | Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. } => {
-                // TODO: will want to extract this somewhere.
-                let byte_start = token.byte_start + 1;
-                let byte_end = token.byte_end - 1;
-                let char_start = token.char_start + 1;
-                let mut escaped = self.lexer.input[byte_start..byte_end].char_indices().peekable();
-                let mut unescaped = String::with_capacity(byte_end - byte_start);
-                while let Some((idx, ch)) = escaped.next() {
-                    let unescaped_char = match ch {
-                        '\\' => {
-                            if let Some((_, next)) = escaped.next() {
-                                match next {
-                                    'a' => '\x07', // bell
-                                    'b' => '\x08', // backspace
-                                    'f' => '\x0c', // line feed
-                                    'n' => '\n',
-                                    'r' => '\r',
-                                    't' => '\t',
-                                    'v' => '\x0b', // vertical tab
-                                    '\\' => '\\',
-                                    '"' => '"',
-                                    '\'' => '\'',
-                                    '\n' => '\n',
-                                    '0'..='9' => {
-                                        let mut digits = vec![next as u8];
-                                        // TODO: DRY this up; it is a bit similar to what we have in the
-                                        // lexer.
-                                        let mut digit_count = 1;
-                                        while digit_count < 3 {
-                                            if let Some(&(_, digit)) = escaped.peek() {
-                                                match digit {
-                                                    '0'..='9' => {
-                                                        digits.push(digit as u8);
-                                                        escaped.next();
-                                                        digit_count += 1;
-                                                    }
-                                                    _ => {
-                                                        break;
-                                                    }
-                                                }
-                                            } else {
-                                                break;
-                                            }
-                                        }
-                                        let number = std::str::from_utf8(&digits)?.parse::<u8>()?;
-                                        number as char
-                                    }
-                                    _ => {
-                                        return Err(Box::new(ParserError {
-                                            kind: ParserErrorKind::InvalidEscapeSequence,
-                                            position: char_start + idx,
-                                        }));
-                                    }
-                                }
-                            } else {
-                                return Err(Box::new(ParserError {
-                                    kind: ParserErrorKind::UnexpectedEndOfInput,
-                                    position: token.char_start,
-                                }));
-                            }
-                        }
-                        other => other,
-                    };
-                    unescaped.push(unescaped_char);
-                }
-
-                Exp::CookedStr(Box::new(unescaped))
+                self.cook_str(token)?
             }
             Token { kind: LiteralToken(StrToken(LongToken { level })), .. } => {
                 let start = token.byte_start + 2 + level;
