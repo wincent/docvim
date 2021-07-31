@@ -104,3 +104,14 @@ fn test_lexes_numbers() {
         panic!("unexpected error");
     }
 }
+
+// TODO: this is just the main file from corpus; add subdirectories and ability to update easily
+// without having to manage .snap files by hand
+#[test]
+fn test_lexes_corpus() {
+    if let Ok(result) = check_snapshot("corpus", &transform) {
+        assert!(result);
+    } else {
+        panic!("unexpected error");
+    }
+}
