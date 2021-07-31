@@ -888,7 +888,7 @@ mod tests {
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
             assert_eq!(
-                Lexer::new(&$input).tokens().map(|x| x.unwrap()).collect::<Vec<Token>>(),
+                Lexer::new(&$input).tokens().map(|token| token.unwrap()).collect::<Vec<Token>>(),
                 $expected
             )
         };
