@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "exe",
+  "libs/docvim_diff",
   "libs/docvim_lexer",
   "libs/docvim_parser"
 ]

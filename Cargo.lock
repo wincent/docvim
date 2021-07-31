@@ -10,6 +10,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "docvim_diff"
+version = "0.1.0"
+
+[[package]]
 name = "docvim_lexer"
 version = "0.1.0"
 

@@ -62,7 +62,6 @@ fn check_snapshot(
             updated.push_str(DIVIDER);
             updated.push_str(&transformed);
             updated.push('\n');
-            println!("WOULD WRITE:\n{}", updated);
             fs::write(snapshot, updated)?;
             Ok(true)
         } else {
