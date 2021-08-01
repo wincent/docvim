@@ -6,12 +6,10 @@ use std::path::Path;
 use docvim_lexer::lua::Lexer;
 
 /// 72 downward-pointing arrows with a blank line before and after.
-const DIVIDER: &str = "\n\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n\n";
+const DIVIDER: &str =
+    "\n\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n\n";
 
-fn check_snapshot(
-    path: &str,
-    callback: &dyn Fn(&str) -> String
-) -> Result<bool, Box<dyn Error>> {
+fn check_snapshot(path: &str, callback: &dyn Fn(&str) -> String) -> Result<bool, Box<dyn Error>> {
     // Read snapshot file.
     let mut snapshot = Path::new(env!("CARGO_MANIFEST_DIR")).to_path_buf();
     snapshot.push("tests/snapshots");
