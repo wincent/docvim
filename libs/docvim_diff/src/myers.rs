@@ -31,14 +31,7 @@ fn diff_string_lines(a: &str, b: &str) -> Diff {
 // TODO make this take range parameters as well because it will be used as a subroutine that works
 // on sections within a file as part of the histogram diff algorithm.
 // histogram
-pub fn diff<T>(a: &Vec<T>, b: &Vec<T>) -> Diff
-where
-    T: PartialEq,
-{
-    //for item in a.into_iter() {
-    // "cannot move out of `*a` which is behind a shared reference"
-    //}
-
+pub fn diff<T: PartialEq>(a: &Vec<T>, b: &Vec<T>) -> Diff {
     Diff(vec![Delete(Idx(1)), Delete(Idx(2)), Insert(Idx(2)), Delete(Idx(6)), Delete(Idx(6))])
 }
 
