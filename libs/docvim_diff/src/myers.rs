@@ -1,5 +1,5 @@
 use std::hash::Hash;
-use std::ops::Index;
+use std::ops::{Index, Range};
 
 use self::Edit::*;
 
@@ -25,13 +25,17 @@ pub struct Diff(Vec<Edit>);
 fn diff_string_lines(a: &str, b: &str) -> Diff {
     let a = a.lines().collect::<Vec<&str>>();
     let b = b.lines().collect::<Vec<&str>>();
-    diff(&a, &b)
+    diff(&a, 0..a.len(), &b, 0..b.len())
 }
 
 // TODO make this take range parameters as well because it will be used as a subroutine that works
 // on sections within a file as part of the histogram diff algorithm.
 // histogram
-pub fn diff<T: PartialEq>(a: &Vec<T>, b: &Vec<T>) -> Diff {
+pub fn diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
+where
+    T: Index<usize> + ?Sized,
+    T::Output: Hash,
+{
     Diff(vec![Delete(Idx(1)), Delete(Idx(2)), Insert(Idx(2)), Delete(Idx(6)), Delete(Idx(6))])
 }
 
