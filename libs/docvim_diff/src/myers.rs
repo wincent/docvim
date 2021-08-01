@@ -34,7 +34,13 @@ where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
-    Diff(vec![Delete(Idx(1)), Delete(Idx(2)), Insert(Idx(2)), Delete(Idx(6)), Delete(Idx(6))])
+    let mut edits = vec![];
+    edits.push(Delete(Idx(1)));
+    edits.push(Delete(Idx(2)));
+    edits.push(Insert(Idx(2)));
+    edits.push(Delete(Idx(6)));
+    edits.push(Delete(Idx(6)));
+    Diff(edits)
 }
 
 fn common_prefix_len<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> usize
@@ -93,6 +99,97 @@ where
     }
     suffix
 }
+
+fn empty_range(range: &Range<usize>) -> bool {
+    range.end - range.start == 0
+}
+
+fn find_middle_snake<T>(
+    a: &T,
+    a_range: Range<usize>,
+    b: &T,
+    b_range: Range<usize>,
+    edits: &mut Vec<Edit>,
+) -> Option<(usize, usize)>
+where
+    T: Index<usize> + ?Sized,
+    T::Output: Hash,
+{
+    None
+}
+
+fn recursive_diff<T>(
+    a: &T,
+    a_range: Range<usize>,
+    b: &T,
+    b_range: Range<usize>,
+    edits: &mut Vec<Edit>,
+) -> ()
+where
+    T: Index<usize> + ?Sized,
+    T::Output: Hash,
+{
+    if empty_range(&a_range) && !empty_range(&b_range) {
+        for i in b_range {
+            edits.push(Insert(Idx(i)));
+        }
+    } else if !empty_range(&a_range) && empty_range(&b_range) {
+        for i in a_range {
+            edits.push(Delete(Idx(i)));
+        }
+    } else if empty_range(&a_range) && empty_range(&b_range) {
+        return;
+    }
+}
+
+/*
+
+  sub recursive_diff(A, N, B, M ):
+    {
+      snake = find_middle_snake();
+
+      suppose it is from ( x, y ) to ( u, v ) with total differences D
+
+      if ( D > 1 )
+      {
+        recursive_diff( A[ 1 .. x ], x, B[ 1 .. y ], y ) // top left
+
+        Add middle snake to results
+
+        recursive_diff( A[ u + 1 .. N ], N - u, B[ v + 1 .. M ], M - v ) // bottom right
+      }
+      else if ( D == 1 ) // must be forward snake
+      {
+        Add d = 0 diagonal to results
+        Add middle snake to results
+      }
+      else if ( D == 0 ) // must be reverse snake
+      {
+        Add middle snake to results
+      }
+    }
+
+  sub find_middle_snake():
+    delta = N - M
+    for d = 0 to ( N + M + 1 ) / 2
+    {
+      for k = -d to d step 2
+      {
+        calculate the furthest reaching forward path on line k
+        if delta is odd and ( k >= delta - ( d - 1 ) and k <= delta + ( d - 1 ) )
+          if overlap with reverse[ d - 1 ] on line k
+            => found middle snake and SES of length 2D - 1
+      }
+
+      for k = -d to d step 2
+      {
+        calculate the furthest reaching reverse path on line k
+        if delta is even and ( k >= -d - delta and k <= d - delta )
+          if overlap with forward[ d ] on line k
+            => found middle snake and SES of length 2D
+      }
+    }
+*/
 
 #[cfg(test)]
 mod tests {
