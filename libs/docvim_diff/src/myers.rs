@@ -31,11 +31,8 @@ struct RingBuffer {
 }
 
 impl RingBuffer {
-    fn new(capacity: usize, default: usize) -> Self {
-        RingBuffer {
-            capacity,
-            storage: vec![default; capacity],
-        }
+    fn new(capacity: usize) -> Self {
+        RingBuffer { capacity, storage: vec![0; capacity] }
     }
 }
 
@@ -91,9 +88,12 @@ where
     T::Output: Hash,
 {
     let mut edits = vec![];
-    let max = 10; // TODO
-    let mut v = RingBuffer::new(max * 2, 0);
-    recursive_diff(a, a_range, b, b_range, &mut v, &mut edits);
+    let n = a_range.len();
+    let m = b_range.len();
+    let max = n + m;
+    let mut v_top = RingBuffer::new(max * 2 + 1);
+    let mut v_bottom = RingBuffer::new(max * 2 + 1);
+    recursive_diff(a, a_range, b, b_range, &mut v_top, &mut v_bottom, &mut edits);
     // let mut edits = vec![];
     // edits.push(Delete(Idx(1)));
     // edits.push(Delete(Idx(2)));
@@ -173,31 +173,83 @@ fn find_middle_snake<T>(
     a_range: Range<usize>,
     b: &T,
     b_range: Range<usize>,
-    v: &mut RingBuffer,
+    v_top: &mut RingBuffer,
+    v_bottom: &mut RingBuffer,
     edits: &mut Vec<Edit>,
 ) -> Option<(usize, usize)>
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
+    v_top[1] = 0;
+    v_bottom[1] = 0;
+
     let n = usize_to_isize(a_range.len());
     let m = usize_to_isize(b_range.len());
     let delta = n - m;
     let odd = delta % 2 == 1;
+
+    let mut x = 0;
+
     for d in 0..((n + m + 1) / 2) {
+        // Search forward from top-left.
         for k in (-d..d).step_by(2) {
-            // Search forward from top-left.
-            if odd && k >= delta - (d - 1) && k <= delta + (d - 1) {
-                //   if overlap with reverse[ d - 1 ] on line k
-                //     => found middle snake and SES of length 2D - 1
+            if k == -d || k != d && v_top[k - 1] < v_top[k + 1] {
+                x = v_top[k + 1];
+            } else {
+                x = v_top[k - 1] + 1;
+            }
+            let y = ((x as isize) - k) as usize;
+            let initial_x = x;
+            let initial_y = y;
+            if x < (n as usize) && y < (m as usize) {
+                x += common_prefix_len(
+                    a,
+                    (a_range.start + x)..a_range.end,
+                    b,
+                    (b_range.start + y)..b_range.end,
+                );
+            }
+            v_top[k] = x;
+            // if odd && k >= delta - (d - 1) && k <= delta + (d - 1) {
+            if odd
+                && (-(k - delta)) >= -(d - 1)
+                && (-(k - delta)) <= (d - 1)
+                && (v_top[k] as isize) + (v_bottom[-(k - delta)] as isize) >= n
+            {
+                return Some((initial_x + a_range.start, initial_y + b_range.start));
             }
         }
 
+        // Search backward from bottom-right.
         for k in (-d..d).step_by(2) {
-            // Search backward from bottom-right.
-            if !odd && k >= -d - delta && k <= d - delta {
-                //   if overlap with forward[ d ] on line k
-                //     => found middle snake and SES of length 2D
+            if k == -d || k != d && v_bottom[k - 1] < v_bottom[k + 1] {
+                x = v_bottom[k + 1];
+            } else {
+                x = v_bottom[k - 1] + 1;
+            }
+            let mut y = ((x as isize) - k) as usize;
+            let initial_x = x;
+            let initial_y = y;
+            if x < (n as usize) && y < (m as usize) {
+                let increment = common_prefix_len(
+                    a,
+                    a_range.start..(a_range.end - x),
+                    b,
+                    b_range.start..(b_range.end - y),
+                );
+                x += increment;
+                y += increment;
+            }
+            v_bottom[k] = x;
+
+            // if !odd && k >= -d - delta && k <= d - delta {
+            if !odd
+                && (-(k - delta)) >= -d
+                && (-(k - delta)) <= d
+                && (v_bottom[k] as isize) + (v_top[(-(k - delta))] as isize) >= n
+            {
+                return Some((a_range.end - x, b_range.end - y));
             }
         }
     }
@@ -209,7 +261,8 @@ fn recursive_diff<T>(
     a_range: Range<usize>,
     b: &T,
     b_range: Range<usize>,
-    v: &mut RingBuffer,
+    v_top: &mut RingBuffer,
+    v_bottom: &mut RingBuffer,
     edits: &mut Vec<Edit>,
 ) -> ()
 where
@@ -228,7 +281,7 @@ where
         return;
     }
 
-    let snake = find_middle_snake(a, a_range, b, b_range, v, edits);
+    let snake = find_middle_snake(a, a_range, b, b_range, v_top, v_bottom, edits);
 }
 
 /*
@@ -263,7 +316,7 @@ mod tests {
 
     #[test]
     fn test_ring_buffer() {
-        let mut buffer = RingBuffer::new(9, 0);
+        let mut buffer = RingBuffer::new(9);
 
         // Write values.
         buffer[-4] = 40;
@@ -378,6 +431,21 @@ mod tests {
         let a: Vec<char> = "hey!".chars().collect();
         let b: Vec<char> = "".chars().collect();
         assert_eq!(common_suffix_len(&a, 0..a.len(), &b, 0..b.len()), 0);
+    }
+
+    #[test]
+    fn test_find_middle_snake() {
+        // From Myer's paper:
+        let a = vec!["A", "B", "C", "A", "B", "B", "A"];
+        let b = vec!["C", "B", "A", "B", "A", "C"];
+        let a_len = a.len();
+        let b_len = b.len();
+        let mut v_top = RingBuffer::new((a_len + b_len) * 2 + 1);
+        let mut v_bottom = RingBuffer::new((a_len + b_len) * 2 + 1);
+        let mut edits = vec![];
+        let snake =
+            find_middle_snake(&a, 0..a_len, &b, 0..b_len, &mut v_top, &mut v_bottom, &mut edits);
+        assert_eq!(snake, Some((4, 1))); // failing with 5, 5
     }
 
     #[test]
