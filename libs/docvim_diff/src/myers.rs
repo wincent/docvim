@@ -166,7 +166,7 @@ fn find_middle_snake<T>(
     v_top: &mut RingBuffer,
     v_bottom: &mut RingBuffer,
     edits: &mut Vec<Edit>,
-) -> (usize, usize)
+) -> (usize, usize, usize)
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
@@ -206,7 +206,7 @@ where
                 && (-(k - delta)) <= (d - 1)
                 && (v_top[k] as isize) + (v_bottom[-(k - delta)] as isize) >= n
             {
-                return (a_range.start + initial_x, b_range.start + initial_y);
+                return (a_range.start + initial_x, b_range.start + initial_y, 2 * d as usize - 1);
             }
         }
 
@@ -235,7 +235,7 @@ where
                 && (-(k - delta)) <= d
                 && (v_bottom[k] as isize) + (v_top[(-(k - delta))] as isize) >= n
             {
-                return ((n as usize) - x + a_range.start, (m as usize) - y + b_range.end);
+                return ((n as usize) - x + a_range.start, (m as usize) - y + b_range.end, 2 * d as usize);
             }
         }
     }
@@ -268,16 +268,20 @@ where
     } else if n == 0 && m == 0 {
         return;
     } else {
-        let snake = find_middle_snake(a, a_range.clone(), b, b_range.clone(), v_top, v_bottom, edits);
-        let a_left = a_range.start..snake.0;
-        let a_right = (a_range.start + snake.0)..a_range.end;
-        let b_left = b_range.start..snake.1;
-        let b_right = (b_range.start + snake.1)..b_range.end;
+        let (end_x, end_y, length) = find_middle_snake(a, a_range.clone(), b, b_range.clone(), v_top, v_bottom, edits);
+        let a_left = a_range.start..end_x;
+        let a_right = (a_range.start + end_x)..a_range.end;
+        let b_left = b_range.start..end_y;
+        let b_right = (b_range.start + end_y)..b_range.end;
         // if a_left.len() > 0 && b_left.len() > 0 {
-        recursive_diff(a, a_left, b, b_left, v_top, v_bottom, edits);
+        if length > 0 {
+            recursive_diff(a, a_left, b, b_left, v_top, v_bottom, edits);
+        }
         // }
         // if a_right.len() > 0 && b_right.len() > 0 {
-        recursive_diff(a, a_right, b, b_right, v_top, v_bottom, edits);
+        if length > 0 {
+            recursive_diff(a, a_right, b, b_right, v_top, v_bottom, edits);
+        }
         // }
     }
 }
@@ -443,7 +447,7 @@ mod tests {
         let mut edits = vec![];
         let snake =
             find_middle_snake(&a, 0..a_len, &b, 0..b_len, &mut v_top, &mut v_bottom, &mut edits);
-        assert_eq!(snake, (4, 1));
+        assert_eq!(snake, (4, 1, 3));
     }
 
     #[test]
