@@ -232,7 +232,7 @@ where
             let initial_x = x;
             let initial_y = y;
             if x < (n as usize) && y < (m as usize) {
-                let increment = common_prefix_len(
+                let increment = common_suffix_len(
                     a,
                     a_range.start..(a_range.end - x),
                     b,
@@ -445,7 +445,7 @@ mod tests {
         let mut edits = vec![];
         let snake =
             find_middle_snake(&a, 0..a_len, &b, 0..b_len, &mut v_top, &mut v_bottom, &mut edits);
-        assert_eq!(snake, Some((4, 1))); // failing with 5, 5
+        assert_eq!(snake, Some((4, 1))); // failing with 3, 2
     }
 
     #[test]
