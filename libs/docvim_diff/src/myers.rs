@@ -193,7 +193,7 @@ where
 
     for d in 0..((n + m + 1) / 2) {
         // Search forward from top-left.
-        for k in (-d..d).step_by(2) {
+        for k in (-d..=d).step_by(2) {
             if k == -d || k != d && v_top[k - 1] < v_top[k + 1] {
                 x = v_top[k + 1];
             } else {
@@ -222,7 +222,7 @@ where
         }
 
         // Search backward from bottom-right.
-        for k in (-d..d).step_by(2) {
+        for k in (-d..=d).step_by(2) {
             if k == -d || k != d && v_bottom[k - 1] < v_bottom[k + 1] {
                 x = v_bottom[k + 1];
             } else {
