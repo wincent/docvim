@@ -166,7 +166,7 @@ fn find_middle_snake<T>(
     v_top: &mut RingBuffer,
     v_bottom: &mut RingBuffer,
     edits: &mut Vec<Edit>,
-) -> Option<(usize, usize)>
+) -> (usize, usize)
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
@@ -206,7 +206,7 @@ where
                 && (-(k - delta)) <= (d - 1)
                 && (v_top[k] as isize) + (v_bottom[-(k - delta)] as isize) >= n
             {
-                return Some((a_range.start + initial_x, b_range.start + initial_y));
+                return (a_range.start + initial_x, b_range.start + initial_y);
             }
         }
 
@@ -235,11 +235,11 @@ where
                 && (-(k - delta)) <= d
                 && (v_bottom[k] as isize) + (v_top[(-(k - delta))] as isize) >= n
             {
-                return Some(((n as usize) - x + a_range.start, (m as usize) - y + b_range.end));
+                return ((n as usize) - x + a_range.start, (m as usize) - y + b_range.end);
             }
         }
     }
-    None // TODO figure out when this can happen
+    panic!("did not find middle snake");
 }
 
 fn recursive_diff<T>(
@@ -267,9 +267,8 @@ where
         }
     } else if n == 0 && m == 0 {
         return;
-    } else if let Some(snake) =
-        find_middle_snake(a, a_range.clone(), b, b_range.clone(), v_top, v_bottom, edits)
-    {
+    } else {
+        let snake = find_middle_snake(a, a_range.clone(), b, b_range.clone(), v_top, v_bottom, edits);
         let a_left = a_range.start..snake.0;
         let a_right = (a_range.start + snake.0)..a_range.end;
         let b_left = b_range.start..snake.1;
@@ -280,8 +279,6 @@ where
         // if a_right.len() > 0 && b_right.len() > 0 {
         recursive_diff(a, a_right, b, b_right, v_top, v_bottom, edits);
         // }
-    } else {
-        // No middle snake found... what to do...
     }
 }
 
@@ -446,7 +443,7 @@ mod tests {
         let mut edits = vec![];
         let snake =
             find_middle_snake(&a, 0..a_len, &b, 0..b_len, &mut v_top, &mut v_bottom, &mut edits);
-        assert_eq!(snake, Some((4, 1))); // failing with 4, 3
+        assert_eq!(snake, (4, 1));
     }
 
     #[test]
