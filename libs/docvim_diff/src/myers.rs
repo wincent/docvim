@@ -94,12 +94,6 @@ where
     let mut v_top = RingBuffer::new(max * 2 + 1);
     let mut v_bottom = RingBuffer::new(max * 2 + 1);
     recursive_diff(a, a_range, b, b_range, &mut v_top, &mut v_bottom, &mut edits);
-    // let mut edits = vec![];
-    // edits.push(Delete(Idx(1)));
-    // edits.push(Delete(Idx(2)));
-    // edits.push(Insert(Idx(2)));
-    // edits.push(Delete(Idx(6)));
-    // edits.push(Delete(Idx(6)));
     Diff(edits)
 }
 
@@ -158,10 +152,6 @@ where
         }
     }
     suffix
-}
-
-fn empty_range(range: &Range<usize>) -> bool {
-    range.len() == 0
 }
 
 fn usize_to_isize(n: usize) -> isize {
@@ -249,7 +239,7 @@ where
             }
         }
     }
-    None
+    None // TODO figure out when this can happen
 }
 
 fn recursive_diff<T>(
@@ -265,19 +255,34 @@ where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
-    if empty_range(&a_range) && !empty_range(&b_range) {
+    let n = a_range.len();
+    let m = b_range.len();
+    if n == 0 && m != 0 {
         for i in b_range.clone() {
             edits.push(Insert(Idx(i + 1)));
         }
-    } else if !empty_range(&a_range) && empty_range(&b_range) {
+    } else if n != 0 && m == 0 {
         for i in a_range.clone() {
             edits.push(Delete(Idx(i + 1)));
         }
-    } else if empty_range(&a_range) && empty_range(&b_range) {
+    } else if n == 0 && m == 0 {
         return;
+    } else if let Some(snake) =
+        find_middle_snake(a, a_range.clone(), b, b_range.clone(), v_top, v_bottom, edits)
+    {
+        let a_left = a_range.start..snake.0;
+        let a_right = (a_range.start + snake.0)..a_range.end;
+        let b_left = b_range.start..snake.1;
+        let b_right = (b_range.start + snake.1)..b_range.end;
+        // if a_left.len() > 0 && b_left.len() > 0 {
+        recursive_diff(a, a_left, b, b_left, v_top, v_bottom, edits);
+        // }
+        // if a_right.len() > 0 && b_right.len() > 0 {
+        recursive_diff(a, a_right, b, b_right, v_top, v_bottom, edits);
+        // }
+    } else {
+        // No middle snake found... what to do...
     }
-
-    let snake = find_middle_snake(a, a_range, b, b_range, v_top, v_bottom, edits);
 }
 
 /*
@@ -470,17 +475,17 @@ mod tests {
 
     #[test]
     fn test_example_from_myers_paper() {
-        // let a = vec!["A", "B", "C", "A", "B", "B", "A"].join("\n");
-        // let b = vec!["C", "B", "A", "B", "A", "C"].join("\n");
-        // assert_eq!(
-        //     diff_string_lines(&a, &b),
-        //     Diff(vec![
-        //         Delete(Idx(1)),
-        //         Delete(Idx(2)),
-        //         Insert(Idx(2)),
-        //         Delete(Idx(6)),
-        //         Delete(Idx(6)),
-        //     ])
-        // );
+        let a = vec!["A", "B", "C", "A", "B", "B", "A"].join("\n");
+        let b = vec!["C", "B", "A", "B", "A", "C"].join("\n");
+        assert_eq!(
+            diff_string_lines(&a, &b),
+            Diff(vec![
+                Delete(Idx(1)),
+                Delete(Idx(2)),
+                Insert(Idx(2)),
+                Delete(Idx(6)),
+                Delete(Idx(6)),
+            ])
+        );
     }
 }
