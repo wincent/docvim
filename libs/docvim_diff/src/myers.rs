@@ -211,7 +211,6 @@ where
                 );
             }
             v_top[k] = x;
-            // if odd && k >= delta - (d - 1) && k <= delta + (d - 1) {
             if odd
                 && (-(k - delta)) >= -(d - 1)
                 && (-(k - delta)) <= (d - 1)
@@ -241,7 +240,6 @@ where
             }
             v_bottom[k] = x;
 
-            // if !odd && k >= -d - delta && k <= d - delta {
             if !odd
                 && (-(k - delta)) >= -d
                 && (-(k - delta)) <= d
