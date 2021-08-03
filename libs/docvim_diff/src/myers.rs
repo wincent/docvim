@@ -97,6 +97,20 @@ where
     Diff(edits)
 }
 
+fn eq<T>(a: &T, a_idx: usize, b: &T, b_idx: usize) -> bool
+where
+    T: Index<usize> + ?Sized,
+    T::Output: Hash,
+{
+    let mut hasher = DefaultHasher::new();
+    a[a_idx].hash(&mut hasher);
+    let a_hash = hasher.finish();
+    let mut hasher = DefaultHasher::new();
+    b[b_idx].hash(&mut hasher);
+    let b_hash = hasher.finish();
+    a_hash == b_hash
+}
+
 fn common_prefix_len<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> usize
 where
     T: Index<usize> + ?Sized,
@@ -192,13 +206,8 @@ where
             let y = ((x as isize) - k) as usize;
             let initial_x = x;
             let initial_y = y;
-            if x < (n as usize) && y < (m as usize) {
-                x += common_prefix_len(
-                    a,
-                    (a_range.start + x)..a_range.end,
-                    b,
-                    (b_range.start + y)..b_range.end,
-                );
+            while x < (n as usize) && y < (m as usize) && eq(a, x, b, y) {
+                x += 1;
             }
             v_top[k] = x;
             if odd
@@ -218,15 +227,12 @@ where
                 x = v_bottom[k - 1] + 1;
             }
             let mut y = ((x as isize) - k) as usize;
-            if x < (n as usize) && y < (m as usize) {
-                let increment = common_suffix_len(
-                    a,
-                    a_range.start..(a_range.end - x),
-                    b,
-                    b_range.start..(b_range.end - y),
-                );
-                x += increment;
-                y += increment;
+            while x < (n as usize)
+                && y < (m as usize)
+                && eq(a, n as usize - x - 1, b, m as usize - y - 1)
+            {
+                x += 1;
+                y += 1;
             }
             v_bottom[k] = x;
 
@@ -235,7 +241,11 @@ where
                 && (-(k - delta)) <= d
                 && (v_bottom[k] as isize) + (v_top[(-(k - delta))] as isize) >= n
             {
-                return ((n as usize) - x + a_range.start, (m as usize) - y + b_range.end, 2 * d as usize);
+                return (
+                    (n as usize) - x + a_range.start,
+                    (m as usize) - y + b_range.end,
+                    2 * d as usize,
+                );
             }
         }
     }
@@ -268,7 +278,8 @@ where
     } else if n == 0 && m == 0 {
         return;
     } else {
-        let (end_x, end_y, length) = find_middle_snake(a, a_range.clone(), b, b_range.clone(), v_top, v_bottom, edits);
+        let (end_x, end_y, length) =
+            find_middle_snake(a, a_range.clone(), b, b_range.clone(), v_top, v_bottom, edits);
         let a_left = a_range.start..end_x;
         let a_right = (a_range.start + end_x)..a_range.end;
         let b_left = b_range.start..end_y;
@@ -277,12 +288,12 @@ where
             recursive_diff(a, a_left, b, b_left, v_top, v_bottom, edits);
             recursive_diff(a, a_right, b, b_right, v_top, v_bottom, edits);
         } else if m > n {
-            for i in a_range.clone() {
-                edits.push(Delete(Idx(i + 1)));
-            }
-        } else if m < n {
             for i in b_range.clone() {
                 edits.push(Insert(Idx(i + 1)));
+            }
+        } else if m < n {
+            for i in a_range.clone() {
+                edits.push(Delete(Idx(i + 1)));
             }
         }
     }
