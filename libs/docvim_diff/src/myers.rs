@@ -202,14 +202,14 @@ where
             let y = ((x as isize) - k) as usize;
             let initial_x = x;
             let initial_y = y;
-            // if x < (n as usize) && y < (m as usize) {
+            if x < (n as usize) && y < (m as usize) {
                 x += common_prefix_len(
                     a,
                     (a_range.start + x)..a_range.end,
                     b,
                     (b_range.start + y)..b_range.end,
                 );
-            // }
+            }
             v_top[k] = x;
             // if odd && k >= delta - (d - 1) && k <= delta + (d - 1) {
             if odd
@@ -229,7 +229,7 @@ where
                 x = v_bottom[k - 1] + 1;
             }
             let mut y = ((x as isize) - k) as usize;
-            // if x < (n as usize) && y < (m as usize) {
+            if x < (n as usize) && y < (m as usize) {
                 let increment = common_suffix_len(
                     a,
                     a_range.start..(a_range.end - x),
@@ -238,7 +238,7 @@ where
                 );
                 x += increment;
                 y += increment;
-            // }
+            }
             v_bottom[k] = x;
 
             // if !odd && k >= -d - delta && k <= d - delta {
