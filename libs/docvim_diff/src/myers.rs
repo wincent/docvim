@@ -273,16 +273,18 @@ where
         let a_right = (a_range.start + end_x)..a_range.end;
         let b_left = b_range.start..end_y;
         let b_right = (b_range.start + end_y)..b_range.end;
-        // if a_left.len() > 0 && b_left.len() > 0 {
-        if length > 0 {
+        if length > 1 {
             recursive_diff(a, a_left, b, b_left, v_top, v_bottom, edits);
-        }
-        // }
-        // if a_right.len() > 0 && b_right.len() > 0 {
-        if length > 0 {
             recursive_diff(a, a_right, b, b_right, v_top, v_bottom, edits);
+        } else if m > n {
+            for i in a_range.clone() {
+                edits.push(Delete(Idx(i + 1)));
+            }
+        } else if m < n {
+            for i in b_range.clone() {
+                edits.push(Insert(Idx(i + 1)));
+            }
         }
-        // }
     }
 }
 
@@ -447,7 +449,7 @@ mod tests {
         let mut edits = vec![];
         let snake =
             find_middle_snake(&a, 0..a_len, &b, 0..b_len, &mut v_top, &mut v_bottom, &mut edits);
-        assert_eq!(snake, (4, 1, 3));
+        assert_eq!(snake, (4, 1, 5));
     }
 
     #[test]
