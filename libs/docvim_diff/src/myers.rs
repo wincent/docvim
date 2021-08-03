@@ -193,7 +193,7 @@ where
 
     for d in 0..((n + m + 1) / 2) {
         // Search forward from top-left.
-        for k in (-d..=d).step_by(2) {
+        for k in (-d..=d).rev().step_by(2) {
             if k == -d || k != d && v_top[k - 1] < v_top[k + 1] {
                 x = v_top[k + 1];
             } else {
@@ -217,12 +217,12 @@ where
                 && (-(k - delta)) <= (d - 1)
                 && (v_top[k] as isize) + (v_bottom[-(k - delta)] as isize) >= n
             {
-                return Some((a_range.start + initial_x + 1, b_range.start + initial_y + 1));
+                return Some((a_range.start + initial_x, b_range.start + initial_y));
             }
         }
 
         // Search backward from bottom-right.
-        for k in (-d..=d).step_by(2) {
+        for k in (-d..=d).rev().step_by(2) {
             if k == -d || k != d && v_bottom[k - 1] < v_bottom[k + 1] {
                 x = v_bottom[k + 1];
             } else {
