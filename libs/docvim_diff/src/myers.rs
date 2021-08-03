@@ -202,14 +202,14 @@ where
             let y = ((x as isize) - k) as usize;
             let initial_x = x;
             let initial_y = y;
-            if x < (n as usize) && y < (m as usize) {
+            // if x < (n as usize) && y < (m as usize) {
                 x += common_prefix_len(
                     a,
                     (a_range.start + x)..a_range.end,
                     b,
                     (b_range.start + y)..b_range.end,
                 );
-            }
+            // }
             v_top[k] = x;
             // if odd && k >= delta - (d - 1) && k <= delta + (d - 1) {
             if odd
@@ -217,7 +217,7 @@ where
                 && (-(k - delta)) <= (d - 1)
                 && (v_top[k] as isize) + (v_bottom[-(k - delta)] as isize) >= n
             {
-                return Some((initial_x + a_range.start, initial_y + b_range.start));
+                return Some((a_range.start + initial_x + 1, b_range.start + initial_y + 1));
             }
         }
 
@@ -229,9 +229,7 @@ where
                 x = v_bottom[k - 1] + 1;
             }
             let mut y = ((x as isize) - k) as usize;
-            let initial_x = x;
-            let initial_y = y;
-            if x < (n as usize) && y < (m as usize) {
+            // if x < (n as usize) && y < (m as usize) {
                 let increment = common_suffix_len(
                     a,
                     a_range.start..(a_range.end - x),
@@ -240,7 +238,7 @@ where
                 );
                 x += increment;
                 y += increment;
-            }
+            // }
             v_bottom[k] = x;
 
             // if !odd && k >= -d - delta && k <= d - delta {
@@ -249,7 +247,7 @@ where
                 && (-(k - delta)) <= d
                 && (v_bottom[k] as isize) + (v_top[(-(k - delta))] as isize) >= n
             {
-                return Some((a_range.end - x, b_range.end - y));
+                return Some(((n as usize) - x + a_range.start, (m as usize) - y + b_range.end));
             }
         }
     }
@@ -445,7 +443,7 @@ mod tests {
         let mut edits = vec![];
         let snake =
             find_middle_snake(&a, 0..a_len, &b, 0..b_len, &mut v_top, &mut v_bottom, &mut edits);
-        assert_eq!(snake, Some((4, 1))); // failing with 3, 2
+        assert_eq!(snake, Some((4, 1))); // failing with 4, 3
     }
 
     #[test]
