@@ -196,7 +196,7 @@ where
 
     for d in 0..(max / 2 + extra + 1) {
         // Search forward from top-left.
-        for k in (-d..=d).rev().step_by(2) {
+        for k in (-d..=d).step_by(2) {
             if k == -d || k != d && v_top[k - 1] < v_top[k + 1] {
                 x = v_top[k + 1];
             } else {
@@ -205,7 +205,7 @@ where
             let y = ((x as isize) - k) as usize;
             let initial_x = x;
             let initial_y = y;
-            while x < (n as usize) && y < (m as usize) && eq(a, x, b, y) {
+            while x < (n as usize) && y < (m as usize) && eq(a, x + 1, b, y + 1) {
                 x += 1;
                 println!("d={} k={} new x {}", d, k, x);
             }
@@ -221,7 +221,7 @@ where
         }
 
         // Search backward from bottom-right.
-        for k in (-d..=d).rev().step_by(2) {
+        for k in (-d..=d).step_by(2) {
             if k == -d || k != d && v_bottom[k - 1] < v_bottom[k + 1] {
                 x = v_bottom[k + 1];
             } else {
