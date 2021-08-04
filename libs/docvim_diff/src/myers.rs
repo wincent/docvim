@@ -113,9 +113,7 @@ where
     let mut vs = vec![];
     v[1] = 0;
     for d in 0..=(usize_to_isize(max)) {
-        println!("d={} .. max={}", d, max);
         for k in (-d..=d).step_by(2) {
-            println!("k={}", k);
             let mut x: usize;
             let mut y: usize;
             if k == -d || k != d && v[k - 1] < v[k + 1] {
@@ -131,13 +129,11 @@ where
                 x += 1;
                 y += 1;
             }
-            println!("best(x, y)  at d={} is ({}, {})", d, x, y);
             v[k] = x;
             if x >= n && y >= m {
                 vs.push(v.clone());
                 let mut edits = vec![];
-                println!("will generate path from:\n{:?}", vs);
-                myers_nd_generate_path(&vs, d as usize, n, m, &mut edits);
+                myers_nd_generate_path(&vs, (d) as usize, n, m, &mut edits);
                 return Diff(edits);
             }
         }
@@ -149,55 +145,27 @@ where
 }
 
 fn myers_nd_generate_path(vs: &Vec<RingBuffer>, d: usize, n: usize, m: usize, edits: &mut Vec<Edit>) {
-    println!("generate_path d={}, n={}, m={}", d, n, m); // on entry, d=5, n=7, m=6
     let k = (n as isize) - (m as isize);
-    let x = vs[d][k];
-    let y = ((x as isize) - k) as usize;
-    println!("k={} x={} y={}", k, x, y); // first time here, k=1 x=7, y=6 (and d=5)
-    // ring buffer is:       [5, 7, 7, 5, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 4, 4, 5]
-    // which is really:      [0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 4, 4, 5, 5, 7, 7, 5, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    //                                                zero index is -^  ^- here we start, with k = 1
-    //                                          will check k=0 & k=2 *     *
-    //
-    // vertical edge above (an insertion) ie. from k=2, x=7, y=5?
-    // horizontal edge left (a deletion) ie. from k=0, x=6, y=6?
-    //
-    // ring buffer d - 1 is: [5, 5, 7, 5, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 4, 4]
-    // rewrapped, that's:    [0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 4, 4, 5, 5, 7, 5, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    //                                                 zero index is ^
-    //                                                 we check      *     *
-    //                                and next to check will be?
-    //
-    // So, to check for vertical edge... look at k=2 (ie 5)
-    // vs horizontal edge... k=0 (ie. 5)
-    // both same, but we bias for x (ie. favor vertical edges..., so we pick k=2)
-    // would recurse, i think, with d=4, n=x (ie. 7), m=y (ie. 6)
-    //
-    // next d-contour line:  [2, 5, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 4]
-    // rewrapped:            [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 2, 4, 2, 5, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    //                                                 zero index is ^
-
-    // BUG: d is 5, but we're only pushing 3 edits to our edit script; not sure what to push
-    if d == 0 {
-        // Base case.
-        return;
-    } else if y > 0 && vs[d - 1][k + 1] > 0 {
-        // Found vertical (insertion) edge from above.
-        println!("Found vertical (insertion) edge from above");
-        let x = vs[d - 1][k + 1];
-        let y = ((x as isize) - k) as usize;
-        myers_nd_generate_path(&vs, d - 1, x, y, edits);
-        edits.push(Insert(Idx(x)));
-    } else if x > 0 && vs[d - 1][k - 1] > 0 {
-        // Found horizontal (deletion) edge from the left.
-        println!("Found horizntal (deletion) edge from below");
-        let x = vs[d - 1][k - 1];
-        let y = ((x as isize) - k) as usize;
-        myers_nd_generate_path(&vs, d - 1, x, y, edits);
-        edits.push(Delete(Idx(y)));
+    let x = vs[d][k]; // x/y aka "end" = where the edit finished (ie. after potentially zero-length snake)
+    let y = ((x as isize) - k) as isize;
+    let down = k == -(d as isize) || k != (d as isize) && vs[d][k - 1] < vs[d][k + 1]; // down = true = insertion (down = false = deletion)
+    let k_prev = if down { k + 1 } else { k - 1 };
+    let x_start = vs[d][k_prev];
+    let y_start = x_start - (k_prev as usize); // "start" = where preceding edit started
+    let x_mid = if down { x_start } else { x_start + 1 }; // "mid" = where the snake (diagonal part) starts; note, diagonal part may be empty
+    let y_mid = x_mid - (k as usize);
+    println!(
+        "k={} d={} start={},{} middle={},{} end={},{} down={}",
+        k, d, x_start, y_start, x_mid, y_mid, x, y, down
+    );
+    if x_start > 0 || y_start > 0 {
+        myers_nd_generate_path(&vs, d - 1, x_start, y_start, edits);
+    }
+    if down {
+        edits.push(Insert(Idx(y_mid)));
     } else {
-        // Found snake...
-        println!("Found snake?");
+        // BUG: this next line causes 'attempt to subtract with overflow'... on line 154(???)
+        // edits.push(Delete(Idx(x_mid)));
     }
 }
 
