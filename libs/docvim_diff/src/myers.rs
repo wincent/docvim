@@ -195,7 +195,7 @@ where
 
     let mut x = 0;
 
-    for d in 0..((n + m + 1) / 2) {
+    for d in 0..=((n + m + 1) / 2) {
         // Search forward from top-left.
         for k in (-d..=d).rev().step_by(2) {
             if k == -d || k != d && v_top[k - 1] < v_top[k + 1] {
@@ -243,7 +243,7 @@ where
             {
                 return (
                     (n as usize) - x + a_range.start,
-                    (m as usize) - y + b_range.end,
+                    (m as usize) - y + b_range.start,
                     2 * d as usize,
                 );
             }
@@ -498,7 +498,7 @@ mod tests {
                 Delete(Idx(2)),
                 Insert(Idx(2)),
                 Delete(Idx(6)),
-                Delete(Idx(6)),
+                Insert(Idx(6)),
             ])
         );
     }
