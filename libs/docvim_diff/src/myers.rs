@@ -91,9 +91,7 @@ where
     let n = a_range.len();
     let m = b_range.len();
     let max = n + m;
-    let mut v_top = RingBuffer::new(max * 2 + 1);
-    let mut v_bottom = RingBuffer::new(max * 2 + 1);
-    recursive_diff(a, a_range, b, b_range, &mut v_top, &mut v_bottom, &mut edits);
+    recursive_diff(a, a_range, b, b_range, &mut edits);
     Diff(edits)
 }
 
@@ -177,24 +175,23 @@ fn find_middle_snake<T>(
     a_range: Range<usize>,
     b: &T,
     b_range: Range<usize>,
-    v_top: &mut RingBuffer,
-    v_bottom: &mut RingBuffer,
-    edits: &mut Vec<Edit>,
 ) -> (usize, usize, usize, usize, usize)
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
     println!("Find middle {:?} / {:?}", a_range, b_range);
-    v_top[1] = 0;
-    v_bottom[1] = 0;
-
     let n = usize_to_isize(a_range.len());
     let m = usize_to_isize(b_range.len());
+    let max = n + m;
+    let mut v_top = RingBuffer::new(max as usize + 2);
+    let mut v_bottom = RingBuffer::new(max as usize + 2);
     let delta = n - m;
     let odd = delta % 2 == 1;
-
     let mut x = 0;
+
+    v_top[1] = 0;
+    v_bottom[1] = 0;
 
     for d in 0..((n + m) / 2) {
         // Search forward from top-left.
@@ -266,8 +263,6 @@ fn recursive_diff<T>(
     a_range: Range<usize>,
     b: &T,
     b_range: Range<usize>,
-    v_top: &mut RingBuffer,
-    v_bottom: &mut RingBuffer,
     edits: &mut Vec<Edit>,
 ) -> ()
 where
@@ -288,15 +283,15 @@ where
         return;
     } else {
         let (start_x, start_y, end_x, end_y, length) =
-            find_middle_snake(a, a_range.clone(), b, b_range.clone(), v_top, v_bottom, edits);
+            find_middle_snake(a, a_range.clone(), b, b_range.clone());
         let a_left = a_range.start..start_x;
         let b_left = b_range.start..start_y;
 
         let a_right = (a_range.start + end_x)..a_range.end;
         let b_right = (b_range.start + end_y)..b_range.end;
         if length > 1 { // TODO: also want uv here
-            recursive_diff(a, a_left, b, b_left, v_top, v_bottom, edits);
-            recursive_diff(a, a_right, b, b_right, v_top, v_bottom, edits);
+            recursive_diff(a, a_left, b, b_left, edits);
+            recursive_diff(a, a_right, b, b_right, edits);
         } else if m > n {
             for i in a_range.clone() {
                 edits.push(Delete(Idx(i + 1)));
@@ -465,11 +460,7 @@ mod tests {
         let b = vec!["C", "B", "A", "B", "A", "C"];
         let a_len = a.len();
         let b_len = b.len();
-        let mut v_top = RingBuffer::new((a_len + b_len) * 2 + 1);
-        let mut v_bottom = RingBuffer::new((a_len + b_len) * 2 + 1);
-        let mut edits = vec![];
-        let snake =
-            find_middle_snake(&a, 0..a_len, &b, 0..b_len, &mut v_top, &mut v_bottom, &mut edits);
+        let snake = find_middle_snake(&a, 0..a_len, &b, 0..b_len);
         assert_eq!(snake, (4, 1, 6, 1, 5));
     }
 
