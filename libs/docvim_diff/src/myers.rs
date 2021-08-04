@@ -133,7 +133,9 @@ where
             if x >= n && y >= m {
                 vs.push(v.clone());
                 let mut edits = vec![];
-                myers_nd_generate_path(&vs, (d) as usize, n, m, &mut edits);
+                if d > 0 {
+                    myers_nd_generate_path(&vs, (d) as usize, n, m, &mut edits);
+                }
                 return Diff(edits);
             }
         }
@@ -146,32 +148,21 @@ where
 
 fn myers_nd_generate_path(vs: &Vec<RingBuffer>, d: usize, n: usize, m: usize, edits: &mut Vec<Edit>) {
     let k = (n as isize) - (m as isize);
-    let x = vs[d][k]; // x/y aka "end" = where the edit finished (ie. after potentially zero-length snake)
-    let y = ((x as isize) - k) as isize;
-    let down = k == -(d as isize) || k != (d as isize) && vs[d][k - 1] < vs[d][k + 1]; // down = true = insertion (down = false = deletion)
+    let x_end = vs[d][k]; // "end" = where the edit finished (ie. after potentially zero-length snake)
+    let y_end = ((x_end as isize) - k) as isize;
+    let down = k == -(d as isize) || k != (d as isize) && vs[d][k - 1] < vs[d][k + 1]; // "down" = true (insertion) or false (deletion)
     let k_prev = if down { k + 1 } else { k - 1 };
     let x_start = vs[d][k_prev];
     let y_start = x_start - (k_prev as usize); // "start" = where preceding edit started
     let x_mid = if down { x_start } else { x_start + 1 }; // "mid" = where the snake (diagonal part) starts; note, diagonal part may be empty
     let y_mid = x_mid - (k as usize);
-    println!(
-        "k={} d={} start={},{} middle={},{} end={},{} down={}",
-        k, d, x_start, y_start, x_mid, y_mid, x, y, down
-    );
     if x_start > 0 || y_start > 0 {
         myers_nd_generate_path(&vs, d - 1, x_start, y_start, edits);
     }
     if down {
         edits.push(Insert(Idx(y_mid)));
     } else {
-        if d > 1 {
-            // BUG: this next line causes 'attempt to subtract with overflow'... on line 154(???)
-            // on final d == 0 call... (hence this conditional)
-            edits.push(Delete(Idx(x_mid)));
-        } else {
-            // This line also makes us crash... expected, I suppose.
-            // println!("not pushing {}", x_mid);
-        }
+        edits.push(Delete(Idx(x_mid)));
     }
 }
 
