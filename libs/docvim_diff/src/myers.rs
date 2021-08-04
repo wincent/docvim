@@ -146,7 +146,13 @@ where
     panic!("no SES found");
 }
 
-fn myers_nd_generate_path(vs: &Vec<RingBuffer>, d: usize, n: usize, m: usize, edits: &mut Vec<Edit>) {
+fn myers_nd_generate_path(
+    vs: &Vec<RingBuffer>,
+    d: usize,
+    n: usize,
+    m: usize,
+    edits: &mut Vec<Edit>,
+) {
     let k = (n as isize) - (m as isize);
     let x_end = vs[d][k]; // "end" = where the edit finished (ie. after potentially zero-length snake)
     let y_end = ((x_end as isize) - k) as isize;
@@ -203,7 +209,7 @@ where
     let delta = n - m;
     let odd = delta % 2 == 1;
     let mut x = 0;
-    let extra = if odd { 1 } else { 0};
+    let extra = if odd { 1 } else { 0 };
 
     v_top[1] = 0;
     v_bottom[1] = 0;
@@ -229,8 +235,19 @@ where
                 && (-(k - delta)) <= (d - 1)
                 && (v_top[k] as isize) + (v_bottom[-(k - delta)] as isize) >= n
             {
-                println!("return {}, {}, {}", a_range.start + initial_x, b_range.start + initial_y, 2 * d);
-                return (a_range.start + initial_x, b_range.start + initial_y, a_range.start + x, b_range.start + y, 2 * d as usize - 1);
+                println!(
+                    "return {}, {}, {}",
+                    a_range.start + initial_x,
+                    b_range.start + initial_y,
+                    2 * d
+                );
+                return (
+                    a_range.start + initial_x,
+                    b_range.start + initial_y,
+                    a_range.start + x,
+                    b_range.start + y,
+                    2 * d as usize - 1,
+                );
             }
         }
 
@@ -259,7 +276,12 @@ where
                 && (-(k - delta)) <= d
                 && (v_bottom[k] as isize) + (v_top[(-(k - delta))] as isize) >= n
             {
-                println!("return {}, {}, {}", (n as usize) - x + a_range.start, (m as usize) - y + b_range.start, 2 * d);
+                println!(
+                    "return {}, {}, {}",
+                    (n as usize) - x + a_range.start,
+                    (m as usize) - y + b_range.start,
+                    2 * d
+                );
                 return (
                     (n as usize) - x + a_range.start,
                     (m as usize) - y + b_range.start,
@@ -304,7 +326,8 @@ where
 
         let a_right = (a_range.start + end_x)..a_range.end;
         let b_right = (b_range.start + end_y)..b_range.end;
-        if length > 1 { // TODO: also want uv here
+        if length > 1 {
+            // TODO: also want uv here
             recursive_diff(a, a_left, b, b_left, edits);
             recursive_diff(a, a_right, b, b_right, edits);
         } else if m > n {
