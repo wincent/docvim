@@ -180,11 +180,12 @@ fn find_middle_snake<T>(
     v_top: &mut RingBuffer,
     v_bottom: &mut RingBuffer,
     edits: &mut Vec<Edit>,
-) -> (usize, usize, usize)
+) -> (usize, usize, usize, usize, usize)
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
+    println!("Find middle {:?} / {:?}", a_range, b_range);
     v_top[1] = 0;
     v_bottom[1] = 0;
 
@@ -195,7 +196,7 @@ where
 
     let mut x = 0;
 
-    for d in 0..=((n + m + 1) / 2) {
+    for d in 0..((n + m) / 2) {
         // Search forward from top-left.
         for k in (-d..=d).rev().step_by(2) {
             if k == -d || k != d && v_top[k - 1] < v_top[k + 1] {
@@ -208,6 +209,7 @@ where
             let initial_y = y;
             while x < (n as usize) && y < (m as usize) && eq(a, x, b, y) {
                 x += 1;
+                println!("d={} k={} new x {}", d, k, x);
             }
             v_top[k] = x;
             if odd
@@ -215,7 +217,8 @@ where
                 && (-(k - delta)) <= (d - 1)
                 && (v_top[k] as isize) + (v_bottom[-(k - delta)] as isize) >= n
             {
-                return (a_range.start + initial_x, b_range.start + initial_y, 2 * d as usize - 1);
+                println!("return {}, {}, {}", a_range.start + initial_x, b_range.start + initial_y, 2 * d);
+                return (a_range.start + initial_x, b_range.start + initial_y, a_range.start + x, b_range.start + y, 2 * d as usize - 1);
             }
         }
 
@@ -227,12 +230,15 @@ where
                 x = v_bottom[k - 1] + 1;
             }
             let mut y = ((x as isize) - k) as usize;
+            let initial_x = x;
+            let initial_y = y;
             while x < (n as usize)
                 && y < (m as usize)
                 && eq(a, n as usize - x - 1, b, m as usize - y - 1)
             {
                 x += 1;
                 y += 1;
+                println!("d={} k={} new x {} new y {}", d, k, x, y);
             }
             v_bottom[k] = x;
 
@@ -241,9 +247,12 @@ where
                 && (-(k - delta)) <= d
                 && (v_bottom[k] as isize) + (v_top[(-(k - delta))] as isize) >= n
             {
+                println!("return {}, {}, {}", (n as usize) - x + a_range.start, (m as usize) - y + b_range.start, 2 * d);
                 return (
                     (n as usize) - x + a_range.start,
                     (m as usize) - y + b_range.start,
+                    (n as usize) - initial_x + a_range.start,
+                    (m as usize) - initial_y + b_range.start,
                     2 * d as usize,
                 );
             }
@@ -278,22 +287,23 @@ where
     } else if n == 0 && m == 0 {
         return;
     } else {
-        let (end_x, end_y, length) =
+        let (start_x, start_y, end_x, end_y, length) =
             find_middle_snake(a, a_range.clone(), b, b_range.clone(), v_top, v_bottom, edits);
-        let a_left = a_range.start..end_x;
+        let a_left = a_range.start..start_x;
+        let b_left = b_range.start..start_y;
+
         let a_right = (a_range.start + end_x)..a_range.end;
-        let b_left = b_range.start..end_y;
         let b_right = (b_range.start + end_y)..b_range.end;
-        if length > 1 {
+        if length > 1 { // TODO: also want uv here
             recursive_diff(a, a_left, b, b_left, v_top, v_bottom, edits);
             recursive_diff(a, a_right, b, b_right, v_top, v_bottom, edits);
         } else if m > n {
-            for i in b_range.clone() {
-                edits.push(Insert(Idx(i + 1)));
-            }
-        } else if m < n {
             for i in a_range.clone() {
                 edits.push(Delete(Idx(i + 1)));
+            }
+        } else if m < n {
+            for i in b_range.clone() {
+                edits.push(Insert(Idx(i + 1)));
             }
         }
     }
@@ -460,7 +470,7 @@ mod tests {
         let mut edits = vec![];
         let snake =
             find_middle_snake(&a, 0..a_len, &b, 0..b_len, &mut v_top, &mut v_bottom, &mut edits);
-        assert_eq!(snake, (4, 1, 5));
+        assert_eq!(snake, (4, 1, 6, 1, 5));
     }
 
     #[test]
