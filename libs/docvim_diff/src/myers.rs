@@ -189,11 +189,12 @@ where
     let delta = n - m;
     let odd = delta % 2 == 1;
     let mut x = 0;
+    let extra = if odd { 1 } else { 0};
 
     v_top[1] = 0;
     v_bottom[1] = 0;
 
-    for d in 0..((n + m) / 2) {
+    for d in 0..(max / 2 + extra + 1) {
         // Search forward from top-left.
         for k in (-d..=d).rev().step_by(2) {
             if k == -d || k != d && v_top[k - 1] < v_top[k + 1] {
