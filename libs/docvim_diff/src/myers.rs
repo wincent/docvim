@@ -168,6 +168,9 @@ fn myers_nd_generate_path(vs: &Vec<RingBuffer>, d: usize, n: usize, m: usize, ed
             // BUG: this next line causes 'attempt to subtract with overflow'... on line 154(???)
             // on final d == 0 call... (hence this conditional)
             edits.push(Delete(Idx(x_mid)));
+        } else {
+            // This line also makes us crash... expected, I suppose.
+            // println!("not pushing {}", x_mid);
         }
     }
 }
