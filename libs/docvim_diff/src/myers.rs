@@ -375,7 +375,11 @@ where
             println!("reverse search d={} (of {}) k={} (of {})", d, max / 2, k, d);
             let mut x;
             let mut y;
-            if k == -d || k != d && v_reverse[k - 1] < v_reverse[k + 1] {
+            // When searching in reverse, we actually want to minimize instead of maximize `x`;
+            // this is so that we favor upwards movement (which will require compensating
+            // horizontal movement -- ie. deletions -- in the forward path, which is what we want).
+            // As such, we flip some signs here.
+            if k == d || k != -d && v_reverse[k - 1] < v_reverse[k + 1] {
                 println!("x -> {} (up)", v_reverse[k + 1]);
                 x = v_reverse[k + 1];
             } else {
