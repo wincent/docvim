@@ -5,9 +5,10 @@ use std::path::Path;
 
 use docvim_lexer::lua::Lexer;
 
-/// 72 downward-pointing arrows with a blank line before and after.
+/// Divider consisting of 72 downward-pointing arrows with a blank line before and after. The
+/// string "OUTPUT" appears in the middle to make it easy to jump to the divider using search.
 const DIVIDER: &str =
-    "\n\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n\n";
+    "\n\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n\n";
 
 fn check_snapshot(path: &str, callback: &dyn Fn(&str) -> String) -> Result<bool, Box<dyn Error>> {
     // Read snapshot file.
@@ -20,47 +21,20 @@ fn check_snapshot(path: &str, callback: &dyn Fn(&str) -> String) -> Result<bool,
 
     // Extract input and expected output.
     // TODO: think about whether to slurp and/or require blank lines around divider.
-    let mut iter = contents.char_indices().peekable();
-    let mut divider_idx = None;
-    let mut last_idx = 0;
-    while let Some((i, ch)) = iter.next() {
-        if divider_idx.is_none() {
-            if ch == '\n' {
-                let mut count = 0;
-                while let Some(&(_, ch)) = iter.peek() {
-                    if ch == '↓' {
-                        iter.next();
-                        count += 1;
-                    } else {
-                        break;
-                    }
-                }
-                if count > 5 {
-                    if let Some(&(j, ch)) = iter.peek() {
-                        if ch == '\n' {
-                            iter.next();
-                            divider_idx = Some((i, j));
-                        }
-                    }
-                }
-            }
-        } else {
-            last_idx = i;
-        }
-    }
-    if let Some((divider_start, divider_end)) = divider_idx {
-        let input = contents[0..divider_start].trim();
-        let expected = contents[divider_end..last_idx].trim();
+    if let Some(divider_idx) = contents.find(DIVIDER) {
+        let output_idx = divider_idx + DIVIDER.len();
+        let input = contents[0..divider_idx].trim();
+        let expected = contents[output_idx..contents.len()].trim();
         let transformed = String::from(callback(&input).trim_end());
 
-        if expected == transformed {
-            Ok(true)
-        } else if option_env!("UPDATE_SNAPSHOTS").is_some() {
+        if option_env!("UPDATE_SNAPSHOTS").is_some() {
             let mut updated = String::from(input);
             updated.push_str(DIVIDER);
             updated.push_str(&transformed);
             updated.push('\n');
             fs::write(snapshot, updated)?;
+            Ok(true)
+        } else if expected == transformed {
             Ok(true)
         } else {
             // TODO report differences properly
