@@ -100,7 +100,7 @@ where
 /// This is the "O(ND)" time and "O(ND)" space version of the diff algorithm presented in the first
 /// part of the Myers paper. Here "N" is the _sum_ of the lengths of the inputs and "D" is the
 /// length of the minimal edit script, so we could also write the time and space requirement as
-/// "O(ND + MD)";
+/// "O(ND + MD)".
 pub fn myers_nd_diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
 where
     T: Index<usize> + ?Sized,
@@ -109,7 +109,7 @@ where
     let n = a_range.len();
     let m = b_range.len();
     let max = n + m;
-    let mut v = RingBuffer::new(max * 2 + 1);
+    let mut v = RingBuffer::new(max * 2 + 1); // Range from -max to +max, with extra slot for 0.
     let mut vs = vec![];
     v[1] = 0;
     for d in 0..=(usize_to_isize(max)) {
@@ -117,24 +117,48 @@ where
             let mut x: usize;
             let mut y: usize;
             if k == -d || k != d && v[k - 1] < v[k + 1] {
+                // Extend path using k-line above because:
+                //
+                // - `k == -d`: You're on the left edge, so there is only one place you can extend
+                //    from (the k-line above); or:
+                // - `k != d`: You're not on the top border (which would force you to use the
+                //    k-line below); and:
+                // - `v[k - 1] < v[k + 1]`: The k-line below has a smaller value than the k-line
+                //    above; we take the bigger value because this is a greedy algorithm.
                 x = v[k + 1];
             } else {
+                // Extend path using k-line below because:
+                //
+                // - `k != -d`: You're not on the left edge (which would force you to use the
+                //   k-line above); and:
+                // - `k == d`: You're on the top edge (forcing you to use the k-line below); or:
+                // - `v[k - 1] == v[k + 1]`: Both k-lines offer equal progress, but we bias for
+                //   deletions and the k-line below means we can do that (ie. by increasing `x`).
+                // - `v[k - 1] > v[k + 1]`: The k-line below offers more progress _and_ we get to
+                //   do a deletion.
                 x = v[k - 1] + 1;
             }
             y = ((x as isize) - k) as usize;
 
+            // If there is a snake (matching items), extend path diagonally down as long as they
+            // match.
+            //
             // Note that the Myers paper checks for equality at x + 1 and y + 1 (1-based indexing),
             // but we are using 0-based indexing here so as not to overflow:
             while x < n && y < m && eq(a, x, b, y) {
                 x += 1;
                 y += 1;
             }
+
+            // Remember the farthest x coordinate reached on given k line at edit-depth d.
+            // We can later recover the y coordinate (because `y = x - k`).
             v[k] = x;
+
             if x >= n && y >= m {
                 vs.push(v.clone());
                 let mut edits = vec![];
                 if d > 0 {
-                    myers_nd_generate_path(&vs, (d) as usize, n, m, &mut edits);
+                    myers_nd_generate_path(&vs, d as usize, n, m, &mut edits);
                 }
                 return Diff(edits);
             }
@@ -146,6 +170,9 @@ where
     panic!("no SES found");
 }
 
+/// The basic Myers algorithm only computes the length of the SES (Shortest Edit Script). To
+/// recover the actual script we have to traverse the snapshots of the `v` vector that we took for
+/// each depth `d`.
 fn myers_nd_generate_path(
     vs: &Vec<RingBuffer>,
     d: usize,
@@ -154,13 +181,14 @@ fn myers_nd_generate_path(
     edits: &mut Vec<Edit>,
 ) {
     let k = (n as isize) - (m as isize);
-    let x_end = vs[d][k]; // "end" = where the edit finished (ie. after potentially zero-length snake)
+    let v = &vs[d];
+    let x_end = v[k]; // "end" = Where the edit finished (ie. after potentially zero-length snake).
     let y_end = ((x_end as isize) - k) as isize;
-    let down = k == -(d as isize) || k != (d as isize) && vs[d][k - 1] < vs[d][k + 1]; // "down" = true (insertion) or false (deletion)
+    let down = k == -(d as isize) || k != (d as isize) && v[k - 1] < v[k + 1]; // "down" = true (insertion) or false (deletion)
     let k_prev = if down { k + 1 } else { k - 1 };
-    let x_start = vs[d][k_prev];
-    let y_start = x_start - (k_prev as usize); // "start" = where preceding edit started
-    let x_mid = if down { x_start } else { x_start + 1 }; // "mid" = where the snake (diagonal part) starts; note, diagonal part may be empty
+    let x_start = v[k_prev];
+    let y_start = x_start - (k_prev as usize); // "start" = Where preceding edit started.
+    let x_mid = if down { x_start } else { x_start + 1 }; // "mid" = Where the snake (diagonal part) starts; note: diagonal part may be empty.
     let y_mid = x_mid - (k as usize);
     if x_start > 0 || y_start > 0 {
         myers_nd_generate_path(&vs, d - 1, x_start, y_start, edits);
