@@ -149,12 +149,14 @@ where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
+    // TODO: figure out how to reduce the number of casts here...
+    // it's a frick'n' cast-fest
     let n = a_range.len();
     let m = b_range.len();
     let max = n + m;
     let mut v = RingBuffer::new(max * 2 + 1); // Range from -max to +max, with extra slot for 0.
     let mut vs = vec![];
-    v[1] = 0;
+    v[1] = 0; // Technically it's already 0, but to make it explicit.
 
     // Find all "D-paths" between the origin (0, 0) and the destination (n, m). A D-path represents
     // all the locations that can be reached in the edit graph after D edits. The algorithm is
@@ -297,12 +299,15 @@ fn usize_to_isize(n: usize) -> isize {
     isize::try_from(n).expect("overflow converting from usize to isize")
 }
 
+// TODO: when input lengths are very different, switch to more complicated alg that avoids
+// exploring beyond graph bounds.
 fn find_middle_snake<T>(
     a: &T,
     a_range: Range<usize>,
     b: &T,
     b_range: Range<usize>,
 ) -> (usize, usize, usize, usize, usize)
+    // start_x, start_y, end_x, end_y, D (SES length)
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
@@ -311,46 +316,48 @@ where
     let n = usize_to_isize(a_range.len());
     let m = usize_to_isize(b_range.len());
     let max = n + m;
-    let mut v_top = RingBuffer::new(max as usize + 2);
-    let mut v_bottom = RingBuffer::new(max as usize + 2);
+    let mut v_top = RingBuffer::new((max * 2) as usize + 1);
+    let mut v_bottom = RingBuffer::new((max * 2) as usize + 1);
     let delta = n - m;
+
+    // SES length will be odd when delta is odd. If it's odd, we'll check for overlap when
+    // extending forward paths; if it's even, we'll check for overlap when extending reverse paths.
     let odd = delta % 2 == 1;
-    let mut x = 0;
-    let extra = if odd { 1 } else { 0 };
 
-    v_top[1] = 0;
-    v_bottom[1] = 0;
+    v_top[1] = 0; // Technically it's already 0, but to make it explicit.
+    v_bottom[1] = 0; // Technically it's already 0, but to make it explicit.
 
-    for d in 0..(max / 2 + extra + 1) {
-        // Search forward from top-left.
+    for d in 0..(max / 2) {
+        // Forward search.
         for k in (-d..=d).step_by(2) {
+            let mut x;
+            let mut y;
             if k == -d || k != d && v_top[k - 1] < v_top[k + 1] {
                 x = v_top[k + 1];
             } else {
                 x = v_top[k - 1] + 1;
             }
-            let y = ((x as isize) - k) as usize;
-            let initial_x = x;
-            let initial_y = y;
-            while x < (n as usize) && y < (m as usize) && eq(a, x + 1, b, y + 1) {
+            y = ((x as isize) - k) as usize;
+            let mid_x = x;
+            let mid_y = y;
+            while x < (n as usize) && y < (m as usize) && eq(a, x, b, y) {
                 x += 1;
-                println!("d={} k={} new x {}", d, k, x);
+                y += 1;
             }
             v_top[k] = x;
+
+            // Check for overlap. We must adjust by `delta` because forward k-lines are centered
+            // around `0` and start from `(0, 0)`, while reverse k-lines are centered around
+            // `delta` (ie. `n - m`) and start from `(n, m)`.
             if odd
                 && (-(k - delta)) >= -(d - 1)
                 && (-(k - delta)) <= (d - 1)
-                && (v_top[k] as isize) + (v_bottom[-(k - delta)] as isize) >= n
+                && (x as isize) + (v_bottom[-(k - delta)] as isize) >= n
             {
-                println!(
-                    "return {}, {}, {}",
-                    a_range.start + initial_x,
-                    b_range.start + initial_y,
-                    2 * d
-                );
+                // Paths overlap. Last snake of forward path is the middle one.
                 return (
-                    a_range.start + initial_x,
-                    b_range.start + initial_y,
+                    a_range.start + mid_x,
+                    b_range.start + mid_y,
                     a_range.start + x,
                     b_range.start + y,
                     2 * d as usize - 1,
@@ -358,42 +365,41 @@ where
             }
         }
 
-        // Search backward from bottom-right.
+        // Reverse search.
         for k in (-d..=d).step_by(2) {
+            let mut x;
+            let mut y;
             if k == -d || k != d && v_bottom[k - 1] < v_bottom[k + 1] {
                 x = v_bottom[k + 1];
             } else {
                 x = v_bottom[k - 1] + 1;
             }
-            let mut y = ((x as isize) - k) as usize;
-            let initial_x = x;
-            let initial_y = y;
+            y = ((x as isize) - k) as usize;
+            let mid_x = x;
+            let mid_y = y;
             while x < (n as usize)
                 && y < (m as usize)
                 && eq(a, n as usize - x - 1, b, m as usize - y - 1)
             {
                 x += 1;
                 y += 1;
-                println!("d={} k={} new x {} new y {}", d, k, x, y);
             }
             v_bottom[k] = x;
 
             if !odd
                 && (-(k - delta)) >= -d
                 && (-(k - delta)) <= d
-                && (v_bottom[k] as isize) + (v_top[(-(k - delta))] as isize) >= n
+                && (x as isize) + (v_top[(-(k - delta))] as isize) >= n
             {
-                println!(
-                    "return {}, {}, {}",
-                    (n as usize) - x + a_range.start,
-                    (m as usize) - y + b_range.start,
-                    2 * d
-                );
+                // Because we're searching in reverse, our "mid" coordinates are closer to `(n,
+                // m)` and our "end" coordinates (`x` and `y`) are closer to the origin. Here
+                // we translate them back to represent a snake running diagonally in the other
+                // direction.
                 return (
-                    (n as usize) - x + a_range.start,
-                    (m as usize) - y + b_range.start,
-                    (n as usize) - initial_x + a_range.start,
-                    (m as usize) - initial_y + b_range.start,
+                    a_range.start + (n as usize) - mid_x,
+                    b_range.start + (m as usize) - mid_y,
+                    a_range.start + (n as usize) - x,
+                    b_range.start + (m as usize) - y,
                     2 * d as usize,
                 );
             }
@@ -524,14 +530,15 @@ mod tests {
 
     #[test]
     fn test_find_middle_snake() {
-        return;
         // From Myer's paper:
         let a = vec!["A", "B", "C", "A", "B", "B", "A"];
         let b = vec!["C", "B", "A", "B", "A", "C"];
         let a_len = a.len();
         let b_len = b.len();
         let snake = find_middle_snake(&a, 0..a_len, &b, 0..b_len);
-        assert_eq!(snake, (4, 1, 6, 1, 5));
+
+        // x_mid, y_mid, x_end, x_start, d (SES length)
+        assert_eq!(snake, (3, 2, 5, 4, 5));
     }
 
     // TODO: Run these tests for linear variant too.
@@ -577,7 +584,6 @@ mod tests {
 
     #[test]
     fn test_example_from_myers_paper() {
-        return;
         let a = vec!["A", "B", "C", "A", "B", "B", "A"].join("\n");
         let b = vec!["C", "B", "A", "B", "A", "C"].join("\n");
         assert_eq!(
