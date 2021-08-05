@@ -330,8 +330,10 @@ where
 
     for d in 0..=(max / 2) {
         // Forward search.
-        for k in (-d..=d).step_by(2) {
+        for k in (-d..=d).rev().step_by(2) {
             println!("forward search d={} (of {}) k={} (of {})", d, max / 2, k, d);
+            // Both `x` and `y` are relative to the top-left corner of the region we're searching
+            // in; this may be a subregion of the graph, so the origin is not necessarily (0, 0).
             let mut x;
             let mut y;
             if k == -d || k != d && v_forwards[k - 1] < v_forwards[k + 1] {
@@ -353,14 +355,33 @@ where
                 println!("x -> {} (snake)", x);
             }
             v_forwards[k] = x;
+            println!("overlap check: (-(k - delta))={} k={} delta={} d={} x={} vf[{}]={}",
+            (-(k-delta)), k, delta, d, x, (-(k - delta)), (v_reverse[-(k - delta)])
+            );
 
             // Check for overlap. We must adjust by `delta` because forward k-lines are centered
             // around `0` and start from `(0, 0)`, while reverse k-lines are centered around
-            // `delta` (ie. `n - m`) and start from `(n, m)`.
+            // `delta` (ie. `n - m`) and start from `(n, m)`. (Note that here, `(0, 0)` and `(n,
+            // m)` may be scoped to subregions, during recursive calls.)
             if odd
+                // NOTE TO SELF: in example input, forwards k-line 0 corresponds with reverse
+                // k-line 1 and delta is one... forwards k-line -1 === reverse k-line 2
+                // forwards k-line 1 === reverse k-line 0
+                // forwards k-line 2 === reverse k-line -1
+                // say when d = 2 and we're looking at forwards k-line -2
+                // matching reverse k-line = (-2 -1) * -1 eg. 3
+                //                        eg (-(k - delta))
+                // so the v_reverse[...] looks up max on reciprocal k-line
+                // x + that >= n means "x travel on theses two matching k-lines overlaps") (3)
+                //
+                // the other two lines mean: reciprocal k-line >= -d + 1
+                // AND reciprocal k-line <= d - 1
+                // which I think are bounds checks to see if there even is a reciprocal line
+                //
+                //
                 && (-(k - delta)) >= -(d - 1)
                 && (-(k - delta)) <= (d - 1)
-                && (x as isize) + (v_reverse[-(k - delta)] as isize) >= n
+                && (x as isize) + (v_reverse[-(k - delta)] as isize) >= n // 3
             {
                 // Paths overlap. Last snake of forward path is the middle one. Convert back to
                 // "absolute" coordinates before returning.
@@ -375,17 +396,17 @@ where
         }
 
         // Reverse search.
-        for k in (-d..=d).step_by(2) {
+        for k in (-d..=d).rev().step_by(2) {
             println!("reverse search d={} (of {}) k={} (of {})", d, max / 2, k, d);
             let mut x;
             let mut y;
-            // When searching in reverse, we actually want to minimize instead of maximize
-            // `x`; this is so that we favor upwards movement (which will require compensating
-            // horizontal movement -- ie. deletions -- in the forward path, which is what we want).
-            // Also note that the `k - 1` k-lines are "above" and the `k + 1` k-lines are "below"
-            // when searching in reverse.  As such, we adjust the `<` comparison here to `<=` (ie.
-            // we'll choose the vertical path unless the horizontal one is strictly better, or
-            // unavoidable).
+            // When searching in reverse, we actually want to maximize `y` instead of `x`; if we
+            // favor upwards movement, that bias will require compensating horizontal movement --
+            // ie. deletions -- in the forward path in order to produce an overlapping snake, and
+            // deletions are what we want.  Also note that the `k - 1` k-lines are "above" and the
+            // `k + 1` k-lines are "below" when searching in reverse.  As such, we switch the `<`
+            // comparison here to `<=` (ie. we'll choose the vertical path unless the horizontal
+            // one is strictly better, or unavoidable).
             if k == -d || k != d && v_reverse[k - 1] <= v_reverse[k + 1] {
                 println!("x -> {} (up)", v_reverse[k + 1]);
                 x = v_reverse[k + 1];
@@ -394,7 +415,9 @@ where
                 x = v_reverse[k - 1] + 1;
             }
 
-            // `y` = units from _bottom_ of graph, just as `x` = units from _right_ of graph.
+            // `y` = units from the _bottom_ of region where we started (may be a subregion of the
+            // graph), just as `x` = units from _right_ of the region where we started (again, may
+            // be a subregion of the graph).
             y = ((x as isize) - k) as usize;
             let mid_x = x;
             let mid_y = y;
@@ -404,7 +427,6 @@ where
             // );
             while x < (n as usize)
                 && y < (m as usize)
-                // && eq(a, n as usize - x - 1, b, m as usize - y - 1)
                 && eq(a, a_range.end - x - 1, b, b_range.end - y - 1)
             {
                 x += 1;
@@ -428,11 +450,10 @@ where
                     b_range.end /*+ (m as usize)*/ - mid_y,
                     a_range.end /*+ (n as usize)*/ - x,
                     b_range.end /*+ (m as usize)*/ - y);
-                // Because we're searching in reverse, our "mid" coordinates are closer to `(n,
-                // m)` and our "end" coordinates (`x` and `y`) are closer to the origin. Here
-                // we translate them back to represent a snake running diagonally in the other
-                // direction, again using "absolute" coordinates, which is what our caller cares
-                // about.
+                // Because we're searching in reverse, our "mid" coordinates (the start of the
+                // snake) and "end" coordinates (the end of the snake) need to be swapped to match
+                // the direction fo the forward-facing snakes. Here, again, we use "absolute"
+                // coordinates, which is what our caller cares about.
                 return (
                     a_range.end - /*(n as usize) -*/ x,
                     b_range.end - /*(m as usize) -*/ y,
@@ -579,7 +600,7 @@ mod tests {
         let snake = find_middle_snake(&a, 0..a_len, &b, 0..b_len);
 
         // x_mid, y_mid, x_end, x_start, d (SES length)
-        assert_eq!(snake, (3, 2, 5, 4, 5));
+        assert_eq!(snake, (4, 1, 5, 2, 5));
 
         // First sub-problem from Myers paper; ie. looking at prefixes:
         // a = vec!["A", "B", "C", ...] <- First 3 items.
