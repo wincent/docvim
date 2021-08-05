@@ -320,7 +320,7 @@ where
     // extending forward paths; if it's even, we'll check for overlap when extending reverse paths.
     let odd = delta % 2 == 1;
 
-    // println!("Find middle {:?} / {:?} odd={}", a_range, b_range, odd);
+    println!("Find middle {:?} / {:?} odd={}", a_range, b_range, odd);
 
     // Fake ceil because we want `max / 2` in our `for` below to be equivalent to `ceil(max / 2)`.
     let max = if odd { max + 1 } else { max };
@@ -344,7 +344,10 @@ where
             y = ((x as isize) - k) as usize;
             let mid_x = x;
             let mid_y = y;
-            while x < (n as usize) && y < (m as usize) && eq(a, x, b, y) {
+            // BUG: looking at wrong coords
+            while x < (n as usize) && y < (m as usize)
+                // && eq(a, x, b, y) {
+                && eq(a, a_range.start + x, b, b_range.start + y) {
                 x += 1;
                 y += 1;
                 println!("x -> {} (snake)", x);
@@ -359,7 +362,8 @@ where
                 && (-(k - delta)) <= (d - 1)
                 && (x as isize) + (v_reverse[-(k - delta)] as isize) >= n
             {
-                // Paths overlap. Last snake of forward path is the middle one.
+                // Paths overlap. Last snake of forward path is the middle one. Convert back to
+                // "absolute" coordinates before returning.
                 return (
                     a_range.start + mid_x,
                     b_range.start + mid_y,
@@ -375,52 +379,72 @@ where
             println!("reverse search d={} (of {}) k={} (of {})", d, max / 2, k, d);
             let mut x;
             let mut y;
-            // When searching in reverse, we actually want to minimize instead of maximize `x`;
-            // this is so that we favor upwards movement (which will require compensating
+            // When searching in reverse, we actually want to minimize instead of maximize
+            // `x`; this is so that we favor upwards movement (which will require compensating
             // horizontal movement -- ie. deletions -- in the forward path, which is what we want).
-            // As such, we flip some signs here.
-            if k == d || k != -d && v_reverse[k - 1] < v_reverse[k + 1] {
+            // Also note that the `k - 1` k-lines are "above" and the `k + 1` k-lines are "below"
+            // when searching in reverse.  As such, we adjust the `<` comparison here to `<=` (ie.
+            // we'll choose the vertical path unless the horizontal one is strictly better, or
+            // unavoidable).
+            if k == -d || k != d && v_reverse[k - 1] <= v_reverse[k + 1] {
                 println!("x -> {} (up)", v_reverse[k + 1]);
                 x = v_reverse[k + 1];
             } else {
                 println!("x -> {} (left)", v_reverse[k - 1] + 1);
                 x = v_reverse[k - 1] + 1;
             }
+
+            // `y` = units from _bottom_ of graph, just as `x` = units from _right_ of graph.
             y = ((x as isize) - k) as usize;
             let mid_x = x;
             let mid_y = y;
+            println!("mid_x={} mid_y={}", mid_x, mid_y);
+            // println!("checking for snake x={} <n?={} y={} <m?={} at={},{}",
+            //     x, x < (n as usize), y, y < (m as usize), a_range.end - x - 1, b_range.end - y - 1
+            // );
             while x < (n as usize)
                 && y < (m as usize)
-                && eq(a, n as usize - x - 1, b, m as usize - y - 1)
+                // && eq(a, n as usize - x - 1, b, m as usize - y - 1)
+                && eq(a, a_range.end - x - 1, b, b_range.end - y - 1)
             {
                 x += 1;
                 y += 1;
+                println!("snaaake! x -> {}", x);
             }
             v_reverse[k] = x;
 
-            // BUG: This _seems_ to work... I think the other one may have a bug
-            // But not always; it detects the overlap in the first iteration.
+            println!("overlap check: (-(k - delta))={} k={} delta={} d={} x={} vf[{}]={}",
+            (-(k-delta)), k, delta, d, x, (-(k - delta)), (v_forwards[-(k - delta)])
+            );
+
             if !odd
                 && (-(k - delta)) >= -d
                 && (-(k - delta)) <= d
-                && (x as isize) + (v_forwards[(-(k - delta))] as isize) >= n
+                && (x as isize) + (v_forwards[-(k - delta)] as isize) >= n
             {
+                println!("mid_x={} mid_y={} x={} y={}", mid_x, mid_y, x, y);
+                println!("that's overlap: snake runs from {}, {} to {}, {}",
+                    a_range.end /*+ (n as usize)*/ - mid_x,
+                    b_range.end /*+ (m as usize)*/ - mid_y,
+                    a_range.end /*+ (n as usize)*/ - x,
+                    b_range.end /*+ (m as usize)*/ - y);
                 // Because we're searching in reverse, our "mid" coordinates are closer to `(n,
                 // m)` and our "end" coordinates (`x` and `y`) are closer to the origin. Here
                 // we translate them back to represent a snake running diagonally in the other
-                // direction.
+                // direction, again using "absolute" coordinates, which is what our caller cares
+                // about.
                 return (
-                    a_range.start + (n as usize) - mid_x,
-                    b_range.start + (m as usize) - mid_y,
-                    a_range.start + (n as usize) - x,
-                    b_range.start + (m as usize) - y,
+                    a_range.end - /*(n as usize) -*/ x,
+                    b_range.end - /*(m as usize) -*/ y,
+                    a_range.end - /*(n as usize) -*/ mid_x,
+                    b_range.end - /*(m as usize) -*/ mid_y,
                     2 * d as usize,
                 );
             }
         }
     }
-    println!("v_forwards:\n{:?}", v_forwards);
-    println!("v_reverse:\n{:?}", v_reverse);
+    // println!("v_forwards:\n{:?}", v_forwards);
+    // println!("v_reverse:\n{:?}", v_reverse);
     panic!("did not find middle snake");
 }
 
@@ -474,26 +498,26 @@ where
             }
         } else if m > n {
             // There is one edit left to do (d == 1); it's going to be an insertion.
-            println!("one insertion to go");
+            println!("one insertion to go"); // TODO figure this out
             // let a_range = (a_range.start + x_end)..a_range.end;
             // let b_range = (b_range.start + y_end)..b_range.end;
             // recursive_diff(a, a_range, b, b_range, edits);
         } else if m < n {
             // There is one edit left to do (d == 1); it's going to be an deletion.
-            println!("one deletion to go");
+            println!("one deletion to go"); // TODO figure this out
             // let a_range = a_range.start..x_mid;
             // let b_range = b_range.start..y_mid;
             // recursive_diff(a, a_range, b, b_range, edits);
-        } else if n > 0 {
-            println!("else A");
-            for i in a_range.clone() {
-                edits.push(Delete(Idx(i + 1)));
-            }
-        } else {
-            println!("else B");
-            for i in b_range.clone() {
-                edits.push(Insert(Idx(i + 1)));
-            }
+        }
+    } else if n > 0 {
+        println!("else A, deleting {:?}", a_range);
+        for i in a_range.clone() {
+            edits.push(Delete(Idx(i + 1)));
+        }
+    } else {
+        println!("else B, inserting {:?}", b_range);
+        for i in b_range.clone() {
+            edits.push(Insert(Idx(i + 1)));
         }
     }
 }
@@ -557,16 +581,22 @@ mod tests {
         // x_mid, y_mid, x_end, x_start, d (SES length)
         assert_eq!(snake, (3, 2, 5, 4, 5));
 
-        // First sub-problem from Myers paper:
-        let a = vec!["A", "B", "C"];
-        let b = vec!["C", "B"];
-        let a_len = a.len();
-        let b_len = b.len();
-        let snake = find_middle_snake(&a, 0..a_len, &b, 0..b_len);
+        // First sub-problem from Myers paper; ie. looking at prefixes:
+        // a = vec!["A", "B", "C", ...] <- First 3 items.
+        // b = vec!["C", "B", ...] <-- First 2 items.
+        let snake = find_middle_snake(&a, 0..3, &b, 0..2);
 
         // This demonstrates bias for deletion, compared to other equal-distance paths like
         // (1, 1, 2, 2, 3).
         assert_eq!(snake, (2, 0, 3, 1, 3));
+
+        // Second sub-problem from Myers paper; ie. looking at suffixes:
+        // a = vec![..., "B", "A"] <-- Last 2 items.
+        // b = vec![..., "A", "C"] <-- Last 2 items.
+        let snake = find_middle_snake(&a, 5..a_len, &b, 4..b_len);
+
+        // Was a regression (was finding a zero-length middle snake when there was a 1-long one).
+        assert_eq!(snake, (6, 4, 7, 5, 2));
     }
 
     // TODO: Run these tests for linear variant too.
