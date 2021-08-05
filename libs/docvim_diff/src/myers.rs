@@ -157,9 +157,7 @@ where
             if x >= n && y >= m {
                 vs.push(v.clone());
                 let mut edits = vec![];
-                if d > 0 {
-                    myers_nd_generate_path(&vs, d as usize, n, m, &mut edits);
-                }
+                myers_nd_generate_path(&vs, d as usize, n, m, &mut edits);
                 return Diff(edits);
             }
         }
@@ -180,24 +178,35 @@ fn myers_nd_generate_path(
     m: usize,
     edits: &mut Vec<Edit>,
 ) {
-    let k = (n as isize) - (m as isize);
-    let v = &vs[d];
-    let x_end = v[k]; // "end" = Where the edit finished (ie. after potentially zero-length snake).
-    let y_end = ((x_end as isize) - k) as isize;
-    let down = k == -(d as isize) || k != (d as isize) && v[k - 1] < v[k + 1]; // "down" = true (insertion) or false (deletion)
-    let k_prev = if down { k + 1 } else { k - 1 };
-    let x_start = v[k_prev];
-    let y_start = x_start - (k_prev as usize); // "start" = Where preceding edit started.
-    let x_mid = if down { x_start } else { x_start + 1 }; // "mid" = Where the snake (diagonal part) starts; note: diagonal part may be empty.
-    let y_mid = x_mid - (k as usize);
-    if x_start > 0 || y_start > 0 {
-        myers_nd_generate_path(&vs, d - 1, x_start, y_start, edits);
+    // The Myers paper expresses this recursively, but we frame it iteratively here in order to
+    // avoid stack overflows for very long edit scripts.
+    let mut d = d;
+    let mut n = n;
+    let mut m = m;
+    while d > 0 {
+        let k = (n as isize) - (m as isize);
+        let v = &vs[d];
+        let x_end = v[k]; // "end" = Where the edit finished (ie. after potentially zero-length snake).
+        let y_end = ((x_end as isize) - k) as isize;
+        let down = k == -(d as isize) || k != (d as isize) && v[k - 1] < v[k + 1]; // "down" = true (insertion) or false (deletion)
+        let k_prev = if down { k + 1 } else { k - 1 };
+        let x_start = v[k_prev];
+        let y_start = x_start - (k_prev as usize); // "start" = Where preceding edit started.
+        let x_mid = if down { x_start } else { x_start + 1 }; // "mid" = Where the snake (diagonal part) starts; note: diagonal part may be empty.
+        let y_mid = x_mid - (k as usize);
+        if down {
+            edits.push(Insert(Idx(y_mid)));
+        } else {
+            edits.push(Delete(Idx(x_mid)));
+        }
+        d = d - 1;
+        n = x_start;
+        m = y_start;
+        if x_start == 0 && y_start == 0 {
+            break;
+        }
     }
-    if down {
-        edits.push(Insert(Idx(y_mid)));
-    } else {
-        edits.push(Delete(Idx(x_mid)));
-    }
+    edits.reverse();
 }
 
 fn eq<T>(a: &T, a_idx: usize, b: &T, b_idx: usize) -> bool
@@ -512,14 +521,5 @@ mod tests {
                 Insert(Idx(6)),
             ])
         );
-    }
-
-    // thread 'myers::tests::test_stack_overflow' has overflowed its stack
-    // fatal runtime error: stack overflow
-    #[test]
-    fn test_stack_overflow() {
-        let a = "a\n".repeat(10000);
-        let b = "b\n".repeat(10000);
-        diff_string_lines(&a, &b);
     }
 }
