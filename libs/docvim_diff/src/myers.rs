@@ -513,4 +513,13 @@ mod tests {
             ])
         );
     }
+
+    // thread 'myers::tests::test_stack_overflow' has overflowed its stack
+    // fatal runtime error: stack overflow
+    #[test]
+    fn test_stack_overflow() {
+        let a = "a\n".repeat(10000);
+        let b = "b\n".repeat(10000);
+        diff_string_lines(&a, &b);
+    }
 }
