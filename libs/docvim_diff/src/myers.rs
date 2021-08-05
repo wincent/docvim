@@ -95,9 +95,6 @@ where
     T::Output: Hash,
 {
     let mut edits = vec![];
-    let n = a_range.len();
-    let m = b_range.len();
-    let max = n + m;
     recursive_diff(a, a_range, b, b_range, &mut edits);
     Diff(edits)
 }
@@ -189,7 +186,7 @@ where
             let mut x: usize;
             let mut y: usize;
             if k == -d || k != d && v[k - 1] < v[k + 1] {
-                // Extend path using k-line above because:
+                // Extend path (downwards) using k-line above because:
                 //
                 // - `k == -d`: You're on the left edge, so there is only one place you can extend
                 //    from (the k-line above); or:
@@ -199,7 +196,7 @@ where
                 //    above; we take the bigger value because this is a greedy algorithm.
                 x = v[k + 1];
             } else {
-                // Extend path using k-line below because:
+                // Extend path (rightwards) using k-line below because:
                 //
                 // - `k != -d`: You're not on the left edge (which would force you to use the
                 //   k-line above); and:
@@ -307,35 +304,42 @@ fn find_middle_snake<T>(
     b: &T,
     b_range: Range<usize>,
 ) -> (usize, usize, usize, usize, usize)
-    // start_x, start_y, end_x, end_y, D (SES length)
+// x_mid, y_mid, x_end, y_end, D (SES length)
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
-    println!("Find middle {:?} / {:?}", a_range, b_range);
     let n = usize_to_isize(a_range.len());
     let m = usize_to_isize(b_range.len());
     let max = n + m;
-    let mut v_top = RingBuffer::new((max * 2) as usize + 1);
-    let mut v_bottom = RingBuffer::new((max * 2) as usize + 1);
+    let mut v_forwards = RingBuffer::new((max * 2) as usize + 1);
+    let mut v_reverse = RingBuffer::new((max * 2) as usize + 1);
     let delta = n - m;
 
     // SES length will be odd when delta is odd. If it's odd, we'll check for overlap when
     // extending forward paths; if it's even, we'll check for overlap when extending reverse paths.
     let odd = delta % 2 == 1;
 
-    v_top[1] = 0; // Technically it's already 0, but to make it explicit.
-    v_bottom[1] = 0; // Technically it's already 0, but to make it explicit.
+    // println!("Find middle {:?} / {:?} odd={}", a_range, b_range, odd);
 
-    for d in 0..(max / 2) {
+    // Fake ceil because we want `max / 2` in our `for` below to be equivalent to `ceil(max / 2)`.
+    let max = if odd { max + 1 } else { max };
+
+    v_forwards[1] = 0; // Technically it's already 0, but to make it explicit.
+    v_reverse[1] = 0; // Technically it's already 0, but to make it explicit.
+
+    for d in 0..=(max / 2) {
         // Forward search.
         for k in (-d..=d).step_by(2) {
+            println!("forward search d={} (of {}) k={} (of {})", d, max / 2, k, d);
             let mut x;
             let mut y;
-            if k == -d || k != d && v_top[k - 1] < v_top[k + 1] {
-                x = v_top[k + 1];
+            if k == -d || k != d && v_forwards[k - 1] < v_forwards[k + 1] {
+                println!("x -> {} (down)", v_forwards[k + 1]);
+                x = v_forwards[k + 1];
             } else {
-                x = v_top[k - 1] + 1;
+                println!("x -> {} (right)", v_forwards[k - 1] + 1);
+                x = v_forwards[k - 1] + 1;
             }
             y = ((x as isize) - k) as usize;
             let mid_x = x;
@@ -343,8 +347,9 @@ where
             while x < (n as usize) && y < (m as usize) && eq(a, x, b, y) {
                 x += 1;
                 y += 1;
+                println!("x -> {} (snake)", x);
             }
-            v_top[k] = x;
+            v_forwards[k] = x;
 
             // Check for overlap. We must adjust by `delta` because forward k-lines are centered
             // around `0` and start from `(0, 0)`, while reverse k-lines are centered around
@@ -352,7 +357,7 @@ where
             if odd
                 && (-(k - delta)) >= -(d - 1)
                 && (-(k - delta)) <= (d - 1)
-                && (x as isize) + (v_bottom[-(k - delta)] as isize) >= n
+                && (x as isize) + (v_reverse[-(k - delta)] as isize) >= n
             {
                 // Paths overlap. Last snake of forward path is the middle one.
                 return (
@@ -367,12 +372,15 @@ where
 
         // Reverse search.
         for k in (-d..=d).step_by(2) {
+            println!("reverse search d={} (of {}) k={} (of {})", d, max / 2, k, d);
             let mut x;
             let mut y;
-            if k == -d || k != d && v_bottom[k - 1] < v_bottom[k + 1] {
-                x = v_bottom[k + 1];
+            if k == -d || k != d && v_reverse[k - 1] < v_reverse[k + 1] {
+                println!("x -> {} (up)", v_reverse[k + 1]);
+                x = v_reverse[k + 1];
             } else {
-                x = v_bottom[k - 1] + 1;
+                println!("x -> {} (left)", v_reverse[k - 1] + 1);
+                x = v_reverse[k - 1] + 1;
             }
             y = ((x as isize) - k) as usize;
             let mid_x = x;
@@ -384,12 +392,14 @@ where
                 x += 1;
                 y += 1;
             }
-            v_bottom[k] = x;
+            v_reverse[k] = x;
 
+            // BUG: This _seems_ to work... I think the other one may have a bug
+            // But not always; it detects the overlap in the first iteration.
             if !odd
                 && (-(k - delta)) >= -d
                 && (-(k - delta)) <= d
-                && (x as isize) + (v_top[(-(k - delta))] as isize) >= n
+                && (x as isize) + (v_forwards[(-(k - delta))] as isize) >= n
             {
                 // Because we're searching in reverse, our "mid" coordinates are closer to `(n,
                 // m)` and our "end" coordinates (`x` and `y`) are closer to the origin. Here
@@ -405,6 +415,8 @@ where
             }
         }
     }
+    println!("v_forwards:\n{:?}", v_forwards);
+    println!("v_reverse:\n{:?}", v_reverse);
     panic!("did not find middle snake");
 }
 
@@ -421,65 +433,66 @@ where
 {
     let n = a_range.len();
     let m = b_range.len();
-    if n == 0 && m != 0 {
+    println!("recursive_diff a={:?} (n={}) b={:?} (m={})", a_range, n, b_range, m);
+    /*if n == 0 && m != 0 {
         for i in b_range.clone() {
+        println!("bulk inserting at {} because: m={} n={}", i, m, n);
             edits.push(Insert(Idx(i + 1)));
         }
     } else if n != 0 && m == 0 {
         for i in a_range.clone() {
+        println!("bulk deleting at {} because: m={} n={}", i, m, n);
             edits.push(Delete(Idx(i + 1)));
         }
     } else if n == 0 && m == 0 {
         return;
-    } else {
-        let (start_x, start_y, end_x, end_y, length) =
+    } else*/
+    if n > 0 && m > 0 {
+        let (x_mid, y_mid, x_end, y_end, d) =
             find_middle_snake(a, a_range.clone(), b, b_range.clone());
-        let a_left = a_range.start..start_x;
-        let b_left = b_range.start..start_y;
+        println!(
+            "middle snake: x_mid={} y_mid={} x_end={} y_end={} d={}",
+            x_mid, y_mid, x_end, y_end, d
+        );
+        // BUG: on first recursion, we are not biasing for deletion ^^^^
 
-        let a_right = (a_range.start + end_x)..a_range.end;
-        let b_right = (b_range.start + end_y)..b_range.end;
-        if length > 1 {
-            // TODO: also want uv here
-            recursive_diff(a, a_left, b, b_left, edits);
-            recursive_diff(a, a_right, b, b_right, edits);
+        if d > 1 || x_mid != x_end && y_mid != y_end {
+            println!("will recurse twice");
+            {
+                let a_range = a_range.start..x_mid;
+                let b_range = b_range.start..y_mid;
+                recursive_diff(a, a_range, b, b_range, edits);
+            }
+            {
+                let a_range = (a_range.start + x_end)..a_range.end;
+                let b_range = (b_range.start + y_end)..b_range.end;
+                recursive_diff(a, a_range, b, b_range, edits);
+            }
         } else if m > n {
+            // There is one edit left to do (d == 1); it's going to be an insertion.
+            println!("one insertion to go");
+            // let a_range = (a_range.start + x_end)..a_range.end;
+            // let b_range = (b_range.start + y_end)..b_range.end;
+            // recursive_diff(a, a_range, b, b_range, edits);
+        } else if m < n {
+            // There is one edit left to do (d == 1); it's going to be an deletion.
+            println!("one deletion to go");
+            // let a_range = a_range.start..x_mid;
+            // let b_range = b_range.start..y_mid;
+            // recursive_diff(a, a_range, b, b_range, edits);
+        } else if n > 0 {
+            println!("else A");
             for i in a_range.clone() {
                 edits.push(Delete(Idx(i + 1)));
             }
-        } else if m < n {
+        } else {
+            println!("else B");
             for i in b_range.clone() {
                 edits.push(Insert(Idx(i + 1)));
             }
         }
     }
 }
-
-/*
-
-  sub recursive_diff(A, N, B, M ):
-    {
-      suppose it is from ( x, y ) to ( u, v ) with total differences D
-
-      if ( D > 1 )
-      {
-        recursive_diff( A[ 1 .. x ], x, B[ 1 .. y ], y ) // top left
-
-        Add middle snake to results
-
-        recursive_diff( A[ u + 1 .. N ], N - u, B[ v + 1 .. M ], M - v ) // bottom right
-      }
-      else if ( D == 1 ) // must be forward snake
-      {
-        Add d = 0 diagonal to results
-        Add middle snake to results
-      }
-      else if ( D == 0 ) // must be reverse snake
-      {
-        Add middle snake to results
-      }
-    }
-*/
 
 #[cfg(test)]
 mod tests {
@@ -530,7 +543,7 @@ mod tests {
 
     #[test]
     fn test_find_middle_snake() {
-        // From Myer's paper:
+        // From Myers paper:
         let a = vec!["A", "B", "C", "A", "B", "B", "A"];
         let b = vec!["C", "B", "A", "B", "A", "C"];
         let a_len = a.len();
@@ -539,6 +552,17 @@ mod tests {
 
         // x_mid, y_mid, x_end, x_start, d (SES length)
         assert_eq!(snake, (3, 2, 5, 4, 5));
+
+        // First sub-problem from Myers paper:
+        let a = vec!["A", "B", "C"];
+        let b = vec!["C", "B"];
+        let a_len = a.len();
+        let b_len = b.len();
+        let snake = find_middle_snake(&a, 0..a_len, &b, 0..b_len);
+
+        // This demonstrates bias for deletion, compared to other equal-distance paths like
+        // (1, 1, 2, 2, 3).
+        assert_eq!(snake, (2, 0, 3, 1, 3));
     }
 
     // TODO: Run these tests for linear variant too.
