@@ -74,13 +74,18 @@ impl IndexMut<isize> for RingBuffer {
     }
 }
 
-// TODO: figure out whether to keep this around... ultimately the caller will also want the lines;
+// TODO: figure out whether to keep these around... ultimately the caller will also want the lines;
 // might be better off with just `diff_lines()`, but in that case, you may as well pass them
 // directly to `diff()`.
 pub fn diff_string_lines(a: &str, b: &str) -> Diff {
     let a = a.lines().collect::<Vec<&str>>();
     let b = b.lines().collect::<Vec<&str>>();
-    // diff(&a, 0..a.len(), &b, 0..b.len())
+    diff(&a, 0..a.len(), &b, 0..b.len())
+}
+
+pub fn diff_string_lines_nd(a: &str, b: &str) -> Diff {
+    let a = a.lines().collect::<Vec<&str>>();
+    let b = b.lines().collect::<Vec<&str>>();
     myers_nd_diff(&a, 0..a.len(), &b, 0..b.len())
 }
 
@@ -256,9 +261,9 @@ fn myers_nd_generate_path(
         let down = k == -(d as isize) || k != (d as isize) && v[k - 1] < v[k + 1]; // "down" = true (insertion) or false (deletion)
         let k_prev = if down { k + 1 } else { k - 1 };
         let x_start = v[k_prev];
-        let y_start = x_start - (k_prev as usize); // "start" = Where preceding edit started.
+        let y_start = ((x_start as isize) - k_prev) as usize; // "start" = Where preceding edit started.
         let x_mid = if down { x_start } else { x_start + 1 }; // "mid" = Where the snake (diagonal part) starts; note: diagonal part may be empty.
-        let y_mid = x_mid - (k as usize);
+        let y_mid = ((x_mid as isize) - k) as usize;
         if down {
             edits.push(Insert(Idx(y_mid)));
         } else {
@@ -529,30 +534,29 @@ mod tests {
         assert_eq!(snake, (4, 1, 6, 1, 5));
     }
 
+    // TODO: Run these tests for linear variant too.
     #[test]
     fn test_delete_everything() {
-        return;
         let a = vec!["goodbye", "cruel", "world"].join("\n");
         let b = "";
         assert_eq!(
-            diff_string_lines(&a, &b),
+            diff_string_lines_nd(&a, &b),
             Diff(vec![Delete(Idx(1)), Delete(Idx(2)), Delete(Idx(3)),])
         );
     }
 
     #[test]
     fn test_add_to_empty_file() {
-        return;
         let a = "";
         let b = vec!["hi", "there"].join("\n");
-        assert_eq!(diff_string_lines(&a, &b), Diff(vec![Insert(Idx(1)), Insert(Idx(2)),]));
+        assert_eq!(diff_string_lines_nd(&a, &b), Diff(vec![Insert(Idx(1)), Insert(Idx(2)),]));
     }
 
     #[test]
     fn test_empty_to_empty_diff() {
         let a = "";
         let b = "";
-        assert_eq!(diff_string_lines(&a, &b), Diff(vec![]));
+        assert_eq!(diff_string_lines_nd(&a, &b), Diff(vec![]));
     }
 
     #[test]
@@ -560,7 +564,7 @@ mod tests {
         let a = vec!["A", "B", "C", "A", "B", "B", "A"].join("\n");
         let b = vec!["C", "B", "A", "B", "A", "C"].join("\n");
         assert_eq!(
-            diff_string_lines(&a, &b),
+            diff_string_lines_nd(&a, &b),
             Diff(vec![
                 Delete(Idx(1)),
                 Delete(Idx(2)),
