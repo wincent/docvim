@@ -344,9 +344,7 @@ where
             y = ((x as isize) - k) as usize;
             let mid_x = x;
             let mid_y = y;
-            // BUG: looking at wrong coords
             while x < (n as usize) && y < (m as usize)
-                // && eq(a, x, b, y) {
                 && eq(a, a_range.start + x, b, b_range.start + y)
             {
                 x += 1;
