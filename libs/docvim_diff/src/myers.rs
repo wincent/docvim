@@ -392,16 +392,27 @@ where
             find_middle_snake(a, a_range.clone(), b, b_range.clone());
 
         if d > 1 {
-            // Divide and conquer.
-            {
-                let a_range = a_range.start..x_mid;
-                let b_range = b_range.start..y_mid;
-                recursive_diff(a, a_range, b, b_range, edits);
-            }
-            {
-                let a_range = x_end..a_range.end;
-                let b_range = y_end..b_range.end;
-                recursive_diff(a, a_range, b, b_range, edits);
+            // Special case for worst-case input when entirety of `a` must be deleted and `b`
+            // inserted.
+            if d == n + m {
+                for i in a_range.clone() {
+                    edits.push(Delete(Idx(i + 1)));
+                }
+                for i in b_range.clone() {
+                    edits.push(Insert(Idx(i + 1)));
+                }
+            } else {
+                // Divide and conquer.
+                {
+                    let a_range = a_range.start..x_mid;
+                    let b_range = b_range.start..y_mid;
+                    recursive_diff(a, a_range, b, b_range, edits);
+                }
+                {
+                    let a_range = x_end..a_range.end;
+                    let b_range = y_end..b_range.end;
+                    recursive_diff(a, a_range, b, b_range, edits);
+                }
             }
         } else if m > n {
             // There is one edit left to do (d == 1) and it's going to be an insertion.
@@ -582,13 +593,13 @@ mod tests {
     }
 
     // Too slow to leave enabled...
-    // #[test]
-    // fn test_speed_worst_case() {
-    //     // Excruciatingly slow.
-    //     let a = "a\n".repeat(10000);
-    //     let b = "b\n".repeat(10000);
-    //     diff_string_lines(&a, &b);
-    // }
+    #[test]
+    fn test_speed_worst_case() {
+        // Excruciatingly slow.
+        let a = "a\n".repeat(10000);
+        let b = "b\n".repeat(10000);
+        diff_string_lines(&a, &b);
+    }
 
     #[test]
     fn test_speed_best_case() {
