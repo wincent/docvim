@@ -255,13 +255,26 @@ fn myers_nd_generate_path(
     while d > 0 {
         let k = (n as isize) - (m as isize);
         let v = &vs[d];
-        let x_end = v[k]; // "end" = Where the edit finished (ie. after potentially zero-length snake).
-        let y_end = ((x_end as isize) - k) as isize;
-        let down = k == -(d as isize) || k != (d as isize) && v[k - 1] < v[k + 1]; // "down" = true (insertion) or false (deletion)
+
+        // Each "edit" consists of three points:
+        //
+        // - "start": where the actual edit (a horizontal or vertical step in the edit graph,
+        //   corresponding to deletion and insertion respectively) begins.
+        // - "middle": where the edit ends and the "snake" (diagonal part) begins; this part may be
+        //   empty.
+        // - "end": where the snake ends; as noted above, the snake may be zero-length.
+        //
+        // In this function we don't actually need the `end`, and snakes aren't actually explicitly
+        // recorded in the edit script, but if we wanted to compute it we could do so like this:
+        //
+        //      let x_end = v[k];
+        //      let y_end = ((x_end as isize) - k) as isize;
+        //
+        let down = k == -(d as isize) || k != (d as isize) && v[k - 1] < v[k + 1];
         let k_prev = if down { k + 1 } else { k - 1 };
         let x_start = v[k_prev];
-        let y_start = ((x_start as isize) - k_prev) as usize; // "start" = Where preceding edit started.
-        let x_mid = if down { x_start } else { x_start + 1 }; // "mid" = Where the snake (diagonal part) starts; note: diagonal part may be empty.
+        let y_start = ((x_start as isize) - k_prev) as usize;
+        let x_mid = if down { x_start } else { x_start + 1 };
         let y_mid = ((x_mid as isize) - k) as usize;
         if down {
             edits.push(Insert(Idx(y_mid)));
@@ -296,6 +309,12 @@ fn usize_to_isize(n: usize) -> isize {
     isize::try_from(n).expect("overflow converting from usize to isize")
 }
 
+/// Shorthand representing:
+/// - x_mid, y_mid: snake starting coordinates.
+/// - x_end, y_end: snake ending coordinates.
+/// - d: SES (Shortest Edit Script) length.
+type Snake = (usize, usize, usize, usize, usize);
+
 // TODO: when input lengths are very different, switch to more complicated alg that avoids
 // exploring beyond graph bounds.
 fn find_middle_snake<T>(
@@ -303,8 +322,7 @@ fn find_middle_snake<T>(
     a_range: Range<usize>,
     b: &T,
     b_range: Range<usize>,
-) -> (usize, usize, usize, usize, usize)
-// x_mid, y_mid, x_end, y_end, D (SES length)
+) -> Snake
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
@@ -319,7 +337,6 @@ where
     // SES length will be odd when delta is odd. If it's odd, we'll check for overlap when
     // extending forward paths; if it's even, we'll check for overlap when extending reverse paths.
     let odd = delta & 1 == 1;
-    println!("find middle: n={} m={} d={} odd?={} a_range={:?} b_range={:?}", n, m, delta, odd, a_range, b_range);
 
     v_forwards[1] = 0; // Technically it's already 0, but to make it explicit.
     v_reverse[1] = 0; // Technically it's already 0, but to make it explicit.
@@ -329,7 +346,7 @@ where
         // Forward search; note that unlike the Myers paper, we iterate in reverse order in order
         // to match Git's behavior. We still get a valid Shortest Edit Script, but it may be a
         // different one because the greedy algorithm will stop at the first overlapping path it
-        // finds (and when we go in reverse, we may encounter a different overlapping path first).
+        // finds (thus in many cases we'll identify a different overlapping path).
         for k in (-d..=d).rev().step_by(2) {
             // Both `x` and `y` are relative to the top-left corner of the region we're searching
             // in; this may be a subregion of the graph, so the origin is not necessarily (0, 0).
@@ -341,8 +358,8 @@ where
                 x = v_forwards[k - 1] + 1;
             }
             y = ((x as isize) - k) as usize;
-            let mid_x = x;
-            let mid_y = y;
+            let x_mid = x;
+            let y_mid = y;
             while x < (n as usize) && y < (m as usize)
                 && eq(a, a_range.start + x, b, b_range.start + y)
             {
@@ -351,36 +368,34 @@ where
             }
             v_forwards[k] = x;
 
+            if !odd {
+                continue; // Check for overlap during reverse search instead.
+            }
+
             // Check for overlap. We must adjust by `delta` because forward k-lines are centered
-            // around `0` and start from `(0, 0)`, while reverse k-lines are centered around
-            // `delta` (ie. `n - m`) and start from `(n, m)`. (Note that here, `(0, 0)` and `(n,
-            // m)` may be scoped to subregions, during recursive calls.)
-            if odd
-                // NOTE TO SELF: in example input, forwards k-line 0 corresponds with reverse
-                // k-line 1 and delta is one... forwards k-line -1 === reverse k-line 2
-                // forwards k-line 1 === reverse k-line 0
-                // forwards k-line 2 === reverse k-line -1
-                // say when d = 2 and we're looking at forwards k-line -2
-                // matching reverse k-line = (-2 -1) * -1 eg. 3
-                //                        eg (-(k - delta))
-                // so the v_reverse[...] looks up max on reciprocal k-line
-                // x + that >= n means "x travel on theses two matching k-lines overlaps") (3)
-                //
-                // the other two lines mean: reciprocal k-line >= -d + 1
-                // AND reciprocal k-line <= d - 1
-                // which I think are bounds checks to see if there even is a reciprocal line
-                //
-                //
-                && (-(k - delta)) >= -(d - 1)
-                && (-(k - delta)) <= (d - 1)
-                && (x as isize) + (v_reverse[-(k - delta)] as isize) >= n
-            // 3
+            // around (ie. the 0 k-line starts at) the top-left corner, while reverse k-lines are
+            // all offset by `delta` and centered around the bottom-right corner.
+            let reciprocal_k = -(k - delta);
+
+            // Does reciprocal k-line fall within range -(d - 1) to (d - 1)? Anything outside
+            // that can't possibly overlap.
+            if reciprocal_k < -(d - 1) || reciprocal_k > (d - 1) {
+                continue;
+            }
+
+            // We sum:
+            //
+            // - `x`: forwards horizontal travel ending on forwards k-line; and:
+            // - `v_reverse[reciprocal_k]`: reverse horizontal travel ending on reciprocal k-line.
+            //
+            // If they sum to `n` or more, the snakes must overlap.
+            if (x as isize) + (v_reverse[reciprocal_k] as isize) >= n
             {
                 // Paths overlap. Last snake of forward path is the middle one. Convert back to
                 // "absolute" coordinates before returning.
                 return (
-                    a_range.start + mid_x,
-                    b_range.start + mid_y,
+                    a_range.start + x_mid,
+                    b_range.start + y_mid,
                     a_range.start + x,
                     b_range.start + y,
                     2 * d as usize - 1,
@@ -392,14 +407,7 @@ where
         for k in (-d..=d).rev().step_by(2) {
             let mut x;
             let mut y;
-            // When searching in reverse, we actually want to maximize `y` instead of `x`; if we
-            // favor upwards movement, that bias will require compensating horizontal movement --
-            // ie. deletions -- in the forward path in order to produce an overlapping snake, and
-            // deletions are what we want.  Also note that the `k - 1` k-lines are "above" and the
-            // `k + 1` k-lines are "below" when searching in reverse.  As such, we switch the `<`
-            // comparison here to `<=` (ie. we'll choose the vertical path unless the horizontal
-            // one is strictly better, or unavoidable).
-            if k == -d || k != d && v_reverse[k - 1] <= v_reverse[k + 1] {
+            if k == -d || k != d && v_reverse[k - 1] < v_reverse[k + 1] {
                 x = v_reverse[k + 1];
             } else {
                 x = v_reverse[k - 1] + 1;
@@ -409,8 +417,8 @@ where
             // graph), just as `x` = units from _right_ of the region where we started (again, may
             // be a subregion of the graph).
             y = ((x as isize) - k) as usize;
-            let mid_x = x;
-            let mid_y = y;
+            let x_mid = x;
+            let y_mid = y;
             while x < (n as usize)
                 && y < (m as usize)
                 && eq(a, a_range.end - x - 1, b, b_range.end - y - 1)
@@ -420,11 +428,21 @@ where
             }
             v_reverse[k] = x;
 
-            if !odd
-                && (-(k - delta)) >= -d
-                && (-(k - delta)) <= d
-                && (x as isize) + (v_forwards[-(k - delta)] as isize) >= n
-            {
+            if odd {
+                continue; // Check for overlap during forward search instead.
+            }
+
+            let reciprocal_k = -(k - delta);
+
+            // When the delta is even, any forward and reverse paths that meet in the middle
+            // will each have an equal number of differences. To be on an even k-line, you must
+            // have an even number of edits; conversely, to be on an odd k-line, you must have
+            // an odd number of edits.
+            if reciprocal_k < -d || reciprocal_k > d {
+                continue;
+            }
+
+            if (x as isize) + (v_forwards[reciprocal_k] as isize) >= n {
                 // Because we're searching in reverse, our "mid" coordinates (the start of the
                 // snake) and "end" coordinates (the end of the snake) need to be swapped to match
                 // the direction fo the forward-facing snakes. Here, again, we use "absolute"
@@ -432,8 +450,8 @@ where
                 return (
                     a_range.end - x,
                     b_range.end - y,
-                    a_range.end - mid_x,
-                    b_range.end - mid_y,
+                    a_range.end - x_mid,
+                    b_range.end - y_mid,
                     2 * d as usize,
                 );
             }
@@ -447,7 +465,7 @@ fn recursive_diff<T>(
     a_range: Range<usize>,
     b: &T,
     b_range: Range<usize>,
-    edits: &mut Vec<Edit>,
+    edits: &mut Vec<Edit>
 ) -> ()
 where
     T: Index<usize> + ?Sized,
@@ -459,7 +477,8 @@ where
         let (x_mid, y_mid, x_end, y_end, d) =
             find_middle_snake(a, a_range.clone(), b, b_range.clone());
 
-        if d > 1 || x_mid != x_end && y_mid != y_end {
+        if d > 1  {
+            // Divide and conquer.
             {
                 let a_range = a_range.start..x_mid;
                 let b_range = b_range.start..y_mid;
@@ -471,17 +490,14 @@ where
                 recursive_diff(a, a_range, b, b_range, edits);
             }
         } else if m > n {
-            // TODO: sort this out...
-            // There is one edit left to do (d == 1); it's going to be an insertion.
-            // let a_range = (a_range.start + x_end)..a_range.end;
-            // let b_range = (b_range.start + y_end)..b_range.end;
-            // recursive_diff(a, a_range, b, b_range, edits);
+            // There is one edit left to do (d == 1) and it's going to be an insertion.
+            // Because d is 1, `delta` must be +1 or -1, and the insertion must be
+            // immediately prior to the snake, which is a forward snake.
+            edits.push(Insert(Idx(y_mid)));
         } else if m < n {
-            // TODO: handle this
-            // There is one edit left to do (d == 1); it's going to be an deletion.
-            // let a_range = a_range.start..x_mid;
-            // let b_range = b_range.start..y_mid;
-            // recursive_diff(a, a_range, b, b_range, edits);
+            // There is one edit left to do (d == 1) and it's going to be an deletion. As above, we
+            // know it must appear immediately prior to the snake.
+            edits.push(Delete(Idx(x_mid)));
         }
     } else if n > 0 {
         for i in a_range.clone() {
@@ -550,6 +566,8 @@ mod tests {
         let b_len = b.len();
         let snake = find_middle_snake(&a, 0..a_len, &b, 0..b_len);
 
+        // Note that we don't find the same middle snake as the Myers paper because we are
+        // iterating in reverse order, like Git does.
         // x_mid, y_mid, x_end, x_start, d (SES length)
         assert_eq!(snake, (4, 1, 5, 2, 5));
 
@@ -569,6 +587,20 @@ mod tests {
 
         // Was a regression (was finding a zero-length middle snake when there was a 1-long one).
         assert_eq!(snake, (6, 4, 7, 5, 2));
+
+        // Another regression. Was finding a zero-length snake.
+        let a = vec!["A", "B"];
+        let b = vec!["A", "A", "B"];
+        let snake = find_middle_snake(&a, 0..a.len(), &b, 0..b.len());
+
+        assert_eq!(snake, (1, 2, 2, 3, 1));
+
+        // When there are no edits to make, the whole thing is a snake.
+        let a = vec!["A", "B", "C"];
+        let b = vec!["A", "B", "C"];
+        let snake = find_middle_snake(&a, 0..a.len(), &b, 0..b.len());
+
+        assert_eq!(snake, (0, 0, 3, 3, 0));
     }
 
     #[test]
@@ -612,6 +644,26 @@ mod tests {
                 Insert(Idx(3)),
                 Insert(Idx(6)),
             ])
+        );
+    }
+
+    #[test]
+    fn test_stack_overflow_regression() {
+        let a = vec!["A", "B"].join("\n");
+        let b = vec!["A", "A", "B"].join("\n");
+
+        assert_eq!(
+            diff_string_lines(&a, &b),
+            Diff(vec![Insert(Idx(2))])
+        );
+
+        // For symmetry...
+        let a = vec!["A", "A", "B"].join("\n");
+        let b = vec!["A", "B"].join("\n");
+
+        assert_eq!(
+            diff_string_lines(&a, &b),
+            Diff(vec![Delete(Idx(2))])
         );
     }
 
