@@ -320,8 +320,6 @@ where
     // extending forward paths; if it's even, we'll check for overlap when extending reverse paths.
     let odd = delta % 2 == 1;
 
-    println!("Find middle {:?} / {:?} odd={}", a_range, b_range, odd);
-
     // Fake ceil because we want `max / 2` in our `for` below to be equivalent to `ceil(max / 2)`.
     let max = if odd { max + 1 } else { max };
 
@@ -329,18 +327,18 @@ where
     v_reverse[1] = 0; // Technically it's already 0, but to make it explicit.
 
     for d in 0..=(max / 2) {
-        // Forward search.
+        // Forward search; note that unlike the Myers paper, we iterate in reverse order in order
+        // to match Git's behavior. We still get a valid Shortest Edit Script, but it may be a
+        // different one because the greedy algorithm will stop at the first overlapping path it
+        // finds (and when we go in reverse, we may encounter a different overlapping path first).
         for k in (-d..=d).rev().step_by(2) {
-            println!("forward search d={} (of {}) k={} (of {})", d, max / 2, k, d);
             // Both `x` and `y` are relative to the top-left corner of the region we're searching
             // in; this may be a subregion of the graph, so the origin is not necessarily (0, 0).
             let mut x;
             let mut y;
             if k == -d || k != d && v_forwards[k - 1] < v_forwards[k + 1] {
-                println!("x -> {} (down)", v_forwards[k + 1]);
                 x = v_forwards[k + 1];
             } else {
-                println!("x -> {} (right)", v_forwards[k - 1] + 1);
                 x = v_forwards[k - 1] + 1;
             }
             y = ((x as isize) - k) as usize;
@@ -349,15 +347,12 @@ where
             // BUG: looking at wrong coords
             while x < (n as usize) && y < (m as usize)
                 // && eq(a, x, b, y) {
-                && eq(a, a_range.start + x, b, b_range.start + y) {
+                && eq(a, a_range.start + x, b, b_range.start + y)
+            {
                 x += 1;
                 y += 1;
-                println!("x -> {} (snake)", x);
             }
             v_forwards[k] = x;
-            println!("overlap check: (-(k - delta))={} k={} delta={} d={} x={} vf[{}]={}",
-            (-(k-delta)), k, delta, d, x, (-(k - delta)), (v_reverse[-(k - delta)])
-            );
 
             // Check for overlap. We must adjust by `delta` because forward k-lines are centered
             // around `0` and start from `(0, 0)`, while reverse k-lines are centered around
@@ -381,7 +376,8 @@ where
                 //
                 && (-(k - delta)) >= -(d - 1)
                 && (-(k - delta)) <= (d - 1)
-                && (x as isize) + (v_reverse[-(k - delta)] as isize) >= n // 3
+                && (x as isize) + (v_reverse[-(k - delta)] as isize) >= n
+            // 3
             {
                 // Paths overlap. Last snake of forward path is the middle one. Convert back to
                 // "absolute" coordinates before returning.
@@ -397,7 +393,6 @@ where
 
         // Reverse search.
         for k in (-d..=d).rev().step_by(2) {
-            println!("reverse search d={} (of {}) k={} (of {})", d, max / 2, k, d);
             let mut x;
             let mut y;
             // When searching in reverse, we actually want to maximize `y` instead of `x`; if we
@@ -408,10 +403,8 @@ where
             // comparison here to `<=` (ie. we'll choose the vertical path unless the horizontal
             // one is strictly better, or unavoidable).
             if k == -d || k != d && v_reverse[k - 1] <= v_reverse[k + 1] {
-                println!("x -> {} (up)", v_reverse[k + 1]);
                 x = v_reverse[k + 1];
             } else {
-                println!("x -> {} (left)", v_reverse[k - 1] + 1);
                 x = v_reverse[k - 1] + 1;
             }
 
@@ -421,51 +414,34 @@ where
             y = ((x as isize) - k) as usize;
             let mid_x = x;
             let mid_y = y;
-            println!("mid_x={} mid_y={}", mid_x, mid_y);
-            // println!("checking for snake x={} <n?={} y={} <m?={} at={},{}",
-            //     x, x < (n as usize), y, y < (m as usize), a_range.end - x - 1, b_range.end - y - 1
-            // );
             while x < (n as usize)
                 && y < (m as usize)
                 && eq(a, a_range.end - x - 1, b, b_range.end - y - 1)
             {
                 x += 1;
                 y += 1;
-                println!("snaaake! x -> {}", x);
             }
             v_reverse[k] = x;
-
-            println!("overlap check: (-(k - delta))={} k={} delta={} d={} x={} vf[{}]={}",
-            (-(k-delta)), k, delta, d, x, (-(k - delta)), (v_forwards[-(k - delta)])
-            );
 
             if !odd
                 && (-(k - delta)) >= -d
                 && (-(k - delta)) <= d
                 && (x as isize) + (v_forwards[-(k - delta)] as isize) >= n
             {
-                println!("mid_x={} mid_y={} x={} y={}", mid_x, mid_y, x, y);
-                println!("that's overlap: snake runs from {}, {} to {}, {}",
-                    a_range.end /*+ (n as usize)*/ - mid_x,
-                    b_range.end /*+ (m as usize)*/ - mid_y,
-                    a_range.end /*+ (n as usize)*/ - x,
-                    b_range.end /*+ (m as usize)*/ - y);
                 // Because we're searching in reverse, our "mid" coordinates (the start of the
                 // snake) and "end" coordinates (the end of the snake) need to be swapped to match
                 // the direction fo the forward-facing snakes. Here, again, we use "absolute"
                 // coordinates, which is what our caller cares about.
                 return (
-                    a_range.end - /*(n as usize) -*/ x,
-                    b_range.end - /*(m as usize) -*/ y,
-                    a_range.end - /*(n as usize) -*/ mid_x,
-                    b_range.end - /*(m as usize) -*/ mid_y,
+                    a_range.end - x,
+                    b_range.end - y,
+                    a_range.end - mid_x,
+                    b_range.end - mid_y,
                     2 * d as usize,
                 );
             }
         }
     }
-    // println!("v_forwards:\n{:?}", v_forwards);
-    // println!("v_reverse:\n{:?}", v_reverse);
     panic!("did not find middle snake");
 }
 
@@ -482,61 +458,39 @@ where
 {
     let n = a_range.len();
     let m = b_range.len();
-    println!("recursive_diff a={:?} (n={}) b={:?} (m={})", a_range, n, b_range, m);
-    /*if n == 0 && m != 0 {
-        for i in b_range.clone() {
-        println!("bulk inserting at {} because: m={} n={}", i, m, n);
-            edits.push(Insert(Idx(i + 1)));
-        }
-    } else if n != 0 && m == 0 {
-        for i in a_range.clone() {
-        println!("bulk deleting at {} because: m={} n={}", i, m, n);
-            edits.push(Delete(Idx(i + 1)));
-        }
-    } else if n == 0 && m == 0 {
-        return;
-    } else*/
     if n > 0 && m > 0 {
         let (x_mid, y_mid, x_end, y_end, d) =
             find_middle_snake(a, a_range.clone(), b, b_range.clone());
-        println!(
-            "middle snake: x_mid={} y_mid={} x_end={} y_end={} d={}",
-            x_mid, y_mid, x_end, y_end, d
-        );
-        // BUG: on first recursion, we are not biasing for deletion ^^^^
 
         if d > 1 || x_mid != x_end && y_mid != y_end {
-            println!("will recurse twice");
             {
                 let a_range = a_range.start..x_mid;
                 let b_range = b_range.start..y_mid;
                 recursive_diff(a, a_range, b, b_range, edits);
             }
             {
-                let a_range = (a_range.start + x_end)..a_range.end;
-                let b_range = (b_range.start + y_end)..b_range.end;
+                let a_range = x_end..a_range.end;
+                let b_range = y_end..b_range.end;
                 recursive_diff(a, a_range, b, b_range, edits);
             }
         } else if m > n {
+            // TODO: sort this out...
             // There is one edit left to do (d == 1); it's going to be an insertion.
-            println!("one insertion to go"); // TODO figure this out
             // let a_range = (a_range.start + x_end)..a_range.end;
             // let b_range = (b_range.start + y_end)..b_range.end;
             // recursive_diff(a, a_range, b, b_range, edits);
         } else if m < n {
+            // TODO: handle this
             // There is one edit left to do (d == 1); it's going to be an deletion.
-            println!("one deletion to go"); // TODO figure this out
             // let a_range = a_range.start..x_mid;
             // let b_range = b_range.start..y_mid;
             // recursive_diff(a, a_range, b, b_range, edits);
         }
     } else if n > 0 {
-        println!("else A, deleting {:?}", a_range);
         for i in a_range.clone() {
             edits.push(Delete(Idx(i + 1)));
         }
     } else {
-        println!("else B, inserting {:?}", b_range);
         for i in b_range.clone() {
             edits.push(Insert(Idx(i + 1)));
         }
@@ -620,9 +574,52 @@ mod tests {
         assert_eq!(snake, (6, 4, 7, 5, 2));
     }
 
-    // TODO: Run these tests for linear variant too.
     #[test]
     fn test_delete_everything() {
+        let a = vec!["goodbye", "cruel", "world"].join("\n");
+        let b = "";
+        assert_eq!(
+            diff_string_lines(&a, &b),
+            Diff(vec![Delete(Idx(1)), Delete(Idx(2)), Delete(Idx(3)),])
+        );
+    }
+
+    #[test]
+    fn test_add_to_empty_file() {
+        let a = "";
+        let b = vec!["hi", "there"].join("\n");
+        assert_eq!(diff_string_lines(&a, &b), Diff(vec![Insert(Idx(1)), Insert(Idx(2)),]));
+    }
+
+    #[test]
+    fn test_empty_to_empty_diff() {
+        let a = "";
+        let b = "";
+        assert_eq!(diff_string_lines(&a, &b), Diff(vec![]));
+    }
+
+    #[test]
+    fn test_example_from_myers_paper() {
+        let a = vec!["A", "B", "C", "A", "B", "B", "A"].join("\n");
+        let b = vec!["C", "B", "A", "B", "A", "C"].join("\n");
+
+        // Note this is different from the SES on page 6, but it is still a valid (5-long) script;
+        // see the implementation for details, but in the linear variant we follow Git's lead and
+        // reverse the iteration direction in our inner loops, producing a different graph.
+        assert_eq!(
+            diff_string_lines(&a, &b),
+            Diff(vec![
+                Delete(Idx(1)),
+                Delete(Idx(2)),
+                Delete(Idx(4)),
+                Insert(Idx(3)),
+                Insert(Idx(6)),
+            ])
+        );
+    }
+
+    #[test]
+    fn test_delete_everything_nd_variant() {
         let a = vec!["goodbye", "cruel", "world"].join("\n");
         let b = "";
         assert_eq!(
@@ -632,14 +629,14 @@ mod tests {
     }
 
     #[test]
-    fn test_add_to_empty_file() {
+    fn test_add_to_empty_file_nd_variant() {
         let a = "";
         let b = vec!["hi", "there"].join("\n");
         assert_eq!(diff_string_lines_nd(&a, &b), Diff(vec![Insert(Idx(1)), Insert(Idx(2)),]));
     }
 
     #[test]
-    fn test_empty_to_empty_diff() {
+    fn test_empty_to_empty_diff_nd_variant() {
         let a = "";
         let b = "";
         assert_eq!(diff_string_lines_nd(&a, &b), Diff(vec![]));
@@ -649,24 +646,10 @@ mod tests {
     fn test_example_from_myers_paper_nd_variant() {
         let a = vec!["A", "B", "C", "A", "B", "B", "A"].join("\n");
         let b = vec!["C", "B", "A", "B", "A", "C"].join("\n");
+
+        // This SES corresponds to the graph shown on page 6 of the paper.
         assert_eq!(
             diff_string_lines_nd(&a, &b),
-            Diff(vec![
-                Delete(Idx(1)),
-                Delete(Idx(2)),
-                Insert(Idx(2)),
-                Delete(Idx(6)),
-                Insert(Idx(6)),
-            ])
-        );
-    }
-
-    #[test]
-    fn test_example_from_myers_paper() {
-        let a = vec!["A", "B", "C", "A", "B", "B", "A"].join("\n");
-        let b = vec!["C", "B", "A", "B", "A", "C"].join("\n");
-        assert_eq!(
-            diff_string_lines(&a, &b),
             Diff(vec![
                 Delete(Idx(1)),
                 Delete(Idx(2)),
