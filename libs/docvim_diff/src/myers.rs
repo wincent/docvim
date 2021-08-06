@@ -362,7 +362,7 @@ where
             if (x as isize) + (v_forwards[reciprocal_k] as isize) >= n {
                 // Because we're searching in reverse, our "mid" coordinates (the start of the
                 // snake) and "end" coordinates (the end of the snake) need to be swapped to match
-                // the direction fo the forward-facing snakes. Here, again, we use "absolute"
+                // the direction of the forward-facing snakes. Here, again, we use "absolute"
                 // coordinates, which is what our caller cares about.
                 return (
                     a_range.end - x,
