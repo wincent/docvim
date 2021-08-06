@@ -4,6 +4,8 @@ use std::fs;
 use std::path::Path;
 
 use docvim_lexer::lua::Lexer;
+use docvim_diff::myers::diff;
+use docvim_diff::format_ses;
 
 /// Divider consisting of 72 downward-pointing arrows with a blank line before and after. The
 /// string "OUTPUT" appears in the middle to make it easy to jump to the divider using search.
@@ -37,10 +39,26 @@ fn check_snapshot(path: &str, callback: &dyn Fn(&str) -> String) -> Result<bool,
         } else if expected == transformed {
             Ok(true)
         } else {
-            // TODO report differences properly
-            println!("INPUT:\n{}", input);
-            println!("EXPECTED OUTPUT:\n{}", expected);
-            println!("ACTUAL OUTPUT:\n{}", transformed);
+            // TODO use histogram diff instead
+            // TODO: maybe don't use lines(); do i actually want to keep the trailing line endings?
+            let expected_lines = expected.lines().collect::<Vec<&str>>();
+            let transformed_lines = transformed.lines().collect::<Vec<&str>>();
+
+            // Show what change would be applied if we updated the snapshots.
+            let ses = diff(
+                &expected_lines,
+                0..expected_lines.len(),
+                &transformed_lines,
+                0..transformed_lines.len(),
+            );
+            let formatted = format_ses(ses,
+                &expected_lines,
+                0..expected_lines.len(),
+                &transformed_lines,
+                0..transformed_lines.len(),
+            );
+            println!("{}", formatted);
+
             println!("If output is correct, re-run with UPDATE_SNAPSHOTS=1");
             Ok(false)
         }

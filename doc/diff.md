@@ -15,6 +15,8 @@
 
 # Patience
 
+- ["Patience Diff Advantages"](https://bramcohen.livejournal.com/73318.html).
+- ["Patience Diff, a brief summary"](https://alfedenzo.livejournal.com/170301.html).
 - James Coglan's blog series:
   - ["The patience diff algorithm"](https://blog.jcoglan.com/2017/09/19/the-patience-diff-algorithm/).
   - ["Implementing patience diff"](https://blog.jcoglan.com/2017/09/28/implementing-patience-diff/).
@@ -25,3 +27,4 @@
 - Original contribution to Git: [8c912eea94, "teach --histogram to diff"](https://github.com/git/git/commit/8c912eea94a2138e8bc608f7c390eb0b313effb0).
 - Git implementation, [`xhistogram.c`](https://github.com/git/git/blob/master/xdiff/xhistogram.c).
 - JGit implementation, [`HistogramDiff.java`](https://github.com/spearce/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/diff/HistogramDiff.java).
+- ["How different are different diff algorithms in Git?"](https://link.springer.com/article/10.1007/s10664-019-09772-z).

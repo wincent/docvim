@@ -8,6 +8,8 @@ use crate::myers;
 // TODO: move this into tests if it is only used in tests.
 // use Edit::*;
 
+const MAX_CHAIN_LENGTH: usize = 64;
+
 pub fn diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
 where
     T: Index<usize> + ?Sized,

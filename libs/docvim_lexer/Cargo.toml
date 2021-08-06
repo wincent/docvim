@@ -1,5 +1,8 @@
 [dependencies]
 
+[dev-dependencies]
+docvim_diff = { path = "../docvim_diff" }
+
 [lib]
 
 [package]
