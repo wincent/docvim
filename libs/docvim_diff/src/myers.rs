@@ -1,4 +1,5 @@
 use std::convert::TryFrom;
+use std::hash::Hash;
 use std::ops::{Index, Range};
 
 use crate::diff::*;
@@ -24,7 +25,7 @@ pub fn diff_string_lines_nd(a: &str, b: &str) -> Diff {
 pub fn diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
 where
     T: Index<usize> + ?Sized,
-    T::Output: PartialEq,
+    T::Output: Hash,
 {
     let mut edits = vec![];
     recursive_diff(a, a_range, b, b_range, &mut edits);
@@ -76,7 +77,7 @@ where
 pub fn myers_nd_diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
 where
     T: Index<usize> + ?Sized,
-    T::Output: PartialEq,
+    T::Output: Hash,
 {
     // TODO: figure out how to reduce the number of casts here...
     // it's a frick'n' cast-fest
@@ -146,7 +147,7 @@ where
             //
             // Note that the Myers paper checks for equality at x + 1 and y + 1 (1-based indexing),
             // but we are using 0-based indexing here so as not to overflow:
-            while x < n && y < m && a[x] == b[y] {
+            while x < n && y < m && eq(a, x, b, y) {
                 x += 1;
                 y += 1;
             }
@@ -238,7 +239,7 @@ type Snake = (usize, usize, usize, usize, usize);
 fn find_middle_snake<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Snake
 where
     T: Index<usize> + ?Sized,
-    T::Output: PartialEq,
+    T::Output: Hash,
 {
     let n = usize_to_isize(a_range.len());
     let m = usize_to_isize(b_range.len());
@@ -275,7 +276,7 @@ where
             let y_mid = y;
             while x < (n as usize)
                 && y < (m as usize)
-                && a[a_range.start + x] == b[b_range.start + y]
+                && eq(a, a_range.start + x, b, b_range.start + y)
             {
                 x += 1;
                 y += 1;
@@ -334,7 +335,7 @@ where
             let y_mid = y;
             while x < (n as usize)
                 && y < (m as usize)
-                && a[a_range.end - x - 1] == b[b_range.end - y - 1]
+                && eq(a, a_range.end - x - 1, b, b_range.end - y - 1)
             {
                 x += 1;
                 y += 1;
@@ -385,7 +386,7 @@ fn recursive_diff<T>(
 ) -> ()
 where
     T: Index<usize> + ?Sized,
-    T::Output: PartialEq,
+    T::Output: Hash,
 {
     let n = a_range.len();
     let m = b_range.len();
@@ -584,13 +585,13 @@ mod tests {
     }
 
     // Too slow to leave enabled...
-    #[test]
-    fn test_speed_worst_case() {
-        // Excruciatingly slow.
-        let a = "a\n".repeat(10000);
-        let b = "b\n".repeat(10000);
-        diff_string_lines(&a, &b);
-    }
+    // #[test]
+    // fn test_speed_worst_case() {
+    //     // Excruciatingly slow.
+    //     let a = "a\n".repeat(10000);
+    //     let b = "b\n".repeat(10000);
+    //     diff_string_lines(&a, &b);
+    // }
 
     #[test]
     fn test_speed_best_case() {

@@ -13,31 +13,31 @@ const MAX_CHAIN_LENGTH: usize = 64;
 pub fn diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
 where
     T: Index<usize> + ?Sized,
-    T::Output: PartialEq,
+    T::Output: Hash,
 {
     // Create histogram of frequencies for each element in `a`.
-    // let mut a_freqs: HashMap<u64, usize> = HashMap::new();
-    // for idx in a_range.clone() {
-    //     let key = hash(a, idx);
-    //     let count = match a_freqs.get(&key) {
-    //         Some(value) => value + 1,
-    //         None => 1,
-    //     };
-    //     a_freqs.insert(key, count);
-    // }
-    // println!("hashmap:\n{:?}", a_freqs);
-    //
-    // // Compute frequencies for `b`.
-    // let mut b_freqs: HashMap<u64, usize> = HashMap::new();
-    // for idx in b_range.clone() {
-    //     let key = hash(a, idx);
-    //     let count = match b_freqs.get(&key) {
-    //         Some(value) => value + 1,
-    //         None => 1,
-    //     };
-    //     b_freqs.insert(key, count);
-    // }
-    //
+    let mut a_freqs: HashMap<u64, usize> = HashMap::new();
+    for idx in a_range.clone() {
+        let key = hash(a, idx);
+        let count = match a_freqs.get(&key) {
+            Some(value) => value + 1,
+            None => 1,
+        };
+        a_freqs.insert(key, count);
+    }
+    println!("hashmap:\n{:?}", a_freqs);
+
+    // Compute frequencies for `b`.
+    let mut b_freqs: HashMap<u64, usize> = HashMap::new();
+    for idx in b_range.clone() {
+        let key = hash(a, idx);
+        let count = match b_freqs.get(&key) {
+            Some(value) => value + 1,
+            None => 1,
+        };
+        b_freqs.insert(key, count);
+    }
+
     myers::diff(a, a_range, b, b_range)
 }
 
