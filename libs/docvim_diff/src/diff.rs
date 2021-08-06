@@ -18,16 +18,22 @@ pub enum Edit {
 #[derive(Debug, PartialEq)]
 pub struct Diff(pub Vec<Edit>);
 
+// TODO: if it ends up turning out that only myers.rs needs this, move it back there.
+// could also just use `hash()` (see further down).
 pub fn eq<T>(a: &T, a_idx: usize, b: &T, b_idx: usize) -> bool
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
+    hash(a, a_idx) == hash(b, b_idx)
+}
+
+pub fn hash<T>(val: &T, idx: usize) -> u64
+where
+    T: Index<usize> + ?Sized,
+    T::Output: Hash,
+{
     let mut hasher = DefaultHasher::new();
-    a[a_idx].hash(&mut hasher);
-    let a_hash = hasher.finish();
-    let mut hasher = DefaultHasher::new();
-    b[b_idx].hash(&mut hasher);
-    let b_hash = hasher.finish();
-    a_hash == b_hash
+    val[idx].hash(&mut hasher);
+    hasher.finish()
 }

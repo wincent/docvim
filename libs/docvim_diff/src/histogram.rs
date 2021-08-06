@@ -1,23 +1,49 @@
+use std::collections::HashMap;
 use std::hash::Hash;
 use std::ops::{Index, Range};
 
 use crate::diff::*;
 use crate::myers;
 
-use Edit::*;
+// TODO: move this into tests if it is only used in tests.
+// use Edit::*;
 
 pub fn diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
-    // Create histogram of frequences for each element in `a`.
+    // Create histogram of frequencies for each element in `a`.
+    let mut a_freqs: HashMap<u64, usize> = HashMap::new();
+    for idx in a_range.clone() {
+        let key = hash(a, idx);
+        let count = match a_freqs.get(&key) {
+            Some(value) => value + 1,
+            None => 1,
+        };
+        a_freqs.insert(key, count);
+    }
+    println!("hashmap:\n{:?}", a_freqs);
+
+    // Compute frequencies for `b`.
+    let mut b_freqs: HashMap<u64, usize> = HashMap::new();
+    for idx in b_range.clone() {
+        let key = hash(a, idx);
+        let count = match b_freqs.get(&key) {
+            Some(value) => value + 1,
+            None => 1,
+        };
+        b_freqs.insert(key, count);
+    }
+
     myers::diff(a, a_range, b, b_range)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use Edit::*;
 
     #[test]
     fn blinking_light() {
@@ -27,6 +53,7 @@ mod tests {
         assert_eq!(
             diff(&a, 0..a.len(), &b, 0..b.len()),
             Diff(vec![
+                // comment out one of these to break test so i can see my println, if desired
                 Delete(Idx(1)),
                 Delete(Idx(2)),
                 Delete(Idx(4)),
