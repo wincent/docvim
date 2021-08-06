@@ -601,6 +601,13 @@ mod tests {
         let snake = find_middle_snake(&a, 0..a.len(), &b, 0..b.len());
 
         assert_eq!(snake, (0, 0, 3, 3, 0));
+
+        // When there are no snakes except zero-length ones.
+        let a = vec!["A", "B", "C"];
+        let b = vec!["X", "Y", "Z"];
+        let snake = find_middle_snake(&a, 0..a.len(), &b, 0..b.len());
+
+        assert_eq!(snake, (0, 3, 0, 3, 6));
     }
 
     #[test]
