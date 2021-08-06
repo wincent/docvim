@@ -1,4 +1,4 @@
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::ops::{Index, Range};
 
 use crate::diff::*;
@@ -11,6 +11,7 @@ where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
 {
+    // Create histogram of frequences for each element in `a`.
     myers::diff(a, a_range, b, b_range)
 }
 

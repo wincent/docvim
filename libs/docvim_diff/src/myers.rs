@@ -1,6 +1,5 @@
-use std::collections::hash_map::DefaultHasher;
 use std::convert::TryFrom;
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::ops::{Index, Range};
 
 use crate::diff::*;
@@ -225,20 +224,6 @@ fn myers_nd_generate_path(
     edits.reverse();
 }
 
-fn eq<T>(a: &T, a_idx: usize, b: &T, b_idx: usize) -> bool
-where
-    T: Index<usize> + ?Sized,
-    T::Output: Hash,
-{
-    let mut hasher = DefaultHasher::new();
-    a[a_idx].hash(&mut hasher);
-    let a_hash = hasher.finish();
-    let mut hasher = DefaultHasher::new();
-    b[b_idx].hash(&mut hasher);
-    let b_hash = hasher.finish();
-    a_hash == b_hash
-}
-
 fn usize_to_isize(n: usize) -> isize {
     isize::try_from(n).expect("overflow converting from usize to isize")
 }
@@ -251,12 +236,7 @@ type Snake = (usize, usize, usize, usize, usize);
 
 // TODO: when input lengths are very different, switch to more complicated alg that avoids
 // exploring beyond graph bounds.
-fn find_middle_snake<T>(
-    a: &T,
-    a_range: Range<usize>,
-    b: &T,
-    b_range: Range<usize>,
-) -> Snake
+fn find_middle_snake<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Snake
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash,
@@ -294,7 +274,8 @@ where
             y = ((x as isize) - k) as usize;
             let x_mid = x;
             let y_mid = y;
-            while x < (n as usize) && y < (m as usize)
+            while x < (n as usize)
+                && y < (m as usize)
                 && eq(a, a_range.start + x, b, b_range.start + y)
             {
                 x += 1;
@@ -323,8 +304,7 @@ where
             // - `v_reverse[reciprocal_k]`: reverse horizontal travel ending on reciprocal k-line.
             //
             // If they sum to `n` or more, the snakes must overlap.
-            if (x as isize) + (v_reverse[reciprocal_k] as isize) >= n
-            {
+            if (x as isize) + (v_reverse[reciprocal_k] as isize) >= n {
                 // Paths overlap. Last snake of forward path is the middle one. Convert back to
                 // "absolute" coordinates before returning.
                 return (
@@ -399,7 +379,7 @@ fn recursive_diff<T>(
     a_range: Range<usize>,
     b: &T,
     b_range: Range<usize>,
-    edits: &mut Vec<Edit>
+    edits: &mut Vec<Edit>,
 ) -> ()
 where
     T: Index<usize> + ?Sized,
@@ -411,7 +391,7 @@ where
         let (x_mid, y_mid, x_end, y_end, d) =
             find_middle_snake(a, a_range.clone(), b, b_range.clone());
 
-        if d > 1  {
+        if d > 1 {
             // Divide and conquer.
             {
                 let a_range = a_range.start..x_mid;
@@ -550,19 +530,13 @@ mod tests {
         let a = vec!["A", "B"].join("\n");
         let b = vec!["A", "A", "B"].join("\n");
 
-        assert_eq!(
-            diff_string_lines(&a, &b),
-            Diff(vec![Insert(Idx(2))])
-        );
+        assert_eq!(diff_string_lines(&a, &b), Diff(vec![Insert(Idx(2))]));
 
         // For symmetry...
         let a = vec!["A", "A", "B"].join("\n");
         let b = vec!["A", "B"].join("\n");
 
-        assert_eq!(
-            diff_string_lines(&a, &b),
-            Diff(vec![Delete(Idx(2))])
-        );
+        assert_eq!(diff_string_lines(&a, &b), Diff(vec![Delete(Idx(2))]));
     }
 
     #[test]
