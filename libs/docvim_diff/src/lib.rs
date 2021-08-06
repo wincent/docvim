@@ -1,5 +1,6 @@
 pub mod histogram;
 pub mod myers;
+mod ring_buffer;
 
 //mod util; // string splitting and such?
 
