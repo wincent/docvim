@@ -14,6 +14,15 @@ impl RingBuffer {
     pub fn new(capacity: usize) -> Self {
         RingBuffer { capacity, storage: vec![0; capacity] }
     }
+
+    pub fn clear(&mut self, max: usize) {
+        let count = max * 2 + 1;
+        if count > self.capacity {
+            panic!("cannot clear max that would exceed capacity");
+        }
+        let slice = &mut self.storage[0..count];
+        slice.fill(0);
+    }
 }
 
 // Note to self: this is ridiculous; I should probably just keep two vectors.
