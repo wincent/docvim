@@ -293,7 +293,7 @@ where
             let reciprocal_k = -(k - delta);
 
             // Does reciprocal k-line fall within range -(d - 1) to (d - 1)? Anything outside
-            // that can't possibly overlap.
+            // that can't possibly overlap because the reverse search won't have explored it yet.
             if reciprocal_k < -(d - 1) || reciprocal_k > (d - 1) {
                 continue;
             }
@@ -348,10 +348,13 @@ where
 
             let reciprocal_k = -(k - delta);
 
-            // When the delta is even, any forward and reverse paths that meet in the middle
-            // will each have an equal number of differences. To be on an even k-line, you must
-            // have an even number of edits; conversely, to be on an odd k-line, you must have
-            // an odd number of edits.
+            // Does reciprocal k-line fall within range -d to d? Anything outside that can't
+            // possibly overlap because the forward search won't have explored it yet.
+            //
+            // Tangential observation: when the delta is even, any forward and reverse paths that
+            // meet in the middle will each have an equal number of differences. To be on an even
+            // k-line, you must have an even number of edits; conversely, to be on an odd k-line,
+            // you must have an odd number of edits.
             if reciprocal_k < -d || reciprocal_k > d {
                 continue;
             }

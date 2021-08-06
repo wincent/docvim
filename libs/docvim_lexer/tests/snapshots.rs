@@ -3,9 +3,9 @@ use std::error::Error;
 use std::fs;
 use std::path::Path;
 
-use docvim_lexer::lua::Lexer;
-use docvim_diff::myers::diff;
 use docvim_diff::format_ses;
+use docvim_diff::myers::diff;
+use docvim_lexer::lua::Lexer;
 
 /// Divider consisting of 72 downward-pointing arrows with a blank line before and after. The
 /// string "OUTPUT" appears in the middle to make it easy to jump to the divider using search.
@@ -51,7 +51,8 @@ fn check_snapshot(path: &str, callback: &dyn Fn(&str) -> String) -> Result<bool,
                 &transformed_lines,
                 0..transformed_lines.len(),
             );
-            let formatted = format_ses(ses,
+            let formatted = format_ses(
+                ses,
                 &expected_lines,
                 0..expected_lines.len(),
                 &transformed_lines,

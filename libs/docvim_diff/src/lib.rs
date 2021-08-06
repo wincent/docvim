@@ -6,15 +6,21 @@ mod ring_buffer;
 //mod util; // string splitting and such?
 
 // use std::hash::Hash;
-use std::ops::{Index, Range};
 use crate::diff::*;
+use std::ops::{Index, Range};
 use Edit::*;
 
 const GREEN: &str = "\x1b[0;32m";
 const RED: &str = "\x1b[0;31m";
 const RESET: &str = "\x1b[0m";
 
-pub fn format_ses<T>(ses: Diff, a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> String
+pub fn format_ses<T>(
+    ses: Diff,
+    a: &T,
+    a_range: Range<usize>,
+    b: &T,
+    b_range: Range<usize>,
+) -> String
 where
     T: Index<usize> + ?Sized,
     T::Output: std::fmt::Display,
@@ -35,7 +41,7 @@ where
                 }
                 diff.push_str(&format!("{}-{}{}\n", GREEN, &a[a_idx - 1], RESET));
                 a_idx += 1;
-            },
+            }
             Insert(Idx(insert)) => {
                 while b_idx < insert {
                     diff.push_str(&format!(" {}\n", &b[b_idx - 1]));
@@ -44,7 +50,7 @@ where
                 }
                 diff.push_str(&format!("{}+{}{}\n", RED, &b[b_idx - 1], RESET));
                 b_idx += 1;
-            },
+            }
         }
     }
 

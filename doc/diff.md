@@ -12,6 +12,7 @@
   - ["Myers diff in linear space: theory"](https://blog.jcoglan.com/2017/03/22/myers-diff-in-linear-space-theory/)
   - ["Myers diff in linear space: implementation"](https://blog.jcoglan.com/2017/04/25/myers-diff-in-linear-space-implementation/)
 - JGit implementation, [`MyersDiff.java`](https://github.com/spearce/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/diff/MyersDiff.java).
+- Binary implementation with some neat optimizations, [`HFByteArrayEditScript.m`](https://github.com/HexFiend/HexFiend/blob/master/framework/sources/HFByteArrayEditScript.m).
 
 # Patience
 
