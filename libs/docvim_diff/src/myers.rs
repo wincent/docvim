@@ -318,15 +318,14 @@ where
 
     // SES length will be odd when delta is odd. If it's odd, we'll check for overlap when
     // extending forward paths; if it's even, we'll check for overlap when extending reverse paths.
-    let odd = delta % 2 == 1;
-
-    // Fake ceil because we want `max / 2` in our `for` below to be equivalent to `ceil(max / 2)`.
-    let max = if odd { max + 1 } else { max };
+    let odd = delta & 1 == 1;
+    println!("find middle: n={} m={} d={} odd?={} a_range={:?} b_range={:?}", n, m, delta, odd, a_range, b_range);
 
     v_forwards[1] = 0; // Technically it's already 0, but to make it explicit.
     v_reverse[1] = 0; // Technically it's already 0, but to make it explicit.
 
-    for d in 0..=(max / 2) {
+    // `(max + 1) / 2` here is a shorthand for `ceil(max / 2)`
+    for d in 0..=((max + 1) / 2) {
         // Forward search; note that unlike the Myers paper, we iterate in reverse order in order
         // to match Git's behavior. We still get a valid Shortest Edit Script, but it may be a
         // different one because the greedy algorithm will stop at the first overlapping path it
