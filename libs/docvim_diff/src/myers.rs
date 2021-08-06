@@ -3,25 +3,10 @@ use std::convert::TryFrom;
 use std::hash::{Hash, Hasher};
 use std::ops::{Index, Range};
 
+use crate::diff::*;
 use crate::ring_buffer::RingBuffer;
 
-use self::Edit::*;
-
-/// 1-based indexing because Myers' original paper used 1-based indexing, and because text files
-/// (which is what we are typically diffing) are viewed/edited in editors which generally use
-/// 1-based indexing too.
-#[derive(Debug, PartialEq)]
-struct Idx(usize);
-
-#[derive(Debug, PartialEq)]
-enum Edit {
-    Delete(Idx),
-    Insert(Idx),
-}
-
-/// Represents SES (Shortest Edit Script) for a given pair of documents.
-#[derive(Debug, PartialEq)]
-pub struct Diff(Vec<Edit>);
+use Edit::*;
 
 // TODO: figure out whether to keep these around... ultimately the caller will also want the lines;
 // might be better off with just `diff_lines()`, but in that case, you may as well pass them

@@ -1,3 +1,4 @@
+pub mod diff;
 pub mod histogram;
 pub mod myers;
 mod ring_buffer;
