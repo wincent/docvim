@@ -18,7 +18,14 @@ pub enum Edit {
 pub struct Diff(pub Vec<Edit>);
 
 // TODO: if it ends up turning out that only myers.rs needs this, move it back there.
-pub fn eq<T>(a: &T, a_idx: usize, a_hashes: &Vec<u64>, b: &T, b_idx: usize, b_hashes: &Vec<u64>) -> bool
+pub fn eq<T>(
+    a: &T,
+    a_idx: usize,
+    a_hashes: &Vec<u64>,
+    b: &T,
+    b_idx: usize,
+    b_hashes: &Vec<u64>,
+) -> bool
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash + PartialEq,
@@ -62,9 +69,7 @@ pub struct Djb2aHasher {
 
 impl Djb2aHasher {
     pub fn new() -> Self {
-        Djb2aHasher {
-            state: 5381,
-        }
+        Djb2aHasher { state: 5381 }
     }
 }
 
@@ -105,9 +110,7 @@ pub struct Djb2Hasher {
 
 impl Djb2Hasher {
     pub fn new() -> Self {
-        Djb2Hasher {
-            state: 5381,
-        }
+        Djb2Hasher { state: 5381 }
     }
 }
 
@@ -122,7 +125,6 @@ impl Hasher for Djb2Hasher {
         }
     }
 }
-
 
 #[cfg(test)]
 mod test {

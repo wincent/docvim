@@ -256,7 +256,14 @@ type Snake = (usize, usize, usize, usize, usize);
 
 // TODO: when input lengths are very different, switch to more complicated alg that avoids
 // exploring beyond graph bounds.
-fn find_middle_snake<T>(a: &T, a_range: Range<usize>, a_hashes: &Vec<u64>, b: &T, b_range: Range<usize>, b_hashes: &Vec<u64>) -> Snake
+fn find_middle_snake<T>(
+    a: &T,
+    a_range: Range<usize>,
+    a_hashes: &Vec<u64>,
+    b: &T,
+    b_range: Range<usize>,
+    b_hashes: &Vec<u64>,
+) -> Snake
 where
     T: Index<usize> + ?Sized,
     T::Output: Hash + PartialEq,
@@ -505,7 +512,6 @@ mod tests {
     //
     //     assert_eq!(snake, (0, 3, 0, 3, 6));
     // }
-
     #[test]
     fn test_delete_everything() {
         let a = vec!["goodbye", "cruel", "world"].join("\n");
