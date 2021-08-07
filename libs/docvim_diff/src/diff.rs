@@ -32,7 +32,7 @@ where
     a_hashes[a_idx] == b_hashes[b_idx] && a[a_idx] == b[b_idx]
 }
 
-pub fn hash<T>(val: T) -> u64
+pub fn hash<T>(val: &T) -> u64
 where
     T: Hash,
 {
