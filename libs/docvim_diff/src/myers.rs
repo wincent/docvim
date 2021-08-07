@@ -7,28 +7,15 @@ use crate::ring_buffer::RingBuffer;
 
 use Edit::*;
 
-// TODO: figure out whether to keep these around... ultimately the caller will also want the lines;
-// might be better off with just `diff_lines()`, but in that case, you may as well pass them
-// directly to `diff()`.
-pub fn diff_string_lines(a: &str, b: &str) -> Diff {
-    let a = a.lines().collect::<Vec<&str>>();
-    let b = b.lines().collect::<Vec<&str>>();
-    diff(&a, 0..a.len(), &b, 0..b.len())
-}
-
-pub fn diff_string_lines_nd(a: &str, b: &str) -> Diff {
-    let a = a.lines().collect::<Vec<&str>>();
-    let b = b.lines().collect::<Vec<&str>>();
-    myers_nd_diff(&a, 0..a.len(), &b, 0..b.len())
-}
-
-pub fn diff<T>(a: &Vec<T>, a_range: Range<usize>, b: &Vec<T>, b_range: Range<usize>) -> Diff
+pub fn diff<T>(a: &Vec<T>, b: &Vec<T>) -> Diff
 where
     T: Hash + PartialEq,
 {
     let mut edits = vec![];
     let a_hashes = a.iter().map(hash).collect();
     let b_hashes = b.iter().map(hash).collect();
+    let a_range = 0..a.len();
+    let b_range = 0..b.len();
     recursive_diff(a, a_range, &a_hashes, b, b_range, &b_hashes, &mut edits);
     Diff(edits)
 }
@@ -75,19 +62,14 @@ where
 /// quadratic growth which makes this algorithm impractical for anything but the most modest input
 /// sizes.
 ///
-pub fn myers_nd_diff<T>(
-    a: &Vec<T>,
-    a_range: Range<usize>,
-    b: &Vec<T>,
-    b_range: Range<usize>,
-) -> Diff
+pub fn diff_nd<T>(a: &Vec<T>, b: &Vec<T>) -> Diff
 where
     T: Hash + PartialEq,
 {
     // TODO: figure out how to reduce the number of casts here...
     // it's a frick'n' cast-fest
-    let n = a_range.len();
-    let m = b_range.len();
+    let n = a.len();
+    let m = b.len();
     let max = n + m;
     let mut v = RingBuffer::new(max * 2 + 1); // Range from -max to +max, with extra slot for 0.
     let mut vs = vec![];
@@ -510,38 +492,35 @@ mod tests {
 
     #[test]
     fn test_delete_everything() {
-        let a = vec!["goodbye", "cruel", "world"].join("\n");
-        let b = "";
-        assert_eq!(
-            diff_string_lines(&a, &b),
-            Diff(vec![Delete(Idx(1)), Delete(Idx(2)), Delete(Idx(3)),])
-        );
+        let a = vec!["goodbye", "cruel", "world"];
+        let b = vec![];
+        assert_eq!(diff(&a, &b), Diff(vec![Delete(Idx(1)), Delete(Idx(2)), Delete(Idx(3)),]));
     }
 
     #[test]
     fn test_add_to_empty_file() {
-        let a = "";
-        let b = vec!["hi", "there"].join("\n");
-        assert_eq!(diff_string_lines(&a, &b), Diff(vec![Insert(Idx(1)), Insert(Idx(2)),]));
+        let a = vec![];
+        let b = vec!["hi", "there"];
+        assert_eq!(diff(&a, &b), Diff(vec![Insert(Idx(1)), Insert(Idx(2)),]));
     }
 
     #[test]
     fn test_empty_to_empty_diff() {
-        let a = "";
-        let b = "";
-        assert_eq!(diff_string_lines(&a, &b), Diff(vec![]));
+        let a: Vec<&str> = vec![];
+        let b: Vec<&str> = vec![];
+        assert_eq!(diff(&a, &b), Diff(vec![]));
     }
 
     #[test]
     fn test_example_from_myers_paper() {
-        let a = vec!["A", "B", "C", "A", "B", "B", "A"].join("\n");
-        let b = vec!["C", "B", "A", "B", "A", "C"].join("\n");
+        let a = vec!["A", "B", "C", "A", "B", "B", "A"];
+        let b = vec!["C", "B", "A", "B", "A", "C"];
 
         // Note this is different from the SES on page 6, but it is still a valid (5-long) script;
         // see the implementation for details, but in the linear variant we follow Git's lead and
         // reverse the iteration direction in our inner loops, producing a different graph.
         assert_eq!(
-            diff_string_lines(&a, &b),
+            diff(&a, &b),
             Diff(vec![
                 Delete(Idx(1)),
                 Delete(Idx(2)),
@@ -554,50 +533,47 @@ mod tests {
 
     #[test]
     fn test_stack_overflow_regression() {
-        let a = vec!["A", "B"].join("\n");
-        let b = vec!["A", "A", "B"].join("\n");
+        let a = vec!["A", "B"];
+        let b = vec!["A", "A", "B"];
 
-        assert_eq!(diff_string_lines(&a, &b), Diff(vec![Insert(Idx(2))]));
+        assert_eq!(diff(&a, &b), Diff(vec![Insert(Idx(2))]));
 
         // For symmetry...
-        let a = vec!["A", "A", "B"].join("\n");
-        let b = vec!["A", "B"].join("\n");
+        let a = vec!["A", "A", "B"];
+        let b = vec!["A", "B"];
 
-        assert_eq!(diff_string_lines(&a, &b), Diff(vec![Delete(Idx(2))]));
+        assert_eq!(diff(&a, &b), Diff(vec![Delete(Idx(2))]));
     }
 
     #[test]
     fn test_delete_everything_nd_variant() {
-        let a = vec!["goodbye", "cruel", "world"].join("\n");
-        let b = "";
-        assert_eq!(
-            diff_string_lines_nd(&a, &b),
-            Diff(vec![Delete(Idx(1)), Delete(Idx(2)), Delete(Idx(3)),])
-        );
+        let a = vec!["goodbye", "cruel", "world"];
+        let b = vec![];
+        assert_eq!(diff(&a, &b), Diff(vec![Delete(Idx(1)), Delete(Idx(2)), Delete(Idx(3)),]));
     }
 
     #[test]
     fn test_add_to_empty_file_nd_variant() {
-        let a = "";
-        let b = vec!["hi", "there"].join("\n");
-        assert_eq!(diff_string_lines_nd(&a, &b), Diff(vec![Insert(Idx(1)), Insert(Idx(2)),]));
+        let a = vec![];
+        let b = vec!["hi", "there"];
+        assert_eq!(diff_nd(&a, &b), Diff(vec![Insert(Idx(1)), Insert(Idx(2)),]));
     }
 
     #[test]
     fn test_empty_to_empty_diff_nd_variant() {
-        let a = "";
-        let b = "";
-        assert_eq!(diff_string_lines_nd(&a, &b), Diff(vec![]));
+        let a: Vec<&str> = vec![];
+        let b: Vec<&str> = vec![];
+        assert_eq!(diff_nd(&a, &b), Diff(vec![]));
     }
 
     #[test]
     fn test_example_from_myers_paper_nd_variant() {
-        let a = vec!["A", "B", "C", "A", "B", "B", "A"].join("\n");
-        let b = vec!["C", "B", "A", "B", "A", "C"].join("\n");
+        let a = vec!["A", "B", "C", "A", "B", "B", "A"];
+        let b = vec!["C", "B", "A", "B", "A", "C"];
 
         // This SES corresponds to the graph shown on page 6 of the paper.
         assert_eq!(
-            diff_string_lines_nd(&a, &b),
+            diff_nd(&a, &b),
             Diff(vec![
                 Delete(Idx(1)),
                 Delete(Idx(2)),
@@ -612,16 +588,16 @@ mod tests {
     // #[test]
     // fn test_speed_worst_case() {
     //     // Excruciatingly slow.
-    //     let a = "a\n".repeat(10000);
-    //     let b = "b\n".repeat(10000);
-    //     diff_string_lines(&a, &b);
+    //     let a = vec!["a\n"; 10000];
+    //     let b = vec!["b\n"; 10000];
+    //     diff(&a, &b);
     // }
 
     #[test]
     fn test_speed_best_case() {
         // Basically instant.
-        let a = "a\n".repeat(10000);
-        let b = "a\n".repeat(10000);
-        diff_string_lines(&a, &b);
+        let a = vec!["a\n"; 10000];
+        let b = vec!["a\n"; 10000];
+        diff(&a, &b);
     }
 }

@@ -45,19 +45,8 @@ fn check_snapshot(path: &str, callback: &dyn Fn(&str) -> String) -> Result<bool,
             let transformed_lines = transformed.lines().collect::<Vec<&str>>();
 
             // Show what change would be applied if we updated the snapshots.
-            let ses = diff(
-                &expected_lines,
-                0..expected_lines.len(),
-                &transformed_lines,
-                0..transformed_lines.len(),
-            );
-            let formatted = format_ses(
-                ses,
-                &expected_lines,
-                0..expected_lines.len(),
-                &transformed_lines,
-                0..transformed_lines.len(),
-            );
+            let ses = diff(&expected_lines, &transformed_lines);
+            let formatted = format_ses(ses, &expected_lines, &transformed_lines);
             println!("{}", formatted);
 
             println!("If output is correct, re-run with UPDATE_SNAPSHOTS=1");

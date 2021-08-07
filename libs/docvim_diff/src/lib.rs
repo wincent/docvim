@@ -14,13 +14,7 @@ const GREEN: &str = "\x1b[0;32m";
 const RED: &str = "\x1b[0;31m";
 const RESET: &str = "\x1b[0m";
 
-pub fn format_ses<T>(
-    ses: Diff,
-    a: &Vec<T>,
-    a_range: Range<usize>,
-    b: &Vec<T>,
-    b_range: Range<usize>,
-) -> String
+pub fn format_ses<T>(ses: Diff, a: &Vec<T>, b: &Vec<T>) -> String
 where
     T: std::fmt::Display + PartialEq,
 {

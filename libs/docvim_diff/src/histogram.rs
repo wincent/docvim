@@ -14,6 +14,15 @@ pub fn diff<T>(a: &Vec<T>, a_range: Range<usize>, b: &Vec<T>, b_range: Range<usi
 where
     T: Hash + PartialEq,
 {
+    // Precompute line hashes.
+    // Note that of now we always just operate on the entirety of `a` and `b` regardless of the
+    // `a_range` and `b_range` parameters.
+    let a_hashes: Vec<u64> = a.iter().map(hash).collect();
+    let b_hashes: Vec<u64> = b.iter().map(hash).collect();
+
+    // Create hash table for a.
+    // let a_table = Vec::with_capacity(...);
+
     // Create histogram of frequencies for each element in `a`.
     let mut a_freqs: HashMap<u64, usize> = HashMap::new();
     for idx in a_range.clone() {
@@ -37,7 +46,7 @@ where
         b_freqs.insert(key, count);
     }
 
-    myers::diff(a, a_range, b, b_range)
+    myers::diff(a, b)
 }
 
 #[cfg(test)]
