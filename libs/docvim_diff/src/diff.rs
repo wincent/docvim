@@ -1,5 +1,4 @@
 use std::hash::{Hash, Hasher};
-use std::ops::Index;
 
 /// 1-based indexing because Myers' original paper used 1-based indexing, and because text files
 /// (which is what we are typically diffing) are viewed/edited in editors which generally use

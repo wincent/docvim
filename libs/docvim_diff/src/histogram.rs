@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
-use std::ops::{Index, Range};
+use std::ops::Range;
 
 use crate::diff::*;
 use crate::myers;
