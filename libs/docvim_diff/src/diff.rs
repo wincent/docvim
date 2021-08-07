@@ -34,7 +34,7 @@ where
 
 pub fn hash<T>(val: T) -> u64
 where
-    T: Hash + PartialEq,
+    T: Hash,
 {
     // See docs/hash.md for why we're using the "djb2a" hash.
     let mut hasher = Djb2aHasher::new();
