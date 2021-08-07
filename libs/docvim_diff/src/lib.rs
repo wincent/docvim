@@ -23,7 +23,7 @@ pub fn format_ses<T>(
 ) -> String
 where
     T: Index<usize> + ?Sized,
-    T::Output: std::fmt::Display,
+    T::Output: std::fmt::Display + PartialEq,
 {
     let mut diff = String::new();
 

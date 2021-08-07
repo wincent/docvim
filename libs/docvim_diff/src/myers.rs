@@ -26,7 +26,7 @@ pub fn diff_string_lines_nd(a: &str, b: &str) -> Diff {
 pub fn diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
 where
     T: Index<usize> + ?Sized,
-    T::Output: Hash,
+    T::Output: Hash + PartialEq,
 {
     let mut edits = vec![];
     // TODO: this is painful... should I require iterable too?
@@ -87,7 +87,7 @@ where
 pub fn myers_nd_diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
 where
     T: Index<usize> + ?Sized,
-    T::Output: Hash,
+    T::Output: Hash + PartialEq,
 {
     // TODO: figure out how to reduce the number of casts here...
     // it's a frick'n' cast-fest
@@ -97,6 +97,16 @@ where
     let mut v = RingBuffer::new(max * 2 + 1); // Range from -max to +max, with extra slot for 0.
     let mut vs = vec![];
     v[1] = 0; // Technically it's already 0, but to make it explicit.
+
+    // Pre-compute hashes for perf.
+    let mut a_hashes = Vec::with_capacity(a_range.len());
+    for i in a_range.clone() {
+        a_hashes.push(hash(a, i));
+    }
+    let mut b_hashes = Vec::with_capacity(b_range.len());
+    for i in b_range.clone() {
+        b_hashes.push(hash(b, i));
+    }
 
     // Find all "D-paths" between the origin (0, 0) and the destination (n, m). A D-path represents
     // all the locations that can be reached in the edit graph after D edits. The algorithm is
@@ -157,7 +167,7 @@ where
             //
             // Note that the Myers paper checks for equality at x + 1 and y + 1 (1-based indexing),
             // but we are using 0-based indexing here so as not to overflow:
-            while x < n && y < m && eq(a, x, b, y) {
+            while x < n && y < m && eq(a, x, &a_hashes, b, y, &b_hashes) {
                 x += 1;
                 y += 1;
             }
@@ -249,7 +259,7 @@ type Snake = (usize, usize, usize, usize, usize);
 fn find_middle_snake<T>(a: &T, a_range: Range<usize>, a_hashes: &Vec<u64>, b: &T, b_range: Range<usize>, b_hashes: &Vec<u64>) -> Snake
 where
     T: Index<usize> + ?Sized,
-    T::Output: Hash,
+    T::Output: Hash + PartialEq,
 {
     let n = usize_to_isize(a_range.len());
     let m = usize_to_isize(b_range.len());
@@ -286,8 +296,7 @@ where
             let y_mid = y;
             while x < (n as usize)
                 && y < (m as usize)
-                // && eq(a, a_range.start + x, b, b_range.start + y)
-                && a_hashes[a_range.start + x] == b_hashes[b_range.start + y]
+                && eq(a, a_range.start + x, a_hashes, b, b_range.start + y, b_hashes)
             {
                 x += 1;
                 y += 1;
@@ -346,8 +355,7 @@ where
             let y_mid = y;
             while x < (n as usize)
                 && y < (m as usize)
-                // && eq(a, a_range.end - x - 1, b, b_range.end - y - 1)
-                && a_hashes[a_range.end - x - 1] == b_hashes[b_range.end - y - 1]
+                && eq(a, a_range.end - x - 1, a_hashes, b, b_range.end - y - 1, b_hashes)
             {
                 x += 1;
                 y += 1;
@@ -400,7 +408,7 @@ fn recursive_diff<T>(
 ) -> ()
 where
     T: Index<usize> + ?Sized,
-    T::Output: Hash,
+    T::Output: Hash + PartialEq,
 {
     let n = a_range.len();
     let m = b_range.len();

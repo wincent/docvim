@@ -18,22 +18,18 @@ pub enum Edit {
 pub struct Diff(pub Vec<Edit>);
 
 // TODO: if it ends up turning out that only myers.rs needs this, move it back there.
-// could also just use `hash()` (see further down).
-//
-// BUG: this is not really `eq`; hash collisions may occur. The only thing this can tell us for
-// sure is that the values are _not_ equal when the hashes are not equal.
-pub fn eq<T>(a: &T, a_idx: usize, b: &T, b_idx: usize) -> bool
+pub fn eq<T>(a: &T, a_idx: usize, a_hashes: &Vec<u64>, b: &T, b_idx: usize, b_hashes: &Vec<u64>) -> bool
 where
     T: Index<usize> + ?Sized,
-    T::Output: Hash,
+    T::Output: Hash + PartialEq,
 {
-    hash(a, a_idx) == hash(b, b_idx)
+    a_hashes[a_idx] == b_hashes[b_idx] && a[a_idx] == b[b_idx]
 }
 
 pub fn hash<T>(val: &T, idx: usize) -> u64
 where
     T: Index<usize> + ?Sized,
-    T::Output: Hash,
+    T::Output: Hash + PartialEq,
 {
     // See docs/hash.md for why we're using the "djb2a" hash.
     let mut hasher = Djb2aHasher::new();
