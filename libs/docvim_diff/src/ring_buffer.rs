@@ -1,7 +1,8 @@
 use std::ops::{Index, IndexMut};
 
 /// The Myers paper specifies an array (`V[-MAX..MAX]`) that allows negative indices, so we
-/// substitute a ring buffer for that.
+/// substitute a ring buffer for that. Positive indices that exceed the capacity wrap around;
+/// negative indices wrap around in the opposite direction.
 #[derive(Clone, Debug)]
 pub struct RingBuffer {
     capacity: usize,
