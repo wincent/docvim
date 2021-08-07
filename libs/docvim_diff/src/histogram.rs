@@ -17,7 +17,7 @@ where
     // Create histogram of frequencies for each element in `a`.
     let mut a_freqs: HashMap<u64, usize> = HashMap::new();
     for idx in a_range.clone() {
-        let key = hash(a, idx);
+        let key = hash(&a[idx]);
         let count = match a_freqs.get(&key) {
             Some(value) => value + 1,
             None => 1,
@@ -29,7 +29,7 @@ where
     // Compute frequencies for `b`.
     let mut b_freqs: HashMap<u64, usize> = HashMap::new();
     for idx in b_range.clone() {
-        let key = hash(a, idx);
+        let key = hash(&a[idx]);
         let count = match b_freqs.get(&key) {
             Some(value) => value + 1,
             None => 1,

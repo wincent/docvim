@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 use std::hash::Hash;
-use std::ops::{Index, Range};
+use std::ops::Range;
 
 use crate::diff::*;
 use crate::ring_buffer::RingBuffer;
@@ -27,15 +27,8 @@ where
     T: Hash + PartialEq,
 {
     let mut edits = vec![];
-    // TODO: this is painful... should I require iterable too?
-    let mut a_hashes = Vec::with_capacity(a_range.len());
-    for i in a_range.clone() {
-        a_hashes.push(hash(a, i));
-    }
-    let mut b_hashes = Vec::with_capacity(b_range.len());
-    for i in b_range.clone() {
-        b_hashes.push(hash(b, i));
-    }
+    let a_hashes = a.iter().map(hash).collect();
+    let b_hashes = b.iter().map(hash).collect();
     recursive_diff(a, a_range, &a_hashes, b, b_range, &b_hashes, &mut edits);
     Diff(edits)
 }
@@ -100,15 +93,9 @@ where
     let mut vs = vec![];
     v[1] = 0; // Technically it's already 0, but to make it explicit.
 
-    // Pre-compute hashes for perf.
-    let mut a_hashes = Vec::with_capacity(a_range.len());
-    for i in a_range.clone() {
-        a_hashes.push(hash(a, i));
-    }
-    let mut b_hashes = Vec::with_capacity(b_range.len());
-    for i in b_range.clone() {
-        b_hashes.push(hash(b, i));
-    }
+    // Pre-compute hashes for perf, ignoring range (we just do it for the whole vector).
+    let a_hashes = a.iter().map(hash).collect();
+    let b_hashes = b.iter().map(hash).collect();
 
     // Find all "D-paths" between the origin (0, 0) and the destination (n, m). A D-path represents
     // all the locations that can be reached in the edit graph after D edits. The algorithm is
@@ -462,20 +449,11 @@ mod tests {
 
     #[test]
     fn test_find_middle_snake() {
-        // Helper to make it easier to call find_middle_snake.
-        let hashes = |v: &Vec<&str>| {
-            let mut hashes = Vec::with_capacity(v.len());
-            for i in 0..v.len() {
-                hashes.push(hash(v, i));
-            }
-            hashes
-        };
-
         // From Myers paper:
         let a = vec!["A", "B", "C", "A", "B", "B", "A"];
-        let a_hashes = hashes(&a);
+        let a_hashes = a.iter().map(hash).collect();
         let b = vec!["C", "B", "A", "B", "A", "C"];
-        let b_hashes = hashes(&b);
+        let b_hashes = b.iter().map(hash).collect();
         let a_len = a.len();
         let b_len = b.len();
         let snake = find_middle_snake(&a, 0..a_len, &a_hashes, &b, 0..b_len, &b_hashes);
@@ -504,27 +482,27 @@ mod tests {
 
         // Another regression. Was finding a zero-length snake.
         let a = vec!["A", "B"];
-        let a_hashes = hashes(&a);
+        let a_hashes = a.iter().map(hash).collect();
         let b = vec!["A", "A", "B"];
-        let b_hashes = hashes(&b);
+        let b_hashes = b.iter().map(hash).collect();
         let snake = find_middle_snake(&a, 0..a.len(), &a_hashes, &b, 0..b.len(), &b_hashes);
 
         assert_eq!(snake, (1, 2, 2, 3, 1));
 
         // When there are no edits to make, the whole thing is a snake.
         let a = vec!["A", "B", "C"];
-        let a_hashes = hashes(&a);
+        let a_hashes = a.iter().map(hash).collect();
         let b = vec!["A", "B", "C"];
-        let b_hashes = hashes(&b);
+        let b_hashes = b.iter().map(hash).collect();
         let snake = find_middle_snake(&a, 0..a.len(), &a_hashes, &b, 0..b.len(), &b_hashes);
 
         assert_eq!(snake, (0, 0, 3, 3, 0));
 
         // When there are no snakes except zero-length ones.
         let a = vec!["A", "B", "C"];
-        let a_hashes = hashes(&a);
+        let a_hashes = a.iter().map(hash).collect();
         let b = vec!["X", "Y", "Z"];
-        let b_hashes = hashes(&b);
+        let b_hashes = b.iter().map(hash).collect();
         let snake = find_middle_snake(&a, 0..a.len(), &a_hashes, &b, 0..b.len(), &b_hashes);
 
         assert_eq!(snake, (0, 3, 0, 3, 6));

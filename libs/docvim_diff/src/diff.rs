@@ -32,14 +32,13 @@ where
     a_hashes[a_idx] == b_hashes[b_idx] && a[a_idx] == b[b_idx]
 }
 
-// TODO make this not about vecs
-pub fn hash<T>(val: &Vec<T>, idx: usize) -> u64
+pub fn hash<T>(val: T) -> u64
 where
     T: Hash + PartialEq,
 {
     // See docs/hash.md for why we're using the "djb2a" hash.
     let mut hasher = Djb2aHasher::new();
-    val[idx].hash(&mut hasher);
+    val.hash(&mut hasher);
     hasher.finish()
 }
 
