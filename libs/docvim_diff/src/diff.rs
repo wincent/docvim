@@ -37,7 +37,10 @@ where
     hasher.finish()
 }
 
-/// Hasher based on the latest version of Daniel J Bernstein's "djb2" hash.
+/// Hasher based on the latest version of Daniel J Bernstein's "djb2" hash. Note that the original
+/// function was designed to produce 32-bit values, but here we extend that to 64-bits because
+/// that's what the Rust Hasher trait requires. Strictly speaking, this makes it a different hash,
+/// but for practical purposes, it appears to be a valid substitute.
 ///
 /// In pseudo-code, the hash function is basically:
 ///
@@ -77,7 +80,10 @@ impl Hasher for Djb2aHasher {
     }
 }
 
-/// Hasher based on the original version of Daniel J Bernstein's "djb2" hash.
+/// Hasher based on the original version of Daniel J Bernstein's "djb2" hash. Note that the
+/// original function was designed to produce 32-bit values, but here we extend that to 64-bits
+/// because that's what the Rust Hasher trait requires. Strictly speaking, this makes it a
+/// different hash, but for practical purposes, it appears to be a valid substitute.
 ///
 /// In pseudo-code, the hash function is basically:
 ///
