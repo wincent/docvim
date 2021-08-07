@@ -461,57 +461,75 @@ mod tests {
     use super::*;
 
     #[test]
-    // fn test_find_middle_snake() {
-    //     // From Myers paper:
-    //     let a = vec!["A", "B", "C", "A", "B", "B", "A"];
-    //     let b = vec!["C", "B", "A", "B", "A", "C"];
-    //     let a_len = a.len();
-    //     let b_len = b.len();
-    //     let snake = find_middle_snake(&a, 0..a_len, &b, 0..b_len);
-    //
-    //     // Note that we don't find the same middle snake as the Myers paper because we are
-    //     // iterating in reverse order, like Git does.
-    //     // x_mid, y_mid, x_end, x_start, d (SES length)
-    //     assert_eq!(snake, (4, 1, 5, 2, 5));
-    //
-    //     // First sub-problem from Myers paper; ie. looking at prefixes:
-    //     // a = vec!["A", "B", "C", ...] <- First 3 items.
-    //     // b = vec!["C", "B", ...] <-- First 2 items.
-    //     let snake = find_middle_snake(&a, 0..3, &b, 0..2);
-    //
-    //     // This demonstrates bias for deletion, compared to other equal-distance paths like
-    //     // (1, 1, 2, 2, 3).
-    //     assert_eq!(snake, (2, 0, 3, 1, 3));
-    //
-    //     // Second sub-problem from Myers paper; ie. looking at suffixes:
-    //     // a = vec![..., "B", "A"] <-- Last 2 items.
-    //     // b = vec![..., "A", "C"] <-- Last 2 items.
-    //     let snake = find_middle_snake(&a, 5..a_len, &b, 4..b_len);
-    //
-    //     // Was a regression (was finding a zero-length middle snake when there was a 1-long one).
-    //     assert_eq!(snake, (6, 4, 7, 5, 2));
-    //
-    //     // Another regression. Was finding a zero-length snake.
-    //     let a = vec!["A", "B"];
-    //     let b = vec!["A", "A", "B"];
-    //     let snake = find_middle_snake(&a, 0..a.len(), &b, 0..b.len());
-    //
-    //     assert_eq!(snake, (1, 2, 2, 3, 1));
-    //
-    //     // When there are no edits to make, the whole thing is a snake.
-    //     let a = vec!["A", "B", "C"];
-    //     let b = vec!["A", "B", "C"];
-    //     let snake = find_middle_snake(&a, 0..a.len(), &b, 0..b.len());
-    //
-    //     assert_eq!(snake, (0, 0, 3, 3, 0));
-    //
-    //     // When there are no snakes except zero-length ones.
-    //     let a = vec!["A", "B", "C"];
-    //     let b = vec!["X", "Y", "Z"];
-    //     let snake = find_middle_snake(&a, 0..a.len(), &b, 0..b.len());
-    //
-    //     assert_eq!(snake, (0, 3, 0, 3, 6));
-    // }
+    fn test_find_middle_snake() {
+        // Helper to make it easier to call find_middle_snake.
+        let hashes = |v: &Vec<&str>| {
+            let mut hashes = Vec::with_capacity(v.len());
+            for i in 0..v.len() {
+                hashes.push(hash(v, i));
+            }
+            hashes
+        };
+
+        // From Myers paper:
+        let a = vec!["A", "B", "C", "A", "B", "B", "A"];
+        let a_hashes = hashes(&a);
+        let b = vec!["C", "B", "A", "B", "A", "C"];
+        let b_hashes = hashes(&b);
+        let a_len = a.len();
+        let b_len = b.len();
+        let snake = find_middle_snake(&a, 0..a_len, &a_hashes, &b, 0..b_len, &b_hashes);
+
+        // Note that we don't find the same middle snake as the Myers paper because we are
+        // iterating in reverse order, like Git does.
+        // x_mid, y_mid, x_end, x_start, d (SES length)
+        assert_eq!(snake, (4, 1, 5, 2, 5));
+
+        // First sub-problem from Myers paper; ie. looking at prefixes:
+        // a = vec!["A", "B", "C", ...] <- First 3 items.
+        // b = vec!["C", "B", ...] <-- First 2 items.
+        let snake = find_middle_snake(&a, 0..3, &a_hashes, &b, 0..2, &b_hashes);
+
+        // This demonstrates bias for deletion, compared to other equal-distance paths like
+        // (1, 1, 2, 2, 3).
+        assert_eq!(snake, (2, 0, 3, 1, 3));
+
+        // Second sub-problem from Myers paper; ie. looking at suffixes:
+        // a = vec![..., "B", "A"] <-- Last 2 items.
+        // b = vec![..., "A", "C"] <-- Last 2 items.
+        let snake = find_middle_snake(&a, 5..a_len, &a_hashes, &b, 4..b_len, &b_hashes);
+
+        // Was a regression (was finding a zero-length middle snake when there was a 1-long one).
+        assert_eq!(snake, (6, 4, 7, 5, 2));
+
+        // Another regression. Was finding a zero-length snake.
+        let a = vec!["A", "B"];
+        let a_hashes = hashes(&a);
+        let b = vec!["A", "A", "B"];
+        let b_hashes = hashes(&b);
+        let snake = find_middle_snake(&a, 0..a.len(), &a_hashes, &b, 0..b.len(), &b_hashes);
+
+        assert_eq!(snake, (1, 2, 2, 3, 1));
+
+        // When there are no edits to make, the whole thing is a snake.
+        let a = vec!["A", "B", "C"];
+        let a_hashes = hashes(&a);
+        let b = vec!["A", "B", "C"];
+        let b_hashes = hashes(&b);
+        let snake = find_middle_snake(&a, 0..a.len(), &a_hashes, &b, 0..b.len(), &b_hashes);
+
+        assert_eq!(snake, (0, 0, 3, 3, 0));
+
+        // When there are no snakes except zero-length ones.
+        let a = vec!["A", "B", "C"];
+        let a_hashes = hashes(&a);
+        let b = vec!["X", "Y", "Z"];
+        let b_hashes = hashes(&b);
+        let snake = find_middle_snake(&a, 0..a.len(), &a_hashes, &b, 0..b.len(), &b_hashes);
+
+        assert_eq!(snake, (0, 3, 0, 3, 6));
+    }
+
     #[test]
     fn test_delete_everything() {
         let a = vec!["goodbye", "cruel", "world"].join("\n");
@@ -613,13 +631,13 @@ mod tests {
     }
 
     // Too slow to leave enabled...
-    #[test]
-    fn test_speed_worst_case() {
-        // Excruciatingly slow.
-        let a = "a\n".repeat(10000);
-        let b = "b\n".repeat(10000);
-        diff_string_lines(&a, &b);
-    }
+    // #[test]
+    // fn test_speed_worst_case() {
+    //     // Excruciatingly slow.
+    //     let a = "a\n".repeat(10000);
+    //     let b = "b\n".repeat(10000);
+    //     diff_string_lines(&a, &b);
+    // }
 
     #[test]
     fn test_speed_best_case() {
