@@ -10,10 +10,9 @@ use crate::myers;
 
 const MAX_CHAIN_LENGTH: usize = 64;
 
-pub fn diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
+pub fn diff<T>(a: &Vec<T>, a_range: Range<usize>, b: &Vec<T>, b_range: Range<usize>) -> Diff
 where
-    T: Index<usize> + ?Sized,
-    T::Output: Hash + PartialEq,
+    T: Hash + PartialEq,
 {
     // Create histogram of frequencies for each element in `a`.
     let mut a_freqs: HashMap<u64, usize> = HashMap::new();

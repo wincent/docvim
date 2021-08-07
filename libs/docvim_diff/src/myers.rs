@@ -22,10 +22,9 @@ pub fn diff_string_lines_nd(a: &str, b: &str) -> Diff {
     myers_nd_diff(&a, 0..a.len(), &b, 0..b.len())
 }
 
-pub fn diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
+pub fn diff<T>(a: &Vec<T>, a_range: Range<usize>, b: &Vec<T>, b_range: Range<usize>) -> Diff
 where
-    T: Index<usize> + ?Sized,
-    T::Output: Hash + PartialEq,
+    T: Hash + PartialEq,
 {
     let mut edits = vec![];
     // TODO: this is painful... should I require iterable too?
@@ -83,10 +82,14 @@ where
 /// quadratic growth which makes this algorithm impractical for anything but the most modest input
 /// sizes.
 ///
-pub fn myers_nd_diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
+pub fn myers_nd_diff<T>(
+    a: &Vec<T>,
+    a_range: Range<usize>,
+    b: &Vec<T>,
+    b_range: Range<usize>,
+) -> Diff
 where
-    T: Index<usize> + ?Sized,
-    T::Output: Hash + PartialEq,
+    T: Hash + PartialEq,
 {
     // TODO: figure out how to reduce the number of casts here...
     // it's a frick'n' cast-fest
@@ -256,16 +259,15 @@ type Snake = (usize, usize, usize, usize, usize);
 // TODO: when input lengths are very different, switch to more complicated alg that avoids
 // exploring beyond graph bounds.
 fn find_middle_snake<T>(
-    a: &T,
+    a: &Vec<T>,
     a_range: Range<usize>,
     a_hashes: &Vec<u64>,
-    b: &T,
+    b: &Vec<T>,
     b_range: Range<usize>,
     b_hashes: &Vec<u64>,
 ) -> Snake
 where
-    T: Index<usize> + ?Sized,
-    T::Output: Hash + PartialEq,
+    T: Hash + PartialEq,
 {
     let n = usize_to_isize(a_range.len());
     let m = usize_to_isize(b_range.len());
@@ -404,17 +406,16 @@ where
 }
 
 fn recursive_diff<T>(
-    a: &T,
+    a: &Vec<T>,
     a_range: Range<usize>,
     a_hashes: &Vec<u64>,
-    b: &T,
+    b: &Vec<T>,
     b_range: Range<usize>,
     b_hashes: &Vec<u64>,
     edits: &mut Vec<Edit>,
 ) -> ()
 where
-    T: Index<usize> + ?Sized,
-    T::Output: Hash + PartialEq,
+    T: Hash + PartialEq,
 {
     let n = a_range.len();
     let m = b_range.len();

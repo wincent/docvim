@@ -7,7 +7,7 @@ mod ring_buffer;
 
 // use std::hash::Hash;
 use crate::diff::*;
-use std::ops::{Index, Range};
+use std::ops::Range;
 use Edit::*;
 
 const GREEN: &str = "\x1b[0;32m";
@@ -16,14 +16,13 @@ const RESET: &str = "\x1b[0m";
 
 pub fn format_ses<T>(
     ses: Diff,
-    a: &T,
+    a: &Vec<T>,
     a_range: Range<usize>,
-    b: &T,
+    b: &Vec<T>,
     b_range: Range<usize>,
 ) -> String
 where
-    T: Index<usize> + ?Sized,
-    T::Output: std::fmt::Display + PartialEq,
+    T: std::fmt::Display + PartialEq,
 {
     let mut diff = String::new();
 

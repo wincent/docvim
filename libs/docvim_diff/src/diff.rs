@@ -19,24 +19,23 @@ pub struct Diff(pub Vec<Edit>);
 
 // TODO: if it ends up turning out that only myers.rs needs this, move it back there.
 pub fn eq<T>(
-    a: &T,
+    a: &Vec<T>,
     a_idx: usize,
     a_hashes: &Vec<u64>,
-    b: &T,
+    b: &Vec<T>,
     b_idx: usize,
     b_hashes: &Vec<u64>,
 ) -> bool
 where
-    T: Index<usize> + ?Sized,
-    T::Output: Hash + PartialEq,
+    T: Hash + PartialEq,
 {
     a_hashes[a_idx] == b_hashes[b_idx] && a[a_idx] == b[b_idx]
 }
 
-pub fn hash<T>(val: &T, idx: usize) -> u64
+// TODO make this not about vecs
+pub fn hash<T>(val: &Vec<T>, idx: usize) -> u64
 where
-    T: Index<usize> + ?Sized,
-    T::Output: Hash + PartialEq,
+    T: Hash + PartialEq,
 {
     // See docs/hash.md for why we're using the "djb2a" hash.
     let mut hasher = Djb2aHasher::new();
