@@ -22,7 +22,6 @@ pub fn diff_string_lines_nd(a: &str, b: &str) -> Diff {
     myers_nd_diff(&a, 0..a.len(), &b, 0..b.len())
 }
 
-// TODO: add PartialEq because Hash is only good for negatives, positives might be false
 pub fn diff<T>(a: &T, a_range: Range<usize>, b: &T, b_range: Range<usize>) -> Diff
 where
     T: Index<usize> + ?Sized,
