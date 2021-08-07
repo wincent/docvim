@@ -585,13 +585,13 @@ mod tests {
     }
 
     // Too slow to leave enabled...
-    // #[test]
-    // fn test_speed_worst_case() {
-    //     // Excruciatingly slow.
-    //     let a = "a\n".repeat(10000);
-    //     let b = "b\n".repeat(10000);
-    //     diff_string_lines(&a, &b);
-    // }
+    #[test]
+    fn test_speed_worst_case() {
+        // Excruciatingly slow.
+        let a = "a\n".repeat(10000);
+        let b = "b\n".repeat(10000);
+        diff_string_lines(&a, &b);
+    }
 
     #[test]
     fn test_speed_best_case() {
