@@ -158,16 +158,6 @@ mod test {
     }
 
     #[test]
-    fn test_djb2ahasher_known_collisions() {
-        // From: https://softwareengineering.stackexchange.com/a/145633
-        assert_eq!(djb2a(b"haggadot"), djb2a(b"loathsomenesses"));
-        assert_eq!(djb2a(b"adorablenesses"), djb2a(b"rentability"));
-        assert_eq!(djb2a(b"playwright"), djb2a(b"snush"));
-        assert_eq!(djb2a(b"playwrighting"), djb2a(b"snushing"));
-        assert_eq!(djb2a(b"treponematoses"), djb2a(b"waterbeds"));
-    }
-
-    #[test]
     fn test_djb2hasher() {
         // Short strings from the alphabet we're using in the diff tests.
         assert_eq!(djb2(b"A"), 177638);
@@ -184,17 +174,5 @@ mod test {
         // Typical source code.
         assert_eq!(djb2(b"local adder = function (a, b) return a + 1 end"), 12518546827141428551);
         assert_eq!(djb2(b"use super::*;"), 7866307544415970426);
-    }
-
-    #[test]
-    fn test_djb2hasher_known_collisions() {
-        // From: https://softwareengineering.stackexchange.com/a/145633
-        assert_eq!(djb2(b"hetairas"), djb2(b"mentioner"));
-        assert_eq!(djb2(b"heliotropes"), djb2(b"neurospora"));
-        assert_eq!(djb2(b"depravement"), djb2(b"serafins"));
-        assert_eq!(djb2(b"stylist"), djb2(b"subgenera"));
-        assert_eq!(djb2(b"joyful"), djb2(b"synaphea"));
-        assert_eq!(djb2(b"redescribed"), djb2(b"urites"));
-        assert_eq!(djb2(b"dram"), djb2(b"vivency"));
     }
 }
