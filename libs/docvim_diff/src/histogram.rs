@@ -45,6 +45,60 @@ struct Record {
     count: usize,
 }
 
+/// Histogram hash table and supporting indices.
+#[derive(Debug)]
+struct Histogram {
+    /// Map from line index to corresponding record in records array.
+    pub line_map: Vec<Option<usize>>,
+
+    mask: usize,
+
+    /// Map from item in records list to next identical item's index in records hash table.
+    pub next_map: Vec<Option<usize>>,
+
+    /// Actual record storage.
+    pub records: Vec<Option<Record>>,
+
+    /// The hash table itself.
+    pub table: Vec<Option<usize>>,
+}
+
+impl Histogram {
+    pub fn new(len: usize) -> Self {
+        let size = len.checked_next_power_of_two().expect("Input length too large");
+
+        // Compute mask for deriving table index from hash code; eg.
+        // 1. Consider a table size of 256 (2 ** 8).
+        // 2. As binary, that's: 0b100000000 (ie. 8 zeros).
+        // 3. Take 1, yielding: 0b11111111 (ie. 8 ones).
+        let mask = size - 1;
+
+        Histogram {
+            line_map: vec![None; len],
+            mask,
+            next_map: vec![None; len],
+            records: Vec::with_capacity(len),
+            table: vec![None; size],
+        }
+    }
+    pub fn idx_for_hash(&self, item_hash: u64) -> usize {
+        // Note it's ok to truncate from u64 to usize (if we were to run on a 32-bit system, where
+        // usize is 32 bits), because we only want at most usize bits.
+        self.mask & (item_hash as usize)
+    }
+
+    // starts to get ugly...
+    // pub fn get(&self, item_hash: usize) -> Option<Record> {
+    //     // Note it's ok to truncate from u64 to usize (if we were to run on a 32-bit system, where
+    //     // usize is 32 bits), because we only want at most usize bits.
+    //     let table_idx = item_hash & self.mask;
+    //
+    //     self.table[table_idx]
+    // }
+    //
+    // pub fn prepend(&self,
+}
+
 const MAX_CHAIN_LENGTH: usize = 64;
 
 pub fn diff<T>(a: &Vec<T>, b: &Vec<T>) -> Diff
@@ -60,53 +114,45 @@ where
 
 fn histogram_diff<T>(a: &Vec<T>, a_hashes: &Vec<u64>, b: &Vec<T>, b_hashes: &Vec<u64>) -> Diff
 where
-    T: Hash + PartialEq
+    T: Hash + PartialEq,
 {
-    // Map from line index to corresponding record in records array.
-    let mut line_map: Vec<Option<usize>> = vec![None; a.len()];
+    if let Some(histogram) = scan(a, a_hashes) {
+        // TODO: convince myself that this is necessary... given that I iterate backwards, records[] indices are pretty predictable
+        println!("{:?}", histogram)
+    }
 
-    // Map from item in records list to next identical item's index in records hash table.
-    let mut next_map: Vec<Option<usize>> = vec![None; a.len()];
+    myers::diff(a, b)
+}
 
-    // Actual record storage.
-    let mut records: Vec<Option<Record>> = Vec::with_capacity(a.len());
-
-    // Create records hash table for `a`.
-    let size = a.len().checked_next_power_of_two().expect("Input length too large");
-    let mut table: Vec<Option<usize>> = vec![None; size];
-
-    // Compute mask for deriving table index from hash code; eg.
-    // 1. Consider a table size of 256 (2 ** 8).
-    // 2. As binary, that's: 0b100000000 (ie. 8 zeros).
-    // 3. Take 1, yielding: 0b11111111 (ie. 8 ones).
-    let mask = size - 1;
+fn scan<T>(a: &Vec<T>, a_hashes: &Vec<u64>) -> Option<Histogram>
+where
+    T: Hash + PartialEq,
+{
+    let mut histogram = Histogram::new(a.len());
 
     // Iterate in reverse prepending matching items to chains (ie. earliest match will appear at
     // head of chain).
     for (sequence_index, item) in a.iter().enumerate().rev() {
         let item_hash = a_hashes[sequence_index];
-
-        // Note it's ok to truncate from u64 to usize (if we were to run on a 32-bit system, where
-        // usize is 32 bits), because we only want at most usize bits.
-        let mut table_idx = (item_hash as usize) & mask;
+        let mut table_idx = histogram.idx_for_hash(item_hash);
 
         let mut chain_length = 0;
         let mut found_identical = false;
-        while let Some(record_index) = table[table_idx] {
-            let record = records[record_index].as_ref().unwrap();
+        while let Some(record_index) = histogram.table[table_idx] {
+            let record = histogram.records[record_index].as_ref().unwrap();
             let line_index = record.index;
             let record_count = record.count;
             if a_hashes[line_index] == item_hash && &a[line_index] == item {
-                let new_index = records.len();
-                line_map[sequence_index] = Some(new_index);
-                records.push(Some(Record {
+                let new_index = histogram.records.len();
+                histogram.line_map[sequence_index] = Some(new_index);
+                histogram.records.push(Some(Record {
                     next: Some(record_index),
                     index: sequence_index,
                     count: min(MAX_CHAIN_LENGTH, record_count + 1),
                 }));
-                next_map[new_index] = Some(line_index);
+                histogram.next_map[new_index] = Some(line_index);
                 found_identical = true;
-                table[table_idx] = Some(new_index);
+                histogram.table[table_idx] = Some(new_index);
                 break;
             }
             chain_length += 1;
@@ -119,27 +165,18 @@ where
 
         if !found_identical {
             if chain_length == MAX_CHAIN_LENGTH {
-                // bail
+                return None;
             }
 
             // First time we've seen this element. Start a new chain for it.
-            let new_index = records.len();
-            line_map[sequence_index] = Some(new_index);
-            records.push(Some(Record {
-                next: None,
-                index: sequence_index,
-                count: 1,
-            }));
-            table[table_idx] = Some(new_index);
+            let new_index = histogram.records.len();
+            histogram.line_map[sequence_index] = Some(new_index);
+            histogram.records.push(Some(Record { next: None, index: sequence_index, count: 1 }));
+            histogram.table[table_idx] = Some(new_index);
         }
     }
 
-    println!("table:\n{:?}", table);
-    println!("records:\n{:#?}", records);
-    println!("line_map:\n{:?}", line_map); // TODO: convince myself that this is necessary... given that I iterate backwards, records[] indices are pretty predictable
-    println!("next_map:\n{:?}", next_map);
-
-    myers::diff(a, b)
+    Some(histogram)
 }
 
 #[cfg(test)]
