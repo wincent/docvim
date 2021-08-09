@@ -16,7 +16,8 @@ pub enum Edit {
 #[derive(Debug, PartialEq)]
 pub struct Diff(pub Vec<Edit>);
 
-// TODO: if it ends up turning out that only myers.rs needs this, move it back there.
+// TODO: just write the test out in full? passing in the params is almost as annoying as writing
+// out the check; and if I do keep it, maybe move it in to myers.rs
 pub fn eq<T>(
     a: &Vec<T>,
     a_idx: usize,

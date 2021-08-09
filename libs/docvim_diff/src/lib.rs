@@ -5,9 +5,7 @@ mod ring_buffer;
 
 //mod util; // string splitting and such?
 
-// use std::hash::Hash;
 use crate::diff::*;
-use std::ops::Range;
 use Edit::*;
 
 const GREEN: &str = "\x1b[0;32m";
