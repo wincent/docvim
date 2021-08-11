@@ -49,12 +49,12 @@ struct Record {
 /// Histogram hash table and supporting indices.
 #[derive(Debug)]
 struct Histogram {
-    /// Map from line index to corresponding record in records array.
+    /// Map from line index to corresponding record in `records` vector.
     pub line_map: Vec<Option<usize>>,
 
     mask: usize,
 
-    /// Map from item in records list to next identical item's index in records hash table.
+    /// Map from item in the `records` vector to next identical item's index in the `records` vector.
     pub next_map: Vec<Option<usize>>,
 
     /// Actual record storage.
@@ -117,7 +117,8 @@ fn histogram_diff<T>(a: &Vec<T>, a_hashes: &Vec<u64>, b: &Vec<T>, b_hashes: &Vec
 where
     T: Hash + PartialEq,
 {
-    // println!("{:?}", find_split_region(a, a_hashes, b, b_hashes));
+    // TODO: find infinite loop in this line:
+    println!("{:?}", find_split_region(a, a_hashes, b, b_hashes));
     myers::diff(a, b)
 }
 
@@ -140,106 +141,116 @@ where
             let b_hash = b_hashes[b_index];
             let mut table_index = histogram.idx_for_hash(b_hash);
 
-            while let Some(record_index) = histogram.table[table_index] {
-                let record = histogram.records[record_index].as_ref().unwrap();
-                let mut record_count = record.count;
-                if record_count > count {
-                    if !has_common {
-                        has_common = a_hashes[record.index] == b_hashes[b_index]
-                            && a[record.index] == b[b_index];
-                    }
-                    match record.next {
-                        Some(next_index) => table_index = next_index,
-                        None => break,
-                    };
-                    continue;
-                }
-
-                let mut a_start = record.index;
-                if a_hashes[a_start] != b_hashes[b_index] && a[a_start] != b[b_index] {
-                    match record.next {
-                        Some(next_index) => table_index = next_index,
-                        None => break,
-                    };
-                    continue;
-                }
-
-                has_common = true;
-
-                'outer: loop {
-                    let mut next_index = histogram.next_map[a_start];
-                    let mut a_end = a_start + 1;
-                    let mut b_start = b_index;
-                    let mut b_end = b_start + 1;
-
-                    while region.a_start < a_start
-                        && region.b_start < b_start
-                        && a_hashes[a_start - 1] == b_hashes[b_start - 1]
-                        && a[a_start - 1] == b[b_start - 1]
-                    {
-                        a_start -= 1;
-                        b_start -= 1;
-                        if record_count >= 1 {
-                            record_count = min(
-                                record_count,
-                                histogram.records[histogram.line_map[a_start].unwrap()]
-                                    .as_ref()
-                                    .unwrap()
-                                    .count,
-                            );
+            if let Some(record_index) = histogram.table[table_index] {
+                let mut next_record = &histogram.records[record_index];
+                while let Some(record) = next_record {
+                    let mut record_count = record.count;
+                    if record_count > count {
+                        if !has_common {
+                            has_common = a_hashes[record.index] == b_hashes[b_index]
+                                && a[record.index] == b[b_index];
                         }
+                        match record.next {
+                            Some(next_index) => table_index = next_index,
+                            None => break,
+                        };
+                        continue;
                     }
 
-                    while a_end < region.a_end
-                        && b_end < region.b_end
-                        && a_hashes[a_end] == b_hashes[b_end]
-                        && a[a_end] == b[b_end]
-                    {
-                        a_end += 1;
-                        b_end += 1;
-                        if record_count >= 1 {
-                            record_count = min(
-                                record_count,
-                                histogram.records[histogram.line_map[a_start].unwrap()]
-                                    .as_ref()
-                                    .unwrap()
-                                    .count,
-                            );
-                        }
+                    let mut a_start = record.index;
+                    if a_hashes[a_start] != b_hashes[b_index] && a[a_start] != b[b_index] {
+                        match record.next {
+                            Some(next_index) => table_index = next_index,
+                            None => break,
+                        };
+                        continue;
                     }
 
-                    if b_next < b_end {
-                        b_next = b_end;
-                    }
+                    has_common = true;
 
-                    if (region.a_end - region.a_start) < (a_end - a_start) || record_count < count {
-                        // Region is longest found, or chain is rarer; so it is our current best
-                        // region.
-                        region.a_start = a_start;
-                        region.b_start = b_start;
-                        region.a_end = a_end;
-                        region.b_end = b_end;
-                        count = record_count;
-                    }
+                    'try_locations: loop {
+                        // BUG: is this wrong? why am i looking up a_start instead of the rec?
+                        let mut next_index = match record.next {
+                            Some(idx) => histogram.next_map[idx],
+                            None => None,
+                        };
+                        let mut a_end = a_start + 1;
+                        let mut b_start = b_index;
+                        let mut b_end = b_start + 1;
 
-                    if next_index.is_none() {
-                        break 'outer;
-                    }
-                    while let Some(next) = next_index {
-                        if next < a_end {
-                            next_index = histogram.next_map[next];
-                            if next_index.is_none() {
-                                break 'outer;
+                        while region.a_start < a_start
+                            && region.b_start < b_start
+                            && a_hashes[a_start - 1] == b_hashes[b_start - 1]
+                            && a[a_start - 1] == b[b_start - 1]
+                        {
+                            a_start -= 1;
+                            b_start -= 1;
+                            if record_count >= 1 {
+                                record_count = min(
+                                    record_count,
+                                    histogram.records[histogram.line_map[a_start].unwrap()]
+                                        .as_ref()
+                                        .unwrap()
+                                        .count,
+                                );
                             }
-                        } else {
-                            break;
                         }
-                    }
-                    a_start = next_index.unwrap();
-                }
-            }
 
-            b_index = b_next;
+                        while a_end < region.a_end
+                            && b_end < region.b_end
+                            && a_hashes[a_end] == b_hashes[b_end]
+                            && a[a_end] == b[b_end]
+                        {
+                            a_end += 1;
+                            b_end += 1;
+                            if record_count >= 1 {
+                                record_count = min(
+                                    record_count,
+                                    histogram.records[histogram.line_map[a_start].unwrap()]
+                                        .as_ref()
+                                        .unwrap()
+                                        .count,
+                                );
+                            }
+                        }
+
+                        if b_next < b_end {
+                            b_next = b_end;
+                        }
+
+                        if (region.a_end - region.a_start) < (a_end - a_start) || record_count < count {
+                            // Region is longest found, or chain is rarer; so it is our current best
+                            // region.
+                            region.a_start = a_start;
+                            region.b_start = b_start;
+                            region.a_end = a_end;
+                            region.b_end = b_end;
+                            count = record_count;
+                        }
+
+                        if next_index.is_none() {
+                            break 'try_locations;
+                        }
+                        while let Some(next) = next_index {
+                            if next < a_end {
+                                next_index = histogram.next_map[next];
+                                if next_index.is_none() {
+                                    break 'try_locations;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                        a_start = next_index.unwrap();
+                    }
+                    match record.next {
+                        Some(idx) => next_record = &histogram.records[idx],
+                        None => break,
+                    }
+                }
+
+                b_index = b_next;
+            }
         }
 
         if !has_common || count < MAX_CHAIN_LENGTH {
