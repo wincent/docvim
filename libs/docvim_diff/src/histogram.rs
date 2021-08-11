@@ -145,7 +145,8 @@ where
                 let mut record_count = record.count;
                 if record_count > count {
                     if !has_common {
-                        has_common = a[record.index] == b[b_index];
+                        has_common = a_hashes[record.index] == b_hashes[b_index]
+                            && a[record.index] == b[b_index];
                     }
                     match record.next {
                         Some(next_index) => table_index = next_index,
@@ -155,7 +156,7 @@ where
                 }
 
                 let mut a_start = record.index;
-                if a[a_start] != b[b_index] {
+                if a_hashes[a_start] != b_hashes[b_index] && a[a_start] != b[b_index] {
                     match record.next {
                         Some(next_index) => table_index = next_index,
                         None => break,
@@ -173,11 +174,12 @@ where
 
                     while region.a_start < a_start
                         && region.b_start < b_start
+                        && a_hashes[a_start - 1] == b_hashes[b_start - 1]
                         && a[a_start - 1] == b[b_start - 1]
                     {
                         a_start -= 1;
                         b_start -= 1;
-                        if record_count > 1 {
+                        if record_count >= 1 {
                             record_count = min(
                                 record_count,
                                 histogram.records[histogram.line_map[a_start].unwrap()]
@@ -188,10 +190,14 @@ where
                         }
                     }
 
-                    while a_end < region.a_end && b_end < region.b_end && a[a_end] == b[b_end] {
+                    while a_end < region.a_end
+                        && b_end < region.b_end
+                        && a_hashes[a_end] == b_hashes[b_end]
+                        && a[a_end] == b[b_end]
+                    {
                         a_end += 1;
                         b_end += 1;
-                        if record_count > 1 {
+                        if record_count >= 1 {
                             record_count = min(
                                 record_count,
                                 histogram.records[histogram.line_map[a_start].unwrap()]
@@ -254,7 +260,6 @@ where
         let mut table_idx = histogram.idx_for_hash(item_hash);
 
         let mut chain_length = 0;
-        let mut found_identical = false;
         while let Some(record_index) = histogram.table[table_idx] {
             let record = histogram.records[record_index].as_ref().unwrap();
             let line_index = record.index;
@@ -268,7 +273,6 @@ where
                     count: min(MAX_CHAIN_LENGTH, record_count + 1),
                 }));
                 histogram.next_map[new_index] = Some(line_index);
-                found_identical = true;
                 histogram.table[table_idx] = Some(new_index);
                 continue 'scan_line;
             }
