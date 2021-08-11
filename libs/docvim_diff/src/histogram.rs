@@ -54,13 +54,13 @@ struct Histogram {
 
     mask: usize,
 
-    /// Map from item in the `records` vector to next identical item's index in the `records` vector.
+    /// Map from item in the `records` vector to next identical item's line index in the sequence.
     pub next_map: Vec<Option<usize>>,
 
     /// Actual record storage.
     pub records: Vec<Option<Record>>,
 
-    /// The hash table itself.
+    /// The hash table index itself. For a given hash, maps to an index in the `records` vector.
     pub table: Vec<Option<usize>>,
 }
 
@@ -139,7 +139,7 @@ where
         while b_index < b.len() {
             let mut b_next = b_index + 1;
             let b_hash = b_hashes[b_index];
-            let mut table_index = histogram.idx_for_hash(b_hash);
+            let table_index = histogram.idx_for_hash(b_hash);
 
             if let Some(record_index) = histogram.table[table_index] {
                 let mut next_record = &histogram.records[record_index];
@@ -151,7 +151,13 @@ where
                                 && a[record.index] == b[b_index];
                         }
                         match record.next {
-                            Some(next_index) => table_index = next_index,
+                            Some(next_index) => {
+                                if let Some(next_record_index) = histogram.line_map[next_index] {
+                                    next_record = &histogram.records[next_record_index];
+                                } else {
+                                    break;
+                                }
+                            }
                             None => break,
                         };
                         continue;
@@ -160,7 +166,13 @@ where
                     let mut a_start = record.index;
                     if a_hashes[a_start] != b_hashes[b_index] && a[a_start] != b[b_index] {
                         match record.next {
-                            Some(next_index) => table_index = next_index,
+                            Some(next_index) => {
+                                if let Some(next_record_index) = histogram.line_map[next_index] {
+                                    next_record = &histogram.records[next_record_index];
+                                } else {
+                                    break;
+                                }
+                            },
                             None => break,
                         };
                         continue;
@@ -169,7 +181,6 @@ where
                     has_common = true;
 
                     'try_locations: loop {
-                        // BUG: is this wrong? why am i looking up a_start instead of the rec?
                         let mut next_index = match record.next {
                             Some(idx) => histogram.next_map[idx],
                             None => None,
