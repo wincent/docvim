@@ -231,6 +231,8 @@ where
                             if next_index.is_none() {
                                 break 'outer;
                             }
+                        } else {
+                            break;
                         }
                     }
                     a_start = next_index.unwrap();
