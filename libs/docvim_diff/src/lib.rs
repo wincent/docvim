@@ -12,13 +12,12 @@ const GREEN: &str = "\x1b[0;32m";
 const RED: &str = "\x1b[0;31m";
 const RESET: &str = "\x1b[0m";
 
-pub fn format_ses<T>(ses: Diff, a: &Vec<T>, b: &Vec<T>) -> String
+pub fn format_es<T>(ses: Diff, a: &Vec<T>, b: &Vec<T>) -> String
 where
     T: std::fmt::Display + PartialEq,
 {
     let mut diff = String::new();
 
-    // Insert(Idx(1)), Insert(Idx(3))
     let mut a_idx = 1;
     let mut b_idx = 1;
     // TODO: deal with hunks (reduce amount of context shown)
@@ -30,7 +29,7 @@ where
                     a_idx += 1;
                     b_idx += 1;
                 }
-                diff.push_str(&format!("{}-{}{}\n", GREEN, &a[a_idx - 1], RESET));
+                diff.push_str(&format!("{}-{}{}\n", RED, &a[a_idx - 1], RESET));
                 a_idx += 1;
             }
             Insert(Idx(insert)) => {
@@ -39,7 +38,7 @@ where
                     a_idx += 1;
                     b_idx += 1;
                 }
-                diff.push_str(&format!("{}+{}{}\n", RED, &b[b_idx - 1], RESET));
+                diff.push_str(&format!("{}+{}{}\n", GREEN, &b[b_idx - 1], RESET));
                 b_idx += 1;
             }
         }

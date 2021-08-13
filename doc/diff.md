@@ -103,3 +103,5 @@ That sure makes it sound like colliding elements are _supposed_ to be stored in 
 ```
 
 This means that to locate a record based on its line's location within sequence `a`, we don't need to do a map lookup: we can just do `record index = sequence length - line index`.
+
+Likewise, it seems that we can do without [the `next` array](https://github.com/spearce/jgit/blob/1513a5632dcaf8c6e2d6998427087e11ba35566d/org.eclipse.jgit/src/org/eclipse/jgit/diff/HistogramDiffIndex.java#L124), which maps from a line location to the line location of the next occurence of the same item. As seen above, we can trivially go from a line to record, and given a record, we can look up `record.next` to see the next occurrence, and concretely, look up `record.next.index` to see its index.

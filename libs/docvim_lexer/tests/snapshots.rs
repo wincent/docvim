@@ -3,7 +3,7 @@ use std::error::Error;
 use std::fs;
 use std::path::Path;
 
-use docvim_diff::format_ses;
+use docvim_diff::format_es;
 use docvim_diff::histogram::diff;
 use docvim_lexer::lua::Lexer;
 
@@ -45,7 +45,7 @@ fn check_snapshot(path: &str, callback: &dyn Fn(&str) -> String) -> Result<bool,
 
             // Show what change would be applied if we updated the snapshots.
             let ses = diff(&expected_lines, &transformed_lines);
-            let formatted = format_ses(ses, &expected_lines, &transformed_lines);
+            let formatted = format_es(ses, &expected_lines, &transformed_lines);
             println!("{}", formatted);
 
             println!("If output is correct, re-run with UPDATE_SNAPSHOTS=1");

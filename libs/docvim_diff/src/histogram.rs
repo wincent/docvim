@@ -3,6 +3,7 @@ use std::hash::Hash;
 use std::ops::Range;
 
 use crate::diff::*;
+use crate::format_es;
 use crate::myers;
 
 /// Represents an "LCS" selected as a region around which to split two sequences. If I understand
@@ -109,7 +110,6 @@ where
     T: Hash + PartialEq,
 {
     if a_range.len() == 0 || b_range.len() == 0 {
-        println!("falling back to myers... lengths: {} {}", a_range.len(), b_range.len());
         let mut edits = vec![];
         myers::recursive_diff(a, a_range, a_hashes, b, b_range, b_hashes, &mut edits);
         Diff(edits)
@@ -213,7 +213,7 @@ where
                                         // in reverse).
                                         record_count = min(
                                             record_count,
-                                            histogram.records[a_len - (a_start - a_range.start)]
+                                            histogram.records[a_len - (a_start - a_range.start) - 1]
                                                 .as_ref()
                                                 .unwrap()
                                                 .count,
@@ -231,7 +231,7 @@ where
                                     if record_count >= 1 {
                                         record_count = min(
                                             record_count,
-                                            histogram.records[a_len - (a_end - a_range.start)]
+                                            histogram.records[a_len - (a_end - a_range.start) - 1]
                                                 .as_ref()
                                                 .unwrap()
                                                 .count,
@@ -342,7 +342,11 @@ where
                     continue 'scan_line;
                 } else {
                     // Hash collision or slot already occupied; try next slot.
-                    table_index += 1;
+                    if table_index + 1 == histogram.table.len() {
+                        table_index = 0;
+                    } else {
+                        table_index += 1;
+                    }
                     match histogram.table[table_index] {
                         Some(idx) => {
                             record_index = idx;
@@ -374,7 +378,8 @@ mod tests {
     use Edit::*;
 
     #[test]
-    fn blinking_light() {
+    fn test_trivial_example() {
+        // The classic example from the Myers paper.
         let a = vec!["A", "B", "C", "A", "B", "B", "A"];
         let b = vec!["C", "B", "A", "B", "A", "C"];
 
@@ -408,5 +413,59 @@ mod tests {
                 Insert(Idx(6)),
             ])
         );
+    }
+
+    #[test]
+    fn test_textbook_example() {
+        // This one, right down to the whack indentation, is from:
+        // https://link.springer.com/article/10.1007/s10664-019-09772-z
+        let a = vec![
+            "*/",
+            "public static ImageIcon getImageIcon(String path)",
+            "{",
+            "    java.net.URL imgURL = GuiImporter.class.getResource(path);",
+            "",
+            "    if (imgURL != null)",
+            "    {",
+            "            return new ImageIcon(imgURL);",
+            "    }",
+            "    else",
+            "    {",
+            "            log.error(\"Couldn't find icon: \" + imgURL);",
+            "    }",
+            "            return null;",
+            "}",
+            "",
+            "/**"
+        ];
+        let b = vec![
+            "*/",
+            "public static ImageIcon getImageIcon(String path)",
+            "{",
+            "    if (path == null)",
+            "    {",
+            "            log.error(\"Icon path is null\");",
+            "            return null;",
+            "    }",
+            "",
+            "    java.net.URL imgURL = GuiImporter.class.getResource(path);",
+            "",
+            "    if (imgURL == null)",
+            "    {",
+            "            log.error(\"Couldn't find icon: \" + imgURL);",
+            "            return null;",
+            "    }",
+            "    else",
+            "            return new ImageIcon(imgURL);",
+            "}",
+            "",
+            "/**"
+        ];
+
+        let es = diff(&a, &b);
+        let formatted = format_es(es, &a, &b);
+        println!("{}", formatted);
+
+        assert!(false);
     }
 }
