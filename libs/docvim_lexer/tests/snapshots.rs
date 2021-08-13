@@ -39,7 +39,6 @@ fn check_snapshot(path: &str, callback: &dyn Fn(&str) -> String) -> Result<bool,
         } else if expected == transformed {
             Ok(true)
         } else {
-            // TODO use histogram diff instead
             // TODO: maybe don't use lines(); do i actually want to keep the trailing line endings?
             let expected_lines = expected.lines().collect::<Vec<&str>>();
             let transformed_lines = transformed.lines().collect::<Vec<&str>>();
