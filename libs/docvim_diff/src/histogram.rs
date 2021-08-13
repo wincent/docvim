@@ -401,26 +401,84 @@ mod tests {
         //                          |
         //                          C B A B A C
         //
-        // falling back to myers... lengths: 2 0
+        // falling back to myers... lengths: 2 0 (left recursive call)
         //
         // got region Region { a_start: 5, a_end: 7, b_start: 1, b_end: 3 }
         //      ie. second split:
-        //                  <- done | doing ->
-        //                      A B | C A B B A
-        //                                  | |
-        //                        C |       B A B A C
+        //                    <- done | doing ->
+        //                      A B C | A B B A
+        //                            |     | |
+        //                          C |     B A B A C
         //
-        // falling back to myers... lengths: 2 0
+        // falling back to myers... lengths: 2 0 (second left recursive call)
         //
-        // falling back to myers... lengths: 0 3
-
+        // falling back to myers... lengths: 0 3 (right recursive call)
+        //
+        // ie. matches output... doesn't exactly look like an SES although it is a valid edit
+        // script
+        //
+        //     delete 1, delete 2
+        //     (keep C)
+        //     delete 4, delete 5
+        //     (keep B, A)
+        //     insert 4, insert 5, insert 6
+        //
+        // ie.
+        //      -A
+        //      -B
+        //       C
+        //      -A
+        //      -B
+        //       B
+        //       A
+        //      +B
+        //      +A
+        //      +C
+        //
+        // Ah, `git diff --diff-algorithm=histogram` agrees with me:
+        //
+        //      diff --git a/before b/after
+        //      index fd113b0..0075e6d 100644
+        //      --- a/before
+        //      +++ b/after
+        //      @@ -1,7 +1,6 @@
+        //      -A
+        //      -B
+        //       C
+        //      -A
+        //      -B
+        //       B
+        //       A
+        //      +B
+        //      +A
+        //      +C
+        //
+        // cf `--diff-algorithm=patience`
+        // (same as `--diff-algorithm=default` and `--diff-algorithm=minimal` for this input):
+        //
+        //      diff --git a/before b/after
+        //      index fd113b0..0075e6d 100644
+        //      --- a/before
+        //      +++ b/after
+        //      @@ -1,7 +1,6 @@
+        //      -A
+        //      -B
+        //       C
+        //      -A
+        //       B
+        //      +A
+        //       B
+        //       A
+        //      +C
         assert_eq!(
             diff(&a, &b),
             Diff(vec![
                 Delete(Idx(1)),
                 Delete(Idx(2)),
                 Delete(Idx(4)),
-                Insert(Idx(3)),
+                Delete(Idx(5)),
+                Insert(Idx(4)),
+                Insert(Idx(5)),
                 Insert(Idx(6)),
             ])
         );
