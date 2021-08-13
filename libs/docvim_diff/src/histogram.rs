@@ -23,9 +23,6 @@ use crate::myers;
 /// best section found is then used to divide and conquer, similar to the Patience algorithm (but
 /// note, we only ever do one split at a time). Here "best" means around the "rarest lines". In the
 /// presence of unique line pairs, Histogram is said to behave identically to Patience.
-///
-/// TODO: see if the above comment is accurate -- does the weird while loop end up being equivalent
-/// to patience sort?
 #[derive(Debug)]
 struct Region {
     a_start: usize,
@@ -51,9 +48,6 @@ struct Record {
 struct Histogram {
     mask: usize,
 
-    /// Map from item in the `records` vector to next identical item's line index in the sequence.
-    pub next_map: Vec<Option<usize>>,
-
     /// Actual record storage.
     pub records: Vec<Option<Record>>,
 
@@ -73,7 +67,6 @@ impl Histogram {
 
         Histogram {
             mask,
-            next_map: vec![None; len],
             records: Vec::with_capacity(len),
             table: vec![None; size],
         }
@@ -88,14 +81,20 @@ impl Histogram {
     // pub fn get(&self, item_hash: usize) -> Option<Record> {
     //     // Note it's ok to truncate from u64 to usize (if we were to run on a 32-bit system, where
     //     // usize is 32 bits), because we only want at most usize bits.
-    //     let table_idx = item_hash & self.mask;
+    //     let table_index = item_hash & self.mask;
     //
-    //     self.table[table_idx]
+    //     self.table[table_index]
     // }
     //
     // pub fn prepend(&self,
 }
 
+/// Used to limit cost of the algorithm in two ways:
+///
+/// 1. Any items appearing > 64 times in the input sequence are capped at 64.
+/// TODO: verify this ^^^ (I think we cap the `count` but continue storing the records).
+/// 2. In the event of a pathological number of hash collisions, we abort after visiting 64 hash
+///    table slots.
 const MAX_CHAIN_LENGTH: usize = 64;
 
 pub fn diff<T>(a: &Vec<T>, b: &Vec<T>) -> Diff
@@ -113,7 +112,6 @@ fn histogram_diff<T>(a: &Vec<T>, a_hashes: &Vec<u64>, b: &Vec<T>, b_hashes: &Vec
 where
     T: Hash + PartialEq,
 {
-    // TODO: find infinite loop in this line:
     println!("{:?}", find_split_region(a, a_hashes, b, b_hashes));
     myers::diff(a, b)
 }
@@ -133,126 +131,135 @@ where
         let mut count = MAX_CHAIN_LENGTH + 1;
         let mut b_index = 0;
         let mut has_common = false;
-        while b_index < b.len() {
+        'scan_b: while b_index < b.len() {
             let mut b_next = b_index + 1;
             let b_hash = b_hashes[b_index];
-            let table_index = histogram.idx_for_hash(b_hash);
+            let mut table_index = histogram.idx_for_hash(b_hash);
 
-            if let Some(record_index) = histogram.table[table_index] {
-                let mut next_record = &histogram.records[record_index];
-                while let Some(record) = next_record {
-                    let mut record_count = record.count;
-                    if record_count > count {
-                        if !has_common {
-                            has_common = a_hashes[record.index] == b_hashes[b_index]
-                                && a[record.index] == b[b_index];
-                        }
-                        match record.next {
-                            Some(next_index) => {
-                                let next_record_index = a_len - next_index;
-                                next_record = &histogram.records[next_record_index];
-                            }
-                            None => break,
-                        };
-                        continue;
-                    }
-
-                    let mut a_start = record.index;
-                    if a_hashes[a_start] != b_hashes[b_index] && a[a_start] != b[b_index] {
-                        match record.next {
-                            Some(next_index) => {
-                                let next_record_index = a_len - next_index;
-                                next_record = &histogram.records[next_record_index];
-                            },
-                            None => break,
-                        };
-                        continue;
-                    }
-
-                    has_common = true;
-
-                    'try_locations: loop {
-                        let mut next_index = match record.next {
-                            Some(idx) => histogram.next_map[idx],
-                            None => None,
-                        };
-                        let mut a_end = a_start + 1;
-                        let mut b_start = b_index;
-                        let mut b_end = b_start + 1;
-
-                        while region.a_start < a_start
-                            && region.b_start < b_start
-                            && a_hashes[a_start - 1] == b_hashes[b_start - 1]
-                            && a[a_start - 1] == b[b_start - 1]
-                        {
-                            a_start -= 1;
-                            b_start -= 1;
-                            if record_count >= 1 {
-                                record_count = min(
-                                    record_count,
-                                    histogram.records[a_len - a_start]
-                                        .as_ref()
-                                        .unwrap()
-                                        .count,
-                                );
-                            }
-                        }
-
-                        while a_end < region.a_end
-                            && b_end < region.b_end
-                            && a_hashes[a_end] == b_hashes[b_end]
-                            && a[a_end] == b[b_end]
-                        {
-                            a_end += 1;
-                            b_end += 1;
-                            if record_count >= 1 {
-                                record_count = min(
-                                    record_count,
-                                    histogram.records[a_len - a_start]
-                                        .as_ref()
-                                        .unwrap()
-                                        .count,
-                                );
-                            }
-                        }
-
-                        if b_next < b_end {
-                            b_next = b_end;
-                        }
-
-                        if (region.a_end - region.a_start) < (a_end - a_start) || record_count < count {
-                            // Region is longest found, or chain is rarer; so it is our current best
-                            // region.
-                            region.a_start = a_start;
-                            region.b_start = b_start;
-                            region.a_end = a_end;
-                            region.b_end = b_end;
-                            count = record_count;
-                        }
-
-                        if next_index.is_none() {
-                            break 'try_locations;
-                        }
-                        while let Some(next) = next_index {
-                            if next < a_end {
-                                next_index = histogram.next_map[next];
-                                if next_index.is_none() {
-                                    break 'try_locations;
+            let mut chain_length = 0;
+            while chain_length < MAX_CHAIN_LENGTH {
+                match histogram.table[table_index] {
+                    Some(record_index) => {
+                        chain_length += 1;
+                        let record = histogram.records[record_index].as_ref().unwrap();
+                        if a_hashes[record.index] == b_hashes[b_index] {
+                            if a[record.index] == b[b_index] {
+                                // Hashes match and items are equal; this is our chain.
+                                has_common = true;
+                                if record.count > count {
+                                    // Item occurs more times than current "best seen" item.
+                                    // Skip this one (prefer the rarer one).
+                                    b_index = b_next;
+                                    continue 'scan_b;
                                 }
-                            } else {
-                                break;
+
+                                // Look at each place the item appears in `a` and see if that place
+                                // plus surrounding adjacent matching lines beats our "best seen"
+                                // region.
+                                let mut a_start = record.index;
+                                'try_locations: loop {
+                                    let mut record_count = record.count;
+                                    let mut a_end = a_start + 1;
+                                    let mut b_start = b_index;
+                                    let mut b_end = b_start + 1;
+
+                                    while region.a_start < a_start
+                                        && region.b_start < b_start
+                                        && a_hashes[a_start - 1] == b_hashes[b_start - 1]
+                                        && a[a_start - 1] == b[b_start - 1]
+                                    {
+                                        a_start -= 1;
+                                        b_start -= 1;
+                                        if record_count >= 1 {
+                                            // NOTE: i'm not convinced this bit makes much sense: it
+                                            // is basically saying, "take whatever is smallest:
+                                            // the smallest occurence count seen for this chain so
+                                            // far, or the occurence count for the first line in
+                                            // the region". Not that because we extend backwards
+                                            // first, then upwards last, the upwards checks are
+                                            // going to find successively smaller counts for any
+                                            // items they hit in chains (because chains are built
+                                            // in reverse).
+                                            record_count = min(
+                                                record_count,
+                                                histogram.records[a_len - a_start]
+                                                    .as_ref()
+                                                    .unwrap()
+                                                    .count,
+                                            );
+                                        }
+                                    }
+
+                                    while a_end < region.a_end
+                                        && b_end < region.b_end
+                                        && a_hashes[a_end] == b_hashes[b_end]
+                                        && a[a_end] == b[b_end]
+                                    {
+                                        a_end += 1;
+                                        b_end += 1;
+                                        if record_count >= 1 {
+                                            record_count = min(
+                                                record_count,
+                                                histogram.records[a_len - a_end]
+                                                    .as_ref()
+                                                    .unwrap()
+                                                    .count,
+                                            );
+                                        }
+                                    }
+
+                                    if b_next < b_end {
+                                        b_next = b_end;
+                                    }
+
+                                    if (region.a_end - region.a_start) < (a_end - a_start) || record_count < count {
+                                        // Region is longest found, or chain is rarer; so it is our current best
+                                        // region.
+                                        region.a_start = a_start;
+                                        region.b_start = b_start;
+                                        region.a_end = a_end;
+                                        region.b_end = b_end;
+                                        count = record_count;
+                                    }
+
+                                    if record.next.is_none() {
+                                        break 'try_locations;
+                                    }
+                                    let mut next_record = record.next;
+                                    while let Some(next_record_index) = next_record {
+                                        let record = histogram.records[next_record_index].as_ref().unwrap();
+                                        if record.index >= a_end {
+                                            // We've skipped over any occurences within the region
+                                            // we already explored.
+                                            a_start = record.index;
+                                            continue 'try_locations;
+                                        }
+                                        next_record = record.next;
+                                    }
+
+                                    // No more locations to consider for this chain.
+                                    break;
+                                }
+
+                                b_index = b_next;
+                                continue 'scan_b;
                             }
                         }
-                        a_start = next_index.unwrap();
-                    }
-                    match record.next {
-                        Some(idx) => next_record = &histogram.records[idx],
-                        None => break,
+
+                        // Hashes didn't match, or they did match and items weren't equal (ie. a
+                        // hash collision). Try next chain in table.
+                        table_index += 1;
+                    },
+                    None => {
+                        // Item from `b` appears nowhere in `a`.
+                        b_index = b_next;
+                        continue 'scan_b;
                     }
                 }
-
-                b_index = b_next;
             }
+            // We hit MAX_CHAIN_LENGTH before finding a matching chain (rather unlikely, but still
+            // possible).
+            b_index = b_next;
         }
 
         if !has_common || count < MAX_CHAIN_LENGTH {
@@ -272,12 +279,12 @@ where
     // head of chain).
     'scan_line: for (sequence_index, item) in a.iter().enumerate().rev() {
         let item_hash = a_hashes[sequence_index];
-        let mut table_idx = histogram.idx_for_hash(item_hash);
+        let mut table_index = histogram.idx_for_hash(item_hash);
 
         // Combined length of chains traversed to find insertion point.
         let mut chain_length = 0;
 
-        if let Some(record_index) = histogram.table[table_idx] {
+        if let Some(record_index) = histogram.table[table_index] {
             let mut record_index = record_index;
             while chain_length <= MAX_CHAIN_LENGTH {
                 chain_length += 1;
@@ -291,13 +298,12 @@ where
                         index: sequence_index,
                         count: min(MAX_CHAIN_LENGTH, record_count + 1),
                     }));
-                    histogram.next_map[new_index] = Some(line_index);
-                    histogram.table[table_idx] = Some(new_index);
+                    histogram.table[table_index] = Some(new_index);
                     continue 'scan_line;
                 } else {
-                    // Hash collision; try next slot.
-                    table_idx += 1;
-                    match histogram.table[table_idx] {
+                    // Hash collision or slot already occupied; try next slot.
+                    table_index += 1;
+                    match histogram.table[table_index] {
                         Some(idx) => {
                             record_index = idx;
                             continue;
@@ -315,7 +321,7 @@ where
         // First time we've seen this element. Start a new chain for it.
         let new_index = histogram.records.len();
         histogram.records.push(Some(Record { next: None, index: sequence_index, count: 1 }));
-        histogram.table[table_idx] = Some(new_index);
+        histogram.table[table_index] = Some(new_index);
     }
 
     Some(histogram)
