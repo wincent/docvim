@@ -21,6 +21,8 @@ where
     let mut a_idx = 1;
     let mut b_idx = 1;
     // TODO: deal with hunks (reduce amount of context shown)
+    // TODO: print right amount of pre-context (not just idx 1 to start of edit script)
+
     for edit in ses.0 {
         match edit {
             Delete(Idx(delete)) => {
@@ -42,6 +44,11 @@ where
                 b_idx += 1;
             }
         }
+    }
+
+    // BUG: there is almost certainly an off-by-one or a boundary violation hiding (ha!) in here
+    for i in (a_idx - 1)..=a.len() {
+        diff.push_str(&format!(" {}\n", &a[i - 1]));
     }
 
     diff

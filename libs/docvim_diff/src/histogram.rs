@@ -194,8 +194,8 @@ where
                                 let mut b_start = b_index;
                                 let mut b_end = b_start + 1;
 
-                                while region.a_start < a_start
-                                    && region.b_start < b_start
+                                while a_start > a_range.start
+                                    && b_start > b_range.start
                                     && a_hashes[a_start - 1] == b_hashes[b_start - 1]
                                     && a[a_start - 1] == b[b_start - 1]
                                 {
@@ -213,7 +213,7 @@ where
                                         // in reverse).
                                         record_count = min(
                                             record_count,
-                                            histogram.records[a_len - (a_start - a_range.start) - 1]
+                                            histogram.records[a_len - (a_start - a_range.start)]
                                                 .as_ref()
                                                 .unwrap()
                                                 .count,
@@ -221,8 +221,8 @@ where
                                     }
                                 }
 
-                                while a_end < region.a_end
-                                    && b_end < region.b_end
+                                while a_end < a_range.end
+                                    && b_end < b_range.end
                                     && a_hashes[a_end] == b_hashes[b_end]
                                     && a[a_end] == b[b_end]
                                 {
@@ -231,7 +231,7 @@ where
                                     if record_count >= 1 {
                                         record_count = min(
                                             record_count,
-                                            histogram.records[a_len - (a_end - a_range.start) - 1]
+                                            histogram.records[a_len - (a_end - a_range.start)]
                                                 .as_ref()
                                                 .unwrap()
                                                 .count,
@@ -420,49 +420,52 @@ mod tests {
         // This one, right down to the whack indentation, is from:
         // https://link.springer.com/article/10.1007/s10664-019-09772-z
         let a = vec![
-            "*/",
-            "public static ImageIcon getImageIcon(String path)",
-            "{",
-            "    java.net.URL imgURL = GuiImporter.class.getResource(path);",
-            "",
-            "    if (imgURL != null)",
-            "    {",
-            "            return new ImageIcon(imgURL);",
-            "    }",
-            "    else",
-            "    {",
-            "            log.error(\"Couldn't find icon: \" + imgURL);",
-            "    }",
-            "            return null;",
-            "}",
-            "",
-            "/**"
+            /*  0 */ "*/",
+            /*  1 */ "public static ImageIcon getImageIcon(String path)",
+            /*  2 */ "{",
+            /*  3 */ "    java.net.URL imgURL = GuiImporter.class.getResource(path);",
+            /*  4 */ "",
+            /*  5 */ "    if (imgURL != null)",
+            /*  6 */ "    {",
+            /*  7 */ "            return new ImageIcon(imgURL);",
+            /*  8 */ "    }",
+            /*  9 */ "    else",
+            /* 10 */ "    {",
+            /* 11 */ "            log.error(\"Couldn't find icon: \" + imgURL);",
+            /* 12 */ "    }",
+            /* 13 */ "            return null;",
+            /* 14 */ "}",
+            /* 15 */ "",
+            /* 16 */ "/**"
         ];
         let b = vec![
-            "*/",
-            "public static ImageIcon getImageIcon(String path)",
-            "{",
-            "    if (path == null)",
-            "    {",
-            "            log.error(\"Icon path is null\");",
-            "            return null;",
-            "    }",
-            "",
-            "    java.net.URL imgURL = GuiImporter.class.getResource(path);",
-            "",
-            "    if (imgURL == null)",
-            "    {",
-            "            log.error(\"Couldn't find icon: \" + imgURL);",
-            "            return null;",
-            "    }",
-            "    else",
-            "            return new ImageIcon(imgURL);",
-            "}",
-            "",
-            "/**"
+            /*  0 */ "*/",
+            /*  1 */ "public static ImageIcon getImageIcon(String path)",
+            /*  2 */ "{",
+            /*  3 */ "    if (path == null)",
+            /*  4 */ "    {",
+            /*  5 */ "            log.error(\"Icon path is null\");",
+            /*  6 */ "            return null;",
+            /*  7 */ "    }",
+            /*  8 */ "",
+            /*  9 */ "    java.net.URL imgURL = GuiImporter.class.getResource(path);",
+            /* 10 */ "",
+            /* 11 */ "    if (imgURL == null)",
+            /* 12 */ "    {",
+            /* 13 */ "            log.error(\"Couldn't find icon: \" + imgURL);",
+            /* 14 */ "            return null;",
+            /* 15 */ "    }",
+            /* 16 */ "    else",
+            /* 17 */ "            return new ImageIcon(imgURL);",
+            /* 18 */ "}",
+            /* 19 */ "",
+            /* 20 */ "/**"
         ];
 
         let es = diff(&a, &b);
+        println!("edit script:\n{:?}", es);
+        // Diff([Insert(Idx(4)), Insert(Idx(5)), Insert(Idx(6)), Insert(Idx(7)), Insert(Idx(8)), Insert(Idx(9)), Delete(Idx(6)), Delete(Idx(7)), Delete(Idx(8)), Delete(Idx(9)), Delete(Idx(10)), Delete(Idx(13)), Insert(Idx(16)), Insert(Idx(17)), Insert(Idx(18))])
+
         let formatted = format_es(es, &a, &b);
         println!("{}", formatted);
         //
