@@ -5,25 +5,23 @@ use std::ops::Range;
 use crate::diff::*;
 use crate::myers;
 
-// TODO: move this into tests if it is only used in tests.
-// use Edit::*;
-
 /// Represents an "LCS" selected as a region around which to split two sequences. If I understand
 /// the Histogram diff algorithm correctly, this is an unfortunate choice of terminology carried
 /// over from the Patience diff algorithm, where it applied more strictly.
 ///
-/// In Patience diff, unique lines from each sequence are compared and an actual LCS is computed
-/// for the two sequences of lines, using patience sorting. The indices corresponding to the items
-/// in the LCS are used as split points in a divide-and-conquer approach that recurses on the
-/// sections bordered by the splits.
+/// In Patience diff, unique lines from each sequence are compared and an actual LCS (Longest
+/// Common Subsequence) is computed for the two sequences of lines, using patience sorting. The
+/// indices corresponding to the items in the LCS are used as split points in a divide-and-conquer
+/// approach that recurses on the sections bordered by the splits.
 ///
 /// Histogram diff, on the other hand, will choose the lowest-count non-unique lines available, if
-/// no unique lines are available. It will then look for matching lines on either side, seeking to
-/// identify the longest possible _contiguous_ subsequence on either side. This section is called
-/// an "LCS" in the Histogram diff code comments, but it is not an LCS in the technical sense. The
-/// best section found is then used to divide and conquer, similar to the Patience algorithm (but
-/// note, we only ever do one split at a time). Here "best" means around the "rarest lines". In the
-/// presence of unique line pairs, Histogram is said to behave identically to Patience.
+/// no unique lines are available. It will then look for matching lines on either side, seeking
+/// to identify the longest possible _contiguous_ subsequence on either side. This section is
+/// called an "LCS" in the Histogram diff code comments; it is not necessarily an LCS in the
+/// technical sense (although it may be, by coincidence). The best section found is then used to
+/// divide and conquer, similar to the Patience algorithm (but note, we only ever do one split at
+/// a time). Here "best" means around the "rarest lines". In the presence of unique line pairs,
+/// Histogram is said to behave identically to Patience.
 #[derive(Debug)]
 struct Region {
     a_start: usize,
@@ -77,23 +75,13 @@ impl Histogram {
         // usize is 32 bits), because we only want at most usize bits.
         self.mask & (item_hash as usize)
     }
-
-    // starts to get ugly...
-    // pub fn get(&self, item_hash: usize) -> Option<Record> {
-    //     // Note it's ok to truncate from u64 to usize (if we were to run on a 32-bit system, where
-    //     // usize is 32 bits), because we only want at most usize bits.
-    //     let table_index = item_hash & self.mask;
-    //
-    //     self.table[table_index]
-    // }
-    //
-    // pub fn prepend(&self,
 }
 
 /// Used to limit cost of the algorithm in two ways:
 ///
-/// 1. Any items appearing > 64 times in the input sequence are capped at 64.
-/// TODO: verify this ^^^ (I think we cap the `count` but continue storing the records).
+/// 1. Any items appearing > 64 times in the input sequence are capped at 64. Both the Git and JGit
+///    implementations bail out completely if this happens; we're not actually do that yet, but
+///    probably should.
 /// 2. In the event of a pathological number of hash collisions, we abort after visiting 64 hash
 ///    table slots.
 const MAX_CHAIN_LENGTH: usize = 64;
@@ -185,7 +173,8 @@ where
         'scan_b: while b_index < b_range.end {
             let mut b_next = b_index + 1;
             let b_hash = b_hashes[b_index];
-            let mut table_index = histogram.idx_for_hash(b_hash);
+            let starting_table_index = histogram.idx_for_hash(b_hash);
+            let mut table_index = starting_table_index;
 
             let mut chain_length = 0;
             while chain_length < MAX_CHAIN_LENGTH {
@@ -226,7 +215,7 @@ where
                                             // is basically saying, "take whatever is smallest:
                                             // the smallest occurence count seen for this chain so
                                             // far, or the occurence count for the first line in
-                                            // the region". Not that because we extend backwards
+                                            // the region". Note that because we extend backwards
                                             // first, then upwards last, the upwards checks are
                                             // going to find successively smaller counts for any
                                             // items they hit in chains (because chains are built
@@ -298,8 +287,17 @@ where
                         }
 
                         // Hashes didn't match, or they did match and items weren't equal (ie. a
-                        // hash collision). Try next chain in table.
-                        table_index += 1;
+                        // hash collision). Try next chain in table, if there is one.
+                        let table_len = histogram.table.len();
+                        if table_index + 1 < starting_table_index ||
+                            table_index + 1 < table_len {
+                            table_index += 1;
+                        } else if table_index + 1 == table_len && starting_table_index > 0 {
+                            table_index = 0;
+                        } else {
+                            b_index = b_next;
+                            continue 'scan_b;
+                        }
                     },
                     None => {
                         // Item from `b` appears nowhere in `a`.
@@ -389,53 +387,9 @@ mod tests {
     fn blinking_light() {
         let a = vec!["A", "B", "C", "A", "B", "B", "A"];
         let b = vec!["C", "B", "A", "B", "A", "C"];
-        // what we get:
-        //                                                                       v--- want insert 3 instead --v
-        // Diff([Delete(Idx(1)), Delete(Idx(2)), Delete(Idx(4)), Delete(Idx(5)), Insert(Idx(4)), Insert(Idx(5)), Insert(Idx(6))])`,
-        //                                                       ^^^^^^ nope     ^^^^^^ nope     ^^^^^^ nope
-        // Progress:
-        //
-        // got region Region { a_start: 2, a_end: 3, b_start: 0, b_end: 1 }
-        //      ie. first split:
-        //                      A B C A B B A
-        //                          |
-        //                          C B A B A C
-        //
-        // falling back to myers... lengths: 2 0 (left recursive call)
-        //
-        // got region Region { a_start: 5, a_end: 7, b_start: 1, b_end: 3 }
-        //      ie. second split:
-        //                    <- done | doing ->
-        //                      A B C | A B B A
-        //                            |     | |
-        //                          C |     B A B A C
-        //
-        // falling back to myers... lengths: 2 0 (second left recursive call)
-        //
-        // falling back to myers... lengths: 0 3 (right recursive call)
-        //
-        // ie. matches output... doesn't exactly look like an SES although it is a valid edit
-        // script
-        //
-        //     delete 1, delete 2
-        //     (keep C)
-        //     delete 4, delete 5
-        //     (keep B, A)
-        //     insert 4, insert 5, insert 6
-        //
-        // ie.
-        //      -A
-        //      -B
-        //       C
-        //      -A
-        //      -B
-        //       B
-        //       A
-        //      +B
-        //      +A
-        //      +C
-        //
-        // Ah, `git diff --diff-algorithm=histogram` agrees with me:
+
+        // Note this is not acutally an SES (Shortest Edit Script), but agrees with the output of
+        // `git diff --diff-algorithm=histogram`:
         //
         //      diff --git a/before b/after
         //      index fd113b0..0075e6d 100644
@@ -451,24 +405,6 @@ mod tests {
         //       A
         //      +B
         //      +A
-        //      +C
-        //
-        // cf `--diff-algorithm=patience`
-        // (same as `--diff-algorithm=default` and `--diff-algorithm=minimal` for this input):
-        //
-        //      diff --git a/before b/after
-        //      index fd113b0..0075e6d 100644
-        //      --- a/before
-        //      +++ b/after
-        //      @@ -1,7 +1,6 @@
-        //      -A
-        //      -B
-        //       C
-        //      -A
-        //       B
-        //      +A
-        //       B
-        //       A
         //      +C
         assert_eq!(
             diff(&a, &b),

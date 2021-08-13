@@ -4,7 +4,7 @@ use std::fs;
 use std::path::Path;
 
 use docvim_diff::format_ses;
-use docvim_diff::myers::diff;
+use docvim_diff::histogram::diff;
 use docvim_lexer::lua::Lexer;
 
 /// Divider consisting of 72 downward-pointing arrows with a blank line before and after. The
