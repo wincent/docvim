@@ -157,7 +157,7 @@ where
 {
     let histogram = scan(a, a_range.clone(), a_hashes)?;
     let a_len = a_range.len();
-    let mut region = Region { a_start: a_range.start, b_start: b_range.start, a_end: a_range.start, b_end: b_range.end };
+    let mut region = Region { a_start: a_range.start, b_start: b_range.start, a_end: a_range.start, b_end: b_range.start };
     let mut count = MAX_CHAIN_LENGTH + 1;
     let mut b_index = b_range.start;
     let mut has_common = false;
@@ -302,7 +302,7 @@ where
         b_index = b_next;
     }
 
-    if !has_common || count < MAX_CHAIN_LENGTH {
+    if has_common && count < MAX_CHAIN_LENGTH {
         return Some(region);
     }
     None
@@ -465,18 +465,23 @@ mod tests {
         let es = diff(&a, &b);
         println!("edit script:\n{:?}", es);
         // Diff([
-        //      Insert(Idx(4)), right!
-        //      Insert(Idx(5)), right!
-        //      Insert(Idx(6)), right!
-        //      Insert(Idx(7)), right!
-        //      Insert(Idx(8)), right!
-        //      Insert(Idx(9)), right!
-        //      Delete(Idx(6)), right!
-        //      Delete(Idx(7)), right!
-        //      Delete(Idx(8)), right!
-        //      Delete(Idx(9)), right!
-        //      Delete(Idx(10)), right!
-        //                       missing here!: Insert(Idx(12)),
+        //      Insert(Idx(4)),  right!
+        //      Insert(Idx(5)),  right!
+        //      Insert(Idx(6)),  right!
+        //      Insert(Idx(7)),  right!
+        //      Insert(Idx(8)),  right!
+        //      Insert(Idx(9)),  right!
+        //      Delete(Idx(6)),  right!
+        //      Delete(Idx(7)),  right!
+        //
+        //      Insert(Idx(12)), <------- this ---\
+        //                                        |
+        //      Delete(Idx(8)),  right!      is supposed
+        //      Delete(Idx(9)),  right!         to be
+        //      Delete(Idx(10)), right!           |
+        //                                        |
+        //                       <------- here --/
+        //
         //      Delete(Idx(13)), right!
         //      Insert(Idx(16)), right!
         //      Insert(Idx(17)), right!
