@@ -3,11 +3,10 @@ pub mod histogram;
 pub mod myers;
 mod ring_buffer;
 
-//mod util; // string splitting and such?
-
 use crate::diff::*;
 use Edit::*;
 
+const CONTEXT_LINES: usize = 3;
 const GREEN: &str = "\x1b[0;32m";
 const RED: &str = "\x1b[0;31m";
 const RESET: &str = "\x1b[0m";
@@ -18,16 +17,17 @@ where
 {
     let mut diff = String::new();
 
-    let mut a_idx = 1;
-    let mut b_idx = 1;
-    // TODO: deal with hunks (reduce amount of context shown)
-    // TODO: print right amount of pre-context (not just idx 1 to start of edit script)
+    let mut a_idx = 1; // Where we are in `a`.
+    let mut b_idx = 1; // Where we are in `b`.
 
+    // TODO: print hunk headers; eg. @@ -44,6 +47,7 @@
     for edit in ses.0 {
         match edit {
             Delete(Idx(delete)) => {
                 while a_idx < delete {
-                    diff.push_str(&format!(" {}\n", &a[a_idx - 1]));
+                    if delete < CONTEXT_LINES || a_idx >= delete - CONTEXT_LINES {
+                        diff.push_str(&format!(" {}\n", &a[a_idx - 1]));
+                    }
                     a_idx += 1;
                     b_idx += 1;
                 }
@@ -36,7 +36,9 @@ where
             }
             Insert(Idx(insert)) => {
                 while b_idx < insert {
-                    diff.push_str(&format!(" {}\n", &b[b_idx - 1]));
+                    if insert < CONTEXT_LINES || b_idx >= insert - CONTEXT_LINES {
+                        diff.push_str(&format!(" {}\n", &b[b_idx - 1]));
+                    }
                     a_idx += 1;
                     b_idx += 1;
                 }
@@ -44,6 +46,7 @@ where
                 b_idx += 1;
             }
         }
+        // TODO: after each edit, may want to print up to three lines of context...
     }
 
     // BUG: there is almost certainly an off-by-one or a boundary violation hiding (ha!) in here
