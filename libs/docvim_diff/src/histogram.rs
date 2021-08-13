@@ -3,8 +3,9 @@ use std::hash::Hash;
 use std::ops::Range;
 
 use crate::diff::*;
-use crate::format_es;
 use crate::myers;
+
+use Edit::*;
 
 /// Represents an "LCS" selected as a region around which to split two sequences. If I understand
 /// the Histogram diff algorithm correctly, this is an unfortunate choice of terminology carried
@@ -65,11 +66,7 @@ impl Histogram {
         // 3. Take 1, yielding: 0b11111111 (ie. 8 ones).
         let mask = size - 1;
 
-        Histogram {
-            mask,
-            records: Vec::with_capacity(len),
-            table: vec![None; size],
-        }
+        Histogram { mask, records: Vec::with_capacity(len), table: vec![None; size] }
     }
     pub fn idx_for_hash(&self, item_hash: u64) -> usize {
         // Note it's ok to truncate from u64 to usize (if we were to run on a 32-bit system, where
@@ -105,7 +102,8 @@ fn histogram_diff<T>(
     a_hashes: &Vec<u64>,
     b: &Vec<T>,
     b_range: Range<usize>,
-    b_hashes: &Vec<u64>) -> Diff
+    b_hashes: &Vec<u64>,
+) -> Diff
 where
     T: Hash + PartialEq,
 {
@@ -114,7 +112,9 @@ where
         myers::recursive_diff(a, a_range, a_hashes, b, b_range, b_hashes, &mut edits);
         Diff(edits)
     } else {
-        if let Some(region) = find_split_region(a, a_range.clone(), a_hashes, b, b_range.clone(), b_hashes) {
+        if let Some(region) =
+            find_split_region(a, a_range.clone(), a_hashes, b, b_range.clone(), b_hashes)
+        {
             let left = histogram_diff(
                 a,
                 a_range.start..region.a_start,
@@ -136,9 +136,15 @@ where
             edits.extend(right.0);
             Diff(edits)
         } else {
-            // TODO: consider just emitting a "replace" edit here
-            let mut edits = vec![];
-            myers::recursive_diff(a, a_range, a_hashes, b, b_range, b_hashes, &mut edits);
+            // Nothing in common (at least, nothing we could find within
+            // MAX_CHAIN_LENGTH). Emit a "replace" edit.
+            let mut edits = Vec::with_capacity(a_range.len() + b_range.len());
+            for i in a_range.clone() {
+                edits.push(Delete(Idx(i + 1)));
+            }
+            for i in b_range.clone() {
+                edits.push(Insert(Idx(i + 1)));
+            }
             Diff(edits)
         }
     }
@@ -157,7 +163,12 @@ where
 {
     let histogram = scan(a, a_range.clone(), a_hashes)?;
     let a_len = a_range.len();
-    let mut region = Region { a_start: a_range.start, b_start: b_range.start, a_end: a_range.start, b_end: b_range.start };
+    let mut region = Region {
+        a_start: a_range.start,
+        b_start: b_range.start,
+        a_end: a_range.start,
+        b_end: b_range.start,
+    };
     let mut count = MAX_CHAIN_LENGTH + 1;
     let mut b_index = b_range.start;
     let mut has_common = false;
@@ -243,7 +254,17 @@ where
                                     b_next = b_end;
                                 }
 
-                                if (region.a_end - region.a_start) < (a_end - a_start) || record_count < count {
+                                if (region.a_end - region.a_start) < (a_end - a_start)
+                                    || record_count < count
+                                {
+                                    println!(
+                                        "upgrading bc region.len={} candidate.len={} record_count={} count={}",
+                                        region.a_end - region.a_start,
+                                        a_end - a_start,
+                                        record_count,
+                                        count
+
+                                    );
                                     // Region is longest found, or chain is rarer; so it is our current best
                                     // region.
                                     region.a_start = a_start;
@@ -258,7 +279,8 @@ where
                                 }
                                 let mut next_record = record.next;
                                 while let Some(next_record_index) = next_record {
-                                    let record = histogram.records[next_record_index].as_ref().unwrap();
+                                    let record =
+                                        histogram.records[next_record_index].as_ref().unwrap();
                                     if record.index >= a_end {
                                         // We've skipped over any occurences within the region
                                         // we already explored.
@@ -280,8 +302,7 @@ where
                     // Hashes didn't match, or they did match and items weren't equal (ie. a
                     // hash collision). Try next chain in table, if there is one.
                     let table_len = histogram.table.len();
-                    if table_index + 1 < starting_table_index ||
-                        table_index + 1 < table_len {
+                    if table_index + 1 < starting_table_index || table_index + 1 < table_len {
                         table_index += 1;
                     } else if table_index + 1 == table_len && starting_table_index > 0 {
                         table_index = 0;
@@ -289,7 +310,7 @@ where
                         b_index = b_next;
                         continue 'scan_b;
                     }
-                },
+                }
                 None => {
                     // Item from `b` appears nowhere in `a`.
                     b_index = b_next;
@@ -375,7 +396,7 @@ where
 mod tests {
     use super::*;
 
-    use Edit::*;
+    use crate::format_es;
 
     #[test]
     fn test_trivial_example() {
@@ -418,7 +439,10 @@ mod tests {
     #[test]
     fn test_textbook_example() {
         // This one, right down to the whack indentation, is from:
-        // https://link.springer.com/article/10.1007/s10664-019-09772-z
+        //
+        //      https://link.springer.com/article/10.1007/s10664-019-09772-z
+        //
+        // Indices in comments are to aid debugging if this breaks.
         let a = vec![
             /*  0 */ "*/",
             /*  1 */ "public static ImageIcon getImageIcon(String path)",
@@ -436,8 +460,9 @@ mod tests {
             /* 13 */ "            return null;",
             /* 14 */ "}",
             /* 15 */ "",
-            /* 16 */ "/**"
+            /* 16 */ "/**",
         ];
+
         let b = vec![
             /*  0 */ "*/",
             /*  1 */ "public static ImageIcon getImageIcon(String path)",
@@ -459,76 +484,37 @@ mod tests {
             /* 17 */ "            return new ImageIcon(imgURL);",
             /* 18 */ "}",
             /* 19 */ "",
-            /* 20 */ "/**"
+            /* 20 */ "/**",
         ];
 
-        let es = diff(&a, &b);
-        println!("edit script:\n{:?}", es);
-        // Diff([
-        //      Insert(Idx(4)),  right!
-        //      Insert(Idx(5)),  right!
-        //      Insert(Idx(6)),  right!
-        //      Insert(Idx(7)),  right!
-        //      Insert(Idx(8)),  right!
-        //      Insert(Idx(9)),  right!
-        //      Delete(Idx(6)),  right!
-        //      Delete(Idx(7)),  right!
-        //
-        //      Insert(Idx(12)), <------- this ---\
-        //                                        |
-        //      Delete(Idx(8)),  right!      is supposed
-        //      Delete(Idx(9)),  right!         to be
-        //      Delete(Idx(10)), right!           |
-        //                                        |
-        //                       <------- here --/
-        //
-        //      Delete(Idx(13)), right!
-        //      Insert(Idx(16)), right!
-        //      Insert(Idx(17)), right!
-        //      Insert(Idx(18))  right!
-        // ])
-
-        let formatted = format_es(es, &a, &b);
-        println!("{}", formatted);
-        //
-        // expect something close to Git's output:
-        //
-        //      diff --git a/before b/after
-        //      index 51ffd16..c4fad40 100644
-        //      --- a/before
-        //      +++ b/after
-        //      @@ -1,17 +1,21 @@
-        //       */
-        //       public static ImageIcon getImageIcon(String path)
-        //       {
-        //      +    if (path == null)
-        //      +    {
-        //      +            log.error("Icon path is null");
-        //      +            return null;
-        //      +    }
-        //      +
-        //           java.net.URL imgURL = GuiImporter.class.getResource(path);
-        //
-        //      -    if (imgURL != null)
-        //      -    {
-        //      -            return new ImageIcon(imgURL);
-        //      -    }
-        //      -    else
-        //      +    if (imgURL == null)
-        //           {
-        //                   log.error("Couldn't find icon: " + imgURL);
-        //      -    }
-        //                   return null;
-        //      +    }
-        //      +    else
-        //      +            return new ImageIcon(imgURL);
-        //       }
-        //
-        //       /**
-        //
         // Note this is close to what is in the paper, but not identical (looks like the paper just
         // has some careless errors in it).
+        let es = diff(&a, &b);
 
-        assert!(false);
+        // If the test ever fails, log the pretty-printed diff for visual
+        // inspection.
+        println!("{}", format_es(es.clone(), &a, &b));
+
+        assert_eq!(
+            es,
+            Diff(vec![
+                Insert(Idx(4)),
+                Insert(Idx(5)),
+                Insert(Idx(6)),
+                Insert(Idx(7)),
+                Insert(Idx(8)),
+                Insert(Idx(9)),
+                Delete(Idx(6)),
+                Delete(Idx(7)),
+                Delete(Idx(8)),
+                Delete(Idx(9)),
+                Delete(Idx(10)),
+                Insert(Idx(12)),
+                Delete(Idx(13)),
+                Insert(Idx(16)),
+                Insert(Idx(17)),
+                Insert(Idx(18))
+            ])
+        );
     }
 }

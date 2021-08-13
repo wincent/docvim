@@ -532,6 +532,32 @@ mod tests {
     }
 
     #[test]
+    fn test_replace_edit() {
+        // This showed up in the histogram tests as something that should be a "replace" edit (ie.
+        // no common lines; first remove all from `a`, then insert all from `b`) but was coming out
+        // as a run of deletions then an insertion then deletions.
+        let a = vec![
+            "    if (imgURL != null)",
+            "    {",
+            "            return new ImageIcon(imgURL);",
+            "    }",
+            "    else",
+        ];
+        let b = vec!["    if (imgURL == null)"];
+        assert_eq!(
+            diff(&a, &b),
+            Diff(vec![
+                Delete(Idx(1)),
+                Delete(Idx(2)),
+                Delete(Idx(3)),
+                Delete(Idx(4)),
+                Delete(Idx(5)),
+                Insert(Idx(1)),
+            ])
+        );
+    }
+
+    #[test]
     fn test_stack_overflow_regression() {
         let a = vec!["A", "B"];
         let b = vec!["A", "A", "B"];
