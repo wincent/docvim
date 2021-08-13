@@ -1,5 +1,6 @@
 use std::cmp::min;
 use std::hash::Hash;
+use std::ops::Range;
 
 use crate::diff::*;
 use crate::myers;
@@ -101,37 +102,56 @@ pub fn diff<T>(a: &Vec<T>, b: &Vec<T>) -> Diff
 where
     T: Hash + PartialEq,
 {
-    // Precompute line hashes.
     let a_hashes: Vec<u64> = a.iter().map(hash).collect();
     let b_hashes: Vec<u64> = b.iter().map(hash).collect();
+    let a_range = 0..a.len();
+    let b_range = 0..b.len();
 
-    histogram_diff(a, &a_hashes, b, &b_hashes)
+    histogram_diff(a, a_range, &a_hashes, b, b_range, &b_hashes)
 }
 
-fn histogram_diff<T>(a: &Vec<T>, a_hashes: &Vec<u64>, b: &Vec<T>, b_hashes: &Vec<u64>) -> Diff
+fn histogram_diff<T>(
+    a: &Vec<T>,
+    a_range: Range<usize>,
+    a_hashes: &Vec<u64>,
+    b: &Vec<T>,
+    b_range: Range<usize>,
+    b_hashes: &Vec<u64>) -> Diff
 where
     T: Hash + PartialEq,
 {
-    println!("{:?}", find_split_region(a, a_hashes, b, b_hashes));
-    myers::diff(a, b)
+    if a.len() == 0 || b.len() == 0 {
+        println!("falling back to myers... lengths: {} {}", a.len(), b.len());
+        myers::diff(a, b)
+    } else {
+        if let Some(region) = find_split_region(a, a_range, a_hashes, b, b_range, b_hashes) {
+            println!("got region {:?}", region);
+            // recurse. may want to special case match at start (ie. empty side of split)
+        } else {
+            println!("did not get a region will have to fall back");
+        }
+        myers::diff(a, b)
+    }
 }
 
 fn find_split_region<T>(
     a: &Vec<T>,
+    a_range: Range<usize>,
     a_hashes: &Vec<u64>,
     b: &Vec<T>,
+    b_range: Range<usize>,
     b_hashes: &Vec<u64>,
 ) -> Option<Region>
 where
     T: Hash + PartialEq,
 {
-    let a_len = a.len();
-    if let Some(histogram) = scan(a, a_hashes) {
-        let mut region = Region { a_start: 0, b_start: 0, a_end: 0, b_end: 0 };
+    let a_len = a_range.len();
+    if let Some(histogram) = scan(a, a_range.clone(), a_hashes) {
+        let mut region = Region { a_start: a_range.start, b_start: b_range.start, a_end: a_range.start, b_end: b_range.end };
         let mut count = MAX_CHAIN_LENGTH + 1;
-        let mut b_index = 0;
+        let mut b_index = b_range.start;
         let mut has_common = false;
-        'scan_b: while b_index < b.len() {
+        'scan_b: while b_index < b_range.end {
             let mut b_next = b_index + 1;
             let b_hash = b_hashes[b_index];
             let mut table_index = histogram.idx_for_hash(b_hash);
@@ -269,15 +289,16 @@ where
     None
 }
 
-fn scan<T>(a: &Vec<T>, a_hashes: &Vec<u64>) -> Option<Histogram>
+fn scan<T>(a: &Vec<T>, a_range: Range<usize>, a_hashes: &Vec<u64>) -> Option<Histogram>
 where
     T: Hash + PartialEq,
 {
-    let mut histogram = Histogram::new(a.len());
+    let mut histogram = Histogram::new(a_range.len());
 
     // Iterate in reverse prepending matching items to chains (ie. earliest match will appear at
     // head of chain).
-    'scan_line: for (sequence_index, item) in a.iter().enumerate().rev() {
+    'scan_line: for sequence_index in a_range.clone().rev() {
+        let item = &a[sequence_index];
         let item_hash = a_hashes[sequence_index];
         let mut table_index = histogram.idx_for_hash(item_hash);
 
