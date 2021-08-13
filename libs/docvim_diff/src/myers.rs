@@ -374,7 +374,7 @@ where
     panic!("did not find middle snake");
 }
 
-fn recursive_diff<T>(
+pub fn recursive_diff<T>(
     a: &Vec<T>,
     a_range: Range<usize>,
     a_hashes: &Vec<u64>,

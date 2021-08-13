@@ -120,17 +120,48 @@ fn histogram_diff<T>(
 where
     T: Hash + PartialEq,
 {
-    if a.len() == 0 || b.len() == 0 {
-        println!("falling back to myers... lengths: {} {}", a.len(), b.len());
-        myers::diff(a, b)
+    if a_range.len() == 0 || b_range.len() == 0 {
+        println!("falling back to myers... lengths: {} {}", a_range.len(), b_range.len());
+        let mut edits = vec![];
+        myers::recursive_diff(a, a_range, a_hashes, b, b_range, b_hashes, &mut edits);
+        Diff(edits)
     } else {
-        if let Some(region) = find_split_region(a, a_range, a_hashes, b, b_range, b_hashes) {
+        if let Some(region) = find_split_region(a, a_range.clone(), a_hashes, b, b_range.clone(), b_hashes) {
             println!("got region {:?}", region);
             // recurse. may want to special case match at start (ie. empty side of split)
+            // let left = vec![a_range.start..region.a_start, b_range.start..region.b_start];
+            // let right = vec![region.a_end..a_range.end, region.b_end..b_range.end];
+            let left = histogram_diff(
+                a,
+                a_range.start..region.a_start,
+                a_hashes,
+                b,
+                b_range.start..region.b_start,
+                b_hashes,
+            );
+            // println!("left recursive call {:?}", left);
+            let right = histogram_diff(
+                a,
+                region.a_end..a_range.end,
+                a_hashes,
+                b,
+                region.b_end..b_range.end,
+                b_hashes,
+            );
+            // println!("right recursive call {:?}", right);
+            // Diff([&left.0[..], &right.0[..]].concat())
+            let mut edits = vec![];
+            edits.extend(left.0);
+            edits.extend(right.0);
+            Diff(edits)
         } else {
             println!("did not get a region will have to fall back");
+            // or emit a "replace" edit...
+            //
+            let mut edits = vec![];
+            myers::recursive_diff(a, a_range, a_hashes, b, b_range, b_hashes, &mut edits);
+            Diff(edits)
         }
-        myers::diff(a, b)
     }
 }
 
@@ -202,7 +233,7 @@ where
                                             // in reverse).
                                             record_count = min(
                                                 record_count,
-                                                histogram.records[a_len - a_start]
+                                                histogram.records[a_len - (a_start - a_range.start)]
                                                     .as_ref()
                                                     .unwrap()
                                                     .count,
@@ -220,7 +251,7 @@ where
                                         if record_count >= 1 {
                                             record_count = min(
                                                 record_count,
-                                                histogram.records[a_len - a_end]
+                                                histogram.records[a_len - (a_end - a_range.start)]
                                                     .as_ref()
                                                     .unwrap()
                                                     .count,
@@ -358,12 +389,35 @@ mod tests {
     fn blinking_light() {
         let a = vec!["A", "B", "C", "A", "B", "B", "A"];
         let b = vec!["C", "B", "A", "B", "A", "C"];
+        // what we get:
+        //                                                                       v--- want insert 3 instead --v
+        // Diff([Delete(Idx(1)), Delete(Idx(2)), Delete(Idx(4)), Delete(Idx(5)), Insert(Idx(4)), Insert(Idx(5)), Insert(Idx(6))])`,
+        //                                                       ^^^^^^ nope     ^^^^^^ nope     ^^^^^^ nope
+        // Progress:
+        //
+        // got region Region { a_start: 2, a_end: 3, b_start: 0, b_end: 1 }
+        //      ie. first split:
+        //                      A B C A B B A
+        //                          |
+        //                          C B A B A C
+        //
+        // falling back to myers... lengths: 2 0
+        //
+        // got region Region { a_start: 5, a_end: 7, b_start: 1, b_end: 3 }
+        //      ie. second split:
+        //                  <- done | doing ->
+        //                      A B | C A B B A
+        //                                  | |
+        //                        C |       B A B A C
+        //
+        // falling back to myers... lengths: 2 0
+        //
+        // falling back to myers... lengths: 0 3
 
         assert_eq!(
             diff(&a, &b),
             Diff(vec![
-                // comment out one of these to break test so i can see my println, if desired
-                // Delete(Idx(1)),
+                Delete(Idx(1)),
                 Delete(Idx(2)),
                 Delete(Idx(4)),
                 Insert(Idx(3)),
