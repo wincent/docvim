@@ -111,42 +111,40 @@ where
         let mut edits = vec![];
         myers::recursive_diff(a, a_range, a_hashes, b, b_range, b_hashes, &mut edits);
         Diff(edits)
+    } else if let Some(region) =
+        find_split_region(a, a_range.clone(), a_hashes, b, b_range.clone(), b_hashes)
+    {
+        let left = histogram_diff(
+            a,
+            a_range.start..region.a_start,
+            a_hashes,
+            b,
+            b_range.start..region.b_start,
+            b_hashes,
+        );
+        let right = histogram_diff(
+            a,
+            region.a_end..a_range.end,
+            a_hashes,
+            b,
+            region.b_end..b_range.end,
+            b_hashes,
+        );
+        let mut edits = vec![];
+        edits.extend(left.0);
+        edits.extend(right.0);
+        Diff(edits)
     } else {
-        if let Some(region) =
-            find_split_region(a, a_range.clone(), a_hashes, b, b_range.clone(), b_hashes)
-        {
-            let left = histogram_diff(
-                a,
-                a_range.start..region.a_start,
-                a_hashes,
-                b,
-                b_range.start..region.b_start,
-                b_hashes,
-            );
-            let right = histogram_diff(
-                a,
-                region.a_end..a_range.end,
-                a_hashes,
-                b,
-                region.b_end..b_range.end,
-                b_hashes,
-            );
-            let mut edits = vec![];
-            edits.extend(left.0);
-            edits.extend(right.0);
-            Diff(edits)
-        } else {
-            // Nothing in common (at least, nothing we could find within
-            // MAX_CHAIN_LENGTH). Emit a "replace" edit.
-            let mut edits = Vec::with_capacity(a_range.len() + b_range.len());
-            for i in a_range.clone() {
-                edits.push(Delete(Idx(i + 1)));
-            }
-            for i in b_range.clone() {
-                edits.push(Insert(Idx(i + 1)));
-            }
-            Diff(edits)
+        // Nothing in common (at least, nothing we could find within
+        // MAX_CHAIN_LENGTH). Emit a "replace" edit.
+        let mut edits = Vec::with_capacity(a_range.len() + b_range.len());
+        for i in a_range.clone() {
+            edits.push(Delete(Idx(i + 1)));
         }
+        for i in b_range.clone() {
+            edits.push(Insert(Idx(i + 1)));
+        }
+        Diff(edits)
     }
 }
 
