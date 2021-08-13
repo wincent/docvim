@@ -392,7 +392,17 @@ where
         let (x_mid, y_mid, x_end, y_end, d) =
             find_middle_snake(a, a_range.clone(), a_hashes, b, b_range.clone(), b_hashes);
 
-        if d > 1 {
+        if d == n + m {
+            // Special case: everything deleted from `a` then everything inserted from `b`. Our
+            // middle snake will be zero-length, and recursing is pointless. Just emit a "replace"
+            // edit script.
+            for i in a_range.clone() {
+                edits.push(Delete(Idx(i + 1)));
+            }
+            for i in b_range.clone() {
+                edits.push(Insert(Idx(i + 1)));
+            }
+        } else if d > 1 {
             // Divide and conquer.
             {
                 let a_range = a_range.start..x_mid;
