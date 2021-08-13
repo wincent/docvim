@@ -255,14 +255,6 @@ where
                                 if (region.a_end - region.a_start) < (a_end - a_start)
                                     || record_count < count
                                 {
-                                    println!(
-                                        "upgrading bc region.len={} candidate.len={} record_count={} count={}",
-                                        region.a_end - region.a_start,
-                                        a_end - a_start,
-                                        record_count,
-                                        count
-
-                                    );
                                     // Region is longest found, or chain is rarer; so it is our current best
                                     // region.
                                     region.a_start = a_start;
@@ -489,8 +481,7 @@ mod tests {
         // has some careless errors in it).
         let es = diff(&a, &b);
 
-        // If the test ever fails, log the pretty-printed diff for visual
-        // inspection.
+        // If the test ever fails, log the pretty-printed diff for visual inspection.
         println!("{}", format_es(es.clone(), &a, &b));
 
         assert_eq!(
