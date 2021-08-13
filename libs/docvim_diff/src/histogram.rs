@@ -464,7 +464,24 @@ mod tests {
 
         let es = diff(&a, &b);
         println!("edit script:\n{:?}", es);
-        // Diff([Insert(Idx(4)), Insert(Idx(5)), Insert(Idx(6)), Insert(Idx(7)), Insert(Idx(8)), Insert(Idx(9)), Delete(Idx(6)), Delete(Idx(7)), Delete(Idx(8)), Delete(Idx(9)), Delete(Idx(10)), Delete(Idx(13)), Insert(Idx(16)), Insert(Idx(17)), Insert(Idx(18))])
+        // Diff([
+        //      Insert(Idx(4)), right!
+        //      Insert(Idx(5)), right!
+        //      Insert(Idx(6)), right!
+        //      Insert(Idx(7)), right!
+        //      Insert(Idx(8)), right!
+        //      Insert(Idx(9)), right!
+        //      Delete(Idx(6)), right!
+        //      Delete(Idx(7)), right!
+        //      Delete(Idx(8)), right!
+        //      Delete(Idx(9)), right!
+        //      Delete(Idx(10)), right!
+        //                       missing here!: Insert(Idx(12)),
+        //      Delete(Idx(13)), right!
+        //      Insert(Idx(16)), right!
+        //      Insert(Idx(17)), right!
+        //      Insert(Idx(18))  right!
+        // ])
 
         let formatted = format_es(es, &a, &b);
         println!("{}", formatted);
