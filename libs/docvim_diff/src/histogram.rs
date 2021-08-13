@@ -49,9 +49,6 @@ struct Record {
 /// Histogram hash table and supporting indices.
 #[derive(Debug)]
 struct Histogram {
-    /// Map from line index to corresponding record in `records` vector.
-    pub line_map: Vec<Option<usize>>,
-
     mask: usize,
 
     /// Map from item in the `records` vector to next identical item's line index in the sequence.
@@ -75,7 +72,6 @@ impl Histogram {
         let mask = size - 1;
 
         Histogram {
-            line_map: vec![None; len],
             mask,
             next_map: vec![None; len],
             records: Vec::with_capacity(len),
@@ -131,6 +127,7 @@ fn find_split_region<T>(
 where
     T: Hash + PartialEq,
 {
+    let a_len = a.len();
     if let Some(histogram) = scan(a, a_hashes) {
         let mut region = Region { a_start: 0, b_start: 0, a_end: 0, b_end: 0 };
         let mut count = MAX_CHAIN_LENGTH + 1;
@@ -152,11 +149,8 @@ where
                         }
                         match record.next {
                             Some(next_index) => {
-                                if let Some(next_record_index) = histogram.line_map[next_index] {
-                                    next_record = &histogram.records[next_record_index];
-                                } else {
-                                    break;
-                                }
+                                let next_record_index = a_len - next_index;
+                                next_record = &histogram.records[next_record_index];
                             }
                             None => break,
                         };
@@ -167,11 +161,8 @@ where
                     if a_hashes[a_start] != b_hashes[b_index] && a[a_start] != b[b_index] {
                         match record.next {
                             Some(next_index) => {
-                                if let Some(next_record_index) = histogram.line_map[next_index] {
-                                    next_record = &histogram.records[next_record_index];
-                                } else {
-                                    break;
-                                }
+                                let next_record_index = a_len - next_index;
+                                next_record = &histogram.records[next_record_index];
                             },
                             None => break,
                         };
@@ -199,7 +190,7 @@ where
                             if record_count >= 1 {
                                 record_count = min(
                                     record_count,
-                                    histogram.records[histogram.line_map[a_start].unwrap()]
+                                    histogram.records[a_len - a_start]
                                         .as_ref()
                                         .unwrap()
                                         .count,
@@ -217,7 +208,7 @@ where
                             if record_count >= 1 {
                                 record_count = min(
                                     record_count,
-                                    histogram.records[histogram.line_map[a_start].unwrap()]
+                                    histogram.records[a_len - a_start]
                                         .as_ref()
                                         .unwrap()
                                         .count,
@@ -295,7 +286,6 @@ where
                 let record_count = record.count;
                 if a_hashes[line_index] == item_hash && &a[line_index] == item {
                     let new_index = histogram.records.len();
-                    histogram.line_map[sequence_index] = Some(new_index);
                     histogram.records.push(Some(Record {
                         next: Some(record_index),
                         index: sequence_index,
@@ -324,7 +314,6 @@ where
 
         // First time we've seen this element. Start a new chain for it.
         let new_index = histogram.records.len();
-        histogram.line_map[sequence_index] = Some(new_index);
         histogram.records.push(Some(Record { next: None, index: sequence_index, count: 1 }));
         histogram.table[table_idx] = Some(new_index);
     }
