@@ -465,6 +465,44 @@ mod tests {
         let es = diff(&a, &b);
         let formatted = format_es(es, &a, &b);
         println!("{}", formatted);
+        //
+        // expect something close to Git's output:
+        //
+        //      diff --git a/before b/after
+        //      index 51ffd16..c4fad40 100644
+        //      --- a/before
+        //      +++ b/after
+        //      @@ -1,17 +1,21 @@
+        //       */
+        //       public static ImageIcon getImageIcon(String path)
+        //       {
+        //      +    if (path == null)
+        //      +    {
+        //      +            log.error("Icon path is null");
+        //      +            return null;
+        //      +    }
+        //      +
+        //           java.net.URL imgURL = GuiImporter.class.getResource(path);
+        //
+        //      -    if (imgURL != null)
+        //      -    {
+        //      -            return new ImageIcon(imgURL);
+        //      -    }
+        //      -    else
+        //      +    if (imgURL == null)
+        //           {
+        //                   log.error("Couldn't find icon: " + imgURL);
+        //      -    }
+        //                   return null;
+        //      +    }
+        //      +    else
+        //      +            return new ImageIcon(imgURL);
+        //       }
+        //
+        //       /**
+        //
+        // Note this is close to what is in the paper, but not identical (looks like the paper just
+        // has some careless errors in it).
 
         assert!(false);
     }
