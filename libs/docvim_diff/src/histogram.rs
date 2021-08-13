@@ -283,28 +283,38 @@ where
         let item_hash = a_hashes[sequence_index];
         let mut table_idx = histogram.idx_for_hash(item_hash);
 
+        // Combined length of chains traversed to find insertion point.
         let mut chain_length = 0;
-        while let Some(record_index) = histogram.table[table_idx] {
-            let record = histogram.records[record_index].as_ref().unwrap();
-            let line_index = record.index;
-            let record_count = record.count;
-            if a_hashes[line_index] == item_hash && &a[line_index] == item {
-                let new_index = histogram.records.len();
-                histogram.line_map[sequence_index] = Some(new_index);
-                histogram.records.push(Some(Record {
-                    next: Some(record_index),
-                    index: sequence_index,
-                    count: min(MAX_CHAIN_LENGTH, record_count + 1),
-                }));
-                histogram.next_map[new_index] = Some(line_index);
-                histogram.table[table_idx] = Some(new_index);
-                continue 'scan_line;
-            }
-            chain_length += 1;
-            if let Some(next_idx) = record.next {
-                table_idx = next_idx;
-            } else {
-                break;
+
+        if let Some(record_index) = histogram.table[table_idx] {
+            let mut record_index = record_index;
+            while chain_length <= MAX_CHAIN_LENGTH {
+                chain_length += 1;
+                let record = histogram.records[record_index].as_ref().unwrap();
+                let line_index = record.index;
+                let record_count = record.count;
+                if a_hashes[line_index] == item_hash && &a[line_index] == item {
+                    let new_index = histogram.records.len();
+                    histogram.line_map[sequence_index] = Some(new_index);
+                    histogram.records.push(Some(Record {
+                        next: Some(record_index),
+                        index: sequence_index,
+                        count: min(MAX_CHAIN_LENGTH, record_count + 1),
+                    }));
+                    histogram.next_map[new_index] = Some(line_index);
+                    histogram.table[table_idx] = Some(new_index);
+                    continue 'scan_line;
+                } else {
+                    // Hash collision; try next slot.
+                    table_idx += 1;
+                    match histogram.table[table_idx] {
+                        Some(idx) => {
+                            record_index = idx;
+                            continue;
+                        }
+                        None => break,
+                    }
+                }
             }
         }
 
