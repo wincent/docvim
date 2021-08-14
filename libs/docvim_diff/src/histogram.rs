@@ -506,4 +506,20 @@ mod tests {
             ])
         );
     }
+
+    #[test]
+    fn test_speed_worst_case() {
+        // Note: this is the worst case for Myers, but histogram processes this instantly.
+        let a = vec!["a\n"; 10000];
+        let b = vec!["b\n"; 10000];
+        diff(&a, &b);
+    }
+
+    #[test]
+    fn test_speed_best_case() {
+        // Again, best case for Myers; histogram processes this instantly.
+        let a = vec!["a\n"; 10000];
+        let b = vec!["a\n"; 10000];
+        diff(&a, &b);
+    }
 }
