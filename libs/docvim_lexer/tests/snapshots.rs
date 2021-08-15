@@ -75,21 +75,15 @@ fn transform(input: &str) -> String {
 // TODO: see if we can make this more pleasant with a macro... (and have it print the right line
 // numbers etc
 #[test]
-fn test_lexes_numbers() {
-    if let Ok(result) = check_snapshot("numbers", &transform) {
-        assert!(result);
-    } else {
-        panic!("unexpected error");
-    }
+fn test_lexes_numbers() -> Result<(), Box<dyn Error>> {
+    assert!(check_snapshot("numbers", &transform)?);
+    Ok(())
 }
 
 // TODO: this is just the main file from corpus; add subdirectories and ability to update easily
 // without having to manage .snap files by hand
 #[test]
-fn test_lexes_corpus() {
-    if let Ok(result) = check_snapshot("corpus", &transform) {
-        assert!(result);
-    } else {
-        panic!("unexpected error");
-    }
+fn test_lexes_corpus() -> Result<(), Box<dyn Error>> {
+    assert!(check_snapshot("corpus", &transform)?);
+    Ok(())
 }
