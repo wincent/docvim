@@ -26,7 +26,7 @@ where
     for edit in ses.0 {
         match edit {
             Delete(Idx(delete)) => {
-                if delete > a_idx + CONTEXT_LINES {
+                if hunk.len() > 0 && delete > a_idx + CONTEXT_LINES {
                     // Print trailing context.
                     let last_context_line = min(a_idx + CONTEXT_LINES, a_len);
                     while a_idx <= last_context_line {
@@ -77,7 +77,7 @@ where
                 a_idx += 1;
             }
             Insert(Idx(insert)) => {
-                if insert > b_idx + CONTEXT_LINES {
+                if hunk.len() > 0 && insert > b_idx + CONTEXT_LINES {
                     // Print trailing context.
                     let last_context_line = min(b_idx + CONTEXT_LINES, b_len);
                     while b_idx <= last_context_line {
