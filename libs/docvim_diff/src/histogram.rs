@@ -482,7 +482,7 @@ mod tests {
         let es = diff(&a, &b);
 
         // If the test ever fails, log the pretty-printed diff for visual inspection.
-        println!("{}", format_es(es.clone(), &a, &b));
+        println!("{}", format(es.clone(), &a, &b));
 
         assert_eq!(
             es,
