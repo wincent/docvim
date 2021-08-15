@@ -386,7 +386,7 @@ where
 mod tests {
     use super::*;
 
-    use crate::format_es;
+    use crate::format;
 
     #[test]
     fn test_trivial_example() {
