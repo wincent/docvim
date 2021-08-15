@@ -50,7 +50,7 @@ where
                     b_hunk_start = None;
                 }
 
-                if a_idx < delete {
+                if a_idx <= delete {
                     // Print leading context.
                     if a_hunk_start.is_none() {
                         if delete <= CONTEXT_LINES {
@@ -100,7 +100,7 @@ where
                     b_hunk_start = None;
                 }
 
-                if b_idx < insert {
+                if b_idx <= insert {
                     // Print leading context.
                     if b_hunk_start.is_none() {
                         if insert <= CONTEXT_LINES {
