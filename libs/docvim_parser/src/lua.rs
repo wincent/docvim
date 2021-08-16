@@ -80,6 +80,7 @@ pub enum Exp<'a> {
     Binary { lexp: Box<Exp<'a>>, op: BinOp, rexp: Box<Exp<'a>> },
     CookedStr(Box<String>),
     False,
+    NamedVar(&'a str),
     Nil,
     Number(&'a str),
     RawStr(&'a str),
@@ -500,6 +501,18 @@ impl<'a> Parser<'a> {
             }
             Some(Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })) => (Exp::True),
 
+            // TODO: handle remaining "primaries":
+            // - function
+            // - tableconstructor
+            // - ...
+            // - var
+            // - functioncall
+
+            // "var"
+            Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, ..})) => {
+                Exp::NamedVar(&self.lexer.input[byte_start..byte_end])
+            }
+
             //
             // Unary operators.
             //
@@ -513,8 +526,6 @@ impl<'a> Parser<'a> {
                 self.parse_unop_exp(tokens, UnOp::Minus)?
             }
 
-            // TODO: handle remaining "primaries" before getting here:
-            // function, tableconstructor, ..., var, functioncall
             Some(Ok(token)) => {
                 return Err(Box::new(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
@@ -722,7 +733,6 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             *ast.unwrap(),
-            // TODO pretty-print these; maybe do golden testing
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("demo")],
                 explist: vec![Exp::Unary {
@@ -775,6 +785,24 @@ mod tests {
                     }),
                     op: UnOp::Not
                 }]
+            }]))
+        );
+    }
+
+    #[test]
+    fn parses_unary_not_with_name() {
+        let mut parser = Parser::new("local foo = not bar");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("foo")],
+                explist: vec![
+                    Exp::Unary {
+                        exp: Box::new(Exp::NamedVar("bar")),
+                        op: UnOp::Not,
+                    }
+                ],
             }]))
         );
     }

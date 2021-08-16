@@ -12,7 +12,6 @@ fn transform(input: &str) -> String {
 #[test]
 fn test_parses_unary_expressions() -> Result<(), Box<dyn Error>> {
     assert!(check_snapshot!("unary_expressions", &transform)?);
-    assert!(false);
     Ok(())
 }
 

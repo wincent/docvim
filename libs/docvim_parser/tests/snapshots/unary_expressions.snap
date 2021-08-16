@@ -1,4 +1,6 @@
-local x = not true
+local x = not value
+
+-- TODO: also add tests for other unary operators (length, minus)
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -14,7 +16,9 @@ Ok(
                     ],
                     explist: [
                         Unary {
-                            exp: True,
+                            exp: NamedVar(
+                                "value",
+                            ),
                             op: Not,
                         },
                     ],
