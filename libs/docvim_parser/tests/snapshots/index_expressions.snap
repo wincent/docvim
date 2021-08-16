@@ -1,0 +1,39 @@
+-- var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
+-- prefixexp ::= var | functioncall | `(´ exp `)´
+-- functioncall ::=  prefixexp args | prefixexp `:´ Name args
+-- args ::=  `(´ [explist] `)´ | tableconstructor | String
+
+
+local item = list[100]
+
+-- TODO: test nested too eg. thing[a][b]
+-- also note that index expressions can appear on the LHS too; eg:
+-- foo[x] = 1
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "item",
+                        ),
+                    ],
+                    explist: [
+                        Index {
+                            pexp: NamedVar(
+                                "list",
+                            ),
+                            kexp: Number(
+                                "100",
+                            ),
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)

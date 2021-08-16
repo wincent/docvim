@@ -9,6 +9,17 @@ fn transform(input: &str) -> String {
     format!("{:#?}", ast)
 }
 
+// TODO: given that these are all basically the same, make a macro (or fn) for just running all the
+// snapshot tests
+//
+// check_all_snapshots!();
+
+#[test]
+fn test_parses_index_expressions() -> Result<(), Box<dyn Error>> {
+    assert!(check_snapshot!("index_expressions", &transform)?);
+    Ok(())
+}
+
 #[test]
 fn test_parses_unary_expressions() -> Result<(), Box<dyn Error>> {
     assert!(check_snapshot!("unary_expressions", &transform)?);

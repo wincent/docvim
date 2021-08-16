@@ -19,6 +19,12 @@ fn transform(input: &str) -> String {
 }
 
 #[test]
+fn test_lexes_index_expressions() -> Result<(), Box<dyn Error>> {
+    assert!(check_snapshot!("index_expressions", &transform)?);
+    Ok(())
+}
+
+#[test]
 fn test_lexes_numbers() -> Result<(), Box<dyn Error>> {
     assert!(check_snapshot!("numbers", &transform)?);
     Ok(())

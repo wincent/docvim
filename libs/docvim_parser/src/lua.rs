@@ -30,8 +30,14 @@ use docvim_lexer::lua::OpKind::Percent as PercentToken;
 use docvim_lexer::lua::OpKind::Plus as PlusToken;
 use docvim_lexer::lua::OpKind::Slash as SlashToken;
 use docvim_lexer::lua::OpKind::Star as StarToken;
+use docvim_lexer::lua::PunctuatorKind::Colon as ColonToken;
 use docvim_lexer::lua::PunctuatorKind::Comma as CommaToken;
+use docvim_lexer::lua::PunctuatorKind::Dot as DotToken;
+use docvim_lexer::lua::PunctuatorKind::Lbracket as LbracketToken;
+use docvim_lexer::lua::PunctuatorKind::Lcurly as LcurlyToken;
 use docvim_lexer::lua::PunctuatorKind::Lparen as LparenToken;
+use docvim_lexer::lua::PunctuatorKind::Rbracket as RbracketToken;
+use docvim_lexer::lua::PunctuatorKind::Rcurly as RcurlyToken;
 use docvim_lexer::lua::PunctuatorKind::Rparen as RparenToken;
 use docvim_lexer::lua::PunctuatorKind::Semi as SemiToken;
 use docvim_lexer::lua::StrKind::DoubleQuoted as DoubleQuotedToken;
@@ -77,15 +83,41 @@ pub struct Block<'a>(Vec<Statement<'a>>);
 
 #[derive(Debug, PartialEq)]
 pub enum Exp<'a> {
-    Binary { lexp: Box<Exp<'a>>, op: BinOp, rexp: Box<Exp<'a>> },
+    Binary {
+        lexp: Box<Exp<'a>>,
+        op: BinOp,
+        rexp: Box<Exp<'a>>,
+    },
     CookedStr(Box<String>),
     False,
+    FunctionCall {
+        name: &'a str, // TODO: probably change this (see MethodCall)
+                       // args: TODO  figure out how best to represent this
+    },
+    Index {
+        /// The "prefix expression" (ie. LHS in `foo[bar]; that is, `foo`), which is the table to
+        /// be indexed.
+        // TODO: decide whether we should type this more narrowly (bc prefixexp is a subset of Exp)...
+        pexp: Box<Exp<'a>>,
+        /// The "key expression" (ie. RHS in `foo[bar]`; that is, `bar`).
+        kexp: Box<Exp<'a>>,
+    },
+    MethodCall {
+        // TODO: decide whether we should type this more narrowly (bc prefixexp is a subset of Exp)...
+        pexp: Box<Exp<'a>>,
+        name: &'a str,
+        // args: TODO figure out how best to represent this
+    },
     NamedVar(&'a str),
     Nil,
     Number(&'a str),
     RawStr(&'a str),
+    Table(Vec<Field<'a>>),
     True,
-    Unary { exp: Box<Exp<'a>>, op: UnOp },
+    Unary {
+        exp: Box<Exp<'a>>,
+        op: UnOp,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -94,6 +126,16 @@ pub enum UnOp {
     Minus,
     Not,
 }
+
+#[derive(Debug, PartialEq)]
+pub struct Field<'a> {
+    index: Option<usize>,
+    lexp: Box<Exp<'a>>,
+    rexp: Box<Exp<'a>>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Table<'a>(Vec<Field<'a>>);
 
 #[derive(Debug, PartialEq)]
 pub struct Name<'a>(&'a str);
@@ -278,12 +320,15 @@ impl<'a> Parser<'a> {
         loop {
             if let Some(&token) = tokens.peek() {
                 match token {
+                    // TODO instead of spelling all this out here, probably just want to try
+                    // calling parse_exp _after_ checking CommmaToken, SemiToken branches...
                     Ok(Token { kind: LiteralToken(NumberToken), .. })
                     | Ok(Token { kind: LiteralToken(StrToken(_)), .. })
                     | Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })
                     | Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })
                     | Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })
                     | Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })
+                    | Ok(Token { kind: NameToken(IdentifierToken), .. })
                     | Ok(Token { kind: OpToken(HashToken), .. })
                     | Ok(Token { kind: OpToken(MinusToken), .. }) => {
                         if expect_name {
@@ -507,10 +552,78 @@ impl<'a> Parser<'a> {
             // - ...
             // - var
             // - functioncall
+            Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
+                let name = &self.lexer.input[byte_start..byte_end];
 
-            // "var"
-            Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, ..})) => {
-                Exp::NamedVar(&self.lexer.input[byte_start..byte_end])
+                // note: these are all left associative so:
+                //   x[1][2][3] is same as: (((x [1]) [2]) [3])
+                //   x.a.b.c is same as (((x['a']) ['b']) ['c'])
+                let token = tokens.peek();
+                match token {
+                    Some(&Ok(Token { kind: PunctuatorToken(ColonToken), .. })) => {
+                        // `prefixexp : Name args`
+                        tokens.next();
+                        // NOPE, this isn't the pexp, that's the one on the other side
+                        // let method_name = self.parse_name(tokens)?;
+                        let method_name = match tokens.next() {
+                            Some(Ok(Token {
+                                kind: NameToken(IdentifierToken),
+                                byte_start,
+                                byte_end,
+                                ..
+                            })) => &self.lexer.input[byte_start..byte_end],
+                            Some(Ok(Token { char_start, .. })) => {
+                                return Err(Box::new(ParserError {
+                                    kind: ParserErrorKind::UnexpectedToken,
+                                    position: char_start,
+                                }));
+                            }
+                            Some(Err(err)) => {
+                                return Err(Box::new(err));
+                            }
+                            None => {
+                                return Err(Box::new(ParserError {
+                                    kind: ParserErrorKind::UnexpectedEndOfInput,
+                                    position: self.lexer.input.chars().count(),
+                                }));
+                            }
+                        };
+                        // TODO: expect args - LparenToken, String, or tableconstructor
+                        // TODO: also note that via left associativity, prefixexp could be complex eg. thing.foo("bingo"):blah()
+                        Exp::MethodCall {
+                            pexp: Box::new(Exp::NamedVar(name)),
+                            name: method_name,
+                            // args: ...
+                        }
+                    }
+                    Some(&Ok(Token { kind: PunctuatorToken(DotToken), .. })) => {
+                        // ie. `foo.bar`, which is syntactic sugar for `foo['bar']`
+                        // TODO: handle complex pexps, not just NamedVar
+                        tokens.next();
+                        let kexp = self.parse_name(tokens)?; // TODO: change this it string!
+                        Exp::Index { pexp: Box::new(Exp::NamedVar(name)), kexp: Box::new(kexp) }
+                    }
+                    Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
+                        // ie. `foo[bar]`
+                        // TODO: handle complex pexps, not just NamedVar
+                        tokens.next();
+                        let kexp = self.parse_exp(tokens, 0)?;
+                        Exp::Index { pexp: Box::new(Exp::NamedVar(name)), kexp: Box::new(kexp) }
+                    }
+                    Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
+                        self.parse_table_constructor(tokens)?
+                    }
+                    Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
+                        tokens.next();
+                        // TODO: scan (, args, )
+                        Exp::FunctionCall {
+                            name,
+                            // args
+                        }
+                    }
+                    // if string, could be a function call too
+                    _ => Exp::NamedVar(name),
+                }
             }
 
             //
@@ -583,6 +696,173 @@ impl<'a> Parser<'a> {
         }
 
         Ok(lhs)
+    }
+
+    fn parse_name(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Exp<'a>, Box<dyn Error>> {
+        // TODO ^^ narrower return type... we know this is going to return an Exp::NamedVar
+        // might not be possible with current type system though; see: https://github.com/rust-lang/rfcs/pull/2593
+        match tokens.next() {
+            Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
+                Ok(Exp::NamedVar(&self.lexer.input[byte_start..byte_end]))
+            }
+            Some(Ok(Token { char_start, .. })) => {
+                // TODO: more specific error here
+                Err(Box::new(ParserError {
+                    kind: ParserErrorKind::UnexpectedToken,
+                    position: char_start,
+                }))
+            }
+            Some(Err(err)) => {
+                return Err(Box::new(err));
+            }
+            None => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedEndOfInput,
+                position: self.lexer.input.chars().count(),
+            })),
+        }
+    }
+
+    // fieldlist ::= field {fieldsep field} [fieldsep]
+    // fieldsep ::= `,´ | `;´
+    fn parse_table_constructor(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Exp<'a>, Box<dyn Error>> {
+        assert!(matches!(
+            tokens.next(),
+            Some(Ok(Token { kind: PunctuatorToken(LcurlyToken), .. }))
+        ));
+        let mut fieldsep_allowed = false;
+        let mut fields = vec![];
+        let mut index = 1;
+        loop {
+            let token = tokens.peek();
+            match token {
+                Some(&Ok(Token { kind: PunctuatorToken(RcurlyToken), .. })) => {
+                    tokens.next();
+                    return Ok(Exp::Table(fields));
+                }
+                Some(&Ok(Token { kind: PunctuatorToken(CommaToken), char_start, .. }))
+                | Some(&Ok(Token { kind: PunctuatorToken(SemiToken), char_start, .. })) => {
+                    if fieldsep_allowed {
+                        tokens.next();
+                        fieldsep_allowed = false;
+                    } else {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedFieldSeparator,
+                            position: char_start,
+                        }));
+                    }
+                }
+                Some(&Ok(Token { .. })) => {
+                    let field = self.parse_table_field(tokens, index)?;
+                    if matches!(field, Field { index: Some(_), .. }) {
+                        index += 1;
+                    }
+                    fields.push(field);
+                    fieldsep_allowed = true;
+                }
+                Some(&Err(err)) => {
+                    return Err(Box::new(err));
+                }
+                None => {
+                    return Err(Box::new(ParserError {
+                        kind: ParserErrorKind::UnexpectedEndOfInput,
+                        position: self.lexer.input.chars().count(),
+                    }))
+                }
+            }
+        }
+    }
+
+    fn parse_equals(&self, tokens: &mut std::iter::Peekable<Tokens>) -> Result<(), Box<dyn Error>> {
+        match tokens.next() {
+            Some(Ok(Token { kind: OpToken(EqToken), .. })) => Ok(()),
+            Some(Ok(Token { char_start, .. })) => Err(Box::new(ParserError {
+                kind: ParserErrorKind::ExpectedEq,
+                position: char_start,
+            })),
+            Some(Err(err)) => {
+                return Err(Box::new(err));
+            }
+            None => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedEndOfInput,
+                position: self.lexer.input.chars().count(),
+            })),
+        }
+    }
+
+    // TODO: functions like parse_equals and parse_rbracket are incredibly boilerplate-ish and repetitive; see if we can DRY that up a bit.
+    fn parse_rbracket(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<(), Box<dyn Error>> {
+        match tokens.next() {
+            Some(Ok(Token { kind: PunctuatorToken(RbracketToken), .. })) => Ok(()),
+            Some(Ok(Token { char_start, .. })) => Err(Box::new(ParserError {
+                kind: ParserErrorKind::ExpectedRbracket,
+                position: char_start,
+            })),
+            Some(Err(err)) => {
+                return Err(Box::new(err));
+            }
+            None => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedEndOfInput,
+                position: self.lexer.input.chars().count(),
+            })),
+        }
+    }
+
+    // field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
+    fn parse_table_field(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+        index: usize,
+    ) -> Result<Field<'a>, Box<dyn Error>> {
+        let token = tokens.peek();
+        match token {
+            Some(&Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
+                // `name = exp`; equivalent to `["name"] = exp`.
+                let name = Exp::RawStr(&self.lexer.input[byte_start..byte_end]);
+                tokens.next();
+                self.parse_equals(tokens)?;
+                let exp = self.parse_exp(tokens, 0)?;
+                Ok(Field { index: None, lexp: Box::new(name), rexp: Box::new(exp) })
+            }
+            Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
+                // `[exp] = exp`
+                let lexp = self.parse_exp(tokens, 0)?;
+                self.parse_rbracket(tokens)?;
+                self.parse_equals(tokens)?;
+                let rexp = self.parse_exp(tokens, 0)?; // TODO: confirm binding power of 0 is appropriate here
+                Ok(Field { index: None, lexp: Box::new(lexp), rexp: Box::new(rexp) })
+            }
+            Some(&Ok(Token { .. })) => {
+                // `exp`
+                let exp = self.parse_exp(tokens, 0)?; // TODO: confirm binding power of 0 is appropriate here
+                Ok(Field {
+                    index: Some(index),
+                    // lexp: Box::new(Exp::Number(index.to_string())),
+                    lexp: Box::new(Exp::Number("1")), // TODO figure out how to satisfy borrow checker here
+                    rexp: Box::new(exp),
+                })
+                // TODO: ^^^ note that caller will need to ensure index gets updated next time around
+                // TODO: implement this:
+                // "If the last field in the list has the form exp and the expression is a function
+                // call or a vararg expression, then all values returned by this expression enter the
+                // list consecutively"
+            }
+            Some(&Err(err)) => {
+                return Err(Box::new(err));
+            }
+            None => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedEndOfInput,
+                position: self.lexer.input.chars().count(),
+            })),
+        }
     }
 }
 
@@ -797,12 +1077,7 @@ mod tests {
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("foo")],
-                explist: vec![
-                    Exp::Unary {
-                        exp: Box::new(Exp::NamedVar("bar")),
-                        op: UnOp::Not,
-                    }
-                ],
+                explist: vec![Exp::Unary { exp: Box::new(Exp::NamedVar("bar")), op: UnOp::Not }],
             }]))
         );
     }

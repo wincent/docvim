@@ -1,0 +1,8 @@
+foo[1000]
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Token { kind: Name(Identifier), char_start: 0, char_end: 3, byte_start: 0, byte_end: 3 }: foo
+Token { kind: Punctuator(Lbracket), char_start: 3, char_end: 4, byte_start: 3, byte_end: 4 }: [
+Token { kind: Literal(Number), char_start: 4, char_end: 8, byte_start: 4, byte_end: 8 }: 1000
+Token { kind: Punctuator(Rbracket), char_start: 8, char_end: 9, byte_start: 8, byte_end: 9 }: ]
