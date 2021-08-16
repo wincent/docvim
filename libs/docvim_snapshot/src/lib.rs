@@ -33,7 +33,7 @@ pub fn check_snapshot_relative_to_base(
     snapshot.push(Path::new(path));
     snapshot.set_extension("snap");
     let snapshot = snapshot.as_path();
-    let contents = fs::read_to_string(snapshot).expect("unreadable snapshot");
+    let contents = fs::read_to_string(snapshot)?;
 
     // Extract input and expected output.
     // TODO: think about whether to slurp and/or require blank lines around divider.
