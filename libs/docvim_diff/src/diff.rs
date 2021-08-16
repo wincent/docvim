@@ -16,22 +16,6 @@ pub enum Edit {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Diff(pub Vec<Edit>);
 
-// TODO: just write the test out in full? passing in the params is almost as annoying as writing
-// out the check; and if I do keep it, maybe move it in to myers.rs
-pub fn eq<T>(
-    a: &Vec<T>,
-    a_idx: usize,
-    a_hashes: &Vec<u64>,
-    b: &Vec<T>,
-    b_idx: usize,
-    b_hashes: &Vec<u64>,
-) -> bool
-where
-    T: Hash + PartialEq,
-{
-    a_hashes[a_idx] == b_hashes[b_idx] && a[a_idx] == b[b_idx]
-}
-
 pub fn hash<T>(val: &T) -> u64
 where
     T: Hash,

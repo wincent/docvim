@@ -161,6 +161,20 @@ where
     panic!("no SES found");
 }
 
+fn eq<T>(
+    a: &Vec<T>,
+    a_idx: usize,
+    a_hashes: &Vec<u64>,
+    b: &Vec<T>,
+    b_idx: usize,
+    b_hashes: &Vec<u64>,
+) -> bool
+where
+    T: Hash + PartialEq,
+{
+    a_hashes[a_idx] == b_hashes[b_idx] && a[a_idx] == b[b_idx]
+}
+
 /// The basic Myers algorithm only computes the length of the SES (Shortest Edit Script). To
 /// recover the actual script we have to traverse the snapshots of the `v` vector that we took for
 /// each depth `d`.
@@ -213,10 +227,6 @@ fn myers_nd_generate_path(
         }
     }
     edits.reverse();
-}
-
-fn usize_to_isize(n: usize) -> isize {
-    isize::try_from(n).expect("overflow converting from usize to isize")
 }
 
 /// Shorthand representing:
@@ -433,6 +443,10 @@ where
             edits.push(Insert(Idx(i + 1)));
         }
     }
+}
+
+fn usize_to_isize(n: usize) -> isize {
+    isize::try_from(n).expect("overflow converting from usize to isize")
 }
 
 #[cfg(test)]
