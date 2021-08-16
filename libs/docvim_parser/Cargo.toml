@@ -1,6 +1,9 @@
 [dependencies]
 docvim_lexer = { path = "../docvim_lexer" }
 
+[dev-dependencies]
+docvim_snapshot = { path = "../docvim_snapshot" }
+
 [lib]
 
 [package]

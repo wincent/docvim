@@ -25,6 +25,7 @@ name = "docvim_parser"
 version = "0.1.0"
 dependencies = [
  "docvim_lexer",
+ "docvim_snapshot",
 ]
 
 [[package]]
