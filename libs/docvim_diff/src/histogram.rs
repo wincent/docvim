@@ -77,9 +77,8 @@ impl Histogram {
 
 /// Used to limit cost of the algorithm in two ways:
 ///
-/// 1. Any items appearing > 64 times in the input sequence are capped at 64. Both the Git and JGit
-///    implementations bail out completely if this happens; we're not actually do that yet, but
-///    probably should.
+/// 1. Any items appearing > 64 times in the input sequence are capped at 64 and cause us to bail
+///    out.
 /// 2. In the event of a pathological number of hash collisions, we abort after visiting 64 hash
 ///    table slots.
 const MAX_CHAIN_LENGTH: usize = 64;
@@ -337,7 +336,7 @@ where
 
         if let Some(record_index) = histogram.table[table_index] {
             let mut record_index = record_index;
-            while chain_length <= MAX_CHAIN_LENGTH {
+            while chain_length < MAX_CHAIN_LENGTH {
                 chain_length += 1;
                 let record = histogram.records[record_index].as_ref().unwrap();
                 let line_index = record.index;
