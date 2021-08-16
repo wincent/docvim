@@ -1,6 +1,8 @@
 local x = not value
 
--- TODO: also add tests for other unary operators (length, minus)
+local y = #items
+
+local z = -1000
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -20,6 +22,36 @@ Ok(
                                 "value",
                             ),
                             op: Not,
+                        },
+                    ],
+                },
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "y",
+                        ),
+                    ],
+                    explist: [
+                        Unary {
+                            exp: NamedVar(
+                                "items",
+                            ),
+                            op: Length,
+                        },
+                    ],
+                },
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "z",
+                        ),
+                    ],
+                    explist: [
+                        Unary {
+                            exp: Number(
+                                "1000",
+                            ),
+                            op: Minus,
                         },
                     ],
                 },
