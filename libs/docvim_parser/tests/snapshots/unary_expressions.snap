@@ -1,0 +1,25 @@
+local x = not true
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "x",
+                        ),
+                    ],
+                    explist: [
+                        Unary {
+                            exp: True,
+                            op: Not,
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)

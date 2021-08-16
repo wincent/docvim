@@ -10,6 +10,13 @@ fn transform(input: &str) -> String {
 }
 
 #[test]
+fn test_parses_unary_expressions() -> Result<(), Box<dyn Error>> {
+    assert!(check_snapshot!("unary_expressions", &transform)?);
+    assert!(false);
+    Ok(())
+}
+
+#[test]
 fn test_parses_a_complex_expression() -> Result<(), Box<dyn Error>> {
     assert!(check_snapshot!("complex_expression", &transform)?);
     Ok(())

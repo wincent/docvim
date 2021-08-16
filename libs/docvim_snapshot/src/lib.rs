@@ -66,6 +66,13 @@ pub fn check_snapshot_relative_to_base(
             Ok(false)
         }
     } else {
-        panic!("Couldn't find divider");
+        // No divider found, so assume this is a new snapshot that we need to fill out.
+        let mut input = String::from(contents.trim());
+        let transformed = String::from(callback(&input).trim_end());
+        input.push_str(DIVIDER);
+        input.push_str(&transformed);
+        input.push('\n');
+        fs::write(snapshot, input)?;
+        Ok(true)
     }
 }
