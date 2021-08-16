@@ -17,7 +17,7 @@ version = "0.1.0"
 name = "docvim_lexer"
 version = "0.1.0"
 dependencies = [
- "docvim_diff",
+ "docvim_snapshot",
 ]
 
 [[package]]
@@ -25,4 +25,11 @@ name = "docvim_parser"
 version = "0.1.0"
 dependencies = [
  "docvim_lexer",
+]
+
+[[package]]
+name = "docvim_snapshot"
+version = "0.1.0"
+dependencies = [
+ "docvim_diff",
 ]

@@ -1,12 +1,10 @@
 [dependencies]
-
-[dev-dependencies]
-docvim_snapshot = { path = "../docvim_snapshot" }
+docvim_diff = { path = "../docvim_diff" }
 
 [lib]
 
 [package]
 authors = ["Greg Hurrell <greg@hurrell.net>"]
 edition = "2018"
-name = "docvim_lexer"
+name = "docvim_snapshot"
 version = "0.1.0"
