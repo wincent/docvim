@@ -841,15 +841,13 @@ impl<'a> Parser<'a> {
                 Ok(Field { index: None, lexp: Box::new(lexp), rexp: Box::new(rexp) })
             }
             Some(&Ok(Token { .. })) => {
-                // `exp`
+                // `exp`; syntactic sugar for `[index] = exp`
                 let exp = self.parse_exp(tokens, 0)?; // TODO: confirm binding power of 0 is appropriate here
                 Ok(Field {
                     index: Some(index),
-                    // lexp: Box::new(Exp::Number(index.to_string())),
-                    lexp: Box::new(Exp::Number("1")), // TODO figure out how to satisfy borrow checker here
+                    lexp: Box::new(Exp::Nil), // A hack because we can't create an Exp::Number here without upsetting the borrow checker.
                     rexp: Box::new(exp),
                 })
-                // TODO: ^^^ note that caller will need to ensure index gets updated next time around
                 // TODO: implement this:
                 // "If the last field in the list has the form exp and the expression is a function
                 // call or a vararg expression, then all values returned by this expression enter the

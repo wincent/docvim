@@ -1,6 +1,8 @@
+use proc_macro::TokenStream;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
+use std::str::FromStr;
 
 use docvim_diff::format;
 use docvim_diff::histogram::diff;
@@ -10,19 +12,28 @@ use docvim_diff::histogram::diff;
 const DIVIDER: &str =
     "\n\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n\n";
 
-/// Convenience macro for checking a snapshot relative to the current package.
-#[macro_export]
-macro_rules! check_snapshot {
-    ($path:expr, $callback:expr) => {
-        docvim_snapshot::check_snapshot_relative_to_base(
-            $path,
-            std::env!("CARGO_MANIFEST_DIR"),
-            $callback,
-        )
-    };
+/// Convenience macro for checking all snapshots relative to the current package.
+#[proc_macro_attribute]
+pub fn check_snapshots(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let mut base = Path::new(std::env!("CARGO_MANIFEST_DIR")).to_path_buf();
+    // BAH, this base is docvim_snapshot, ofc... not the directory where the macro is being used
+    // println!("{:?}", attr);
+    // println!("{:?}", std::env::current_dir()); // docvim dir
+    base.push("tests/snapshots");
+    for entry in fs::read_dir(base).expect(&format!("Could not read directory {}", std::env!("CARGO_MANIFEST_DIR"))) {
+        let entry = entry.expect("Could not read file");
+    }
+    let mut tests = item.to_string();
+
+    tests.push_str("#[test]\n");
+    tests.push_str("fn test_stuff() {\n");
+    tests.push_str("  assert!(false);\n");
+    tests.push_str("}\n");
+
+    TokenStream::from_str(&tests).expect("Could not generate token stream")
 }
 
-pub fn check_snapshot_relative_to_base(
+fn check_snapshot_relative_to_base(
     path: &str,
     base: &str,
     callback: &dyn Fn(&str) -> String,

@@ -2,6 +2,7 @@
 docvim_diff = { path = "../docvim_diff" }
 
 [lib]
+proc-macro = true
 
 [package]
 authors = ["Greg Hurrell <greg@hurrell.net>"]
