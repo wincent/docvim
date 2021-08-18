@@ -1,7 +1,5 @@
-use std::error::Error;
-
 use docvim_lexer::lua::Lexer;
-use docvim_snapshot::check_snapshots;
+use docvim_macros::check_snapshots;
 
 #[check_snapshots(docvim_lexer)]
 fn transform(input: &str) -> String {

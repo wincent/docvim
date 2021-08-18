@@ -1,6 +1,7 @@
 [dependencies]
 
 [dev-dependencies]
+docvim_macros = { path = "../docvim_macros" }
 docvim_snapshot = { path = "../docvim_snapshot" }
 
 [lib]
