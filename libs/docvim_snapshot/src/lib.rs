@@ -10,7 +10,6 @@ use docvim_diff::histogram::diff;
 const DIVIDER: &str =
     "\n\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n\n";
 
-
 /// Convenience macro for checking a snapshot relative to the current package.
 ///
 /// Mostly superseded by the `#[check_snapshots]` procedural macro defined in the docvim_macros

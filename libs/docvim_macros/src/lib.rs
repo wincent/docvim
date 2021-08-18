@@ -20,7 +20,9 @@ pub fn check_snapshots(attr: TokenStream, item: TokenStream) -> TokenStream {
     base.push("tests/snapshots");
 
     let mut tests = item.to_string();
-    for entry in fs::read_dir(base).expect(&format!("Could not read directory {}", std::env!("CARGO_MANIFEST_DIR"))) {
+    for entry in fs::read_dir(base)
+        .expect(&format!("Could not read directory {}", std::env!("CARGO_MANIFEST_DIR")))
+    {
         let entry = entry.expect("Could not read file");
         // TODO: get rid of the ghastly unwrap() calls
         let snapshot = String::from(entry.path().to_str().unwrap());
@@ -29,7 +31,10 @@ pub fn check_snapshots(attr: TokenStream, item: TokenStream) -> TokenStream {
 
         tests.push_str("\n");
         tests.push_str("#[test]\n");
-        tests.push_str(&format!("fn test_{}() -> Result<(), Box<dyn std::error::Error>> {{\n", snapshot_name));
+        tests.push_str(&format!(
+            "fn test_{}() -> Result<(), Box<dyn std::error::Error>> {{\n",
+            snapshot_name
+        ));
         tests.push_str(&format!("  assert!(docvim_snapshot::check_snapshot(std::path::Path::new(\"{}\"), &transform)?);\n", snapshot));
         tests.push_str("  Ok(())\n");
         tests.push_str("}\n");
