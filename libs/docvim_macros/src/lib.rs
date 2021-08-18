@@ -24,9 +24,15 @@ pub fn check_snapshots(attr: TokenStream, item: TokenStream) -> TokenStream {
         .expect(&format!("Could not read directory {}", std::env!("CARGO_MANIFEST_DIR")))
     {
         let entry = entry.expect("Could not read file");
-        // TODO: get rid of the ghastly unwrap() calls
-        let snapshot = String::from(entry.path().to_str().unwrap());
-        let snapshot_name = String::from(entry.path().file_stem().unwrap().to_str().unwrap());
+        let snapshot = String::from(entry.path().to_str().expect("Invalid UTF-8 string"));
+        let snapshot_name = String::from(
+            entry
+                .path()
+                .file_stem()
+                .expect("Not a file name")
+                .to_str()
+                .expect("Invalid UTF-8 string"),
+        );
         // TODO: panic if filename contains a space
 
         tests.push_str("\n");
