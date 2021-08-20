@@ -460,91 +460,24 @@ impl<'a> Parser<'a> {
         Ok(Exp::Unary { exp: Box::new(rhs), op })
     }
 
-    // fn parse_prefix_exp(
-    //     &self,
-    //     tokens: &mut std::iter::Peekable<Tokens>,
-    // ) -> Result<Exp<'a>, Box<dyn Error>> {
-    // }
-
-    /// See doc/lua.md for an explanation of `minimum_bp`.
-    fn parse_exp(
+    /// ```ignore
+    /// prefixexp = ( exp )
+    ///           | Name
+    ///           | prefixexp[exp]
+    ///           | prefixexp.Name
+    ///           | prefixexp "..." (functioncall)
+    ///           | prefixexp {...} (functioncall)
+    ///           | prefixexp (...) (functioncall)
+    ///           | prefixexp:Name "..." (methodcall)
+    ///           | prefixexp:Name {...} (methodcall)
+    ///           | prefixexp:Name (...) (methodcall)
+    /// ```
+    fn parse_prefixexp(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-        minimum_bp: u8,
     ) -> Result<Exp<'a>, Box<dyn Error>> {
-        let mut lhs = match tokens.peek() {
-            //
-            // Primaries (literals etc).
-            //
-            Some(&Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })) => {
-                tokens.next();
-                Exp::False
-            }
-            Some(&Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })) => {
-                tokens.next();
-                Exp::Nil
-            }
-            Some(&Ok(token @ Token { kind: LiteralToken(NumberToken), .. })) => {
-                tokens.next();
-                Exp::Number(&self.lexer.input[token.byte_start..token.byte_end])
-            }
-            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
-            | Some(&Ok(token @ Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. })) => {
-                tokens.next();
-                self.cook_str(token)?
-            }
-            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
-                tokens.next();
-                // Unforunate workaround needed until: https://github.com/rust-lang/rust/issues/65490
-                //
-                // Can't write: Some(Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { level })), .. }))
-                //                this: ^^^^^                             at same time as this: ^^^^^
-                //
-                // Rust says, "pattern bindings after an `@` are unstable".
-                let level = if let Token {
-                    kind: LiteralToken(StrToken(LongToken { level })), ..
-                } = token
-                {
-                    level
-                } else {
-                    panic!();
-                };
-
-                // As a convenience, Lua omits any newline at position 0 in a long format string.
-                let first = self.lexer.input.as_bytes()[token.byte_start + 2 + level];
-                let start = if first == ('\n' as u8) {
-                    token.byte_start + 2 + level + 1
-                } else {
-                    token.byte_start + 2 + level
-                };
-                let end = token.byte_end - 2 - level;
-                Exp::RawStr(&self.lexer.input[start..end])
-            }
-            Some(&Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })) => {
-                tokens.next();
-                Exp::True
-            }
-
-            // TODO: handle remaining "primaries":
-            // - function
-            // - tableconstructor
-            // - ...
-            //
-            // prefixexp = Name
-            //           | prefixexp[exp]
-            //           | prefixexp.Name
-            //           | prefixexp "..." (functioncall)
-            //           | prefixexp {...} (functioncall)
-            //           | prefixexp (...) (functioncall)
-            //           | prefixexp:Name "..." (methodcall)
-            //           | prefixexp:Name {...} (methodcall)
-            //           | prefixexp:Name (...) (methodcall)
-            //           | ( exp )
-            //
-            // ie. if you see any of: Name [ . " { ( :
-            // then you are parsing a prefix exp
-            Some(&Ok(token @ Token { kind: PunctuatorToken(LparenToken), .. })) => {
-                tokens.next();
+        let prefixexp = match tokens.next() {
+            Some(Ok(token @ Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 let lhs = self.parse_exp(tokens, 0)?;
                 let char_start = token.char_start;
                 let token = tokens.next();
@@ -566,9 +499,7 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
-
-            Some(&Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
-                tokens.next();
+            Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
                 let name = &self.lexer.input[byte_start..byte_end];
 
                 // note: these are all left associative so:
@@ -645,6 +576,91 @@ impl<'a> Parser<'a> {
                     _ => Exp::NamedVar(name),
                 }
             }
+            Some(Ok(Token { char_start, .. })) => {
+                return Err(Box::new(ParserError {
+                    kind: ParserErrorKind::UnexpectedToken,
+                    position: char_start,
+                }));
+            }
+            Some(Err(err)) => return Err(Box::new(err)),
+            None => {
+                return Err(Box::new(ParserError {
+                    kind: ParserErrorKind::UnexpectedEndOfInput,
+                    position: self.lexer.input.chars().count(),
+                }));
+            }
+        };
+        Ok(prefixexp)
+    }
+
+    /// See doc/lua.md for an explanation of `minimum_bp`.
+    fn parse_exp(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+        minimum_bp: u8,
+    ) -> Result<Exp<'a>, Box<dyn Error>> {
+        let mut lhs = match tokens.peek() {
+            //
+            // Primaries (literals etc).
+            //
+            Some(&Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })) => {
+                tokens.next();
+                Exp::False
+            }
+            Some(&Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })) => {
+                tokens.next();
+                Exp::Nil
+            }
+            Some(&Ok(token @ Token { kind: LiteralToken(NumberToken), .. })) => {
+                tokens.next();
+                Exp::Number(&self.lexer.input[token.byte_start..token.byte_end])
+            }
+            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
+            | Some(&Ok(token @ Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. })) => {
+                tokens.next();
+                self.cook_str(token)?
+            }
+            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
+                tokens.next();
+                // Unforunate workaround needed until: https://github.com/rust-lang/rust/issues/65490
+                //
+                // Can't write: Some(Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { level })), .. }))
+                //                this: ^^^^^                             at same time as this: ^^^^^
+                //
+                // Rust says, "pattern bindings after an `@` are unstable".
+                let level = if let Token {
+                    kind: LiteralToken(StrToken(LongToken { level })), ..
+                } = token
+                {
+                    level
+                } else {
+                    panic!();
+                };
+
+                // As a convenience, Lua omits any newline at position 0 in a long format string.
+                let first = self.lexer.input.as_bytes()[token.byte_start + 2 + level];
+                let start = if first == ('\n' as u8) {
+                    token.byte_start + 2 + level + 1
+                } else {
+                    token.byte_start + 2 + level
+                };
+                let end = token.byte_end - 2 - level;
+                Exp::RawStr(&self.lexer.input[start..end])
+            }
+            Some(&Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })) => {
+                tokens.next();
+                Exp::True
+            }
+
+            // TODO: handle remaining "primaries":
+            // - function
+            // - ...
+            //
+            Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. }))
+            | Some(&Ok(Token { kind: NameToken(IdentifierToken), .. })) => {
+                self.parse_prefixexp(tokens)?
+            }
+
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 tokens.next();
                 self.parse_table_constructor(tokens)?
