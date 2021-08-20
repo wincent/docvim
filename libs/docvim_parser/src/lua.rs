@@ -460,52 +460,41 @@ impl<'a> Parser<'a> {
         Ok(Exp::Unary { exp: Box::new(rhs), op })
     }
 
+    // fn parse_prefix_exp(
+    //     &self,
+    //     tokens: &mut std::iter::Peekable<Tokens>,
+    // ) -> Result<Exp<'a>, Box<dyn Error>> {
+    // }
+
     /// See doc/lua.md for an explanation of `minimum_bp`.
     fn parse_exp(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
         minimum_bp: u8,
     ) -> Result<Exp<'a>, Box<dyn Error>> {
-        let mut lhs = match tokens.next() {
-            //
-            // Punctuators (parens).
-            //
-            Some(Ok(token @ Token { kind: PunctuatorToken(LparenToken), .. })) => {
-                let lhs = self.parse_exp(tokens, 0)?;
-                let char_start = token.char_start;
-                let token = tokens.next();
-                match token {
-                    Some(Ok(Token { kind: PunctuatorToken(RparenToken), .. })) => lhs,
-                    Some(Ok(token)) => {
-                        return Err(Box::new(ParserError {
-                            kind: ParserErrorKind::UnexpectedToken,
-                            position: token.char_start,
-                        }))
-                    }
-                    Some(Err(err)) => return Err(Box::new(err)),
-                    None => {
-                        return Err(Box::new(ParserError {
-                            kind: ParserErrorKind::UnexpectedEndOfInput,
-                            // BUG: this is location of the "(", and ignores recursive call to lhs.
-                            position: char_start,
-                        }));
-                    }
-                }
-            }
-
+        let mut lhs = match tokens.peek() {
             //
             // Primaries (literals etc).
             //
-            Some(Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })) => Exp::False,
-            Some(Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })) => Exp::Nil,
-            Some(Ok(token @ Token { kind: LiteralToken(NumberToken), .. })) => {
+            Some(&Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })) => {
+                tokens.next();
+                Exp::False
+            }
+            Some(&Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })) => {
+                tokens.next();
+                Exp::Nil
+            }
+            Some(&Ok(token @ Token { kind: LiteralToken(NumberToken), .. })) => {
+                tokens.next();
                 Exp::Number(&self.lexer.input[token.byte_start..token.byte_end])
             }
-            Some(Ok(token @ Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
-            | Some(Ok(token @ Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. })) => {
+            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
+            | Some(&Ok(token @ Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. })) => {
+                tokens.next();
                 self.cook_str(token)?
             }
-            Some(Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
+            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
+                tokens.next();
                 // Unforunate workaround needed until: https://github.com/rust-lang/rust/issues/65490
                 //
                 // Can't write: Some(Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { level })), .. }))
@@ -531,15 +520,55 @@ impl<'a> Parser<'a> {
                 let end = token.byte_end - 2 - level;
                 Exp::RawStr(&self.lexer.input[start..end])
             }
-            Some(Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })) => (Exp::True),
+            Some(&Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })) => {
+                tokens.next();
+                Exp::True
+            }
 
             // TODO: handle remaining "primaries":
             // - function
             // - tableconstructor
             // - ...
-            // - var
-            // - functioncall
-            Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
+            //
+            // prefixexp = Name
+            //           | prefixexp[exp]
+            //           | prefixexp.Name
+            //           | prefixexp "..." (functioncall)
+            //           | prefixexp {...} (functioncall)
+            //           | prefixexp (...) (functioncall)
+            //           | prefixexp:Name "..." (methodcall)
+            //           | prefixexp:Name {...} (methodcall)
+            //           | prefixexp:Name (...) (methodcall)
+            //           | ( exp )
+            //
+            // ie. if you see any of: Name [ . " { ( :
+            // then you are parsing a prefix exp
+            Some(&Ok(token @ Token { kind: PunctuatorToken(LparenToken), .. })) => {
+                tokens.next();
+                let lhs = self.parse_exp(tokens, 0)?;
+                let char_start = token.char_start;
+                let token = tokens.next();
+                match token {
+                    Some(Ok(Token { kind: PunctuatorToken(RparenToken), .. })) => lhs,
+                    Some(Ok(token)) => {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedToken,
+                            position: token.char_start,
+                        }))
+                    }
+                    Some(Err(err)) => return Err(Box::new(err)),
+                    None => {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedEndOfInput,
+                            // BUG: this is location of the "(", and ignores recursive call to lhs.
+                            position: char_start,
+                        }));
+                    }
+                }
+            }
+
+            Some(&Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
+                tokens.next();
                 let name = &self.lexer.input[byte_start..byte_end];
 
                 // note: these are all left associative so:
@@ -600,6 +629,9 @@ impl<'a> Parser<'a> {
                     Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
                         tokens.next();
                         self.parse_table_constructor(tokens)?
+                        // prefixexp + {...} is a function call with a table argument
+                        // prefixexp + "..." is a function call with a string argument
+                        // prefixexp + (explist) is a function call with args...
                     }
                     Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                         tokens.next();
@@ -613,31 +645,35 @@ impl<'a> Parser<'a> {
                     _ => Exp::NamedVar(name),
                 }
             }
-            Some(Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
+            Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
+                tokens.next();
                 self.parse_table_constructor(tokens)?
             }
 
             //
             // Unary operators.
             //
-            Some(Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })) => {
+            Some(&Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })) => {
+                tokens.next();
                 self.parse_unop_exp(tokens, UnOp::Not)?
             }
-            Some(Ok(Token { kind: OpToken(HashToken), .. })) => {
+            Some(&Ok(Token { kind: OpToken(HashToken), .. })) => {
+                tokens.next();
                 self.parse_unop_exp(tokens, UnOp::Length)?
             }
-            Some(Ok(Token { kind: OpToken(MinusToken), .. })) => {
+            Some(&Ok(Token { kind: OpToken(MinusToken), .. })) => {
+                tokens.next();
                 self.parse_unop_exp(tokens, UnOp::Minus)?
             }
 
-            Some(Ok(token)) => {
+            Some(&Ok(token)) => {
                 return Err(Box::new(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
                     position: token.char_start,
                 }))
             }
 
-            Some(Err(err)) => return Err(Box::new(err)),
+            Some(&Err(err)) => return Err(Box::new(err)),
 
             None => {
                 return Err(Box::new(ParserError {
@@ -836,10 +872,18 @@ impl<'a> Parser<'a> {
                     // `name = exp`; equivalent to `["name"] = exp`.
                     self.parse_assign(tokens)?;
                     let exp = self.parse_exp(tokens, 0)?;
-                    Ok(Field { index: None, lexp: Box::new(Exp::RawStr(name)), rexp: Box::new(exp) })
+                    Ok(Field {
+                        index: None,
+                        lexp: Box::new(Exp::RawStr(name)),
+                        rexp: Box::new(exp),
+                    })
                 } else {
                     // `exp`; syntactic sugar for `[index] = exp`
-                    Ok(Field { index: Some(index), lexp: Box::new(Exp::Nil), rexp: Box::new(Exp::NamedVar(name)) })
+                    Ok(Field {
+                        index: Some(index),
+                        lexp: Box::new(Exp::Nil),
+                        rexp: Box::new(Exp::NamedVar(name)),
+                    })
                 }
             }
             Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {

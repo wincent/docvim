@@ -17,7 +17,8 @@ fn test_check_snapshot_macro_with_matching_snapshot() -> Result<(), Box<dyn Erro
 fn test_check_snapshot_macro_with_mismatching_snapshot() {
     // Use dry-run variant because we never want to update this snapshot, even when
     // UPDATE_SNAPSHOTS is set.
-    let snapshot_mismatch = matches!(check_snapshot_dry_run!("invalid_sample", &transform), Ok(false));
+    let snapshot_mismatch =
+        matches!(check_snapshot_dry_run!("invalid_sample", &transform), Ok(false));
 
     assert!(snapshot_mismatch);
 }
