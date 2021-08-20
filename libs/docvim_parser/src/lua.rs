@@ -619,14 +619,12 @@ impl<'a> Parser<'a> {
                             self.consume(tokens, PunctuatorToken(RbracketToken))?;
                             pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
                         }
-                        Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. }))
-                        | Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. }))
-                        | Some(&Ok(Token {
-                            kind: LiteralToken(StrToken(DoubleQuotedToken)),
+                        Some(&Ok(Token {
+                            kind: PunctuatorToken(LcurlyToken | LparenToken),
                             ..
                         }))
                         | Some(&Ok(Token {
-                            kind: LiteralToken(StrToken(SingleQuotedToken)),
+                            kind: LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken)),
                             ..
                         }))
                         | Some(&Ok(Token {
@@ -676,8 +674,14 @@ impl<'a> Parser<'a> {
                 tokens.next();
                 Exp::Number(&self.lexer.input[token.byte_start..token.byte_end])
             }
-            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
-            | Some(&Ok(token @ Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. })) => {
+            Some(&Ok(
+                token
+                @
+                Token {
+                    kind: LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken)),
+                    ..
+                },
+            )) => {
                 tokens.next();
                 self.cook_str(token)?
             }
@@ -717,10 +721,10 @@ impl<'a> Parser<'a> {
             // - function
             // - ...
             //
-            Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. }))
-            | Some(&Ok(Token { kind: NameToken(IdentifierToken), .. })) => {
-                self.parse_prefixexp(tokens)?
-            }
+            Some(&Ok(Token {
+                kind: NameToken(IdentifierToken) | PunctuatorToken(LparenToken),
+                ..
+            })) => self.parse_prefixexp(tokens)?,
 
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 self.parse_table_constructor(tokens)?
@@ -815,10 +819,9 @@ impl<'a> Parser<'a> {
                             return Ok(Exp::Table(fields));
                         }
                         Some(&Ok(Token {
-                            kind: PunctuatorToken(CommaToken), char_start, ..
-                        }))
-                        | Some(&Ok(Token {
-                            kind: PunctuatorToken(SemiToken), char_start, ..
+                            kind: PunctuatorToken(CommaToken | SemiToken),
+                            char_start,
+                            ..
                         })) => {
                             if fieldsep_allowed {
                                 tokens.next();
