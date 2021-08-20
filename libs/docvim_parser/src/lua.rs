@@ -780,9 +780,9 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_equals(&self, tokens: &mut std::iter::Peekable<Tokens>) -> Result<(), Box<dyn Error>> {
+    fn parse_assign(&self, tokens: &mut std::iter::Peekable<Tokens>) -> Result<(), Box<dyn Error>> {
         match tokens.next() {
-            Some(Ok(Token { kind: OpToken(EqToken), .. })) => Ok(()),
+            Some(Ok(Token { kind: OpToken(AssignToken), .. })) => Ok(()),
             Some(Ok(Token { char_start, .. })) => Err(Box::new(ParserError {
                 kind: ParserErrorKind::ExpectedEq,
                 position: char_start,
@@ -797,7 +797,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    // TODO: functions like parse_equals and parse_rbracket are incredibly boilerplate-ish and repetitive; see if we can DRY that up a bit.
+    // TODO: functions like parse_assign and parse_rbracket are incredibly boilerplate-ish and repetitive; see if we can DRY that up a bit.
     fn parse_rbracket(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
@@ -844,11 +844,11 @@ impl<'a> Parser<'a> {
         let token = tokens.peek();
         match token {
             Some(&Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
-                let name = Exp::RawStr(&self.lexer.input[byte_start..byte_end]);
+                let name = Exp::NamedVar(&self.lexer.input[byte_start..byte_end]);
                 tokens.next();
-                if matches!(tokens.peek(), Some(&Ok(Token { kind: OpToken(EqToken), .. }))) {
+                if matches!(tokens.peek(), Some(&Ok(Token { kind: OpToken(AssignToken), .. }))) {
                     // `name = exp`; equivalent to `["name"] = exp`.
-                    self.parse_equals(tokens)?;
+                    self.parse_assign(tokens)?;
                     let exp = self.parse_exp(tokens, 0)?;
                     Ok(Field { index: None, lexp: Box::new(name), rexp: Box::new(exp) })
                 } else {
@@ -860,7 +860,7 @@ impl<'a> Parser<'a> {
                 // `[exp] = exp`
                 let lexp = self.parse_exp(tokens, 0)?;
                 self.parse_rbracket(tokens)?;
-                self.parse_equals(tokens)?;
+                self.parse_assign(tokens)?;
                 let rexp = self.parse_exp(tokens, 0)?; // TODO: confirm binding power of 0 is appropriate here
                 Ok(Field { index: None, lexp: Box::new(lexp), rexp: Box::new(rexp) })
             }
@@ -1115,7 +1115,7 @@ mod tests {
                 explist: vec![Exp::Table(vec![Field {
                     index: Some(1),
                     lexp: Box::new(Exp::Nil),
-                    rexp: Box::new(Exp::RawStr("one"))
+                    rexp: Box::new(Exp::NamedVar("one"))
                 }])],
             }]))
         );

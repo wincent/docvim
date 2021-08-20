@@ -1,4 +1,4 @@
-local stuff = { one }
+local stuff = { one = 1 }
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -16,12 +16,12 @@ Ok(
                         Table(
                             [
                                 Field {
-                                    index: Some(
-                                        1,
-                                    ),
-                                    lexp: Nil,
-                                    rexp: NamedVar(
+                                    index: None,
+                                    lexp: NamedVar(
                                         "one",
+                                    ),
+                                    rexp: Number(
+                                        "1",
                                     ),
                                 },
                             ],
