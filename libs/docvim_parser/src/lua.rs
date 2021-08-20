@@ -438,7 +438,7 @@ impl<'a> Parser<'a> {
                     } else {
                         return Err(Box::new(ParserError {
                             kind: ParserErrorKind::UnexpectedEndOfInput,
-                            position: char_start + idx,
+                            position: self.lexer.input.chars().count(),
                         }));
                     }
                 }
@@ -477,9 +477,8 @@ impl<'a> Parser<'a> {
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Exp<'a>, Box<dyn Error>> {
         let prefixexp = match tokens.next() {
-            Some(Ok(token @ Token { kind: PunctuatorToken(LparenToken), .. })) => {
+            Some(Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 let lhs = self.parse_exp(tokens, 0)?;
-                let char_start = token.char_start;
                 let token = tokens.next();
                 match token {
                     Some(Ok(Token { kind: PunctuatorToken(RparenToken), .. })) => lhs,
@@ -493,8 +492,7 @@ impl<'a> Parser<'a> {
                     None => {
                         return Err(Box::new(ParserError {
                             kind: ParserErrorKind::UnexpectedEndOfInput,
-                            // BUG: this is location of the "(", and ignores recursive call to lhs.
-                            position: char_start,
+                            position: self.lexer.input.chars().count(),
                         }));
                     }
                 }
