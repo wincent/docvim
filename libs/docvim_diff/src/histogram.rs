@@ -36,7 +36,12 @@ struct Region {
 struct Record {
     /// Pointer to the next record in the chain.
     next: Option<usize>,
-
+    // TODO: rename all of these variables...
+    // eg.  next -> next_record_index
+    //      index -> line_index
+    //      count -> ???
+    // and in Histogram:
+    //      table -> ?
     /// Line index of the item within the sequence.
     index: usize,
 

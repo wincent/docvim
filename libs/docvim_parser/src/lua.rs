@@ -109,7 +109,7 @@ pub enum Exp<'a> {
     },
     MethodCall {
         /// The "prefix expression" (ie. LHS in `foo:bar(baz)`; that is, `foo`), which is the table
-        /// whose containing the method to be called.
+        /// containing the method to be called.
         pexp: Box<Exp<'a>>,
 
         /// The method name (ie. the `bar` in `foo:bar(baz`) to be called.
@@ -196,6 +196,13 @@ impl<'a> Parser<'a> {
         Self { lexer: Lexer::new(input), ast: Chunk(Block(vec![])) }
     }
 
+    fn unexpected_end_of_input(&self) -> Box<dyn Error> {
+        return Box::new(ParserError {
+            kind: ParserErrorKind::UnexpectedEndOfInput,
+            position: self.lexer.input.chars().count(),
+        });
+    }
+
     pub fn parse(&mut self) -> Result<&Chunk, Box<dyn Error>> {
         let mut tokens = self.lexer.tokens().peekable();
         while let Some(&result) = tokens.peek() {
@@ -204,6 +211,7 @@ impl<'a> Parser<'a> {
                     let node = self.parse_local(&mut tokens)?;
                     self.ast.0 .0.push(node);
                 }
+                // TODO parse functioncall and other statement types
                 Ok(_) => {
                     tokens.next(); // TODO: move this
                 }
@@ -216,8 +224,6 @@ impl<'a> Parser<'a> {
         Ok(&self.ast)
     }
 
-    // passing in tokens as a param because I can't seem to read it off self (because it won't
-    // let me do a mutable borrow off self).
     fn parse_local(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
@@ -236,11 +242,12 @@ impl<'a> Parser<'a> {
         // Spelling this all out verbosely now, until I find the right abstraction for it...
         let mut explist: Vec<Exp> = Vec::new();
         let mut namelist = Vec::new();
-        let mut expect_assign = false;
-        let mut expect_comma = false;
+        let mut allow_assign = false;
+        let mut allow_comma = false;
         let mut expect_name = true;
-        let mut expect_semi = false;
+        let mut allow_semi = false;
         loop {
+            // TODO: replace this whole thing with a match
             if let Some(&token) = tokens.peek() {
                 previous = token.ok().unwrap();
                 match token {
@@ -249,16 +256,16 @@ impl<'a> Parser<'a> {
                             tokens.next();
                             namelist
                                 .push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
-                            expect_assign = true;
-                            expect_comma = true;
+                            allow_assign = true;
+                            allow_comma = true;
                             expect_name = false;
-                            expect_semi = true;
+                            allow_semi = true;
                         } else {
                             return Ok(Statement::LocalDeclaration { explist: vec![], namelist });
                         }
                     }
                     Ok(token @ Token { kind: OpToken(AssignToken), .. }) => {
-                        if expect_assign {
+                        if allow_assign {
                             tokens.next();
                             break;
                         } else {
@@ -269,12 +276,12 @@ impl<'a> Parser<'a> {
                         }
                     }
                     Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. }) => {
-                        if expect_comma {
+                        if allow_comma {
                             tokens.next();
-                            expect_assign = false;
-                            expect_comma = false;
+                            allow_assign = false;
+                            allow_comma = false;
                             expect_name = true;
-                            expect_semi = false;
+                            allow_semi = false;
                         } else {
                             return Err(Box::new(ParserError {
                                 kind: ParserErrorKind::UnexpectedComma,
@@ -283,7 +290,7 @@ impl<'a> Parser<'a> {
                         }
                     }
                     Ok(token @ Token { kind: PunctuatorToken(SemiToken), .. }) => {
-                        if expect_semi {
+                        if allow_semi {
                             tokens.next();
                             return Ok(Statement::LocalDeclaration { explist: vec![], namelist });
                         } else {
@@ -294,7 +301,7 @@ impl<'a> Parser<'a> {
                         }
                     }
                     Ok(token) => {
-                        if !expect_comma {
+                        if !allow_comma {
                             // Error, because we must have just seen a comma but didn't see a name.
                             return Err(Box::new(ParserError {
                                 kind: ParserErrorKind::UnexpectedComma,
@@ -309,7 +316,7 @@ impl<'a> Parser<'a> {
                 }
             } else {
                 // Reached end of input.
-                if expect_comma {
+                if allow_comma {
                     return Ok(Statement::LocalDeclaration { explist, namelist });
                 } else {
                     // Error, because we must have just seen a comma but didn't see a name.
@@ -322,18 +329,18 @@ impl<'a> Parser<'a> {
         }
 
         // Note that Lua doesn't require the number of items on LHS and RHS to match.
-        expect_comma = false;
-        expect_semi = false;
+        allow_comma = false;
+        allow_semi = false;
         let mut expect_exp = true;
         loop {
             if let Some(&token) = tokens.peek() {
                 match token {
                     Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. }) => {
-                        if expect_comma {
+                        if allow_comma {
                             tokens.next();
-                            expect_comma = false;
+                            allow_comma = false;
                             expect_exp = true;
-                            expect_semi = false;
+                            allow_semi = false;
                         } else {
                             return Err(Box::new(ParserError {
                                 kind: ParserErrorKind::UnexpectedComma,
@@ -342,7 +349,7 @@ impl<'a> Parser<'a> {
                         }
                     }
                     Ok(token @ Token { kind: PunctuatorToken(SemiToken), .. }) => {
-                        if expect_semi {
+                        if allow_semi {
                             tokens.next();
                             return Ok(Statement::LocalDeclaration { explist, namelist });
                         } else {
@@ -355,9 +362,9 @@ impl<'a> Parser<'a> {
                     Ok(_) => {
                         if expect_exp {
                             explist.push(self.parse_exp(tokens, 0)?);
-                            expect_comma = true;
+                            allow_comma = true;
                             expect_exp = false;
-                            expect_semi = true;
+                            allow_semi = true;
                         } else {
                             return Ok(Statement::LocalDeclaration { explist, namelist });
                         }
@@ -367,8 +374,9 @@ impl<'a> Parser<'a> {
                     }
                 }
             } else {
+                // TODO: here again, the `if`/`else` should just be a single `match`
                 // Reached end of input.
-                if !expect_comma {
+                if !allow_comma {
                     // Error, because we must have just seen a comma (or an assignment operator)
                     // but didn't see a name.
                     return Err(Box::new(ParserError {
@@ -441,10 +449,7 @@ impl<'a> Parser<'a> {
                             }
                         }
                     } else {
-                        return Err(Box::new(ParserError {
-                            kind: ParserErrorKind::UnexpectedEndOfInput,
-                            position: self.lexer.input.chars().count(),
-                        }));
+                        return Err(self.unexpected_end_of_input());
                     }
                 }
                 other => other,
@@ -474,15 +479,15 @@ impl<'a> Parser<'a> {
             Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 tokens.next();
                 let mut args = Vec::new();
-                let mut expect_comma = false;
+                let mut allow_comma = false;
                 loop {
                     match tokens.peek() {
                         Some(&Ok(Token {
                             kind: PunctuatorToken(CommaToken), char_start, ..
                         })) => {
-                            if expect_comma {
+                            if allow_comma {
                                 tokens.next();
-                                expect_comma = false;
+                                allow_comma = false;
                             } else {
                                 return Err(Box::new(ParserError {
                                     kind: ParserErrorKind::UnexpectedComma,
@@ -496,15 +501,10 @@ impl<'a> Parser<'a> {
                         }
                         Some(&Ok(_)) => {
                             args.push(self.parse_exp(tokens, 0)?);
-                            expect_comma = true;
+                            allow_comma = true;
                         }
                         Some(&Err(err)) => return Err(Box::new(err)),
-                        None => {
-                            return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedEndOfInput,
-                                position: self.lexer.input.chars().count(),
-                            }))
-                        }
+                        None => return Err(self.unexpected_end_of_input()),
                     }
                 }
 
@@ -523,10 +523,7 @@ impl<'a> Parser<'a> {
                 position: char_start,
             })),
             Some(&Err(err)) => Err(Box::new(err)),
-            None => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedEndOfInput,
-                position: self.lexer.input.chars().count(),
-            })),
+            None => Err(self.unexpected_end_of_input()),
         }
     }
 
@@ -559,12 +556,7 @@ impl<'a> Parser<'a> {
                         }))
                     }
                     Some(Err(err)) => return Err(Box::new(err)),
-                    None => {
-                        return Err(Box::new(ParserError {
-                            kind: ParserErrorKind::UnexpectedEndOfInput,
-                            position: self.lexer.input.chars().count(),
-                        }));
-                    }
+                    None => return Err(self.unexpected_end_of_input()),
                 }
             }
             Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
@@ -587,15 +579,8 @@ impl<'a> Parser<'a> {
                                         position: char_start,
                                     }));
                                 }
-                                Some(Err(err)) => {
-                                    return Err(Box::new(err));
-                                }
-                                None => {
-                                    return Err(Box::new(ParserError {
-                                        kind: ParserErrorKind::UnexpectedEndOfInput,
-                                        position: self.lexer.input.chars().count(),
-                                    }));
-                                }
+                                Some(Err(err)) => return Err(Box::new(err)),
+                                None => return Err(self.unexpected_end_of_input()),
                             };
                             pexp = Exp::MethodCall {
                                 pexp: Box::new(pexp),
@@ -622,15 +607,8 @@ impl<'a> Parser<'a> {
                                         position: char_start,
                                     }));
                                 }
-                                Some(Err(err)) => {
-                                    return Err(Box::new(err));
-                                }
-                                None => {
-                                    return Err(Box::new(ParserError {
-                                        kind: ParserErrorKind::UnexpectedEndOfInput,
-                                        position: self.lexer.input.chars().count(),
-                                    }));
-                                }
+                                Some(Err(err)) => return Err(Box::new(err)),
+                                None => return Err(self.unexpected_end_of_input()),
                             };
                             pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
                         }
@@ -671,12 +649,7 @@ impl<'a> Parser<'a> {
                 }));
             }
             Some(Err(err)) => return Err(Box::new(err)),
-            None => {
-                return Err(Box::new(ParserError {
-                    kind: ParserErrorKind::UnexpectedEndOfInput,
-                    position: self.lexer.input.chars().count(),
-                }));
-            }
+            None => return Err(self.unexpected_end_of_input()),
         };
         Ok(prefixexp)
     }
@@ -778,12 +751,7 @@ impl<'a> Parser<'a> {
 
             Some(&Err(err)) => return Err(Box::new(err)),
 
-            None => {
-                return Err(Box::new(ParserError {
-                    kind: ParserErrorKind::UnexpectedEndOfInput,
-                    position: self.lexer.input.chars().count(),
-                }))
-            }
+            None => return Err(self.unexpected_end_of_input()),
         };
 
         loop {
@@ -828,33 +796,6 @@ impl<'a> Parser<'a> {
         Ok(lhs)
     }
 
-    fn parse_name(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Exp<'a>, Box<dyn Error>> {
-        // TODO ^^ narrower return type... we know this is going to return an Exp::NamedVar
-        // might not be possible with current type system though; see: https://github.com/rust-lang/rfcs/pull/2593
-        match tokens.next() {
-            Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
-                Ok(Exp::NamedVar(&self.lexer.input[byte_start..byte_end]))
-            }
-            Some(Ok(Token { char_start, .. })) => {
-                // TODO: more specific error here
-                Err(Box::new(ParserError {
-                    kind: ParserErrorKind::UnexpectedToken,
-                    position: char_start,
-                }))
-            }
-            Some(Err(err)) => {
-                return Err(Box::new(err));
-            }
-            None => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedEndOfInput,
-                position: self.lexer.input.chars().count(),
-            })),
-        }
-    }
-
     // fieldlist ::= field {fieldsep field} [fieldsep]
     // fieldsep ::= `,´ | `;´
     fn parse_table_constructor(
@@ -897,15 +838,8 @@ impl<'a> Parser<'a> {
                             fields.push(field);
                             fieldsep_allowed = true;
                         }
-                        Some(&Err(err)) => {
-                            return Err(Box::new(err));
-                        }
-                        None => {
-                            return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedEndOfInput,
-                                position: self.lexer.input.chars().count(),
-                            }))
-                        }
+                        Some(&Err(err)) => return Err(Box::new(err)),
+                        None => return Err(self.unexpected_end_of_input()),
                     }
                 }
             }
@@ -915,51 +849,8 @@ impl<'a> Parser<'a> {
                     position: char_start,
                 }))
             }
-            Some(Err(err)) => {
-                return Err(Box::new(err));
-            }
-            None => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedEndOfInput,
-                position: self.lexer.input.chars().count(),
-            })),
-        }
-    }
-
-    fn parse_assign(&self, tokens: &mut std::iter::Peekable<Tokens>) -> Result<(), Box<dyn Error>> {
-        match tokens.next() {
-            Some(Ok(Token { kind: OpToken(AssignToken), .. })) => Ok(()),
-            Some(Ok(Token { char_start, .. })) => Err(Box::new(ParserError {
-                kind: ParserErrorKind::ExpectedEq,
-                position: char_start,
-            })),
-            Some(Err(err)) => {
-                return Err(Box::new(err));
-            }
-            None => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedEndOfInput,
-                position: self.lexer.input.chars().count(),
-            })),
-        }
-    }
-
-    // TODO: functions like parse_assign and parse_rbracket are incredibly boilerplate-ish and repetitive; see if we can DRY that up a bit.
-    fn parse_rbracket(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<(), Box<dyn Error>> {
-        match tokens.next() {
-            Some(Ok(Token { kind: PunctuatorToken(RbracketToken), .. })) => Ok(()),
-            Some(Ok(Token { char_start, .. })) => Err(Box::new(ParserError {
-                kind: ParserErrorKind::ExpectedRbracket,
-                position: char_start,
-            })),
-            Some(Err(err)) => {
-                return Err(Box::new(err));
-            }
-            None => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedEndOfInput,
-                position: self.lexer.input.chars().count(),
-            })),
+            Some(Err(err)) => return Err(Box::new(err)),
+            None => return Err(self.unexpected_end_of_input()),
         }
     }
 
@@ -981,27 +872,7 @@ impl<'a> Parser<'a> {
                 }
             }
             Some(Err(err)) => Err(Box::new(err)),
-            None => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedEndOfInput,
-                position: self.lexer.input.chars().count(),
-            })),
-        }
-    }
-
-    fn parse_rcurly(&self, tokens: &mut std::iter::Peekable<Tokens>) -> Result<(), Box<dyn Error>> {
-        match tokens.next() {
-            Some(Ok(Token { kind: PunctuatorToken(RcurlyToken), .. })) => Ok(()),
-            Some(Ok(Token { char_start, .. })) => Err(Box::new(ParserError {
-                kind: ParserErrorKind::ExpectedRcurly,
-                position: char_start,
-            })),
-            Some(Err(err)) => {
-                return Err(Box::new(err));
-            }
-            None => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedEndOfInput,
-                position: self.lexer.input.chars().count(),
-            })),
+            None => Err(self.unexpected_end_of_input()),
         }
     }
 
@@ -1018,7 +889,7 @@ impl<'a> Parser<'a> {
                 tokens.next();
                 if matches!(tokens.peek(), Some(&Ok(Token { kind: OpToken(AssignToken), .. }))) {
                     // `name = exp`; equivalent to `["name"] = exp`.
-                    self.parse_assign(tokens)?;
+                    self.consume(tokens, OpToken(AssignToken))?;
                     let exp = self.parse_exp(tokens, 0)?;
                     Ok(Field {
                         index: None,
@@ -1038,8 +909,8 @@ impl<'a> Parser<'a> {
                 // `[exp] = exp`
                 tokens.next();
                 let lexp = self.parse_exp(tokens, 0)?;
-                self.parse_rbracket(tokens)?;
-                self.parse_assign(tokens)?;
+                self.consume(tokens, PunctuatorToken(RbracketToken))?;
+                self.consume(tokens, OpToken(AssignToken))?;
                 let rexp = self.parse_exp(tokens, 0)?; // TODO: confirm binding power of 0 is appropriate here
                 Ok(Field { index: None, lexp: Box::new(lexp), rexp: Box::new(rexp) })
             }
@@ -1056,13 +927,8 @@ impl<'a> Parser<'a> {
                 // call or a vararg expression, then all values returned by this expression enter the
                 // list consecutively"
             }
-            Some(&Err(err)) => {
-                return Err(Box::new(err));
-            }
-            None => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedEndOfInput,
-                position: self.lexer.input.chars().count(),
-            })),
+            Some(&Err(err)) => return Err(Box::new(err)),
+            None => Err(self.unexpected_end_of_input()),
         }
     }
 }

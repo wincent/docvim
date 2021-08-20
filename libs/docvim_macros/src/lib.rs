@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::str::FromStr;
 
 /// Convenience macro for checking all snapshots relative to the current package.
