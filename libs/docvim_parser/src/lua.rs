@@ -318,37 +318,16 @@ impl<'a> Parser<'a> {
 
         // Note that Lua doesn't require the number of items on LHS and RHS to match.
         expect_comma = false;
-        expect_name = true;
         expect_semi = false;
+        let mut expect_exp = true;
         loop {
             if let Some(&token) = tokens.peek() {
                 match token {
-                    // TODO instead of spelling all this out here, probably just want to try
-                    // calling parse_exp _after_ checking CommmaToken, SemiToken branches...
-                    Ok(Token { kind: LiteralToken(NumberToken), .. })
-                    | Ok(Token { kind: LiteralToken(StrToken(_)), .. })
-                    | Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })
-                    | Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })
-                    | Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })
-                    | Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })
-                    | Ok(Token { kind: NameToken(IdentifierToken), .. })
-                    | Ok(Token { kind: OpToken(HashToken), .. })
-                    | Ok(Token { kind: OpToken(MinusToken), .. })
-                    | Ok(Token { kind: PunctuatorToken(LcurlyToken), .. }) => {
-                        if expect_name {
-                            explist.push(self.parse_exp(tokens, 0)?);
-                            expect_comma = true;
-                            expect_name = false;
-                            expect_semi = true;
-                        } else {
-                            return Ok(Statement::LocalDeclaration { explist, namelist });
-                        }
-                    }
                     Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. }) => {
                         if expect_comma {
                             tokens.next();
                             expect_comma = false;
-                            expect_name = true;
+                            expect_exp = true;
                             expect_semi = false;
                         } else {
                             return Err(Box::new(ParserError {
@@ -368,15 +347,15 @@ impl<'a> Parser<'a> {
                             }));
                         }
                     }
-                    Ok(token) => {
-                        if !expect_comma {
-                            // Error, because we must have just seen a comma but didn't see a name.
-                            return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
-                                position: token.char_start,
-                            }));
+                    Ok(_) => {
+                        if expect_exp {
+                            explist.push(self.parse_exp(tokens, 0)?);
+                            expect_comma = true;
+                            expect_exp = false;
+                            expect_semi = true;
+                        } else {
+                            return Ok(Statement::LocalDeclaration { explist, namelist });
                         }
-                        break;
                     }
                     Err(err) => {
                         return Err(Box::new(err));

@@ -1,0 +1,24 @@
+local item = (100)
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "item",
+                        ),
+                    ],
+                    explist: [
+                        Number(
+                            "100",
+                        ),
+                    ],
+                },
+            ],
+        ),
+    ),
+)
