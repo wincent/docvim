@@ -150,7 +150,14 @@ pub struct Name<'a>(&'a str);
 
 #[derive(Debug, PartialEq)]
 pub enum Statement<'a> {
+    // Ugh... is there a better way to do this? (ie. embed Exp::FunctionCall directly instead of duplicating the fields?)
+    // Same for MethodCallStatement below.
+    FunctionCallStatement { pexp: Box<Exp<'a>>, args: Vec<Exp<'a>> },
     LocalDeclaration { namelist: Vec<Name<'a>>, explist: Vec<Exp<'a>> },
+    MethodCallStatement { pexp: Box<Exp<'a>>, name: &'a str, args: Vec<Exp<'a>> },
+
+    // TODO: explore stricter typing for this; not all Exp are legit var values
+    VarlistDeclaration { varlist: Vec<Exp<'a>>, explist: Vec<Exp<'a>> },
 }
 
 /// Returns the left and right "binding" power for a given operator, which enables us to parse
@@ -205,66 +212,142 @@ impl<'a> Parser<'a> {
 
     pub fn parse(&mut self) -> Result<&Chunk, Box<dyn Error>> {
         let mut tokens = self.lexer.tokens().peekable();
-        // TODO: replace `while let` with `loop`
-        while let Some(&result) = tokens.peek() {
-            match result {
-                Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. }) => {
-                    let node = self.parse_local(&mut tokens)?;
-                    self.ast.0 .0.push(node);
+        loop {
+            match tokens.peek() {
+                Some(&Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. })) => {
+                    self.ast.0 .0.push(self.parse_local(&mut tokens)?);
+                    self.slurp(&mut tokens, PunctuatorToken(SemiToken));
                 }
-                // TODO parse functioncall and other statement types
-                Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, ..}) => {
-                    let name = &self.lexer.input[byte_start..byte_end];
+                Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
+                    // prefixexp ::= var | functioncall | `(´ exp `)´
+                    // functioncall ::=  prefixexp args | prefixexp `:´ Name args
+                    let pexp = self.parse_prefixexp(&mut tokens)?;
+                    match pexp {
+                        Exp::FunctionCall { pexp, args } => {
+                            self.ast.0 .0.push(Statement::FunctionCallStatement { pexp, args });
+                            self.slurp(&mut tokens, PunctuatorToken(SemiToken));
+                        }
+                        Exp::MethodCall { pexp, name, args } => {
+                            self.ast.0 .0.push(Statement::MethodCallStatement { pexp, name, args });
+                            self.slurp(&mut tokens, PunctuatorToken(SemiToken));
+                        }
+                        Exp::NamedVar(_) | Exp::Index { .. } => {
+                            // varlist `=´ explist
+                            // varlist ::= var {`,´ var}
+                            // var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
+                            let mut varlist = vec![pexp];
+                            let mut explist: Vec<Exp> = vec![];
+                            let mut allow_assign = true;
+                            let mut allow_comma = true;
+                            let mut allow_semi = false;
+                            loop {
+                                match tokens.peek() {
+                                    Some(&Ok(Token {
+                                        kind: OpToken(AssignToken),
+                                        char_start,
+                                        ..
+                                    })) => {
+                                        tokens.next();
+                                        if allow_assign {
+                                            allow_assign = false;
+                                            allow_comma = false;
+                                        } else {
+                                            return Err(Box::new(ParserError {
+                                                kind: ParserErrorKind::UnexpectedToken,
+                                                position: char_start,
+                                            }));
+                                        }
+                                    }
+                                    Some(&Ok(Token {
+                                        kind: PunctuatorToken(CommaToken),
+                                        char_start,
+                                        ..
+                                    })) => {
+                                        tokens.next();
+                                        if allow_comma {
+                                            allow_comma = false;
+                                        } else {
+                                            return Err(Box::new(ParserError {
+                                                kind: ParserErrorKind::UnexpectedToken,
+                                                position: char_start,
+                                            }));
+                                        }
+                                    }
+                                    Some(&Ok(Token {
+                                        kind: PunctuatorToken(SemiToken),
+                                        char_start,
+                                        ..
+                                    })) => {
+                                        tokens.next();
+                                        if allow_semi {
+                                            self.ast.0 .0.push(Statement::VarlistDeclaration {
+                                                varlist,
+                                                explist,
+                                            });
+                                            break;
+                                        } else {
+                                            return Err(Box::new(ParserError {
+                                                kind: ParserErrorKind::UnexpectedToken,
+                                                position: char_start,
+                                            }));
+                                        }
+                                    }
+                                    Some(&Ok(Token { .. })) => {
+                                        if allow_assign {
+                                            // Still building varlist.
+                                            let pexp = self.parse_prefixexp(&mut tokens)?;
+                                            match pexp {
+                                                Exp::NamedVar(_) | Exp::Index { .. } => {
+                                                    varlist.push(pexp);
+                                                }
+                                                _ => {
+                                                    return Err(Box::new(ParserError {
+                                                        kind: ParserErrorKind::UnexpectedToken,
+                                                        position: token.char_start,
+                                                    }))
+                                                }
+                                            }
+                                            allow_comma = true;
+                                        } else {
+                                            // Building explist.
+                                            explist.push(self.parse_exp(&mut tokens, 0)?);
+                                            allow_comma = true;
+                                            allow_semi = true;
+                                        }
+                                    }
+                                    Some(&Err(err)) => return Err(Box::new(err)),
+                                    None => {
+                                        if allow_semi {
+                                            self.ast.0 .0.push(Statement::VarlistDeclaration {
+                                                varlist,
+                                                explist,
+                                            });
+                                            break;
+                                        } else {
+                                            return Err(self.unexpected_end_of_input());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // TODO: might want to come up with a better error than this
+                        _ => {
+                            return Err(Box::new(ParserError {
+                                kind: ParserErrorKind::UnexpectedToken,
+                                position: token.char_start,
+                            }))
+                        }
+                    }
+                }
+                // TODO parse other statement types
+                Some(&Ok(Token { .. })) => {
                     tokens.next();
-                    // match tokens.peek() {
-                        // Difficult to distinguish between these without lookahead:
-                        //
-                        //      varlist `=´ explist
-                        //      functioncall
-                        //
-                        // Because both can start with prefixexp:
-                        //
-                        //      varlist ::= var {`,´ var}
-                        //      var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
-                        //
-                        //      functioncall ::=  prefixexp args | prefixexp `:´ Name args
-                        //      prefixexp ::= var | functioncall | `(´ exp `)´
-                        //
-                        // After name, if you see comma you know it's a varlist
-                        // After name, if you see = you know it's a varlist
-                        // After name, if you see anything else, try to parse it as a prefixexp (should be a functioncall)
-                        //
-                        // Tricky is that var can be prefixexp[exp]... eg
-                        //
-                        //      foo[a], bar.etc = 1, 2
-                        //
-                        // After name, if you see [ you know it _may_ be a varlist (could also be a functioncall)
-                        // After name, if you see . you know if _may_ be a varlist (could also be a functioncall)
-                        //
-                        // Might have to try to parse it as prefixexp, then:
-                        //
-                        // - if it was a functioncall, it was a functioncall
-                        // - if it was a var, it was a var (must be followed by comma or assignment)
-                        // - if it was something else, it was an error (eg. parenthesized prefix exp)
-
-                    //     Some(&Ok(Token { kind: OpToken(AssignToken) | PunctuatorToken(CommaToken), .. })) => {
-                    //         // varlist `=´ explist
-                    //     }
-                    //     Some(&Ok(Token { .. })) => {
-                    //         // functioncall
-                    //     }
-                    // }
-
                 }
-                Ok(_) => {
-                    tokens.next(); // TODO: move this
-                }
-                Err(err) => {
-                    return Err(Box::new(err));
-                }
+                Some(&Err(err)) => return Err(Box::new(err)),
+                None => break,
             }
         }
-
         Ok(&self.ast)
     }
 
@@ -284,8 +367,8 @@ impl<'a> Parser<'a> {
         // local function Name funcbody
         //
         // Spelling this all out verbosely now, until I find the right abstraction for it...
-        let mut explist: Vec<Exp> = Vec::new();
-        let mut namelist = Vec::new();
+        let mut explist: Vec<Exp> = vec![];
+        let mut namelist = vec![];
         let mut allow_assign = false;
         let mut allow_comma = false;
         let mut expect_name = true;
@@ -335,7 +418,6 @@ impl<'a> Parser<'a> {
                     }
                     Ok(token @ Token { kind: PunctuatorToken(SemiToken), .. }) => {
                         if allow_semi {
-                            tokens.next();
                             return Ok(Statement::LocalDeclaration { explist: vec![], namelist });
                         } else {
                             return Err(Box::new(ParserError {
@@ -394,7 +476,6 @@ impl<'a> Parser<'a> {
                     }
                     Ok(token @ Token { kind: PunctuatorToken(SemiToken), .. }) => {
                         if allow_semi {
-                            tokens.next();
                             return Ok(Statement::LocalDeclaration { explist, namelist });
                         } else {
                             return Err(Box::new(ParserError {
@@ -522,7 +603,7 @@ impl<'a> Parser<'a> {
         match tokens.peek() {
             Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 tokens.next();
-                let mut args = Vec::new();
+                let mut args = vec![];
                 let mut allow_comma = false;
                 loop {
                     match tokens.peek() {
@@ -901,7 +982,9 @@ impl<'a> Parser<'a> {
         }
     }
 
-    // TODO: use this in as many places as possible to DRY things up
+    /// Consume the specified TokenKind, returning an Err if not found.
+    ///
+    /// Contrast with `slurp()`, which will consume a token if it is present, but does not error.
     fn consume(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
@@ -920,6 +1003,17 @@ impl<'a> Parser<'a> {
             }
             Some(Err(err)) => Err(Box::new(err)),
             None => Err(self.unexpected_end_of_input()),
+        }
+    }
+
+    /// Consumes the specified TokenKind, if present.
+    ///
+    /// Returns nothing.
+    fn slurp(&self, tokens: &mut std::iter::Peekable<Tokens>, kind: docvim_lexer::lua::TokenKind) {
+        if let Some(&Ok(token @ Token { .. })) = tokens.peek() {
+            if token.kind == kind {
+                self.consume(tokens, kind).expect("Failed to consume token");
+            }
         }
     }
 

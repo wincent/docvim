@@ -1,4 +1,4 @@
-local result = calculate()
+calculate()
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -6,20 +6,11 @@ Ok(
     Chunk(
         Block(
             [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "result",
-                        ),
-                    ],
-                    explist: [
-                        FunctionCall {
-                            pexp: NamedVar(
-                                "calculate",
-                            ),
-                            args: [],
-                        },
-                    ],
+                FunctionCallStatement {
+                    pexp: NamedVar(
+                        "calculate",
+                    ),
+                    args: [],
                 },
             ],
         ),

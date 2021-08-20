@@ -1,4 +1,4 @@
-local result = len("contents")
+len("contents")
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -6,23 +6,14 @@ Ok(
     Chunk(
         Block(
             [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "result",
+                FunctionCallStatement {
+                    pexp: NamedVar(
+                        "len",
+                    ),
+                    args: [
+                        CookedStr(
+                            "contents",
                         ),
-                    ],
-                    explist: [
-                        FunctionCall {
-                            pexp: NamedVar(
-                                "len",
-                            ),
-                            args: [
-                                CookedStr(
-                                    "contents",
-                                ),
-                            ],
-                        },
                     ],
                 },
             ],

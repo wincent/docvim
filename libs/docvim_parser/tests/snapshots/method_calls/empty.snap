@@ -1,4 +1,4 @@
-local foo = bar:baz()
+bar:baz()
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -6,21 +6,12 @@ Ok(
     Chunk(
         Block(
             [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "foo",
-                        ),
-                    ],
-                    explist: [
-                        MethodCall {
-                            pexp: NamedVar(
-                                "bar",
-                            ),
-                            name: "baz",
-                            args: [],
-                        },
-                    ],
+                MethodCallStatement {
+                    pexp: NamedVar(
+                        "bar",
+                    ),
+                    name: "baz",
+                    args: [],
                 },
             ],
         ),

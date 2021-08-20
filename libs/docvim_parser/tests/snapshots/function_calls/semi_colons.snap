@@ -1,6 +1,4 @@
-foo 'single'
-bar "double"
-baz [[long]]
+foo(); bar(true); baz(nil);
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -12,20 +10,14 @@ Ok(
                     pexp: NamedVar(
                         "foo",
                     ),
-                    args: [
-                        CookedStr(
-                            "single",
-                        ),
-                    ],
+                    args: [],
                 },
                 FunctionCallStatement {
                     pexp: NamedVar(
                         "bar",
                     ),
                     args: [
-                        CookedStr(
-                            "double",
-                        ),
+                        True,
                     ],
                 },
                 FunctionCallStatement {
@@ -33,9 +25,7 @@ Ok(
                         "baz",
                     ),
                     args: [
-                        RawStr(
-                            "long",
-                        ),
+                        Nil,
                     ],
                 },
             ],

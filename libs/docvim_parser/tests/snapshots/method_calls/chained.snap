@@ -10,7 +10,7 @@
 -- Which is slightly surprising to me as I would have expected keywords to be
 -- allowed in certain positions where they wouldn't be ambiguous.
 
-local x = y:z():followed_by():this(true)
+y:z():followed_by():this(true)
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -18,30 +18,21 @@ Ok(
     Chunk(
         Block(
             [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "x",
-                        ),
-                    ],
-                    explist: [
-                        MethodCall {
-                            pexp: MethodCall {
-                                pexp: MethodCall {
-                                    pexp: NamedVar(
-                                        "y",
-                                    ),
-                                    name: "z",
-                                    args: [],
-                                },
-                                name: "followed_by",
-                                args: [],
-                            },
-                            name: "this",
-                            args: [
-                                True,
-                            ],
+                MethodCallStatement {
+                    pexp: MethodCall {
+                        pexp: MethodCall {
+                            pexp: NamedVar(
+                                "y",
+                            ),
+                            name: "z",
+                            args: [],
                         },
+                        name: "followed_by",
+                        args: [],
+                    },
+                    name: "this",
+                    args: [
+                        True,
                     ],
                 },
             ],

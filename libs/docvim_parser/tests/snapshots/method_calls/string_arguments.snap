@@ -1,8 +1,6 @@
--- TODO: get rid of all these local declarations.
-
-local a = b:c 'single'
-local d = e:f "double"
-local g = h:i [[long]]
+b:c 'single'
+e:f "double"
+h:i [[long]]
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -10,64 +8,37 @@ Ok(
     Chunk(
         Block(
             [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "a",
+                MethodCallStatement {
+                    pexp: NamedVar(
+                        "b",
+                    ),
+                    name: "c",
+                    args: [
+                        CookedStr(
+                            "single",
                         ),
-                    ],
-                    explist: [
-                        MethodCall {
-                            pexp: NamedVar(
-                                "b",
-                            ),
-                            name: "c",
-                            args: [
-                                CookedStr(
-                                    "single",
-                                ),
-                            ],
-                        },
                     ],
                 },
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "d",
+                MethodCallStatement {
+                    pexp: NamedVar(
+                        "e",
+                    ),
+                    name: "f",
+                    args: [
+                        CookedStr(
+                            "double",
                         ),
-                    ],
-                    explist: [
-                        MethodCall {
-                            pexp: NamedVar(
-                                "e",
-                            ),
-                            name: "f",
-                            args: [
-                                CookedStr(
-                                    "double",
-                                ),
-                            ],
-                        },
                     ],
                 },
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "g",
+                MethodCallStatement {
+                    pexp: NamedVar(
+                        "h",
+                    ),
+                    name: "i",
+                    args: [
+                        RawStr(
+                            "long",
                         ),
-                    ],
-                    explist: [
-                        MethodCall {
-                            pexp: NamedVar(
-                                "h",
-                            ),
-                            name: "i",
-                            args: [
-                                RawStr(
-                                    "long",
-                                ),
-                            ],
-                        },
                     ],
                 },
             ],

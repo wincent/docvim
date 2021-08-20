@@ -1,0 +1,74 @@
+-- We can mix various kinds of prefixexps together.
+
+a() { force = true } "boo!"
+
+-- Equivalent to (identical AST):
+
+a()({force = true})("boo!")
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                FunctionCallStatement {
+                    pexp: FunctionCall {
+                        pexp: FunctionCall {
+                            pexp: NamedVar(
+                                "a",
+                            ),
+                            args: [],
+                        },
+                        args: [
+                            Table(
+                                [
+                                    Field {
+                                        index: None,
+                                        lexp: RawStr(
+                                            "force",
+                                        ),
+                                        rexp: True,
+                                    },
+                                ],
+                            ),
+                        ],
+                    },
+                    args: [
+                        CookedStr(
+                            "boo!",
+                        ),
+                    ],
+                },
+                FunctionCallStatement {
+                    pexp: FunctionCall {
+                        pexp: FunctionCall {
+                            pexp: NamedVar(
+                                "a",
+                            ),
+                            args: [],
+                        },
+                        args: [
+                            Table(
+                                [
+                                    Field {
+                                        index: None,
+                                        lexp: RawStr(
+                                            "force",
+                                        ),
+                                        rexp: True,
+                                    },
+                                ],
+                            ),
+                        ],
+                    },
+                    args: [
+                        CookedStr(
+                            "boo!",
+                        ),
+                    ],
+                },
+            ],
+        ),
+    ),
+)

@@ -1,0 +1,39 @@
+-- ie. function call in expression position, rather than as a standalone FunctionCallStatement
+
+local result = add(1, 2, "three")
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "result",
+                        ),
+                    ],
+                    explist: [
+                        FunctionCall {
+                            pexp: NamedVar(
+                                "add",
+                            ),
+                            args: [
+                                Number(
+                                    "1",
+                                ),
+                                Number(
+                                    "2",
+                                ),
+                                CookedStr(
+                                    "three",
+                                ),
+                            ],
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)

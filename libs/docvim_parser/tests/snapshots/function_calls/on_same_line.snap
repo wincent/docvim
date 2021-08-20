@@ -1,4 +1,4 @@
-add(1, 2, "three")
+print(1) print(2) print(3)
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -8,17 +8,31 @@ Ok(
             [
                 FunctionCallStatement {
                     pexp: NamedVar(
-                        "add",
+                        "print",
                     ),
                     args: [
                         Number(
                             "1",
                         ),
+                    ],
+                },
+                FunctionCallStatement {
+                    pexp: NamedVar(
+                        "print",
+                    ),
+                    args: [
                         Number(
                             "2",
                         ),
-                        CookedStr(
-                            "three",
+                    ],
+                },
+                FunctionCallStatement {
+                    pexp: NamedVar(
+                        "print",
+                    ),
+                    args: [
+                        Number(
+                            "3",
                         ),
                     ],
                 },

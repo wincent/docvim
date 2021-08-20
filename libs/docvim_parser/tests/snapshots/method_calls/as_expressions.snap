@@ -1,0 +1,37 @@
+-- ie. method call in expression position, rather than as an independent statement.
+
+local foo = bar:baz("hello", "world")
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "foo",
+                        ),
+                    ],
+                    explist: [
+                        MethodCall {
+                            pexp: NamedVar(
+                                "bar",
+                            ),
+                            name: "baz",
+                            args: [
+                                CookedStr(
+                                    "hello",
+                                ),
+                                CookedStr(
+                                    "world",
+                                ),
+                            ],
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)

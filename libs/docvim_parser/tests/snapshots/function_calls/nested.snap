@@ -1,4 +1,4 @@
-local result = calculate(intermediate(inner()))
+calculate(intermediate(inner()))
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -6,30 +6,21 @@ Ok(
     Chunk(
         Block(
             [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "result",
-                        ),
-                    ],
-                    explist: [
+                FunctionCallStatement {
+                    pexp: NamedVar(
+                        "calculate",
+                    ),
+                    args: [
                         FunctionCall {
                             pexp: NamedVar(
-                                "calculate",
+                                "intermediate",
                             ),
                             args: [
                                 FunctionCall {
                                     pexp: NamedVar(
-                                        "intermediate",
+                                        "inner",
                                     ),
-                                    args: [
-                                        FunctionCall {
-                                            pexp: NamedVar(
-                                                "inner",
-                                            ),
-                                            args: [],
-                                        },
-                                    ],
+                                    args: [],
                                 },
                             ],
                         },

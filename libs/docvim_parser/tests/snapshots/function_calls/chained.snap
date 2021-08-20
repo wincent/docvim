@@ -1,8 +1,8 @@
-local result = calculate()(true)
+calculate()(true)
 
-local other = thing "a" "b"
+thing "a" "b"
 
-local so_functional = freaky {1, 2} {3, 4}
+freaky {1, 2} {3, 4}
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -10,114 +10,87 @@ Ok(
     Chunk(
         Block(
             [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "result",
+                FunctionCallStatement {
+                    pexp: FunctionCall {
+                        pexp: NamedVar(
+                            "calculate",
                         ),
-                    ],
-                    explist: [
-                        FunctionCall {
-                            pexp: FunctionCall {
-                                pexp: NamedVar(
-                                    "calculate",
-                                ),
-                                args: [],
-                            },
-                            args: [
-                                True,
-                            ],
-                        },
+                        args: [],
+                    },
+                    args: [
+                        True,
                     ],
                 },
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "other",
+                FunctionCallStatement {
+                    pexp: FunctionCall {
+                        pexp: NamedVar(
+                            "thing",
                         ),
-                    ],
-                    explist: [
-                        FunctionCall {
-                            pexp: FunctionCall {
-                                pexp: NamedVar(
-                                    "thing",
-                                ),
-                                args: [
-                                    CookedStr(
-                                        "a",
-                                    ),
-                                ],
-                            },
-                            args: [
-                                CookedStr(
-                                    "b",
-                                ),
-                            ],
-                        },
+                        args: [
+                            CookedStr(
+                                "a",
+                            ),
+                        ],
+                    },
+                    args: [
+                        CookedStr(
+                            "b",
+                        ),
                     ],
                 },
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "so_functional",
+                FunctionCallStatement {
+                    pexp: FunctionCall {
+                        pexp: NamedVar(
+                            "freaky",
                         ),
-                    ],
-                    explist: [
-                        FunctionCall {
-                            pexp: FunctionCall {
-                                pexp: NamedVar(
-                                    "freaky",
-                                ),
-                                args: [
-                                    Table(
-                                        [
-                                            Field {
-                                                index: Some(
-                                                    1,
-                                                ),
-                                                lexp: Nil,
-                                                rexp: Number(
-                                                    "1",
-                                                ),
-                                            },
-                                            Field {
-                                                index: Some(
-                                                    2,
-                                                ),
-                                                lexp: Nil,
-                                                rexp: Number(
-                                                    "2",
-                                                ),
-                                            },
-                                        ],
-                                    ),
+                        args: [
+                            Table(
+                                [
+                                    Field {
+                                        index: Some(
+                                            1,
+                                        ),
+                                        lexp: Nil,
+                                        rexp: Number(
+                                            "1",
+                                        ),
+                                    },
+                                    Field {
+                                        index: Some(
+                                            2,
+                                        ),
+                                        lexp: Nil,
+                                        rexp: Number(
+                                            "2",
+                                        ),
+                                    },
                                 ],
-                            },
-                            args: [
-                                Table(
-                                    [
-                                        Field {
-                                            index: Some(
-                                                1,
-                                            ),
-                                            lexp: Nil,
-                                            rexp: Number(
-                                                "3",
-                                            ),
-                                        },
-                                        Field {
-                                            index: Some(
-                                                2,
-                                            ),
-                                            lexp: Nil,
-                                            rexp: Number(
-                                                "4",
-                                            ),
-                                        },
-                                    ],
-                                ),
+                            ),
+                        ],
+                    },
+                    args: [
+                        Table(
+                            [
+                                Field {
+                                    index: Some(
+                                        1,
+                                    ),
+                                    lexp: Nil,
+                                    rexp: Number(
+                                        "3",
+                                    ),
+                                },
+                                Field {
+                                    index: Some(
+                                        2,
+                                    ),
+                                    lexp: Nil,
+                                    rexp: Number(
+                                        "4",
+                                    ),
+                                },
                             ],
-                        },
+                        ),
                     ],
                 },
             ],

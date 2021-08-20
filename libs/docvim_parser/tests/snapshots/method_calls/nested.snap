@@ -1,4 +1,4 @@
-local x = y:z(a:b(c))
+y:z(a:b(c))
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -6,30 +6,21 @@ Ok(
     Chunk(
         Block(
             [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "x",
-                        ),
-                    ],
-                    explist: [
+                MethodCallStatement {
+                    pexp: NamedVar(
+                        "y",
+                    ),
+                    name: "z",
+                    args: [
                         MethodCall {
                             pexp: NamedVar(
-                                "y",
+                                "a",
                             ),
-                            name: "z",
+                            name: "b",
                             args: [
-                                MethodCall {
-                                    pexp: NamedVar(
-                                        "a",
-                                    ),
-                                    name: "b",
-                                    args: [
-                                        NamedVar(
-                                            "c",
-                                        ),
-                                    ],
-                                },
+                                NamedVar(
+                                    "c",
+                                ),
                             ],
                         },
                     ],
