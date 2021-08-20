@@ -1,7 +1,6 @@
-use std::env::{remove_var, set_var};
 use std::error::Error;
 
-use docvim_snapshot::{check_snapshot, UPDATE_SNAPSHOTS};
+use docvim_snapshot::{check_snapshot, check_snapshot_dry_run};
 
 /// Demo function that uppercases its input.
 fn transform(input: &str) -> String {
@@ -14,23 +13,11 @@ fn test_check_snapshot_macro_with_matching_snapshot() -> Result<(), Box<dyn Erro
     Ok(())
 }
 
-// BUG: there may be a concurrency issue here; running various tests in parallel, the
-// UPDATE_SNAPSHOTS override may be visible to other threads
 #[test]
 fn test_check_snapshot_macro_with_mismatching_snapshot() {
-    // Save and clear original UPDATE_SNAPSHOTS value.
-    let env = option_env!("UPDATE_SNAPSHOTS");
-
-    remove_var(UPDATE_SNAPSHOTS);
-
-    // Do actual test.
-    let snapshot_mismatch = matches!(check_snapshot!("invalid_sample", &transform), Ok(false));
-
-    // Restore UPDATE_SNAPSHOTS.
-    match env {
-        Some(value) => set_var(UPDATE_SNAPSHOTS, value),
-        None => (),
-    }
+    // Use dry-run variant because we never want to update this snapshot, even when
+    // UPDATE_SNAPSHOTS is set.
+    let snapshot_mismatch = matches!(check_snapshot_dry_run!("invalid_sample", &transform), Ok(false));
 
     assert!(snapshot_mismatch);
 }

@@ -25,6 +25,20 @@ macro_rules! check_snapshot {
             $path,
             std::env!("CARGO_MANIFEST_DIR"),
             $callback,
+            false,
+        )
+    };
+}
+
+/// Really only used in the test_suite (ignores effect of UPDATE_SNAPSHOTS).
+#[macro_export]
+macro_rules! check_snapshot_dry_run {
+    ($path:expr, $callback:expr) => {
+        docvim_snapshot::check_snapshot_relative_to_base(
+            $path,
+            std::env!("CARGO_MANIFEST_DIR"),
+            $callback,
+            true,
         )
     };
 }
@@ -33,17 +47,19 @@ pub fn check_snapshot_relative_to_base(
     path: &str,
     base: &str,
     callback: &dyn Fn(&str) -> String,
+    dry_run: bool,
 ) -> Result<bool, Box<dyn Error>> {
     let mut snapshot = Path::new(base).to_path_buf();
     snapshot.push("tests/snapshots");
     snapshot.push(Path::new(path));
     snapshot.set_extension("snap");
-    check_snapshot(snapshot.as_path(), callback)
+    check_snapshot(snapshot.as_path(), callback, dry_run)
 }
 
 pub fn check_snapshot(
     snapshot: &Path,
     callback: &dyn Fn(&str) -> String,
+    dry_run: bool,
 ) -> Result<bool, Box<dyn Error>> {
     // Read snapshot file.
     let contents = fs::read_to_string(snapshot)?;
@@ -56,7 +72,7 @@ pub fn check_snapshot(
         let expected = contents[output_idx..contents.len()].trim();
         let transformed = String::from(callback(&input).trim_end());
 
-        if std::env::var_os(UPDATE_SNAPSHOTS).is_some() {
+        if std::env::var_os(UPDATE_SNAPSHOTS).is_some() && !dry_run {
             let mut updated = String::from(input);
             updated.push_str(DIVIDER);
             updated.push_str(&transformed);
@@ -85,7 +101,9 @@ pub fn check_snapshot(
         input.push_str(DIVIDER);
         input.push_str(&transformed);
         input.push('\n');
-        fs::write(snapshot, input)?;
+        if !dry_run {
+            fs::write(snapshot, input)?;
+        }
         Ok(true)
     }
 }

@@ -53,7 +53,7 @@ pub fn check_snapshots(attr: TokenStream, item: TokenStream) -> TokenStream {
                     "fn test_{}() -> Result<(), Box<dyn std::error::Error>> {{\n",
                     snapshot_name
                 ));
-                tests.push_str(&format!("  assert!(docvim_snapshot::check_snapshot(std::path::Path::new(r####\"{}\"####), &transform)?);\n", snapshot));
+                tests.push_str(&format!("  assert!(docvim_snapshot::check_snapshot(std::path::Path::new(r####\"{}\"####), &transform, false)?);\n", snapshot));
                 tests.push_str("  Ok(())\n");
                 tests.push_str("}\n");
             }
