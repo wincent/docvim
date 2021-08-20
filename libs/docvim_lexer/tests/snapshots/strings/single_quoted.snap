@@ -1,0 +1,5 @@
+'goodbye'
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Token { kind: Literal(Str(SingleQuoted)), char_start: 0, char_end: 9, byte_start: 0, byte_end: 9 }: 'goodbye'

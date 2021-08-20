@@ -1,0 +1,5 @@
+"hello"
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Token { kind: Literal(Str(DoubleQuoted)), char_start: 0, char_end: 7, byte_start: 0, byte_end: 7 }: "hello"
