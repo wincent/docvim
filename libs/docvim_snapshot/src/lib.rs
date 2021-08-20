@@ -56,8 +56,7 @@ pub fn check_snapshot(
         let expected = contents[output_idx..contents.len()].trim();
         let transformed = String::from(callback(&input).trim_end());
 
-        // option_env macro requires UPDATE_SNAPSHOTS to be a string literal.
-        if option_env!("UPDATE_SNAPSHOTS").is_some() {
+        if std::env::var_os(UPDATE_SNAPSHOTS).is_some() {
             let mut updated = String::from(input);
             updated.push_str(DIVIDER);
             updated.push_str(&transformed);

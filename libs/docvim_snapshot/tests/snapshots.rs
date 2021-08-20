@@ -14,10 +14,13 @@ fn test_check_snapshot_macro_with_matching_snapshot() -> Result<(), Box<dyn Erro
     Ok(())
 }
 
+// BUG: there may be a concurrency issue here; running various tests in parallel, the
+// UPDATE_SNAPSHOTS override may be visible to other threads
 #[test]
 fn test_check_snapshot_macro_with_mismatching_snapshot() {
-    // Save/clear UPDATE_SNAPSHOTS.
+    // Save and clear original UPDATE_SNAPSHOTS value.
     let env = option_env!("UPDATE_SNAPSHOTS");
+
     remove_var(UPDATE_SNAPSHOTS);
 
     // Do actual test.
