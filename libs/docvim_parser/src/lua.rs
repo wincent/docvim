@@ -205,6 +205,7 @@ impl<'a> Parser<'a> {
 
     pub fn parse(&mut self) -> Result<&Chunk, Box<dyn Error>> {
         let mut tokens = self.lexer.tokens().peekable();
+        // TODO: replace `while let` with `loop`
         while let Some(&result) = tokens.peek() {
             match result {
                 Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. }) => {
@@ -212,6 +213,49 @@ impl<'a> Parser<'a> {
                     self.ast.0 .0.push(node);
                 }
                 // TODO parse functioncall and other statement types
+                Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, ..}) => {
+                    let name = &self.lexer.input[byte_start..byte_end];
+                    tokens.next();
+                    // match tokens.peek() {
+                        // Difficult to distinguish between these without lookahead:
+                        //
+                        //      varlist `=´ explist
+                        //      functioncall
+                        //
+                        // Because both can start with prefixexp:
+                        //
+                        //      varlist ::= var {`,´ var}
+                        //      var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
+                        //
+                        //      functioncall ::=  prefixexp args | prefixexp `:´ Name args
+                        //      prefixexp ::= var | functioncall | `(´ exp `)´
+                        //
+                        // After name, if you see comma you know it's a varlist
+                        // After name, if you see = you know it's a varlist
+                        // After name, if you see anything else, try to parse it as a prefixexp (should be a functioncall)
+                        //
+                        // Tricky is that var can be prefixexp[exp]... eg
+                        //
+                        //      foo[a], bar.etc = 1, 2
+                        //
+                        // After name, if you see [ you know it _may_ be a varlist (could also be a functioncall)
+                        // After name, if you see . you know if _may_ be a varlist (could also be a functioncall)
+                        //
+                        // Might have to try to parse it as prefixexp, then:
+                        //
+                        // - if it was a functioncall, it was a functioncall
+                        // - if it was a var, it was a var (must be followed by comma or assignment)
+                        // - if it was something else, it was an error (eg. parenthesized prefix exp)
+
+                    //     Some(&Ok(Token { kind: OpToken(AssignToken) | PunctuatorToken(CommaToken), .. })) => {
+                    //         // varlist `=´ explist
+                    //     }
+                    //     Some(&Ok(Token { .. })) => {
+                    //         // functioncall
+                    //     }
+                    // }
+
+                }
                 Ok(_) => {
                     tokens.next(); // TODO: move this
                 }
