@@ -1,0 +1,29 @@
+local item = foo.bar
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "item",
+                        ),
+                    ],
+                    explist: [
+                        Index {
+                            pexp: NamedVar(
+                                "foo",
+                            ),
+                            kexp: RawStr(
+                                "bar",
+                            ),
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)

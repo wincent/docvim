@@ -1,0 +1,30 @@
+local foo = bar:baz(nil)
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "foo",
+                        ),
+                    ],
+                    explist: [
+                        MethodCall {
+                            pexp: NamedVar(
+                                "bar",
+                            ),
+                            name: "baz",
+                            args: [
+                                Nil,
+                            ],
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)

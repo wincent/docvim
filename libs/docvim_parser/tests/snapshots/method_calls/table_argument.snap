@@ -1,0 +1,40 @@
+local foo = bar:baz { force = true }
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "foo",
+                        ),
+                    ],
+                    explist: [
+                        MethodCall {
+                            pexp: NamedVar(
+                                "bar",
+                            ),
+                            name: "baz",
+                            args: [
+                                Table(
+                                    [
+                                        Field {
+                                            index: None,
+                                            lexp: RawStr(
+                                                "force",
+                                            ),
+                                            rexp: True,
+                                        },
+                                    ],
+                                ),
+                            ],
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)

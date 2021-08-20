@@ -94,8 +94,10 @@ pub enum Exp<'a> {
 
     False,
     FunctionCall {
-        name: &'a str, // TODO: probably change this (see MethodCall)
-                       // args: TODO  figure out how best to represent this
+        /// The "prefix expression" (ie. LHS in `foo(bar)`; that is, `foo`), which is the function
+        /// to be called.
+        pexp: Box<Exp<'a>>,
+        args: Vec<Exp<'a>>,
     },
     Index {
         /// The "prefix expression" (ie. LHS in `foo[bar]; that is, `foo`), which is the table to
@@ -106,10 +108,13 @@ pub enum Exp<'a> {
         kexp: Box<Exp<'a>>,
     },
     MethodCall {
-        // TODO: decide whether we should type this more narrowly (bc prefixexp is a subset of Exp)...
+        /// The "prefix expression" (ie. LHS in `foo:bar(baz)`; that is, `foo`), which is the table
+        /// whose containing the method to be called.
         pexp: Box<Exp<'a>>,
+
+        /// The method name (ie. the `bar` in `foo:bar(baz`) to be called.
         name: &'a str,
-        // args: TODO figure out how best to represent this
+        args: Vec<Exp<'a>>,
     },
     NamedVar(&'a str),
     Nil,
@@ -272,7 +277,7 @@ impl<'a> Parser<'a> {
                             expect_semi = false;
                         } else {
                             return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
+                                kind: ParserErrorKind::UnexpectedComma,
                                 position: token.char_start,
                             }));
                         }
@@ -292,7 +297,7 @@ impl<'a> Parser<'a> {
                         if !expect_comma {
                             // Error, because we must have just seen a comma but didn't see a name.
                             return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
+                                kind: ParserErrorKind::UnexpectedComma,
                                 position: token.char_start,
                             }));
                         }
@@ -309,7 +314,7 @@ impl<'a> Parser<'a> {
                 } else {
                     // Error, because we must have just seen a comma but didn't see a name.
                     return Err(Box::new(ParserError {
-                        kind: ParserErrorKind::UnexpectedToken,
+                        kind: ParserErrorKind::UnexpectedComma,
                         position: previous.char_start,
                     }));
                 }
@@ -331,7 +336,7 @@ impl<'a> Parser<'a> {
                             expect_semi = false;
                         } else {
                             return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
+                                kind: ParserErrorKind::UnexpectedComma,
                                 position: token.char_start,
                             }));
                         }
@@ -367,7 +372,7 @@ impl<'a> Parser<'a> {
                     // Error, because we must have just seen a comma (or an assignment operator)
                     // but didn't see a name.
                     return Err(Box::new(ParserError {
-                        kind: ParserErrorKind::UnexpectedToken,
+                        kind: ParserErrorKind::UnexpectedComma,
                         position: previous.char_start,
                     }));
                 }
@@ -460,6 +465,71 @@ impl<'a> Parser<'a> {
         Ok(Exp::Unary { exp: Box::new(rhs), op })
     }
 
+    /// args ::=  `(´ [explist] `)´ | tableconstructor | String
+    fn parse_args(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Vec<Exp<'a>>, Box<dyn Error>> {
+        match tokens.peek() {
+            Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
+                tokens.next();
+                let mut args = Vec::new();
+                let mut expect_comma = false;
+                loop {
+                    match tokens.peek() {
+                        Some(&Ok(Token {
+                            kind: PunctuatorToken(CommaToken), char_start, ..
+                        })) => {
+                            if expect_comma {
+                                tokens.next();
+                                expect_comma = false;
+                            } else {
+                                return Err(Box::new(ParserError {
+                                    kind: ParserErrorKind::UnexpectedComma,
+                                    position: char_start,
+                                }));
+                            }
+                        }
+                        Some(&Ok(Token { kind: PunctuatorToken(RparenToken), .. })) => {
+                            tokens.next();
+                            break;
+                        }
+                        Some(&Ok(_)) => {
+                            args.push(self.parse_exp(tokens, 0)?);
+                            expect_comma = true;
+                        }
+                        Some(&Err(err)) => return Err(Box::new(err)),
+                        None => {
+                            return Err(Box::new(ParserError {
+                                kind: ParserErrorKind::UnexpectedEndOfInput,
+                                position: self.lexer.input.chars().count(),
+                            }))
+                        }
+                    }
+                }
+
+                Ok(args)
+            }
+            Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
+                Ok(vec![self.parse_table_constructor(tokens)?])
+            }
+            Some(&Ok(Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
+            | Some(&Ok(Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. }))
+            | Some(&Ok(Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
+                Ok(vec![self.parse_exp(tokens, 0)?])
+            }
+            Some(&Ok(Token { char_start, .. })) => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedToken,
+                position: char_start,
+            })),
+            Some(&Err(err)) => Err(Box::new(err)),
+            None => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedEndOfInput,
+                position: self.lexer.input.chars().count(),
+            })),
+        }
+    }
+
     /// ```ignore
     /// prefixexp = ( exp )
     ///           | Name
@@ -498,81 +568,101 @@ impl<'a> Parser<'a> {
                 }
             }
             Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
-                let name = &self.lexer.input[byte_start..byte_end];
-
-                // note: these are all left associative so:
-                //   x[1][2][3] is same as: (((x [1]) [2]) [3])
-                //   x.a.b.c is same as (((x['a']) ['b']) ['c'])
-                let token = tokens.peek();
-                match token {
-                    Some(&Ok(Token { kind: PunctuatorToken(ColonToken), .. })) => {
-                        // `prefixexp : Name args`
-                        tokens.next();
-                        // NOPE, this isn't the pexp, that's the one on the other side
-                        // let method_name = self.parse_name(tokens)?;
-                        let method_name = match tokens.next() {
-                            Some(Ok(Token {
-                                kind: NameToken(IdentifierToken),
-                                byte_start,
-                                byte_end,
-                                ..
-                            })) => &self.lexer.input[byte_start..byte_end],
-                            Some(Ok(Token { char_start, .. })) => {
-                                return Err(Box::new(ParserError {
-                                    kind: ParserErrorKind::UnexpectedToken,
-                                    position: char_start,
-                                }));
-                            }
-                            Some(Err(err)) => {
-                                return Err(Box::new(err));
-                            }
-                            None => {
-                                return Err(Box::new(ParserError {
-                                    kind: ParserErrorKind::UnexpectedEndOfInput,
-                                    position: self.lexer.input.chars().count(),
-                                }));
-                            }
-                        };
-                        // TODO: expect args - LparenToken, String, or tableconstructor
-                        // TODO: also note that via left associativity, prefixexp could be complex eg. thing.foo("bingo"):blah()
-                        Exp::MethodCall {
-                            pexp: Box::new(Exp::NamedVar(name)),
-                            name: method_name,
-                            // args: ...
+                let mut pexp = Exp::NamedVar(&self.lexer.input[byte_start..byte_end]);
+                loop {
+                    match tokens.peek() {
+                        Some(&Ok(Token { kind: PunctuatorToken(ColonToken), .. })) => {
+                            // `prefixexp : Name args`
+                            tokens.next();
+                            let method_name = match tokens.next() {
+                                Some(Ok(Token {
+                                    kind: NameToken(IdentifierToken),
+                                    byte_start,
+                                    byte_end,
+                                    ..
+                                })) => &self.lexer.input[byte_start..byte_end],
+                                Some(Ok(Token { char_start, .. })) => {
+                                    return Err(Box::new(ParserError {
+                                        kind: ParserErrorKind::UnexpectedToken,
+                                        position: char_start,
+                                    }));
+                                }
+                                Some(Err(err)) => {
+                                    return Err(Box::new(err));
+                                }
+                                None => {
+                                    return Err(Box::new(ParserError {
+                                        kind: ParserErrorKind::UnexpectedEndOfInput,
+                                        position: self.lexer.input.chars().count(),
+                                    }));
+                                }
+                            };
+                            pexp = Exp::MethodCall {
+                                pexp: Box::new(pexp),
+                                name: method_name,
+                                args: self.parse_args(tokens)?,
+                            };
                         }
-                    }
-                    Some(&Ok(Token { kind: PunctuatorToken(DotToken), .. })) => {
-                        // ie. `foo.bar`, which is syntactic sugar for `foo['bar']`
-                        // TODO: handle complex pexps, not just NamedVar
-                        tokens.next();
-                        let kexp = self.parse_name(tokens)?; // TODO: change this it string!
-                        Exp::Index { pexp: Box::new(Exp::NamedVar(name)), kexp: Box::new(kexp) }
-                    }
-                    Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
-                        // ie. `foo[bar]`
-                        // TODO: handle complex pexps, not just NamedVar
-                        tokens.next();
-                        let kexp = self.parse_exp(tokens, 0)?;
-                        Exp::Index { pexp: Box::new(Exp::NamedVar(name)), kexp: Box::new(kexp) }
-                    }
-                    Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
-                        tokens.next();
-                        self.parse_table_constructor(tokens)?
-                        // prefixexp + {...} is a function call with a table argument
-                        // prefixexp + "..." is a function call with a string argument
-                        // prefixexp + (explist) is a function call with args...
-                    }
-                    Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
-                        tokens.next();
-                        // TODO: scan (, args, )
-                        Exp::FunctionCall {
-                            name,
-                            // args
+                        Some(&Ok(Token { kind: PunctuatorToken(DotToken), .. })) => {
+                            // ie. `foo.bar`, which is syntactic sugar for `foo['bar']`
+                            tokens.next();
+                            let kexp = match tokens.next() {
+                                Some(Ok(Token {
+                                    kind: NameToken(IdentifierToken),
+                                    byte_start,
+                                    byte_end,
+                                    ..
+                                })) => {
+                                    let name = &self.lexer.input[byte_start..byte_end];
+                                    Exp::RawStr(name)
+                                }
+                                Some(Ok(Token { char_start, .. })) => {
+                                    return Err(Box::new(ParserError {
+                                        kind: ParserErrorKind::UnexpectedToken,
+                                        position: char_start,
+                                    }));
+                                }
+                                Some(Err(err)) => {
+                                    return Err(Box::new(err));
+                                }
+                                None => {
+                                    return Err(Box::new(ParserError {
+                                        kind: ParserErrorKind::UnexpectedEndOfInput,
+                                        position: self.lexer.input.chars().count(),
+                                    }));
+                                }
+                            };
+                            pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
                         }
+                        Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
+                            // ie. `foo[bar]`
+                            tokens.next();
+                            let kexp = self.parse_exp(tokens, 0)?;
+                            self.consume(tokens, PunctuatorToken(RbracketToken))?;
+                            pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
+                        }
+                        Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. }))
+                        | Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. }))
+                        | Some(&Ok(Token {
+                            kind: LiteralToken(StrToken(DoubleQuotedToken)),
+                            ..
+                        }))
+                        | Some(&Ok(Token {
+                            kind: LiteralToken(StrToken(SingleQuotedToken)),
+                            ..
+                        }))
+                        | Some(&Ok(Token {
+                            kind: LiteralToken(StrToken(LongToken { .. })), ..
+                        })) => {
+                            pexp = Exp::FunctionCall {
+                                pexp: Box::new(pexp),
+                                args: self.parse_args(tokens)?,
+                            };
+                        }
+                        _ => break,
                     }
-                    // if string, could be a function call too
-                    _ => Exp::NamedVar(name),
                 }
+                pexp
             }
             Some(Ok(Token { char_start, .. })) => {
                 return Err(Box::new(ParserError {
@@ -660,7 +750,6 @@ impl<'a> Parser<'a> {
             }
 
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
-                tokens.next();
                 self.parse_table_constructor(tokens)?
             }
 
@@ -772,47 +861,67 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Exp<'a>, Box<dyn Error>> {
-        // Ugly, but we've already consumed LcurlyToken by the time we get here.
-        let mut fieldsep_allowed = false;
-        let mut fields = vec![];
-        let mut index = 1;
-        loop {
-            let token = tokens.peek();
-            match token {
-                Some(&Ok(Token { kind: PunctuatorToken(RcurlyToken), .. })) => {
-                    tokens.next();
-                    return Ok(Exp::Table(fields));
-                }
-                Some(&Ok(Token { kind: PunctuatorToken(CommaToken), char_start, .. }))
-                | Some(&Ok(Token { kind: PunctuatorToken(SemiToken), char_start, .. })) => {
-                    if fieldsep_allowed {
-                        tokens.next();
-                        fieldsep_allowed = false;
-                    } else {
-                        return Err(Box::new(ParserError {
-                            kind: ParserErrorKind::UnexpectedFieldSeparator,
-                            position: char_start,
-                        }));
+        match tokens.next() {
+            Some(Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
+                let mut fieldsep_allowed = false;
+                let mut fields = vec![];
+                let mut index = 1;
+                loop {
+                    let token = tokens.peek();
+                    match token {
+                        Some(&Ok(Token { kind: PunctuatorToken(RcurlyToken), .. })) => {
+                            tokens.next();
+                            return Ok(Exp::Table(fields));
+                        }
+                        Some(&Ok(Token {
+                            kind: PunctuatorToken(CommaToken), char_start, ..
+                        }))
+                        | Some(&Ok(Token {
+                            kind: PunctuatorToken(SemiToken), char_start, ..
+                        })) => {
+                            if fieldsep_allowed {
+                                tokens.next();
+                                fieldsep_allowed = false;
+                            } else {
+                                return Err(Box::new(ParserError {
+                                    kind: ParserErrorKind::UnexpectedFieldSeparator,
+                                    position: char_start,
+                                }));
+                            }
+                        }
+                        Some(&Ok(Token { .. })) => {
+                            let field = self.parse_table_field(tokens, index)?;
+                            if matches!(field, Field { index: Some(_), .. }) {
+                                index += 1;
+                            }
+                            fields.push(field);
+                            fieldsep_allowed = true;
+                        }
+                        Some(&Err(err)) => {
+                            return Err(Box::new(err));
+                        }
+                        None => {
+                            return Err(Box::new(ParserError {
+                                kind: ParserErrorKind::UnexpectedEndOfInput,
+                                position: self.lexer.input.chars().count(),
+                            }))
+                        }
                     }
-                }
-                Some(&Ok(Token { .. })) => {
-                    let field = self.parse_table_field(tokens, index)?;
-                    if matches!(field, Field { index: Some(_), .. }) {
-                        index += 1;
-                    }
-                    fields.push(field);
-                    fieldsep_allowed = true;
-                }
-                Some(&Err(err)) => {
-                    return Err(Box::new(err));
-                }
-                None => {
-                    return Err(Box::new(ParserError {
-                        kind: ParserErrorKind::UnexpectedEndOfInput,
-                        position: self.lexer.input.chars().count(),
-                    }))
                 }
             }
+            Some(Ok(Token { char_start, .. })) => {
+                return Err(Box::new(ParserError {
+                    kind: ParserErrorKind::UnexpectedToken,
+                    position: char_start,
+                }))
+            }
+            Some(Err(err)) => {
+                return Err(Box::new(err));
+            }
+            None => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedEndOfInput,
+                position: self.lexer.input.chars().count(),
+            })),
         }
     }
 
@@ -847,6 +956,31 @@ impl<'a> Parser<'a> {
             Some(Err(err)) => {
                 return Err(Box::new(err));
             }
+            None => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedEndOfInput,
+                position: self.lexer.input.chars().count(),
+            })),
+        }
+    }
+
+    // TODO: use this in as many places as possible to DRY things up
+    fn consume(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+        kind: docvim_lexer::lua::TokenKind,
+    ) -> Result<(), Box<dyn Error>> {
+        match tokens.next() {
+            Some(Ok(token @ Token { .. })) => {
+                if token.kind == kind {
+                    Ok(())
+                } else {
+                    Err(Box::new(ParserError {
+                        kind: ParserErrorKind::UnexpectedToken,
+                        position: token.char_start,
+                    }))
+                }
+            }
+            Some(Err(err)) => Err(Box::new(err)),
             None => Err(Box::new(ParserError {
                 kind: ParserErrorKind::UnexpectedEndOfInput,
                 position: self.lexer.input.chars().count(),

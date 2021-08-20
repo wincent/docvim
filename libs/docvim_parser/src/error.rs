@@ -23,6 +23,7 @@ pub enum ParserErrorKind {
     ExpectedRcurly,
     InvalidEscapeSequence,
     LocalDeclarationWithoutName,
+    UnexpectedComma,
     UnexpectedEndOfInput,
     UnexpectedFieldSeparator,
     UnexpectedToken, // TODO: this is a bit of a catch-all; replace with more specific things
@@ -36,6 +37,7 @@ impl ParserErrorKind {
             ParserErrorKind::ExpectedRcurly => "expected right-curly (\"}\")",
             ParserErrorKind::InvalidEscapeSequence => "invalid escape sequence",
             ParserErrorKind::LocalDeclarationWithoutName => "local declaration without name",
+            ParserErrorKind::UnexpectedComma => "unexpected comma",
             ParserErrorKind::UnexpectedEndOfInput => "unexpected end-of-input",
             ParserErrorKind::UnexpectedFieldSeparator => "unexpected field separator",
             ParserErrorKind::UnexpectedToken => "unexpected token",

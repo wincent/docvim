@@ -1,0 +1,59 @@
+local fancy = compute { a, b, c}
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "fancy",
+                        ),
+                    ],
+                    explist: [
+                        FunctionCall {
+                            pexp: NamedVar(
+                                "compute",
+                            ),
+                            args: [
+                                Table(
+                                    [
+                                        Field {
+                                            index: Some(
+                                                1,
+                                            ),
+                                            lexp: Nil,
+                                            rexp: NamedVar(
+                                                "a",
+                                            ),
+                                        },
+                                        Field {
+                                            index: Some(
+                                                2,
+                                            ),
+                                            lexp: Nil,
+                                            rexp: NamedVar(
+                                                "b",
+                                            ),
+                                        },
+                                        Field {
+                                            index: Some(
+                                                3,
+                                            ),
+                                            lexp: Nil,
+                                            rexp: NamedVar(
+                                                "c",
+                                            ),
+                                        },
+                                    ],
+                                ),
+                            ],
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)

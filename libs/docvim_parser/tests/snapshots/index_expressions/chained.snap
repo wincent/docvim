@@ -1,0 +1,39 @@
+local item = list[100][200][300]
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "item",
+                        ),
+                    ],
+                    explist: [
+                        Index {
+                            pexp: Index {
+                                pexp: Index {
+                                    pexp: NamedVar(
+                                        "list",
+                                    ),
+                                    kexp: Number(
+                                        "100",
+                                    ),
+                                },
+                                kexp: Number(
+                                    "200",
+                                ),
+                            },
+                            kexp: Number(
+                                "300",
+                            ),
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)

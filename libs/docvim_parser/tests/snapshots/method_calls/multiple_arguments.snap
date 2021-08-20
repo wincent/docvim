@@ -1,14 +1,4 @@
--- var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
--- prefixexp ::= var | functioncall | `(´ exp `)´
--- functioncall ::=  prefixexp args | prefixexp `:´ Name args
--- args ::=  `(´ [explist] `)´ | tableconstructor | String
-
-
-local item = list[100]
-
--- TODO: test nested too eg. thing[a][b]
--- also note that index expressions can appear on the LHS too; eg:
--- foo[x] = 1
+local foo = bar:baz("hello", "world")
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -19,17 +9,23 @@ Ok(
                 LocalDeclaration {
                     namelist: [
                         Name(
-                            "item",
+                            "foo",
                         ),
                     ],
                     explist: [
-                        Index {
+                        MethodCall {
                             pexp: NamedVar(
-                                "list",
+                                "bar",
                             ),
-                            kexp: Number(
-                                "100",
-                            ),
+                            name: "baz",
+                            args: [
+                                CookedStr(
+                                    "hello",
+                                ),
+                                CookedStr(
+                                    "world",
+                                ),
+                            ],
                         },
                     ],
                 },

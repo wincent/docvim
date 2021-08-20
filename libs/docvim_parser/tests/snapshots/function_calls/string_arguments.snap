@@ -1,0 +1,71 @@
+local a = foo 'single'
+local b = bar "double"
+local c = baz [[long]]
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "a",
+                        ),
+                    ],
+                    explist: [
+                        FunctionCall {
+                            pexp: NamedVar(
+                                "foo",
+                            ),
+                            args: [
+                                CookedStr(
+                                    "single",
+                                ),
+                            ],
+                        },
+                    ],
+                },
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "b",
+                        ),
+                    ],
+                    explist: [
+                        FunctionCall {
+                            pexp: NamedVar(
+                                "bar",
+                            ),
+                            args: [
+                                CookedStr(
+                                    "double",
+                                ),
+                            ],
+                        },
+                    ],
+                },
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "c",
+                        ),
+                    ],
+                    explist: [
+                        FunctionCall {
+                            pexp: NamedVar(
+                                "baz",
+                            ),
+                            args: [
+                                RawStr(
+                                    "long",
+                                ),
+                            ],
+                        },
+                    ],
+                },
+            ],
+        ),
+    ),
+)
