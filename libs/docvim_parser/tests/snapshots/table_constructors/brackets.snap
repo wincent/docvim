@@ -1,4 +1,4 @@
-local stuff = { one = 1 }
+local stuff = { ["foo"] = bar }
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -17,11 +17,11 @@ Ok(
                             [
                                 Field {
                                     index: None,
-                                    lexp: RawStr(
-                                        "one",
+                                    lexp: CookedStr(
+                                        "foo",
                                     ),
-                                    rexp: Number(
-                                        "1",
+                                    rexp: NamedVar(
+                                        "bar",
                                     ),
                                 },
                             ],

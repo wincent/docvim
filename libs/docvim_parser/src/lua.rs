@@ -88,7 +88,10 @@ pub enum Exp<'a> {
         op: BinOp,
         rexp: Box<Exp<'a>>,
     },
+
+    /// See `cook_str()` for a description of how a "raw" string becomes "cooked".
     CookedStr(Box<String>),
+
     False,
     FunctionCall {
         name: &'a str, // TODO: probably change this (see MethodCall)
@@ -396,6 +399,10 @@ impl<'a> Parser<'a> {
         return Ok(Statement::LocalDeclaration { explist, namelist });
     }
 
+    /// A "cooked" string is one in which escape sequences have been replaced with their equivalent
+    /// bytes. For example, the sequence "\n" is replaced with an actual newline, and so on.
+    ///
+    /// In contrast, a "raw" string preserves the exact form it had in the original source.
     fn cook_str(&self, token: Token) -> Result<Exp<'a>, Box<dyn Error>> {
         let byte_start = token.byte_start + 1;
         let byte_end = token.byte_end - 1;
@@ -844,20 +851,21 @@ impl<'a> Parser<'a> {
         let token = tokens.peek();
         match token {
             Some(&Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
-                let name = Exp::NamedVar(&self.lexer.input[byte_start..byte_end]);
+                let name = &self.lexer.input[byte_start..byte_end];
                 tokens.next();
                 if matches!(tokens.peek(), Some(&Ok(Token { kind: OpToken(AssignToken), .. }))) {
                     // `name = exp`; equivalent to `["name"] = exp`.
                     self.parse_assign(tokens)?;
                     let exp = self.parse_exp(tokens, 0)?;
-                    Ok(Field { index: None, lexp: Box::new(name), rexp: Box::new(exp) })
+                    Ok(Field { index: None, lexp: Box::new(Exp::RawStr(name)), rexp: Box::new(exp) })
                 } else {
                     // `exp`; syntactic sugar for `[index] = exp`
-                    Ok(Field { index: Some(index), lexp: Box::new(Exp::Nil), rexp: Box::new(name) })
+                    Ok(Field { index: Some(index), lexp: Box::new(Exp::Nil), rexp: Box::new(Exp::NamedVar(name)) })
                 }
             }
             Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
                 // `[exp] = exp`
+                tokens.next();
                 let lexp = self.parse_exp(tokens, 0)?;
                 self.parse_rbracket(tokens)?;
                 self.parse_assign(tokens)?;
@@ -1106,16 +1114,16 @@ mod tests {
 
     #[test]
     fn parses_table_constructor() {
-        let mut parser = Parser::new("local stuff = { one }");
+        let mut parser = Parser::new("local stuff = { [\"foo\"] = bar }");
         let ast = parser.parse();
         assert_eq!(
             *ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("stuff")],
                 explist: vec![Exp::Table(vec![Field {
-                    index: Some(1),
-                    lexp: Box::new(Exp::Nil),
-                    rexp: Box::new(Exp::NamedVar("one"))
+                    index: None,
+                    lexp: Box::new(Exp::CookedStr(Box::new(String::from("foo")))),
+                    rexp: Box::new(Exp::NamedVar("bar"))
                 }])],
             }]))
         );
