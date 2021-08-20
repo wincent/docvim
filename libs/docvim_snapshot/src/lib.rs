@@ -10,6 +10,10 @@ use docvim_diff::histogram::diff;
 const DIVIDER: &str =
     "\n\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n\n";
 
+/// Environment variable that can be set (to any value) to force `check_snapshot()` to update the
+/// snapshot files on disk.
+pub const UPDATE_SNAPSHOTS: &str = "UPDATE_SNAPSHOTS";
+
 /// Convenience macro for checking a snapshot relative to the current package.
 ///
 /// Mostly superseded by the `#[check_snapshots]` procedural macro defined in the docvim_macros
@@ -52,6 +56,7 @@ pub fn check_snapshot(
         let expected = contents[output_idx..contents.len()].trim();
         let transformed = String::from(callback(&input).trim_end());
 
+        // option_env macro requires UPDATE_SNAPSHOTS to be a string literal.
         if option_env!("UPDATE_SNAPSHOTS").is_some() {
             let mut updated = String::from(input);
             updated.push_str(DIVIDER);
@@ -71,7 +76,7 @@ pub fn check_snapshot(
             let formatted = format(ses, &expected_lines, &transformed_lines);
             println!("{}", formatted);
 
-            println!("If output is correct, re-run with UPDATE_SNAPSHOTS=1");
+            println!("If output is correct, re-run with {}=1", UPDATE_SNAPSHOTS);
             Ok(false)
         }
     } else {
