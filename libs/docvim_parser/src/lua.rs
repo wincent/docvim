@@ -330,7 +330,8 @@ impl<'a> Parser<'a> {
                     | Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })
                     | Ok(Token { kind: NameToken(IdentifierToken), .. })
                     | Ok(Token { kind: OpToken(HashToken), .. })
-                    | Ok(Token { kind: OpToken(MinusToken), .. }) => {
+                    | Ok(Token { kind: OpToken(MinusToken), .. })
+                    | Ok(Token { kind: PunctuatorToken(LcurlyToken), .. }) => {
                         if expect_name {
                             explist.push(self.parse_exp(tokens, 0)?);
                             expect_comma = true;
@@ -611,6 +612,7 @@ impl<'a> Parser<'a> {
                         Exp::Index { pexp: Box::new(Exp::NamedVar(name)), kexp: Box::new(kexp) }
                     }
                     Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
+                        tokens.next();
                         self.parse_table_constructor(tokens)?
                     }
                     Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
@@ -624,6 +626,9 @@ impl<'a> Parser<'a> {
                     // if string, could be a function call too
                     _ => Exp::NamedVar(name),
                 }
+            }
+            Some(Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
+                self.parse_table_constructor(tokens)?
             }
 
             //
@@ -731,10 +736,7 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Exp<'a>, Box<dyn Error>> {
-        assert!(matches!(
-            tokens.next(),
-            Some(Ok(Token { kind: PunctuatorToken(LcurlyToken), .. }))
-        ));
+        // Ugly, but we've already consumed LcurlyToken by the time we get here.
         let mut fieldsep_allowed = false;
         let mut fields = vec![];
         let mut index = 1;
@@ -816,6 +818,23 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn parse_rcurly(&self, tokens: &mut std::iter::Peekable<Tokens>) -> Result<(), Box<dyn Error>> {
+        match tokens.next() {
+            Some(Ok(Token { kind: PunctuatorToken(RcurlyToken), .. })) => Ok(()),
+            Some(Ok(Token { char_start, .. })) => Err(Box::new(ParserError {
+                kind: ParserErrorKind::ExpectedRcurly,
+                position: char_start,
+            })),
+            Some(Err(err)) => {
+                return Err(Box::new(err));
+            }
+            None => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedEndOfInput,
+                position: self.lexer.input.chars().count(),
+            })),
+        }
+    }
+
     // field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
     fn parse_table_field(
         &self,
@@ -825,12 +844,17 @@ impl<'a> Parser<'a> {
         let token = tokens.peek();
         match token {
             Some(&Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
-                // `name = exp`; equivalent to `["name"] = exp`.
                 let name = Exp::RawStr(&self.lexer.input[byte_start..byte_end]);
                 tokens.next();
-                self.parse_equals(tokens)?;
-                let exp = self.parse_exp(tokens, 0)?;
-                Ok(Field { index: None, lexp: Box::new(name), rexp: Box::new(exp) })
+                if matches!(tokens.peek(), Some(&Ok(Token { kind: OpToken(EqToken), .. }))) {
+                    // `name = exp`; equivalent to `["name"] = exp`.
+                    self.parse_equals(tokens)?;
+                    let exp = self.parse_exp(tokens, 0)?;
+                    Ok(Field { index: None, lexp: Box::new(name), rexp: Box::new(exp) })
+                } else {
+                    // `exp`; syntactic sugar for `[index] = exp`
+                    Ok(Field { index: Some(index), lexp: Box::new(Exp::Nil), rexp: Box::new(name) })
+                }
             }
             Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
                 // `[exp] = exp`
@@ -1076,6 +1100,23 @@ mod tests {
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("foo")],
                 explist: vec![Exp::Unary { exp: Box::new(Exp::NamedVar("bar")), op: UnOp::Not }],
+            }]))
+        );
+    }
+
+    #[test]
+    fn parses_table_constructor() {
+        let mut parser = Parser::new("local stuff = { one }");
+        let ast = parser.parse();
+        assert_eq!(
+            *ast.unwrap(),
+            Chunk(Block(vec![Statement::LocalDeclaration {
+                namelist: vec![Name("stuff")],
+                explist: vec![Exp::Table(vec![Field {
+                    index: Some(1),
+                    lexp: Box::new(Exp::Nil),
+                    rexp: Box::new(Exp::RawStr("one"))
+                }])],
             }]))
         );
     }

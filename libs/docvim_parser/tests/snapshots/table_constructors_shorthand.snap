@@ -1,0 +1,34 @@
+local stuff = { one }
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                LocalDeclaration {
+                    namelist: [
+                        Name(
+                            "stuff",
+                        ),
+                    ],
+                    explist: [
+                        Table(
+                            [
+                                Field {
+                                    index: Some(
+                                        1,
+                                    ),
+                                    lexp: Nil,
+                                    rexp: RawStr(
+                                        "one",
+                                    ),
+                                },
+                            ],
+                        ),
+                    ],
+                },
+            ],
+        ),
+    ),
+)
