@@ -1,0 +1,40 @@
+do
+  do
+    local one = 1
+  end
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Chunk(
+        Block(
+            [
+                DoBlock(
+                    Block(
+                        [
+                            DoBlock(
+                                Block(
+                                    [
+                                        LocalDeclaration {
+                                            namelist: [
+                                                Name(
+                                                    "one",
+                                                ),
+                                            ],
+                                            explist: [
+                                                Number(
+                                                    "1",
+                                                ),
+                                            ],
+                                        },
+                                    ],
+                                ),
+                            ),
+                        ],
+                    ),
+                ),
+            ],
+        ),
+    ),
+)

@@ -5,6 +5,8 @@ use crate::error::*;
 // Lexer token types are imported aliased (all with a "Token" suffix) to avoid collisions with
 // parser node types of the same name.
 use docvim_lexer::lua::KeywordKind::And as AndToken;
+use docvim_lexer::lua::KeywordKind::Do as DoToken;
+use docvim_lexer::lua::KeywordKind::End as EndToken;
 use docvim_lexer::lua::KeywordKind::False as FalseToken;
 use docvim_lexer::lua::KeywordKind::Local as LocalToken;
 use docvim_lexer::lua::KeywordKind::Nil as NilToken;
@@ -150,6 +152,7 @@ pub struct Name<'a>(&'a str);
 
 #[derive(Debug, PartialEq)]
 pub enum Statement<'a> {
+    DoBlock(Block<'a>),
     // Ugh... is there a better way to do this? (ie. embed Exp::FunctionCall directly instead of duplicating the fields?)
     // Same for MethodCallStatement below.
     FunctionCallStatement { pexp: Box<Exp<'a>>, args: Vec<Exp<'a>> },
@@ -218,10 +221,17 @@ impl<'a> Parser<'a> {
     fn parse_block(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Block, Box<dyn Error>> {
+    ) -> Result<Block<'a>, Box<dyn Error>> {
         let mut block = Block(vec![]);
         loop {
             match tokens.peek() {
+                Some(&Ok(Token { kind: NameToken(KeywordToken(DoToken)), .. })) => {
+                    block.0.push(self.parse_do_block(tokens)?);
+                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                }
+                Some(&Ok(Token { kind: NameToken(KeywordToken(EndToken)), .. })) => {
+                    break;
+                }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. })) => {
                     block.0.push(self.parse_local(tokens)?);
                     self.slurp(tokens, PunctuatorToken(SemiToken));
@@ -359,11 +369,21 @@ impl<'a> Parser<'a> {
         Ok(block)
     }
 
+    fn parse_do_block(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Statement<'a>, Box<dyn Error>> {
+        self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
+        let block = self.parse_block(tokens)?;
+        self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+        Ok(Statement::DoBlock(block))
+    }
+
     fn parse_local(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Statement<'a>, Box<dyn Error>> {
-        let mut previous = tokens.next().unwrap().ok().unwrap(); // Consume "local" keyword token.
+        let mut previous = self.consume(tokens, NameToken(KeywordToken(LocalToken)))?;
 
         // Example inputs:
         //
@@ -997,11 +1017,11 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
         kind: docvim_lexer::lua::TokenKind,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<Token, Box<dyn Error>> {
         match tokens.next() {
             Some(Ok(token @ Token { .. })) => {
                 if token.kind == kind {
-                    Ok(())
+                    Ok(token)
                 } else {
                     Err(Box::new(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
