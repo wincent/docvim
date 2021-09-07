@@ -3,30 +3,28 @@ calculate(intermediate(inner()))
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "calculate",
-                    ),
-                    args: [
-                        FunctionCall {
-                            pexp: NamedVar(
-                                "intermediate",
-                            ),
-                            args: [
-                                FunctionCall {
-                                    pexp: NamedVar(
-                                        "inner",
-                                    ),
-                                    args: [],
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
-        ),
+    Block(
+        [
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "calculate",
+                ),
+                args: [
+                    FunctionCall {
+                        pexp: NamedVar(
+                            "intermediate",
+                        ),
+                        args: [
+                            FunctionCall {
+                                pexp: NamedVar(
+                                    "inner",
+                                ),
+                                args: [],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
     ),
 )

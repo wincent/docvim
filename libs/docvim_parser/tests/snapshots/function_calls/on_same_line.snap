@@ -3,40 +3,38 @@ print(1) print(2) print(3)
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "print",
+    Block(
+        [
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "print",
+                ),
+                args: [
+                    Number(
+                        "1",
                     ),
-                    args: [
-                        Number(
-                            "1",
-                        ),
-                    ],
-                },
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "print",
+                ],
+            },
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "print",
+                ),
+                args: [
+                    Number(
+                        "2",
                     ),
-                    args: [
-                        Number(
-                            "2",
-                        ),
-                    ],
-                },
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "print",
+                ],
+            },
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "print",
+                ),
+                args: [
+                    Number(
+                        "3",
                     ),
-                    args: [
-                        Number(
-                            "3",
-                        ),
-                    ],
-                },
-            ],
-        ),
+                ],
+            },
+        ],
     ),
 )

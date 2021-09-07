@@ -3,32 +3,30 @@ local stuff = { one = 1 }
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "stuff",
-                        ),
-                    ],
-                    explist: [
-                        Table(
-                            [
-                                Field {
-                                    index: None,
-                                    lexp: RawStr(
-                                        "one",
-                                    ),
-                                    rexp: Number(
-                                        "1",
-                                    ),
-                                },
-                            ],
-                        ),
-                    ],
-                },
-            ],
-        ),
+    Block(
+        [
+            LocalDeclaration {
+                namelist: [
+                    Name(
+                        "stuff",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: None,
+                                lexp: RawStr(
+                                    "one",
+                                ),
+                                rexp: Number(
+                                    "1",
+                                ),
+                            },
+                        ],
+                    ),
+                ],
+            },
+        ],
     ),
 )

@@ -3,16 +3,14 @@ calculate()
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "calculate",
-                    ),
-                    args: [],
-                },
-            ],
-        ),
+    Block(
+        [
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "calculate",
+                ),
+                args: [],
+            },
+        ],
     ),
 )

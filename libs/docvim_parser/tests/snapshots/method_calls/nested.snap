@@ -3,29 +3,27 @@ y:z(a:b(c))
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                MethodCallStatement {
-                    pexp: NamedVar(
-                        "y",
-                    ),
-                    name: "z",
-                    args: [
-                        MethodCall {
-                            pexp: NamedVar(
-                                "a",
+    Block(
+        [
+            MethodCallStatement {
+                pexp: NamedVar(
+                    "y",
+                ),
+                name: "z",
+                args: [
+                    MethodCall {
+                        pexp: NamedVar(
+                            "a",
+                        ),
+                        name: "b",
+                        args: [
+                            NamedVar(
+                                "c",
                             ),
-                            name: "b",
-                            args: [
-                                NamedVar(
-                                    "c",
-                                ),
-                            ],
-                        },
-                    ],
-                },
-            ],
-        ),
+                        ],
+                    },
+                ],
+            },
+        ],
     ),
 )

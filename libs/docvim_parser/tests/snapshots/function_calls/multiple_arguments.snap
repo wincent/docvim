@@ -3,26 +3,24 @@ add(1, 2, "three")
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "add",
+    Block(
+        [
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "add",
+                ),
+                args: [
+                    Number(
+                        "1",
                     ),
-                    args: [
-                        Number(
-                            "1",
-                        ),
-                        Number(
-                            "2",
-                        ),
-                        CookedStr(
-                            "three",
-                        ),
-                    ],
-                },
-            ],
-        ),
+                    Number(
+                        "2",
+                    ),
+                    CookedStr(
+                        "three",
+                    ),
+                ],
+            },
+        ],
     ),
 )

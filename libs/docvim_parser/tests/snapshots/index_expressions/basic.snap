@@ -12,27 +12,25 @@ local item = list[100]
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "item",
+    Block(
+        [
+            LocalDeclaration {
+                namelist: [
+                    Name(
+                        "item",
+                    ),
+                ],
+                explist: [
+                    Index {
+                        pexp: NamedVar(
+                            "list",
                         ),
-                    ],
-                    explist: [
-                        Index {
-                            pexp: NamedVar(
-                                "list",
-                            ),
-                            kexp: Number(
-                                "100",
-                            ),
-                        },
-                    ],
-                },
-            ],
-        ),
+                        kexp: Number(
+                            "100",
+                        ),
+                    },
+                ],
+            },
+        ],
     ),
 )

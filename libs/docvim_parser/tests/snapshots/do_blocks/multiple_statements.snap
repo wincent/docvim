@@ -6,40 +6,38 @@ end
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                DoBlock(
-                    Block(
-                        [
-                            LocalDeclaration {
-                                namelist: [
-                                    Name(
-                                        "foo",
-                                    ),
-                                ],
-                                explist: [
-                                    CookedStr(
-                                        "foo",
-                                    ),
-                                ],
-                            },
-                            LocalDeclaration {
-                                namelist: [
-                                    Name(
-                                        "bar",
-                                    ),
-                                ],
-                                explist: [
-                                    CookedStr(
-                                        "bar",
-                                    ),
-                                ],
-                            },
-                        ],
-                    ),
+    Block(
+        [
+            DoBlock(
+                Block(
+                    [
+                        LocalDeclaration {
+                            namelist: [
+                                Name(
+                                    "foo",
+                                ),
+                            ],
+                            explist: [
+                                CookedStr(
+                                    "foo",
+                                ),
+                            ],
+                        },
+                        LocalDeclaration {
+                            namelist: [
+                                Name(
+                                    "bar",
+                                ),
+                            ],
+                            explist: [
+                                CookedStr(
+                                    "bar",
+                                ),
+                            ],
+                        },
+                    ],
                 ),
-            ],
-        ),
+            ),
+        ],
     ),
 )

@@ -5,40 +5,38 @@ baz [[long]]
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "foo",
+    Block(
+        [
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "foo",
+                ),
+                args: [
+                    CookedStr(
+                        "single",
                     ),
-                    args: [
-                        CookedStr(
-                            "single",
-                        ),
-                    ],
-                },
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "bar",
+                ],
+            },
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "bar",
+                ),
+                args: [
+                    CookedStr(
+                        "double",
                     ),
-                    args: [
-                        CookedStr(
-                            "double",
-                        ),
-                    ],
-                },
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "baz",
+                ],
+            },
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "baz",
+                ),
+                args: [
+                    RawStr(
+                        "long",
                     ),
-                    args: [
-                        RawStr(
-                            "long",
-                        ),
-                    ],
-                },
-            ],
-        ),
+                ],
+            },
+        ],
     ),
 )

@@ -54,11 +54,6 @@ use docvim_lexer::lua::{Lexer, Token, Tokens};
 // TODO these node types will eventually wind up in another file, and end up referring specifically
 // to Lua, but for now developing them "in situ".
 
-/// Root AST node for a compilation unit (eg. a file, in the case of docvim; in other contexts,
-/// could also be a string to be dynamically compiled and evaluated by the Lua virtual machine).
-#[derive(Debug, PartialEq)]
-pub struct Chunk<'a>(Block<'a>);
-
 // TODO: rename these to reflect operation instead of token; eg "Add" insted of "Plus", "Multiply"
 // instead of "Star", "Divide" instead of "Slash" etc.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -212,10 +207,9 @@ impl<'a> Parser<'a> {
         });
     }
 
-    pub fn parse(&self) -> Result<Chunk, Box<dyn Error>> {
+    pub fn parse(&self) -> Result<Block, Box<dyn Error>> {
         let mut tokens = self.lexer.tokens().peekable();
-        let chunk = Chunk(self.parse_block(&mut tokens)?);
-        Ok(chunk)
+        self.parse_block(&mut tokens)
     }
 
     fn parse_block(
@@ -1112,127 +1106,127 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("foo")],
                 explist: vec![],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local bar = false");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("bar")],
                 explist: vec![Exp::False],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local baz = nil");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("baz")],
                 explist: vec![Exp::Nil],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local w = 1");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("w")],
                 explist: vec![Exp::Number("1")],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local x = 'wat'");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("x")],
                 explist: vec![Exp::CookedStr(Box::new(String::from("wat")))],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local y = \"don't say \\\"hello\\\"!\"");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("y")],
                 explist: vec![Exp::CookedStr(Box::new(String::from("don't say \"hello\"!")))],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local z = [[loooong]]");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("z")],
                 explist: vec![Exp::RawStr("loooong")],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local qux = true");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("qux")],
                 explist: vec![Exp::True],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local neg = not true");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("neg")],
                 explist: vec![Exp::Unary { exp: Box::new(Exp::True), op: UnOp::Not }],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local len = #'sample'");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("len")],
                 explist: vec![Exp::Unary {
                     exp: Box::new(Exp::CookedStr(Box::new(String::from("sample")))),
                     op: UnOp::Length,
                 }],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local small = -1000");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("small")],
                 explist: vec![Exp::Unary { exp: Box::new(Exp::Number("1000")), op: UnOp::Minus }],
-            }]))
+            }])
         );
 
         let parser = Parser::new("local sum = 7 + 8");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("sum")],
                 explist: vec![Exp::Binary {
                     lexp: Box::new(Exp::Number("7")),
                     op: BinOp::Plus,
                     rexp: Box::new(Exp::Number("8"))
                 }],
-            }]))
+            }])
         );
 
         // Based on the example from doc/lua.md plus some extra parens and a "not" thrown in for
@@ -1249,7 +1243,7 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("demo")],
                 explist: vec![Exp::Unary {
                     exp: Box::new(Exp::Binary {
@@ -1301,7 +1295,7 @@ mod tests {
                     }),
                     op: UnOp::Not
                 }]
-            }]))
+            }])
         );
     }
 
@@ -1311,10 +1305,10 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("foo")],
                 explist: vec![Exp::Unary { exp: Box::new(Exp::NamedVar("bar")), op: UnOp::Not }],
-            }]))
+            }])
         );
     }
 
@@ -1324,14 +1318,14 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Chunk(Block(vec![Statement::LocalDeclaration {
+            Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("stuff")],
                 explist: vec![Exp::Table(vec![Field {
                     index: None,
                     lexp: Box::new(Exp::CookedStr(Box::new(String::from("foo")))),
                     rexp: Box::new(Exp::NamedVar("bar"))
                 }])],
-            }]))
+            }])
         );
     }
 }

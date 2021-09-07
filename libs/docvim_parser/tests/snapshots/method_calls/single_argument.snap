@@ -3,19 +3,17 @@ bar:baz(nil)
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                MethodCallStatement {
-                    pexp: NamedVar(
-                        "bar",
-                    ),
-                    name: "baz",
-                    args: [
-                        Nil,
-                    ],
-                },
-            ],
-        ),
+    Block(
+        [
+            MethodCallStatement {
+                pexp: NamedVar(
+                    "bar",
+                ),
+                name: "baz",
+                args: [
+                    Nil,
+                ],
+            },
+        ],
     ),
 )

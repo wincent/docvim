@@ -3,32 +3,30 @@ local stuff = { ["foo"] = bar }
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                LocalDeclaration {
-                    namelist: [
-                        Name(
-                            "stuff",
-                        ),
-                    ],
-                    explist: [
-                        Table(
-                            [
-                                Field {
-                                    index: None,
-                                    lexp: CookedStr(
-                                        "foo",
-                                    ),
-                                    rexp: NamedVar(
-                                        "bar",
-                                    ),
-                                },
-                            ],
-                        ),
-                    ],
-                },
-            ],
-        ),
+    Block(
+        [
+            LocalDeclaration {
+                namelist: [
+                    Name(
+                        "stuff",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: None,
+                                lexp: CookedStr(
+                                    "foo",
+                                ),
+                                rexp: NamedVar(
+                                    "bar",
+                                ),
+                            },
+                        ],
+                    ),
+                ],
+            },
+        ],
     ),
 )

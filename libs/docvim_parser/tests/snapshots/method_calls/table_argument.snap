@@ -3,29 +3,27 @@ bar:baz { force = true }
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                MethodCallStatement {
-                    pexp: NamedVar(
-                        "bar",
+    Block(
+        [
+            MethodCallStatement {
+                pexp: NamedVar(
+                    "bar",
+                ),
+                name: "baz",
+                args: [
+                    Table(
+                        [
+                            Field {
+                                index: None,
+                                lexp: RawStr(
+                                    "force",
+                                ),
+                                rexp: True,
+                            },
+                        ],
                     ),
-                    name: "baz",
-                    args: [
-                        Table(
-                            [
-                                Field {
-                                    index: None,
-                                    lexp: RawStr(
-                                        "force",
-                                    ),
-                                    rexp: True,
-                                },
-                            ],
-                        ),
-                    ],
-                },
-            ],
-        ),
+                ],
+            },
+        ],
     ),
 )

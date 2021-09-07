@@ -3,32 +3,30 @@ foo(); bar(true); baz(nil);
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Ok(
-    Chunk(
-        Block(
-            [
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "foo",
-                    ),
-                    args: [],
-                },
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "bar",
-                    ),
-                    args: [
-                        True,
-                    ],
-                },
-                FunctionCallStatement {
-                    pexp: NamedVar(
-                        "baz",
-                    ),
-                    args: [
-                        Nil,
-                    ],
-                },
-            ],
-        ),
+    Block(
+        [
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "foo",
+                ),
+                args: [],
+            },
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "bar",
+                ),
+                args: [
+                    True,
+                ],
+            },
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "baz",
+                ),
+                args: [
+                    Nil,
+                ],
+            },
+        ],
     ),
 )
