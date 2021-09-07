@@ -1,0 +1,12 @@
+do
+  local item = foo.bar
+  -- Will error because of missing "end" keyword.
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Err(
+    ParserError {
+        kind: UnexpectedEndOfInput,
+        position: 75,
+    },
+)
