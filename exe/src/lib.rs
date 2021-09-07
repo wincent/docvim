@@ -165,7 +165,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
             println!("Text:\n{}", contents);
 
-            let mut parser = Parser::new(&contents);
+            let parser = Parser::new(&contents);
 
             // TODO: pretty print this error
             let ast = parser.parse()?;

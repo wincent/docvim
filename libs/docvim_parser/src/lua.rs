@@ -195,12 +195,11 @@ fn unop_binding(op: UnOp) -> u8 {
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
-    ast: Chunk<'a>,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(input: &'a str) -> Self {
-        Self { lexer: Lexer::new(input), ast: Chunk(Block(vec![])) }
+        Self { lexer: Lexer::new(input) }
     }
 
     fn unexpected_end_of_input(&self) -> Box<dyn Error> {
@@ -210,26 +209,35 @@ impl<'a> Parser<'a> {
         });
     }
 
-    pub fn parse(&mut self) -> Result<&Chunk, Box<dyn Error>> {
+    pub fn parse(&self) -> Result<Chunk, Box<dyn Error>> {
         let mut tokens = self.lexer.tokens().peekable();
+        let chunk = Chunk(self.parse_block(&mut tokens)?);
+        Ok(chunk)
+    }
+
+    fn parse_block(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Block, Box<dyn Error>> {
+        let mut block = Block(vec![]);
         loop {
             match tokens.peek() {
                 Some(&Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. })) => {
-                    self.ast.0 .0.push(self.parse_local(&mut tokens)?);
-                    self.slurp(&mut tokens, PunctuatorToken(SemiToken));
+                    block.0.push(self.parse_local(tokens)?);
+                    self.slurp(tokens, PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
                     // prefixexp ::= var | functioncall | `(´ exp `)´
                     // functioncall ::=  prefixexp args | prefixexp `:´ Name args
-                    let pexp = self.parse_prefixexp(&mut tokens)?;
+                    let pexp = self.parse_prefixexp(tokens)?;
                     match pexp {
                         Exp::FunctionCall { pexp, args } => {
-                            self.ast.0 .0.push(Statement::FunctionCallStatement { pexp, args });
-                            self.slurp(&mut tokens, PunctuatorToken(SemiToken));
+                            block.0.push(Statement::FunctionCallStatement { pexp, args });
+                            self.slurp(tokens, PunctuatorToken(SemiToken));
                         }
                         Exp::MethodCall { pexp, name, args } => {
-                            self.ast.0 .0.push(Statement::MethodCallStatement { pexp, name, args });
-                            self.slurp(&mut tokens, PunctuatorToken(SemiToken));
+                            block.0.push(Statement::MethodCallStatement { pexp, name, args });
+                            self.slurp(tokens, PunctuatorToken(SemiToken));
                         }
                         Exp::NamedVar(_) | Exp::Index { .. } => {
                             // varlist `=´ explist
@@ -280,7 +288,7 @@ impl<'a> Parser<'a> {
                                     })) => {
                                         tokens.next();
                                         if allow_semi {
-                                            self.ast.0 .0.push(Statement::VarlistDeclaration {
+                                            block.0.push(Statement::VarlistDeclaration {
                                                 varlist,
                                                 explist,
                                             });
@@ -295,7 +303,7 @@ impl<'a> Parser<'a> {
                                     Some(&Ok(Token { .. })) => {
                                         if allow_assign {
                                             // Still building varlist.
-                                            let pexp = self.parse_prefixexp(&mut tokens)?;
+                                            let pexp = self.parse_prefixexp(tokens)?;
                                             match pexp {
                                                 Exp::NamedVar(_) | Exp::Index { .. } => {
                                                     varlist.push(pexp);
@@ -310,7 +318,7 @@ impl<'a> Parser<'a> {
                                             allow_comma = true;
                                         } else {
                                             // Building explist.
-                                            explist.push(self.parse_exp(&mut tokens, 0)?);
+                                            explist.push(self.parse_exp(tokens, 0)?);
                                             allow_comma = true;
                                             allow_semi = true;
                                         }
@@ -318,7 +326,7 @@ impl<'a> Parser<'a> {
                                     Some(&Err(err)) => return Err(Box::new(err)),
                                     None => {
                                         if allow_semi {
-                                            self.ast.0 .0.push(Statement::VarlistDeclaration {
+                                            block.0.push(Statement::VarlistDeclaration {
                                                 varlist,
                                                 explist,
                                             });
@@ -348,7 +356,7 @@ impl<'a> Parser<'a> {
                 None => break,
             }
         }
-        Ok(&self.ast)
+        Ok(block)
     }
 
     fn parse_local(
@@ -1080,100 +1088,100 @@ mod tests {
 
     #[test]
     fn parses_local_declarations() {
-        let mut parser = Parser::new("local foo");
+        let parser = Parser::new("local foo");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("foo")],
                 explist: vec![],
             }]))
         );
 
-        let mut parser = Parser::new("local bar = false");
+        let parser = Parser::new("local bar = false");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("bar")],
                 explist: vec![Exp::False],
             }]))
         );
 
-        let mut parser = Parser::new("local baz = nil");
+        let parser = Parser::new("local baz = nil");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("baz")],
                 explist: vec![Exp::Nil],
             }]))
         );
 
-        let mut parser = Parser::new("local w = 1");
+        let parser = Parser::new("local w = 1");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("w")],
                 explist: vec![Exp::Number("1")],
             }]))
         );
 
-        let mut parser = Parser::new("local x = 'wat'");
+        let parser = Parser::new("local x = 'wat'");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("x")],
                 explist: vec![Exp::CookedStr(Box::new(String::from("wat")))],
             }]))
         );
 
-        let mut parser = Parser::new("local y = \"don't say \\\"hello\\\"!\"");
+        let parser = Parser::new("local y = \"don't say \\\"hello\\\"!\"");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("y")],
                 explist: vec![Exp::CookedStr(Box::new(String::from("don't say \"hello\"!")))],
             }]))
         );
 
-        let mut parser = Parser::new("local z = [[loooong]]");
+        let parser = Parser::new("local z = [[loooong]]");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("z")],
                 explist: vec![Exp::RawStr("loooong")],
             }]))
         );
 
-        let mut parser = Parser::new("local qux = true");
+        let parser = Parser::new("local qux = true");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("qux")],
                 explist: vec![Exp::True],
             }]))
         );
 
-        let mut parser = Parser::new("local neg = not true");
+        let parser = Parser::new("local neg = not true");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("neg")],
                 explist: vec![Exp::Unary { exp: Box::new(Exp::True), op: UnOp::Not }],
             }]))
         );
 
-        let mut parser = Parser::new("local len = #'sample'");
+        let parser = Parser::new("local len = #'sample'");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("len")],
                 explist: vec![Exp::Unary {
@@ -1183,20 +1191,20 @@ mod tests {
             }]))
         );
 
-        let mut parser = Parser::new("local small = -1000");
+        let parser = Parser::new("local small = -1000");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("small")],
                 explist: vec![Exp::Unary { exp: Box::new(Exp::Number("1000")), op: UnOp::Minus }],
             }]))
         );
 
-        let mut parser = Parser::new("local sum = 7 + 8");
+        let parser = Parser::new("local sum = 7 + 8");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("sum")],
                 explist: vec![Exp::Binary {
@@ -1216,11 +1224,11 @@ mod tests {
         //
         //      not (((1 * 2) + (3 - (4 / (5 ^ (-6))))) > (-(7 ^ 8) + ((9 - 10) * 11)))
         //
-        let mut parser =
+        let parser =
             Parser::new("local demo =  not (1 * 2 + 3 - 4 / 5 ^ -6 > -7 ^ 8 + (9 - 10) * 11)");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("demo")],
                 explist: vec![Exp::Unary {
@@ -1279,10 +1287,10 @@ mod tests {
 
     #[test]
     fn parses_unary_not_with_name() {
-        let mut parser = Parser::new("local foo = not bar");
+        let parser = Parser::new("local foo = not bar");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("foo")],
                 explist: vec![Exp::Unary { exp: Box::new(Exp::NamedVar("bar")), op: UnOp::Not }],
@@ -1292,10 +1300,10 @@ mod tests {
 
     #[test]
     fn parses_table_constructor() {
-        let mut parser = Parser::new("local stuff = { [\"foo\"] = bar }");
+        let parser = Parser::new("local stuff = { [\"foo\"] = bar }");
         let ast = parser.parse();
         assert_eq!(
-            *ast.unwrap(),
+            ast.unwrap(),
             Chunk(Block(vec![Statement::LocalDeclaration {
                 namelist: vec![Name("stuff")],
                 explist: vec![Exp::Table(vec![Field {
