@@ -1,0 +1,37 @@
+while x < 100 do
+  inc(x)
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            While {
+                cexp: Binary {
+                    lexp: NamedVar(
+                        "x",
+                    ),
+                    op: Lt,
+                    rexp: Number(
+                        "100",
+                    ),
+                },
+                block: Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "inc",
+                            ),
+                            args: [
+                                NamedVar(
+                                    "x",
+                                ),
+                            ],
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)

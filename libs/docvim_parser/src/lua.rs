@@ -13,6 +13,7 @@ use docvim_lexer::lua::KeywordKind::Nil as NilToken;
 use docvim_lexer::lua::KeywordKind::Not as NotToken;
 use docvim_lexer::lua::KeywordKind::Or as OrToken;
 use docvim_lexer::lua::KeywordKind::True as TrueToken;
+use docvim_lexer::lua::KeywordKind::While as WhileToken;
 use docvim_lexer::lua::LiteralKind::Number as NumberToken;
 use docvim_lexer::lua::LiteralKind::Str as StrToken;
 use docvim_lexer::lua::NameKind::Identifier as IdentifierToken;
@@ -156,6 +157,7 @@ pub enum Statement<'a> {
 
     // TODO: explore stricter typing for this; not all Exp are legit var values
     VarlistDeclaration { varlist: Vec<Exp<'a>>, explist: Vec<Exp<'a>> },
+    While { cexp: Box<Exp<'a>>, block: Block<'a> },
 }
 
 /// Returns the left and right "binding" power for a given operator, which enables us to parse
@@ -228,6 +230,10 @@ impl<'a> Parser<'a> {
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. })) => {
                     block.0.push(self.parse_local(tokens)?);
+                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                }
+                Some(&Ok(Token { kind: NameToken(KeywordToken(WhileToken)), .. })) => {
+                    block.0.push(self.parse_while(tokens)?);
                     self.slurp(tokens, PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
@@ -371,6 +377,18 @@ impl<'a> Parser<'a> {
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
         Ok(Statement::DoBlock(block))
+    }
+
+    fn parse_while(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Statement<'a>, Box<dyn Error>> {
+        self.consume(tokens, NameToken(KeywordToken(WhileToken)))?;
+        let cexp = Box::new(self.parse_exp(tokens, 0)?);
+        self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
+        let block = self.parse_block(tokens)?;
+        self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+        Ok(Statement::While { cexp, block })
     }
 
     fn parse_local(
