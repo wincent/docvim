@@ -1,0 +1,37 @@
+repeat
+  inc(x)
+until x < 100
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            Repeat {
+                block: Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "inc",
+                            ),
+                            args: [
+                                NamedVar(
+                                    "x",
+                                ),
+                            ],
+                        },
+                    ],
+                ),
+                cexp: Binary {
+                    lexp: NamedVar(
+                        "x",
+                    ),
+                    op: Lt,
+                    rexp: Number(
+                        "100",
+                    ),
+                },
+            },
+        ],
+    ),
+)

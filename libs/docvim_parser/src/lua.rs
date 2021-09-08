@@ -12,7 +12,9 @@ use docvim_lexer::lua::KeywordKind::Local as LocalToken;
 use docvim_lexer::lua::KeywordKind::Nil as NilToken;
 use docvim_lexer::lua::KeywordKind::Not as NotToken;
 use docvim_lexer::lua::KeywordKind::Or as OrToken;
+use docvim_lexer::lua::KeywordKind::Repeat as RepeatToken;
 use docvim_lexer::lua::KeywordKind::True as TrueToken;
+use docvim_lexer::lua::KeywordKind::Until as UntilToken;
 use docvim_lexer::lua::KeywordKind::While as WhileToken;
 use docvim_lexer::lua::LiteralKind::Number as NumberToken;
 use docvim_lexer::lua::LiteralKind::Str as StrToken;
@@ -155,6 +157,7 @@ pub enum Statement<'a> {
     LocalDeclaration { namelist: Vec<Name<'a>>, explist: Vec<Exp<'a>> },
     MethodCallStatement { pexp: Box<Exp<'a>>, name: &'a str, args: Vec<Exp<'a>> },
 
+    Repeat { block: Block<'a>, cexp: Box<Exp<'a>> },
     // TODO: explore stricter typing for this; not all Exp are legit var values
     VarlistDeclaration { varlist: Vec<Exp<'a>>, explist: Vec<Exp<'a>> },
     While { cexp: Box<Exp<'a>>, block: Block<'a> },
@@ -225,11 +228,17 @@ impl<'a> Parser<'a> {
                     block.0.push(self.parse_do_block(tokens)?);
                     self.slurp(tokens, PunctuatorToken(SemiToken));
                 }
-                Some(&Ok(Token { kind: NameToken(KeywordToken(EndToken)), .. })) => {
+                Some(&Ok(Token {
+                    kind: NameToken(KeywordToken(EndToken | UntilToken)), ..
+                })) => {
                     break;
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. })) => {
                     block.0.push(self.parse_local(tokens)?);
+                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                }
+                Some(&Ok(Token { kind: NameToken(KeywordToken(RepeatToken)), .. })) => {
+                    block.0.push(self.parse_repeat(tokens)?);
                     self.slurp(tokens, PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(WhileToken)), .. })) => {
@@ -377,6 +386,17 @@ impl<'a> Parser<'a> {
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
         Ok(Statement::DoBlock(block))
+    }
+
+    fn parse_repeat(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Statement<'a>, Box<dyn Error>> {
+        self.consume(tokens, NameToken(KeywordToken(RepeatToken)))?;
+        let block = self.parse_block(tokens)?;
+        self.consume(tokens, NameToken(KeywordToken(UntilToken)))?;
+        let cexp = Box::new(self.parse_exp(tokens, 0)?);
+        Ok(Statement::Repeat { block, cexp })
     }
 
     fn parse_while(
