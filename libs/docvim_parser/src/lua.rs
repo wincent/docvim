@@ -6,13 +6,17 @@ use crate::error::*;
 // parser node types of the same name.
 use docvim_lexer::lua::KeywordKind::And as AndToken;
 use docvim_lexer::lua::KeywordKind::Do as DoToken;
+use docvim_lexer::lua::KeywordKind::Else as ElseToken;
+use docvim_lexer::lua::KeywordKind::Elseif as ElseifToken;
 use docvim_lexer::lua::KeywordKind::End as EndToken;
 use docvim_lexer::lua::KeywordKind::False as FalseToken;
+use docvim_lexer::lua::KeywordKind::If as IfToken;
 use docvim_lexer::lua::KeywordKind::Local as LocalToken;
 use docvim_lexer::lua::KeywordKind::Nil as NilToken;
 use docvim_lexer::lua::KeywordKind::Not as NotToken;
 use docvim_lexer::lua::KeywordKind::Or as OrToken;
 use docvim_lexer::lua::KeywordKind::Repeat as RepeatToken;
+use docvim_lexer::lua::KeywordKind::Then as ThenToken;
 use docvim_lexer::lua::KeywordKind::True as TrueToken;
 use docvim_lexer::lua::KeywordKind::Until as UntilToken;
 use docvim_lexer::lua::KeywordKind::While as WhileToken;
@@ -149,11 +153,19 @@ pub struct Table<'a>(Vec<Field<'a>>);
 pub struct Name<'a>(&'a str);
 
 #[derive(Debug, PartialEq)]
+pub struct Consequent<'a> {
+    cexp: Box<Exp<'a>>,
+    block: Block<'a>,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum Statement<'a> {
+    // TODO: think about naming consistency here (some enum variants end in "Statement", others don't etc)
     DoBlock(Block<'a>),
     // Ugh... is there a better way to do this? (ie. embed Exp::FunctionCall directly instead of duplicating the fields?)
     // Same for MethodCallStatement below.
     FunctionCallStatement { pexp: Box<Exp<'a>>, args: Vec<Exp<'a>> },
+    IfStatement { consequents: Vec<Consequent<'a>>, alternate: Option<Block<'a>> },
     LocalDeclaration { namelist: Vec<Name<'a>>, explist: Vec<Exp<'a>> },
     MethodCallStatement { pexp: Box<Exp<'a>>, name: &'a str, args: Vec<Exp<'a>> },
 
@@ -229,9 +241,14 @@ impl<'a> Parser<'a> {
                     self.slurp(tokens, PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token {
-                    kind: NameToken(KeywordToken(EndToken | UntilToken)), ..
+                    kind: NameToken(KeywordToken(ElseToken | ElseifToken | EndToken | UntilToken)),
+                    ..
                 })) => {
                     break;
+                }
+                Some(&Ok(Token { kind: NameToken(KeywordToken(IfToken)), .. })) => {
+                    block.0.push(self.parse_if(tokens)?);
+                    self.slurp(tokens, PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. })) => {
                     block.0.push(self.parse_local(tokens)?);
@@ -386,6 +403,32 @@ impl<'a> Parser<'a> {
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
         Ok(Statement::DoBlock(block))
+    }
+
+    fn parse_if(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Statement<'a>, Box<dyn Error>> {
+        self.consume(tokens, NameToken(KeywordToken(IfToken)))?;
+        let cexp = Box::new(self.parse_exp(tokens, 0)?);
+        self.consume(tokens, NameToken(KeywordToken(ThenToken)))?;
+        let block = self.parse_block(tokens)?;
+        let mut consequents = vec![Consequent { cexp, block }];
+
+        while self.slurp(tokens, NameToken(KeywordToken(ElseifToken))) {
+            let cexp = Box::new(self.parse_exp(tokens, 0)?);
+            self.consume(tokens, NameToken(KeywordToken(ThenToken)))?;
+            let block = self.parse_block(tokens)?;
+            consequents.push(Consequent { cexp, block });
+        }
+
+        let alternate = match self.slurp(tokens, NameToken(KeywordToken(ElseToken))) {
+            true => Some(self.parse_block(tokens)?),
+            false => None,
+        };
+
+        self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+        Ok(Statement::IfStatement { consequents, alternate })
     }
 
     fn parse_repeat(
@@ -1068,13 +1111,19 @@ impl<'a> Parser<'a> {
 
     /// Consumes the specified TokenKind, if present.
     ///
-    /// Returns nothing.
-    fn slurp(&self, tokens: &mut std::iter::Peekable<Tokens>, kind: docvim_lexer::lua::TokenKind) {
+    /// Returns `true`/`false` to indicate whether a token was slurped.
+    fn slurp(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+        kind: docvim_lexer::lua::TokenKind,
+    ) -> bool {
         if let Some(&Ok(token @ Token { .. })) = tokens.peek() {
             if token.kind == kind {
                 self.consume(tokens, kind).expect("Failed to consume token");
+                return true;
             }
         }
+        false
     }
 
     // field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
