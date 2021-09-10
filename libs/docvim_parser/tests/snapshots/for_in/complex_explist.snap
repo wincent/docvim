@@ -1,0 +1,59 @@
+for x, y in {something = "foo"}, "bar" do
+  print(x[y])
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            ForIn {
+                namelist: [
+                    Name(
+                        "x",
+                    ),
+                    Name(
+                        "y",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: None,
+                                lexp: RawStr(
+                                    "something",
+                                ),
+                                rexp: CookedStr(
+                                    "foo",
+                                ),
+                            },
+                        ],
+                    ),
+                    CookedStr(
+                        "bar",
+                    ),
+                ],
+                block: Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "print",
+                            ),
+                            args: [
+                                Index {
+                                    pexp: NamedVar(
+                                        "x",
+                                    ),
+                                    kexp: NamedVar(
+                                        "y",
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)

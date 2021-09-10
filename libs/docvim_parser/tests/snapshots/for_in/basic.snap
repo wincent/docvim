@@ -1,0 +1,44 @@
+for x, y in a, b do
+  x(y)
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            ForIn {
+                namelist: [
+                    Name(
+                        "x",
+                    ),
+                    Name(
+                        "y",
+                    ),
+                ],
+                explist: [
+                    NamedVar(
+                        "a",
+                    ),
+                    NamedVar(
+                        "b",
+                    ),
+                ],
+                block: Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "x",
+                            ),
+                            args: [
+                                NamedVar(
+                                    "y",
+                                ),
+                            ],
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)

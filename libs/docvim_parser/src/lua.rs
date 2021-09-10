@@ -10,7 +10,9 @@ use docvim_lexer::lua::KeywordKind::Else as ElseToken;
 use docvim_lexer::lua::KeywordKind::Elseif as ElseifToken;
 use docvim_lexer::lua::KeywordKind::End as EndToken;
 use docvim_lexer::lua::KeywordKind::False as FalseToken;
+use docvim_lexer::lua::KeywordKind::For as ForToken;
 use docvim_lexer::lua::KeywordKind::If as IfToken;
+use docvim_lexer::lua::KeywordKind::In as InToken;
 use docvim_lexer::lua::KeywordKind::Local as LocalToken;
 use docvim_lexer::lua::KeywordKind::Nil as NilToken;
 use docvim_lexer::lua::KeywordKind::Not as NotToken;
@@ -162,17 +164,52 @@ pub struct Consequent<'a> {
 pub enum Statement<'a> {
     // TODO: think about naming consistency here (some enum variants end in "Statement", others don't etc)
     DoBlock(Block<'a>),
+    ForIn {
+        namelist: Vec<Name<'a>>,
+        explist: Vec<Exp<'a>>,
+        block: Block<'a>,
+    },
+    For {
+        name: Name<'a>,
+        startexp: Box<Exp<'a>>,
+        endexp: Box<Exp<'a>>,
+        stepexp: Option<Box<Exp<'a>>>,
+        block: Block<'a>,
+    },
+
     // Ugh... is there a better way to do this? (ie. embed Exp::FunctionCall directly instead of duplicating the fields?)
     // Same for MethodCallStatement below.
-    FunctionCallStatement { pexp: Box<Exp<'a>>, args: Vec<Exp<'a>> },
-    IfStatement { consequents: Vec<Consequent<'a>>, alternate: Option<Block<'a>> },
-    LocalDeclaration { namelist: Vec<Name<'a>>, explist: Vec<Exp<'a>> },
-    MethodCallStatement { pexp: Box<Exp<'a>>, name: &'a str, args: Vec<Exp<'a>> },
+    FunctionCallStatement {
+        pexp: Box<Exp<'a>>,
+        args: Vec<Exp<'a>>,
+    },
+    IfStatement {
+        consequents: Vec<Consequent<'a>>,
+        alternate: Option<Block<'a>>,
+    },
+    LocalDeclaration {
+        namelist: Vec<Name<'a>>,
+        explist: Vec<Exp<'a>>,
+    },
+    MethodCallStatement {
+        pexp: Box<Exp<'a>>,
+        name: &'a str,
+        args: Vec<Exp<'a>>,
+    },
 
-    Repeat { block: Block<'a>, cexp: Box<Exp<'a>> },
+    Repeat {
+        block: Block<'a>,
+        cexp: Box<Exp<'a>>,
+    },
     // TODO: explore stricter typing for this; not all Exp are legit var values
-    VarlistDeclaration { varlist: Vec<Exp<'a>>, explist: Vec<Exp<'a>> },
-    While { cexp: Box<Exp<'a>>, block: Block<'a> },
+    VarlistDeclaration {
+        varlist: Vec<Exp<'a>>,
+        explist: Vec<Exp<'a>>,
+    },
+    While {
+        cexp: Box<Exp<'a>>,
+        block: Block<'a>,
+    },
 }
 
 /// Returns the left and right "binding" power for a given operator, which enables us to parse
@@ -245,6 +282,10 @@ impl<'a> Parser<'a> {
                     ..
                 })) => {
                     break;
+                }
+                Some(&Ok(Token { kind: NameToken(KeywordToken(ForToken)), .. })) => {
+                    block.0.push(self.parse_for(tokens)?);
+                    self.slurp(tokens, PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(IfToken)), .. })) => {
                     block.0.push(self.parse_if(tokens)?);
@@ -403,6 +444,163 @@ impl<'a> Parser<'a> {
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
         Ok(Statement::DoBlock(block))
+    }
+
+    fn parse_name(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Name<'a>, Box<dyn Error>> {
+        match tokens.next() {
+            Some(Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
+                Ok(Name(&self.lexer.input[token.byte_start..token.byte_end]))
+            }
+            Some(Ok(token)) => Err(Box::new(ParserError {
+                kind: ParserErrorKind::UnexpectedToken,
+                position: token.char_start,
+            })),
+            Some(Err(err)) => Err(Box::new(err)),
+            None => Err(self.unexpected_end_of_input()),
+        }
+    }
+
+    fn parse_namelist(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Vec<Name<'a>>, Box<dyn Error>> {
+        let mut namelist = vec![];
+        let mut allow_comma = false;
+        let mut expect_name = true;
+        loop {
+            match tokens.peek() {
+                Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
+                    if expect_name {
+                        tokens.next();
+                        namelist.push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
+                        allow_comma = true;
+                        expect_name = false;
+                    } else {
+                        break;
+                    }
+                }
+                Some(&Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. })) => {
+                    if allow_comma {
+                        tokens.next();
+                        allow_comma = false;
+                        expect_name = true;
+                    } else {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedComma,
+                            position: token.char_start,
+                        }));
+                    }
+                }
+                Some(&Ok(token @ Token { .. })) => {
+                    if expect_name {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedToken,
+                            position: token.char_start,
+                        }));
+                    } else {
+                        break;
+                    }
+                }
+                Some(&Err(err)) => return Err(Box::new(err)),
+                None => {
+                    if expect_name {
+                        return Err(self.unexpected_end_of_input());
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        Ok(namelist)
+    }
+
+    fn parse_explist(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Vec<Exp<'a>>, Box<dyn Error>> {
+        let mut explist = vec![];
+        let mut allow_comma = false;
+        loop {
+            match tokens.peek() {
+                Some(&Ok(Token { kind: PunctuatorToken(CommaToken), char_start, .. })) => {
+                    if allow_comma {
+                        tokens.next();
+                        allow_comma = false;
+                    } else {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedComma,
+                            position: char_start,
+                        }));
+                    }
+                }
+                Some(&Ok(
+                    token
+                    @
+                    Token {
+                        kind:
+                            LiteralToken(NumberToken)
+                            | LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken))
+                            | LiteralToken(StrToken(LongToken { .. }))
+                            | NameToken(IdentifierToken)
+                            | NameToken(KeywordToken(FalseToken | NilToken | NotToken | TrueToken))
+                            | OpToken(HashToken | MinusToken)
+                            | PunctuatorToken(LcurlyToken | LparenToken),
+                        ..
+                    },
+                )) => {
+                    if !allow_comma {
+                        explist.push(self.parse_exp(tokens, 0)?);
+                        allow_comma = true;
+                    } else {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedToken,
+                            position: token.char_start,
+                        }));
+                    }
+                }
+                Some(&Ok(_)) => {
+                    break;
+                }
+                Some(&Err(err)) => return Err(Box::new(err)),
+                None => return Err(self.unexpected_end_of_input()),
+            }
+        }
+
+        Ok(explist)
+    }
+
+    fn parse_for(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Statement<'a>, Box<dyn Error>> {
+        self.consume(tokens, NameToken(KeywordToken(ForToken)))?;
+        let mut namelist = self.parse_namelist(tokens)?;
+
+        if namelist.len() == 1 && self.slurp(tokens, OpToken(AssignToken)) {
+            // Parse: for Name `=´ exp `,´ exp [`,´ exp] do block end
+            let name = namelist.remove(0);
+            let startexp = Box::new(self.parse_exp(tokens, 0)?);
+            self.consume(tokens, PunctuatorToken(CommaToken))?;
+            let endexp = Box::new(self.parse_exp(tokens, 0)?);
+            let stepexp = if self.slurp(tokens, PunctuatorToken(CommaToken)) {
+                Some(Box::new(self.parse_exp(tokens, 0)?))
+            } else {
+                None
+            };
+            let block = self.parse_block(tokens)?;
+            Ok(Statement::For { name, startexp, endexp, stepexp, block })
+        } else {
+            // Parse: for namelist in explist do block end
+            self.consume(tokens, NameToken(KeywordToken(InToken)))?;
+            let explist = self.parse_explist(tokens)?;
+            self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
+            let block = self.parse_block(tokens)?;
+            self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+            Ok(Statement::ForIn { namelist, explist, block })
+        }
     }
 
     fn parse_if(
@@ -703,6 +901,7 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Vec<Exp<'a>>, Box<dyn Error>> {
+        // TODO: use parse_explist here (and elsewhere)
         match tokens.peek() {
             Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 tokens.next();
