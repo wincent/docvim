@@ -321,27 +321,17 @@ impl<'a> Parser<'a> {
                             // varlist ::= var {`,´ var}
                             // var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
                             let mut varlist = vec![pexp];
-                            let mut explist: Vec<Exp> = vec![];
-                            let mut allow_assign = true;
                             let mut allow_comma = true;
-                            let mut allow_semi = false;
                             loop {
                                 match tokens.peek() {
-                                    Some(&Ok(Token {
-                                        kind: OpToken(AssignToken),
-                                        char_start,
-                                        ..
-                                    })) => {
+                                    Some(&Ok(Token { kind: OpToken(AssignToken), .. })) => {
                                         tokens.next();
-                                        if allow_assign {
-                                            allow_assign = false;
-                                            allow_comma = false;
-                                        } else {
-                                            return Err(Box::new(ParserError {
-                                                kind: ParserErrorKind::UnexpectedToken,
-                                                position: char_start,
-                                            }));
-                                        }
+                                        block.0.push(Statement::VarlistDeclaration {
+                                            varlist,
+                                            explist: self.parse_explist(tokens)?,
+                                        });
+                                        self.slurp(tokens, PunctuatorToken(SemiToken));
+                                        break;
                                     }
                                     Some(&Ok(Token {
                                         kind: PunctuatorToken(CommaToken),
@@ -353,7 +343,7 @@ impl<'a> Parser<'a> {
                                             allow_comma = false;
                                         } else {
                                             return Err(Box::new(ParserError {
-                                                kind: ParserErrorKind::UnexpectedToken,
+                                                kind: ParserErrorKind::UnexpectedComma,
                                                 position: char_start,
                                             }));
                                         }
@@ -363,55 +353,28 @@ impl<'a> Parser<'a> {
                                         char_start,
                                         ..
                                     })) => {
-                                        tokens.next();
-                                        if allow_semi {
-                                            block.0.push(Statement::VarlistDeclaration {
-                                                varlist,
-                                                explist,
-                                            });
-                                            break;
-                                        } else {
-                                            return Err(Box::new(ParserError {
-                                                kind: ParserErrorKind::UnexpectedToken,
-                                                position: char_start,
-                                            }));
-                                        }
+                                        return Err(Box::new(ParserError {
+                                            kind: ParserErrorKind::UnexpectedToken,
+                                            position: char_start,
+                                        }));
                                     }
                                     Some(&Ok(Token { .. })) => {
-                                        if allow_assign {
-                                            // Still building varlist.
-                                            let pexp = self.parse_prefixexp(tokens)?;
-                                            match pexp {
-                                                Exp::NamedVar(_) | Exp::Index { .. } => {
-                                                    varlist.push(pexp);
-                                                }
-                                                _ => {
-                                                    return Err(Box::new(ParserError {
-                                                        kind: ParserErrorKind::UnexpectedToken,
-                                                        position: token.char_start,
-                                                    }))
-                                                }
+                                        let pexp = self.parse_prefixexp(tokens)?;
+                                        match pexp {
+                                            Exp::NamedVar(_) | Exp::Index { .. } => {
+                                                varlist.push(pexp);
                                             }
-                                            allow_comma = true;
-                                        } else {
-                                            // Building explist.
-                                            explist.push(self.parse_exp(tokens, 0)?);
-                                            allow_comma = true;
-                                            allow_semi = true;
+                                            _ => {
+                                                return Err(Box::new(ParserError {
+                                                    kind: ParserErrorKind::UnexpectedToken,
+                                                    position: token.char_start,
+                                                }))
+                                            }
                                         }
+                                        allow_comma = true;
                                     }
                                     Some(&Err(err)) => return Err(Box::new(err)),
-                                    None => {
-                                        if allow_semi {
-                                            block.0.push(Statement::VarlistDeclaration {
-                                                varlist,
-                                                explist,
-                                            });
-                                            break;
-                                        } else {
-                                            return Err(self.unexpected_end_of_input());
-                                        }
-                                    }
+                                    None => return Err(self.unexpected_end_of_input()),
                                 }
                             }
                         }
