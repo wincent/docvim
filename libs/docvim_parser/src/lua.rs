@@ -565,7 +565,13 @@ impl<'a> Parser<'a> {
                     break;
                 }
                 Some(&Err(err)) => return Err(Box::new(err)),
-                None => return Err(self.unexpected_end_of_input()),
+                None => {
+                    if allow_comma {
+                        break;
+                    } else {
+                        return Err(self.unexpected_end_of_input());
+                    }
+                }
             }
         }
 
@@ -656,7 +662,7 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Statement<'a>, Box<dyn Error>> {
-        let mut previous = self.consume(tokens, NameToken(KeywordToken(LocalToken)))?;
+        self.consume(tokens, NameToken(KeywordToken(LocalToken)))?;
 
         // Example inputs:
         //
@@ -664,157 +670,17 @@ impl<'a> Parser<'a> {
         // local x = 10
         // local x, y = 10, 20
         //
-        // -- and (can do this later)...
+        // -- TODO: this:
         // local function Name funcbody
-        //
-        // Spelling this all out verbosely now, until I find the right abstraction for it...
-        let mut explist: Vec<Exp> = vec![];
-        let mut namelist = vec![];
-        let mut allow_assign = false;
-        let mut allow_comma = false;
-        let mut expect_name = true;
-        let mut allow_semi = false;
-        loop {
-            // TODO: replace this whole thing with a match
-            if let Some(&token) = tokens.peek() {
-                previous = token.ok().unwrap();
-                match token {
-                    Ok(token @ Token { kind: NameToken(IdentifierToken), .. }) => {
-                        if expect_name {
-                            tokens.next();
-                            namelist
-                                .push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
-                            allow_assign = true;
-                            allow_comma = true;
-                            expect_name = false;
-                            allow_semi = true;
-                        } else {
-                            return Ok(Statement::LocalDeclaration { explist: vec![], namelist });
-                        }
-                    }
-                    Ok(token @ Token { kind: OpToken(AssignToken), .. }) => {
-                        if allow_assign {
-                            tokens.next();
-                            break;
-                        } else {
-                            return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
-                                position: token.char_start,
-                            }));
-                        }
-                    }
-                    Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. }) => {
-                        if allow_comma {
-                            tokens.next();
-                            allow_assign = false;
-                            allow_comma = false;
-                            expect_name = true;
-                            allow_semi = false;
-                        } else {
-                            return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedComma,
-                                position: token.char_start,
-                            }));
-                        }
-                    }
-                    Ok(token @ Token { kind: PunctuatorToken(SemiToken), .. }) => {
-                        if allow_semi {
-                            return Ok(Statement::LocalDeclaration { explist: vec![], namelist });
-                        } else {
-                            return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
-                                position: token.char_start,
-                            }));
-                        }
-                    }
-                    Ok(token) => {
-                        if !allow_comma {
-                            // Error, because we must have just seen a comma but didn't see a name.
-                            return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedComma,
-                                position: token.char_start,
-                            }));
-                        }
-                        break;
-                    }
-                    Err(err) => {
-                        return Err(Box::new(err));
-                    }
-                }
-            } else {
-                // Reached end of input.
-                if allow_comma {
-                    return Ok(Statement::LocalDeclaration { explist, namelist });
-                } else {
-                    // Error, because we must have just seen a comma but didn't see a name.
-                    return Err(Box::new(ParserError {
-                        kind: ParserErrorKind::UnexpectedComma,
-                        position: previous.char_start,
-                    }));
-                }
-            }
-        }
 
-        // Note that Lua doesn't require the number of items on LHS and RHS to match.
-        allow_comma = false;
-        allow_semi = false;
-        let mut expect_exp = true;
-        loop {
-            if let Some(&token) = tokens.peek() {
-                match token {
-                    Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. }) => {
-                        if allow_comma {
-                            tokens.next();
-                            allow_comma = false;
-                            expect_exp = true;
-                            allow_semi = false;
-                        } else {
-                            return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedComma,
-                                position: token.char_start,
-                            }));
-                        }
-                    }
-                    Ok(token @ Token { kind: PunctuatorToken(SemiToken), .. }) => {
-                        if allow_semi {
-                            return Ok(Statement::LocalDeclaration { explist, namelist });
-                        } else {
-                            return Err(Box::new(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
-                                position: token.char_start,
-                            }));
-                        }
-                    }
-                    Ok(_) => {
-                        if expect_exp {
-                            explist.push(self.parse_exp(tokens, 0)?);
-                            allow_comma = true;
-                            expect_exp = false;
-                            allow_semi = true;
-                        } else {
-                            return Ok(Statement::LocalDeclaration { explist, namelist });
-                        }
-                    }
-                    Err(err) => {
-                        return Err(Box::new(err));
-                    }
-                }
-            } else {
-                // TODO: here again, the `if`/`else` should just be a single `match`
-                // Reached end of input.
-                if !allow_comma {
-                    // Error, because we must have just seen a comma (or an assignment operator)
-                    // but didn't see a name.
-                    return Err(Box::new(ParserError {
-                        kind: ParserErrorKind::UnexpectedComma,
-                        position: previous.char_start,
-                    }));
-                }
-                break;
-            }
-        }
+        let namelist = self.parse_namelist(tokens)?;
+        let explist = if self.slurp(tokens, OpToken(AssignToken)) {
+            self.parse_explist(tokens)?
+        } else {
+            vec![]
+        };
 
-        return Ok(Statement::LocalDeclaration { explist, namelist });
+        Ok(Statement::LocalDeclaration { explist, namelist })
     }
 
     /// A "cooked" string is one in which escape sequences have been replaced with their equivalent
@@ -905,36 +771,8 @@ impl<'a> Parser<'a> {
         match tokens.peek() {
             Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 tokens.next();
-                let mut args = vec![];
-                let mut allow_comma = false;
-                loop {
-                    match tokens.peek() {
-                        Some(&Ok(Token {
-                            kind: PunctuatorToken(CommaToken), char_start, ..
-                        })) => {
-                            if allow_comma {
-                                tokens.next();
-                                allow_comma = false;
-                            } else {
-                                return Err(Box::new(ParserError {
-                                    kind: ParserErrorKind::UnexpectedComma,
-                                    position: char_start,
-                                }));
-                            }
-                        }
-                        Some(&Ok(Token { kind: PunctuatorToken(RparenToken), .. })) => {
-                            tokens.next();
-                            break;
-                        }
-                        Some(&Ok(_)) => {
-                            args.push(self.parse_exp(tokens, 0)?);
-                            allow_comma = true;
-                        }
-                        Some(&Err(err)) => return Err(Box::new(err)),
-                        None => return Err(self.unexpected_end_of_input()),
-                    }
-                }
-
+                let args = self.parse_explist(tokens)?;
+                self.consume(tokens, PunctuatorToken(RparenToken))?;
                 Ok(args)
             }
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
