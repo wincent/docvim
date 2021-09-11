@@ -1,0 +1,109 @@
+function cmp(a, b)
+  if a < b then
+    return -1
+  elseif a > b then
+    return 1
+  else
+    return 0
+  end
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            FunctionDeclaration {
+                name: [
+                    Name(
+                        "cmp",
+                    ),
+                ],
+                method: None,
+                parlist: [
+                    Name(
+                        "a",
+                    ),
+                    Name(
+                        "b",
+                    ),
+                ],
+                varargs: false,
+                block: Block(
+                    [
+                        IfStatement {
+                            consequents: [
+                                Consequent {
+                                    cexp: Binary {
+                                        lexp: NamedVar(
+                                            "a",
+                                        ),
+                                        op: Lt,
+                                        rexp: NamedVar(
+                                            "b",
+                                        ),
+                                    },
+                                    block: Block(
+                                        [
+                                            Return(
+                                                Some(
+                                                    [
+                                                        Unary {
+                                                            exp: Number(
+                                                                "1",
+                                                            ),
+                                                            op: Minus,
+                                                        },
+                                                    ],
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                },
+                                Consequent {
+                                    cexp: Binary {
+                                        lexp: NamedVar(
+                                            "a",
+                                        ),
+                                        op: Gt,
+                                        rexp: NamedVar(
+                                            "b",
+                                        ),
+                                    },
+                                    block: Block(
+                                        [
+                                            Return(
+                                                Some(
+                                                    [
+                                                        Number(
+                                                            "1",
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ],
+                            alternate: Some(
+                                Block(
+                                    [
+                                        Return(
+                                            Some(
+                                                [
+                                                    Number(
+                                                        "0",
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ),
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)

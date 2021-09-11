@@ -5,6 +5,7 @@ use crate::error::*;
 // Lexer token types are imported aliased (all with a "Token" suffix) to avoid collisions with
 // parser node types of the same name.
 use docvim_lexer::lua::KeywordKind::And as AndToken;
+use docvim_lexer::lua::KeywordKind::Break as BreakToken;
 use docvim_lexer::lua::KeywordKind::Do as DoToken;
 use docvim_lexer::lua::KeywordKind::Else as ElseToken;
 use docvim_lexer::lua::KeywordKind::Elseif as ElseifToken;
@@ -19,6 +20,7 @@ use docvim_lexer::lua::KeywordKind::Nil as NilToken;
 use docvim_lexer::lua::KeywordKind::Not as NotToken;
 use docvim_lexer::lua::KeywordKind::Or as OrToken;
 use docvim_lexer::lua::KeywordKind::Repeat as RepeatToken;
+use docvim_lexer::lua::KeywordKind::Return as ReturnToken;
 use docvim_lexer::lua::KeywordKind::Then as ThenToken;
 use docvim_lexer::lua::KeywordKind::True as TrueToken;
 use docvim_lexer::lua::KeywordKind::Until as UntilToken;
@@ -171,6 +173,7 @@ pub struct Consequent<'a> {
 #[derive(Debug, PartialEq)]
 pub enum Statement<'a> {
     // TODO: think about naming consistency here (some enum variants end in "Statement", others don't etc)
+    Break,
     DoBlock(Block<'a>),
     ForIn {
         namelist: Vec<Name<'a>>,
@@ -231,6 +234,7 @@ pub enum Statement<'a> {
         block: Block<'a>,
         cexp: Box<Exp<'a>>,
     },
+    Return(Option<Vec<Exp<'a>>>),
     // TODO: explore stricter typing for this; not all Exp are legit var values
     VarlistDeclaration {
         varlist: Vec<Exp<'a>>,
@@ -422,8 +426,25 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
-                // TODO parse other statement types
+                Some(&Ok(Token { kind: NameToken(KeywordToken(BreakToken)), .. })) => {
+                    tokens.next();
+                    block.0.push(Statement::Break);
+                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    break; // TODO: make sure no statement allowed after this
+                }
+                Some(&Ok(Token { kind: NameToken(KeywordToken(ReturnToken)), .. })) => {
+                    tokens.next();
+                    let explist = if self.peek_exp(tokens) {
+                        Some(self.parse_explist(tokens)?)
+                    } else {
+                        None
+                    };
+                    block.0.push(Statement::Return(explist));
+                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    break; // TODO: make sure no statement allowed after this
+                }
                 Some(&Ok(Token { .. })) => {
+                    // TODO: when we're done, should be able to turn this into an error and tests should still pass
                     tokens.next();
                 }
                 Some(&Err(err)) => return Err(Box::new(err)),
@@ -1238,6 +1259,26 @@ impl<'a> Parser<'a> {
             }
             Some(Err(err)) => Err(Box::new(err)),
             None => Err(self.unexpected_end_of_input()),
+        }
+    }
+
+    /// Returns true if the next token starts an expression.
+    fn peek_exp(&self, tokens: &mut std::iter::Peekable<Tokens>) -> bool {
+        match tokens.peek() {
+            Some(&Ok(Token {
+                kind:
+                    LiteralToken(NumberToken)
+                    | LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken))
+                    | LiteralToken(StrToken(LongToken { .. }))
+                    | NameToken(IdentifierToken)
+                    | NameToken(KeywordToken(
+                        FalseToken | FunctionToken | NilToken | NotToken | TrueToken,
+                    ))
+                    | OpToken(HashToken | MinusToken | VarargToken)
+                    | PunctuatorToken(LcurlyToken | LparenToken),
+                ..
+            })) => true,
+            _ => false,
         }
     }
 

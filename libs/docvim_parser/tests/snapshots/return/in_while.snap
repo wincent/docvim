@@ -1,0 +1,49 @@
+while true do
+  if test() then
+    return
+  else
+    break
+  end
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            While {
+                cexp: True,
+                block: Block(
+                    [
+                        IfStatement {
+                            consequents: [
+                                Consequent {
+                                    cexp: FunctionCall {
+                                        pexp: NamedVar(
+                                            "test",
+                                        ),
+                                        args: [],
+                                    },
+                                    block: Block(
+                                        [
+                                            Return(
+                                                None,
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ],
+                            alternate: Some(
+                                Block(
+                                    [
+                                        Break,
+                                    ],
+                                ),
+                            ),
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)

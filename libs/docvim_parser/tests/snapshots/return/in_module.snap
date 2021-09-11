@@ -1,0 +1,29 @@
+print("in a module")
+
+return true
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            FunctionCallStatement {
+                pexp: NamedVar(
+                    "print",
+                ),
+                args: [
+                    CookedStr(
+                        "in a module",
+                    ),
+                ],
+            },
+            Return(
+                Some(
+                    [
+                        True,
+                    ],
+                ),
+            ),
+        ],
+    ),
+)
