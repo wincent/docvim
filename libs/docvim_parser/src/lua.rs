@@ -4,6 +4,8 @@ use crate::error::*;
 
 // Lexer token types are imported aliased (all with a "Token" suffix) to avoid collisions with
 // parser node types of the same name.
+use docvim_lexer::lua::CommentKind::BlockComment as BlockCommentToken;
+use docvim_lexer::lua::CommentKind::LineComment as LineCommentToken;
 use docvim_lexer::lua::KeywordKind::And as AndToken;
 use docvim_lexer::lua::KeywordKind::Break as BreakToken;
 use docvim_lexer::lua::KeywordKind::Do as DoToken;
@@ -58,6 +60,7 @@ use docvim_lexer::lua::PunctuatorKind::Semi as SemiToken;
 use docvim_lexer::lua::StrKind::DoubleQuoted as DoubleQuotedToken;
 use docvim_lexer::lua::StrKind::Long as LongToken;
 use docvim_lexer::lua::StrKind::SingleQuoted as SingleQuotedToken;
+use docvim_lexer::lua::TokenKind::Comment as CommentToken;
 use docvim_lexer::lua::TokenKind::Literal as LiteralToken;
 use docvim_lexer::lua::TokenKind::Name as NameToken;
 use docvim_lexer::lua::TokenKind::Op as OpToken;
@@ -443,9 +446,19 @@ impl<'a> Parser<'a> {
                     self.slurp(tokens, PunctuatorToken(SemiToken));
                     break;
                 }
-                Some(&Ok(Token { .. })) => {
-                    // TODO: when we're done, should be able to turn this into an error and tests should still pass
+                Some(&Ok(Token {
+                    kind: CommentToken(BlockCommentToken | LineCommentToken),
+                    ..
+                })) => {
+                    // TODO: accumulate comments; for now just skip
                     tokens.next();
+                }
+                Some(&Ok(token @ Token { .. })) => {
+                    // TODO: include token UnexpectedToken error message
+                    return Err(Box::new(ParserError {
+                        kind: ParserErrorKind::UnexpectedToken,
+                        position: token.char_start,
+                    }));
                 }
                 Some(&Err(err)) => return Err(Box::new(err)),
                 None => break,
