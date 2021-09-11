@@ -2,63 +2,61 @@ local list = { one, "two", true, nil, 5 }
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "list",
-                    ),
-                ],
-                explist: [
-                    Table(
-                        [
-                            Field {
-                                index: Some(
-                                    1,
-                                ),
-                                lexp: Nil,
-                                rexp: NamedVar(
-                                    "one",
-                                ),
-                            },
-                            Field {
-                                index: Some(
-                                    2,
-                                ),
-                                lexp: Nil,
-                                rexp: CookedStr(
-                                    "two",
-                                ),
-                            },
-                            Field {
-                                index: Some(
-                                    3,
-                                ),
-                                lexp: Nil,
-                                rexp: True,
-                            },
-                            Field {
-                                index: Some(
-                                    4,
-                                ),
-                                lexp: Nil,
-                                rexp: Nil,
-                            },
-                            Field {
-                                index: Some(
-                                    5,
-                                ),
-                                lexp: Nil,
-                                rexp: Number(
-                                    "5",
-                                ),
-                            },
-                        ],
-                    ),
-                ],
-            },
-        ],
-    ),
+Block(
+    [
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "list",
+                ),
+            ],
+            explist: [
+                Table(
+                    [
+                        Field {
+                            index: Some(
+                                1,
+                            ),
+                            lexp: Nil,
+                            rexp: NamedVar(
+                                "one",
+                            ),
+                        },
+                        Field {
+                            index: Some(
+                                2,
+                            ),
+                            lexp: Nil,
+                            rexp: CookedStr(
+                                "two",
+                            ),
+                        },
+                        Field {
+                            index: Some(
+                                3,
+                            ),
+                            lexp: Nil,
+                            rexp: True,
+                        },
+                        Field {
+                            index: Some(
+                                4,
+                            ),
+                            lexp: Nil,
+                            rexp: Nil,
+                        },
+                        Field {
+                            index: Some(
+                                5,
+                            ),
+                            lexp: Nil,
+                            rexp: Number(
+                                "5",
+                            ),
+                        },
+                    ],
+                ),
+            ],
+        },
+    ],
 )

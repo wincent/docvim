@@ -2,19 +2,17 @@ len("contents")
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            FunctionCallStatement {
-                pexp: NamedVar(
-                    "len",
+Block(
+    [
+        FunctionCallStatement {
+            pexp: NamedVar(
+                "len",
+            ),
+            args: [
+                CookedStr(
+                    "contents",
                 ),
-                args: [
-                    CookedStr(
-                        "contents",
-                    ),
-                ],
-            },
-        ],
-    ),
+            ],
+        },
+    ],
 )

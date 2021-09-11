@@ -2,16 +2,14 @@ bar:baz()
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            MethodCallStatement {
-                pexp: NamedVar(
-                    "bar",
-                ),
-                name: "baz",
-                args: [],
-            },
-        ],
-    ),
+Block(
+    [
+        MethodCallStatement {
+            pexp: NamedVar(
+                "bar",
+            ),
+            name: "baz",
+            args: [],
+        },
+    ],
 )

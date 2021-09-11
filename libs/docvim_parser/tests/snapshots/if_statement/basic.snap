@@ -4,33 +4,31 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            IfStatement {
-                consequents: [
-                    Consequent {
-                        cexp: Binary {
-                            lexp: NamedVar(
-                                "a",
-                            ),
-                            op: Ne,
-                            rexp: Nil,
-                        },
-                        block: Block(
-                            [
-                                FunctionCallStatement {
-                                    pexp: NamedVar(
-                                        "a",
-                                    ),
-                                    args: [],
-                                },
-                            ],
+Block(
+    [
+        IfStatement {
+            consequents: [
+                Consequent {
+                    cexp: Binary {
+                        lexp: NamedVar(
+                            "a",
                         ),
+                        op: Ne,
+                        rexp: Nil,
                     },
-                ],
-                alternate: None,
-            },
-        ],
-    ),
+                    block: Block(
+                        [
+                            FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "a",
+                                ),
+                                args: [],
+                            },
+                        ],
+                    ),
+                },
+            ],
+            alternate: None,
+        },
+    ],
 )

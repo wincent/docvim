@@ -14,26 +14,24 @@ y:z():followed_by():this(true)
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            MethodCallStatement {
+Block(
+    [
+        MethodCallStatement {
+            pexp: MethodCall {
                 pexp: MethodCall {
-                    pexp: MethodCall {
-                        pexp: NamedVar(
-                            "y",
-                        ),
-                        name: "z",
-                        args: [],
-                    },
-                    name: "followed_by",
+                    pexp: NamedVar(
+                        "y",
+                    ),
+                    name: "z",
                     args: [],
                 },
-                name: "this",
-                args: [
-                    True,
-                ],
+                name: "followed_by",
+                args: [],
             },
-        ],
-    ),
+            name: "this",
+            args: [
+                True,
+            ],
+        },
+    ],
 )

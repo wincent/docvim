@@ -4,44 +4,42 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            FunctionDeclaration {
-                name: [
-                    Name(
-                        "some",
-                    ),
-                ],
-                method: Some(
-                    Name(
-                        "thing",
-                    ),
+Block(
+    [
+        FunctionDeclaration {
+            name: [
+                Name(
+                    "some",
                 ),
-                parlist: [
-                    Name(
-                        "a",
-                    ),
-                    Name(
-                        "b",
-                    ),
-                ],
-                varargs: false,
-                block: Block(
-                    [
-                        FunctionCallStatement {
-                            pexp: NamedVar(
-                                "a",
+            ],
+            method: Some(
+                Name(
+                    "thing",
+                ),
+            ),
+            parlist: [
+                Name(
+                    "a",
+                ),
+                Name(
+                    "b",
+                ),
+            ],
+            varargs: false,
+            block: Block(
+                [
+                    FunctionCallStatement {
+                        pexp: NamedVar(
+                            "a",
+                        ),
+                        args: [
+                            NamedVar(
+                                "b",
                             ),
-                            args: [
-                                NamedVar(
-                                    "b",
-                                ),
-                            ],
-                        },
-                    ],
-                ),
-            },
-        ],
-    ),
+                        ],
+                    },
+                ],
+            ),
+        },
+    ],
 )

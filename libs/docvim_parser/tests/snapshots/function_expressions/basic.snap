@@ -4,32 +4,30 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "x",
+Block(
+    [
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "x",
+                ),
+            ],
+            explist: [
+                Function {
+                    parlist: [],
+                    varargs: false,
+                    block: Block(
+                        [
+                            FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "foo",
+                                ),
+                                args: [],
+                            },
+                        ],
                     ),
-                ],
-                explist: [
-                    Function {
-                        parlist: [],
-                        varargs: false,
-                        block: Block(
-                            [
-                                FunctionCallStatement {
-                                    pexp: NamedVar(
-                                        "foo",
-                                    ),
-                                    args: [],
-                                },
-                            ],
-                        ),
-                    },
-                ],
-            },
-        ],
-    ),
+                },
+            ],
+        },
+    ],
 )

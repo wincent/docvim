@@ -7,18 +7,16 @@ return "We're done here"
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            Return(
-                Some(
-                    [
-                        CookedStr(
-                            "We're done here",
-                        ),
-                    ],
-                ),
+Block(
+    [
+        Return(
+            Some(
+                [
+                    CookedStr(
+                        "We're done here",
+                    ),
+                ],
             ),
-        ],
-    ),
+        ),
+    ],
 )

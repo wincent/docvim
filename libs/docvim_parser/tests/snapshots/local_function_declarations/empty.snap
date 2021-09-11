@@ -3,19 +3,17 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalFunctionDeclaration {
-                name: Name(
-                    "empty",
-                ),
-                parlist: [],
-                varargs: false,
-                block: Block(
-                    [],
-                ),
-            },
-        ],
-    ),
+Block(
+    [
+        LocalFunctionDeclaration {
+            name: Name(
+                "empty",
+            ),
+            parlist: [],
+            varargs: false,
+            block: Block(
+                [],
+            ),
+        },
+    ],
 )

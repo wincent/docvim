@@ -8,42 +8,40 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            While {
-                cexp: True,
-                block: Block(
-                    [
-                        IfStatement {
-                            consequents: [
-                                Consequent {
-                                    cexp: FunctionCall {
-                                        pexp: NamedVar(
-                                            "test",
-                                        ),
-                                        args: [],
-                                    },
-                                    block: Block(
-                                        [
-                                            Return(
-                                                None,
-                                            ),
-                                        ],
+Block(
+    [
+        While {
+            cexp: True,
+            block: Block(
+                [
+                    IfStatement {
+                        consequents: [
+                            Consequent {
+                                cexp: FunctionCall {
+                                    pexp: NamedVar(
+                                        "test",
                                     ),
+                                    args: [],
                                 },
-                            ],
-                            alternate: Some(
-                                Block(
+                                block: Block(
                                     [
-                                        Break,
+                                        Return(
+                                            None,
+                                        ),
                                     ],
                                 ),
+                            },
+                        ],
+                        alternate: Some(
+                            Block(
+                                [
+                                    Break,
+                                ],
                             ),
-                        },
-                    ],
-                ),
-            },
-        ],
-    ),
+                        ),
+                    },
+                ],
+            ),
+        },
+    ],
 )

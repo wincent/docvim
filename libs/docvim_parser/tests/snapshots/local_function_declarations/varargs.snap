@@ -4,41 +4,39 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalFunctionDeclaration {
-                name: Name(
-                    "add",
+Block(
+    [
+        LocalFunctionDeclaration {
+            name: Name(
+                "add",
+            ),
+            parlist: [
+                Name(
+                    "first",
                 ),
-                parlist: [
-                    Name(
-                        "first",
-                    ),
-                    Name(
-                        "second",
-                    ),
-                ],
-                varargs: true,
-                block: Block(
-                    [
-                        FunctionCallStatement {
-                            pexp: NamedVar(
-                                "adder",
+                Name(
+                    "second",
+                ),
+            ],
+            varargs: true,
+            block: Block(
+                [
+                    FunctionCallStatement {
+                        pexp: NamedVar(
+                            "adder",
+                        ),
+                        args: [
+                            NamedVar(
+                                "first",
                             ),
-                            args: [
-                                NamedVar(
-                                    "first",
-                                ),
-                                NamedVar(
-                                    "second",
-                                ),
-                                Varargs,
-                            ],
-                        },
-                    ],
-                ),
-            },
-        ],
-    ),
+                            NamedVar(
+                                "second",
+                            ),
+                            Varargs,
+                        ],
+                    },
+                ],
+            ),
+        },
+    ],
 )

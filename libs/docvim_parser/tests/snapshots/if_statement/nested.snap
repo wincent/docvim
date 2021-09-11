@@ -10,69 +10,67 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            IfStatement {
-                consequents: [
-                    Consequent {
-                        cexp: NamedVar(
-                            "a",
-                        ),
-                        block: Block(
-                            [
-                                IfStatement {
-                                    consequents: [
-                                        Consequent {
-                                            cexp: NamedVar(
-                                                "b",
-                                            ),
-                                            block: Block(
-                                                [
-                                                    FunctionCallStatement {
-                                                        pexp: NamedVar(
-                                                            "a",
-                                                        ),
-                                                        args: [
-                                                            NamedVar(
-                                                                "b",
-                                                            ),
-                                                        ],
-                                                    },
-                                                ],
-                                            ),
-                                        },
-                                    ],
-                                    alternate: Some(
-                                        Block(
+Block(
+    [
+        IfStatement {
+            consequents: [
+                Consequent {
+                    cexp: NamedVar(
+                        "a",
+                    ),
+                    block: Block(
+                        [
+                            IfStatement {
+                                consequents: [
+                                    Consequent {
+                                        cexp: NamedVar(
+                                            "b",
+                                        ),
+                                        block: Block(
                                             [
                                                 FunctionCallStatement {
                                                     pexp: NamedVar(
                                                         "a",
                                                     ),
-                                                    args: [],
+                                                    args: [
+                                                        NamedVar(
+                                                            "b",
+                                                        ),
+                                                    ],
                                                 },
                                             ],
                                         ),
+                                    },
+                                ],
+                                alternate: Some(
+                                    Block(
+                                        [
+                                            FunctionCallStatement {
+                                                pexp: NamedVar(
+                                                    "a",
+                                                ),
+                                                args: [],
+                                            },
+                                        ],
                                     ),
-                                },
-                            ],
-                        ),
-                    },
-                ],
-                alternate: Some(
-                    Block(
-                        [
-                            FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "c",
                                 ),
-                                args: [],
                             },
                         ],
                     ),
+                },
+            ],
+            alternate: Some(
+                Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "c",
+                            ),
+                            args: [],
+                        },
+                    ],
                 ),
-            },
-        ],
-    ),
+            ),
+        },
+    ],
 )

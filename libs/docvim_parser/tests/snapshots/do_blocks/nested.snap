@@ -6,33 +6,31 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            DoBlock(
-                Block(
-                    [
-                        DoBlock(
-                            Block(
-                                [
-                                    LocalDeclaration {
-                                        namelist: [
-                                            Name(
-                                                "one",
-                                            ),
-                                        ],
-                                        explist: [
-                                            Number(
-                                                "1",
-                                            ),
-                                        ],
-                                    },
-                                ],
-                            ),
+Block(
+    [
+        DoBlock(
+            Block(
+                [
+                    DoBlock(
+                        Block(
+                            [
+                                LocalDeclaration {
+                                    namelist: [
+                                        Name(
+                                            "one",
+                                        ),
+                                    ],
+                                    explist: [
+                                        Number(
+                                            "1",
+                                        ),
+                                    ],
+                                },
+                            ],
                         ),
-                    ],
-                ),
+                    ),
+                ],
             ),
-        ],
-    ),
+        ),
+    ],
 )

@@ -10,70 +10,68 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            IfStatement {
-                consequents: [
-                    Consequent {
-                        cexp: NamedVar(
-                            "a",
-                        ),
-                        block: Block(
-                            [
-                                FunctionCallStatement {
-                                    pexp: NamedVar(
-                                        "a",
-                                    ),
-                                    args: [],
-                                },
-                            ],
-                        ),
-                    },
-                    Consequent {
-                        cexp: NamedVar(
-                            "b",
-                        ),
-                        block: Block(
-                            [
-                                FunctionCallStatement {
-                                    pexp: NamedVar(
-                                        "b",
-                                    ),
-                                    args: [],
-                                },
-                            ],
-                        ),
-                    },
-                    Consequent {
-                        cexp: NamedVar(
-                            "c",
-                        ),
-                        block: Block(
-                            [
-                                FunctionCallStatement {
-                                    pexp: NamedVar(
-                                        "c",
-                                    ),
-                                    args: [],
-                                },
-                            ],
-                        ),
-                    },
-                ],
-                alternate: Some(
-                    Block(
+Block(
+    [
+        IfStatement {
+            consequents: [
+                Consequent {
+                    cexp: NamedVar(
+                        "a",
+                    ),
+                    block: Block(
                         [
                             FunctionCallStatement {
                                 pexp: NamedVar(
-                                    "d",
+                                    "a",
                                 ),
                                 args: [],
                             },
                         ],
                     ),
+                },
+                Consequent {
+                    cexp: NamedVar(
+                        "b",
+                    ),
+                    block: Block(
+                        [
+                            FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "b",
+                                ),
+                                args: [],
+                            },
+                        ],
+                    ),
+                },
+                Consequent {
+                    cexp: NamedVar(
+                        "c",
+                    ),
+                    block: Block(
+                        [
+                            FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "c",
+                                ),
+                                args: [],
+                            },
+                        ],
+                    ),
+                },
+            ],
+            alternate: Some(
+                Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "d",
+                            ),
+                            args: [],
+                        },
+                    ],
                 ),
-            },
-        ],
-    ),
+            ),
+        },
+    ],
 )

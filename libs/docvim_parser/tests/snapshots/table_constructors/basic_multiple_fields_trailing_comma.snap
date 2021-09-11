@@ -6,45 +6,43 @@ local stuff = {
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "stuff",
-                    ),
-                ],
-                explist: [
-                    Table(
-                        [
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "one",
-                                ),
-                                rexp: Number(
-                                    "1",
-                                ),
-                            },
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "two",
-                                ),
-                                rexp: True,
-                            },
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "three",
-                                ),
-                                rexp: Nil,
-                            },
-                        ],
-                    ),
-                ],
-            },
-        ],
-    ),
+Block(
+    [
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "stuff",
+                ),
+            ],
+            explist: [
+                Table(
+                    [
+                        Field {
+                            index: None,
+                            lexp: RawStr(
+                                "one",
+                            ),
+                            rexp: Number(
+                                "1",
+                            ),
+                        },
+                        Field {
+                            index: None,
+                            lexp: RawStr(
+                                "two",
+                            ),
+                            rexp: True,
+                        },
+                        Field {
+                            index: None,
+                            lexp: RawStr(
+                                "three",
+                            ),
+                            rexp: Nil,
+                        },
+                    ],
+                ),
+            ],
+        },
+    ],
 )

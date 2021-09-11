@@ -2,90 +2,88 @@ local demo =  not (1 * 2 + 3 - 4 / 5 ^ -6 > -7 ^ 8 + (9 - 10) * 11)
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "demo",
-                    ),
-                ],
-                explist: [
-                    Unary {
-                        exp: Binary {
+Block(
+    [
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "demo",
+                ),
+            ],
+            explist: [
+                Unary {
+                    exp: Binary {
+                        lexp: Binary {
                             lexp: Binary {
-                                lexp: Binary {
-                                    lexp: Number(
-                                        "1",
-                                    ),
-                                    op: Star,
-                                    rexp: Number(
-                                        "2",
-                                    ),
-                                },
-                                op: Plus,
+                                lexp: Number(
+                                    "1",
+                                ),
+                                op: Star,
+                                rexp: Number(
+                                    "2",
+                                ),
+                            },
+                            op: Plus,
+                            rexp: Binary {
+                                lexp: Number(
+                                    "3",
+                                ),
+                                op: Minus,
                                 rexp: Binary {
                                     lexp: Number(
-                                        "3",
+                                        "4",
                                     ),
-                                    op: Minus,
+                                    op: Slash,
                                     rexp: Binary {
                                         lexp: Number(
-                                            "4",
+                                            "5",
                                         ),
-                                        op: Slash,
-                                        rexp: Binary {
-                                            lexp: Number(
-                                                "5",
+                                        op: Caret,
+                                        rexp: Unary {
+                                            exp: Number(
+                                                "6",
                                             ),
-                                            op: Caret,
-                                            rexp: Unary {
-                                                exp: Number(
-                                                    "6",
-                                                ),
-                                                op: Minus,
-                                            },
+                                            op: Minus,
                                         },
                                     },
                                 },
                             },
-                            op: Gt,
-                            rexp: Binary {
-                                lexp: Unary {
-                                    exp: Binary {
-                                        lexp: Number(
-                                            "7",
-                                        ),
-                                        op: Caret,
-                                        rexp: Number(
-                                            "8",
-                                        ),
-                                    },
-                                    op: Minus,
-                                },
-                                op: Plus,
-                                rexp: Binary {
-                                    lexp: Binary {
-                                        lexp: Number(
-                                            "9",
-                                        ),
-                                        op: Minus,
-                                        rexp: Number(
-                                            "10",
-                                        ),
-                                    },
-                                    op: Star,
+                        },
+                        op: Gt,
+                        rexp: Binary {
+                            lexp: Unary {
+                                exp: Binary {
+                                    lexp: Number(
+                                        "7",
+                                    ),
+                                    op: Caret,
                                     rexp: Number(
-                                        "11",
+                                        "8",
                                     ),
                                 },
+                                op: Minus,
+                            },
+                            op: Plus,
+                            rexp: Binary {
+                                lexp: Binary {
+                                    lexp: Number(
+                                        "9",
+                                    ),
+                                    op: Minus,
+                                    rexp: Number(
+                                        "10",
+                                    ),
+                                },
+                                op: Star,
+                                rexp: Number(
+                                    "11",
+                                ),
                             },
                         },
-                        op: Not,
                     },
-                ],
-            },
-        ],
-    ),
+                    op: Not,
+                },
+            ],
+        },
+    ],
 )

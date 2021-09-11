@@ -2,36 +2,34 @@ local item = list[100][200][300]
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "item",
-                    ),
-                ],
-                explist: [
-                    Index {
+Block(
+    [
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "item",
+                ),
+            ],
+            explist: [
+                Index {
+                    pexp: Index {
                         pexp: Index {
-                            pexp: Index {
-                                pexp: NamedVar(
-                                    "list",
-                                ),
-                                kexp: Number(
-                                    "100",
-                                ),
-                            },
+                            pexp: NamedVar(
+                                "list",
+                            ),
                             kexp: Number(
-                                "200",
+                                "100",
                             ),
                         },
                         kexp: Number(
-                            "300",
+                            "200",
                         ),
                     },
-                ],
-            },
-        ],
-    ),
+                    kexp: Number(
+                        "300",
+                    ),
+                },
+            ],
+        },
+    ],
 )

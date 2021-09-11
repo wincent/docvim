@@ -4,42 +4,40 @@ h:i [[long]]
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            MethodCallStatement {
-                pexp: NamedVar(
-                    "b",
+Block(
+    [
+        MethodCallStatement {
+            pexp: NamedVar(
+                "b",
+            ),
+            name: "c",
+            args: [
+                CookedStr(
+                    "single",
                 ),
-                name: "c",
-                args: [
-                    CookedStr(
-                        "single",
-                    ),
-                ],
-            },
-            MethodCallStatement {
-                pexp: NamedVar(
-                    "e",
+            ],
+        },
+        MethodCallStatement {
+            pexp: NamedVar(
+                "e",
+            ),
+            name: "f",
+            args: [
+                CookedStr(
+                    "double",
                 ),
-                name: "f",
-                args: [
-                    CookedStr(
-                        "double",
-                    ),
-                ],
-            },
-            MethodCallStatement {
-                pexp: NamedVar(
-                    "h",
+            ],
+        },
+        MethodCallStatement {
+            pexp: NamedVar(
+                "h",
+            ),
+            name: "i",
+            args: [
+                RawStr(
+                    "long",
                 ),
-                name: "i",
-                args: [
-                    RawStr(
-                        "long",
-                    ),
-                ],
-            },
-        ],
-    ),
+            ],
+        },
+    ],
 )

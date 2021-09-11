@@ -2,23 +2,21 @@ bar:baz("hello", "world")
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            MethodCallStatement {
-                pexp: NamedVar(
-                    "bar",
+Block(
+    [
+        MethodCallStatement {
+            pexp: NamedVar(
+                "bar",
+            ),
+            name: "baz",
+            args: [
+                CookedStr(
+                    "hello",
                 ),
-                name: "baz",
-                args: [
-                    CookedStr(
-                        "hello",
-                    ),
-                    CookedStr(
-                        "world",
-                    ),
-                ],
-            },
-        ],
-    ),
+                CookedStr(
+                    "world",
+                ),
+            ],
+        },
+    ],
 )

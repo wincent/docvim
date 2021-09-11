@@ -6,54 +6,52 @@ local z = -1000
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "x",
+Block(
+    [
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "x",
+                ),
+            ],
+            explist: [
+                Unary {
+                    exp: NamedVar(
+                        "value",
                     ),
-                ],
-                explist: [
-                    Unary {
-                        exp: NamedVar(
-                            "value",
-                        ),
-                        op: Not,
-                    },
-                ],
-            },
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "y",
+                    op: Not,
+                },
+            ],
+        },
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "y",
+                ),
+            ],
+            explist: [
+                Unary {
+                    exp: NamedVar(
+                        "items",
                     ),
-                ],
-                explist: [
-                    Unary {
-                        exp: NamedVar(
-                            "items",
-                        ),
-                        op: Length,
-                    },
-                ],
-            },
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "z",
+                    op: Length,
+                },
+            ],
+        },
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "z",
+                ),
+            ],
+            explist: [
+                Unary {
+                    exp: Number(
+                        "1000",
                     ),
-                ],
-                explist: [
-                    Unary {
-                        exp: Number(
-                            "1000",
-                        ),
-                        op: Minus,
-                    },
-                ],
-            },
-        ],
-    ),
+                    op: Minus,
+                },
+            ],
+        },
+    ],
 )

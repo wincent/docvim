@@ -2,31 +2,29 @@ local item = foo.bar.baz
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "item",
-                    ),
-                ],
-                explist: [
-                    Index {
-                        pexp: Index {
-                            pexp: NamedVar(
-                                "foo",
-                            ),
-                            kexp: RawStr(
-                                "bar",
-                            ),
-                        },
+Block(
+    [
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "item",
+                ),
+            ],
+            explist: [
+                Index {
+                    pexp: Index {
+                        pexp: NamedVar(
+                            "foo",
+                        ),
                         kexp: RawStr(
-                            "baz",
+                            "bar",
                         ),
                     },
-                ],
-            },
-        ],
-    ),
+                    kexp: RawStr(
+                        "baz",
+                    ),
+                },
+            ],
+        },
+    ],
 )

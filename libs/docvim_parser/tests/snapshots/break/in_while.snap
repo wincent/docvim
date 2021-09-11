@@ -7,44 +7,42 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            While {
-                cexp: True,
-                block: Block(
-                    [
-                        IfStatement {
-                            consequents: [
-                                Consequent {
-                                    cexp: FunctionCall {
-                                        pexp: NamedVar(
-                                            "test",
-                                        ),
-                                        args: [],
-                                    },
-                                    block: Block(
-                                        [
-                                            FunctionCallStatement {
-                                                pexp: NamedVar(
-                                                    "print",
-                                                ),
-                                                args: [
-                                                    CookedStr(
-                                                        "test passed",
-                                                    ),
-                                                ],
-                                            },
-                                            Break,
-                                        ],
+Block(
+    [
+        While {
+            cexp: True,
+            block: Block(
+                [
+                    IfStatement {
+                        consequents: [
+                            Consequent {
+                                cexp: FunctionCall {
+                                    pexp: NamedVar(
+                                        "test",
                                     ),
+                                    args: [],
                                 },
-                            ],
-                            alternate: None,
-                        },
-                    ],
-                ),
-            },
-        ],
-    ),
+                                block: Block(
+                                    [
+                                        FunctionCallStatement {
+                                            pexp: NamedVar(
+                                                "print",
+                                            ),
+                                            args: [
+                                                CookedStr(
+                                                    "test passed",
+                                                ),
+                                            ],
+                                        },
+                                        Break,
+                                    ],
+                                ),
+                            },
+                        ],
+                        alternate: None,
+                    },
+                ],
+            ),
+        },
+    ],
 )

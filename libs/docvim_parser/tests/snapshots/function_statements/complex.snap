@@ -4,55 +4,53 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            FunctionDeclaration {
-                name: [
-                    Name(
-                        "a",
-                    ),
-                    Name(
-                        "b",
-                    ),
-                    Name(
-                        "c",
-                    ),
-                ],
-                method: Some(
-                    Name(
-                        "d",
-                    ),
+Block(
+    [
+        FunctionDeclaration {
+            name: [
+                Name(
+                    "a",
                 ),
-                parlist: [
-                    Name(
-                        "e",
-                    ),
-                    Name(
-                        "f",
-                    ),
-                ],
-                varargs: true,
-                block: Block(
-                    [
-                        FunctionCallStatement {
-                            pexp: FunctionCall {
-                                pexp: NamedVar(
-                                    "e",
-                                ),
-                                args: [
-                                    NamedVar(
-                                        "f",
-                                    ),
-                                ],
-                            },
+                Name(
+                    "b",
+                ),
+                Name(
+                    "c",
+                ),
+            ],
+            method: Some(
+                Name(
+                    "d",
+                ),
+            ),
+            parlist: [
+                Name(
+                    "e",
+                ),
+                Name(
+                    "f",
+                ),
+            ],
+            varargs: true,
+            block: Block(
+                [
+                    FunctionCallStatement {
+                        pexp: FunctionCall {
+                            pexp: NamedVar(
+                                "e",
+                            ),
                             args: [
-                                Varargs,
+                                NamedVar(
+                                    "f",
+                                ),
                             ],
                         },
-                    ],
-                ),
-            },
-        ],
-    ),
+                        args: [
+                            Varargs,
+                        ],
+                    },
+                ],
+            ),
+        },
+    ],
 )

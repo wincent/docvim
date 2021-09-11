@@ -4,34 +4,32 @@ until x < 100
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            Repeat {
-                block: Block(
-                    [
-                        FunctionCallStatement {
-                            pexp: NamedVar(
-                                "inc",
+Block(
+    [
+        Repeat {
+            block: Block(
+                [
+                    FunctionCallStatement {
+                        pexp: NamedVar(
+                            "inc",
+                        ),
+                        args: [
+                            NamedVar(
+                                "x",
                             ),
-                            args: [
-                                NamedVar(
-                                    "x",
-                                ),
-                            ],
-                        },
-                    ],
+                        ],
+                    },
+                ],
+            ),
+            cexp: Binary {
+                lexp: NamedVar(
+                    "x",
                 ),
-                cexp: Binary {
-                    lexp: NamedVar(
-                        "x",
-                    ),
-                    op: Lt,
-                    rexp: Number(
-                        "100",
-                    ),
-                },
+                op: Lt,
+                rexp: Number(
+                    "100",
+                ),
             },
-        ],
-    ),
+        },
+    ],
 )

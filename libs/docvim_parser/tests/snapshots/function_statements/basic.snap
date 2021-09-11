@@ -4,29 +4,27 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            FunctionDeclaration {
-                name: [
-                    Name(
-                        "simple",
-                    ),
-                ],
-                method: None,
-                parlist: [],
-                varargs: false,
-                block: Block(
-                    [
-                        FunctionCallStatement {
-                            pexp: NamedVar(
-                                "foo",
-                            ),
-                            args: [],
-                        },
-                    ],
+Block(
+    [
+        FunctionDeclaration {
+            name: [
+                Name(
+                    "simple",
                 ),
-            },
-        ],
-    ),
+            ],
+            method: None,
+            parlist: [],
+            varargs: false,
+            block: Block(
+                [
+                    FunctionCallStatement {
+                        pexp: NamedVar(
+                            "foo",
+                        ),
+                        args: [],
+                    },
+                ],
+            ),
+        },
+    ],
 )

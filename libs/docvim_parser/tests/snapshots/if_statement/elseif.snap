@@ -6,52 +6,50 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            IfStatement {
-                consequents: [
-                    Consequent {
-                        cexp: Binary {
-                            lexp: NamedVar(
-                                "a",
-                            ),
-                            op: Ne,
-                            rexp: Nil,
-                        },
-                        block: Block(
-                            [
-                                FunctionCallStatement {
-                                    pexp: NamedVar(
-                                        "a",
-                                    ),
-                                    args: [],
-                                },
-                            ],
+Block(
+    [
+        IfStatement {
+            consequents: [
+                Consequent {
+                    cexp: Binary {
+                        lexp: NamedVar(
+                            "a",
                         ),
+                        op: Ne,
+                        rexp: Nil,
                     },
-                    Consequent {
-                        cexp: Binary {
-                            lexp: NamedVar(
-                                "b",
-                            ),
-                            op: Ne,
-                            rexp: Nil,
-                        },
-                        block: Block(
-                            [
-                                FunctionCallStatement {
-                                    pexp: NamedVar(
-                                        "b",
-                                    ),
-                                    args: [],
-                                },
-                            ],
+                    block: Block(
+                        [
+                            FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "a",
+                                ),
+                                args: [],
+                            },
+                        ],
+                    ),
+                },
+                Consequent {
+                    cexp: Binary {
+                        lexp: NamedVar(
+                            "b",
                         ),
+                        op: Ne,
+                        rexp: Nil,
                     },
-                ],
-                alternate: None,
-            },
-        ],
-    ),
+                    block: Block(
+                        [
+                            FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "b",
+                                ),
+                                args: [],
+                            },
+                        ],
+                    ),
+                },
+            ],
+            alternate: None,
+        },
+    ],
 )

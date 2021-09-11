@@ -4,35 +4,33 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalFunctionDeclaration {
-                name: Name(
-                    "debug",
-                ),
-                parlist: [],
-                varargs: true,
-                block: Block(
-                    [
-                        FunctionCallStatement {
-                            pexp: NamedVar(
-                                "print",
-                            ),
-                            args: [
-                                FunctionCall {
-                                    pexp: NamedVar(
-                                        "inspect",
-                                    ),
-                                    args: [
-                                        Varargs,
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                ),
-            },
-        ],
-    ),
+Block(
+    [
+        LocalFunctionDeclaration {
+            name: Name(
+                "debug",
+            ),
+            parlist: [],
+            varargs: true,
+            block: Block(
+                [
+                    FunctionCallStatement {
+                        pexp: NamedVar(
+                            "print",
+                        ),
+                        args: [
+                            FunctionCall {
+                                pexp: NamedVar(
+                                    "inspect",
+                                ),
+                                args: [
+                                    Varargs,
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            ),
+        },
+    ],
 )

@@ -4,32 +4,30 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            DoBlock(
-                Block(
-                    [
-                        LocalDeclaration {
-                            namelist: [
-                                Name(
-                                    "item",
+Block(
+    [
+        DoBlock(
+            Block(
+                [
+                    LocalDeclaration {
+                        namelist: [
+                            Name(
+                                "item",
+                            ),
+                        ],
+                        explist: [
+                            Index {
+                                pexp: NamedVar(
+                                    "foo",
                                 ),
-                            ],
-                            explist: [
-                                Index {
-                                    pexp: NamedVar(
-                                        "foo",
-                                    ),
-                                    kexp: RawStr(
-                                        "bar",
-                                    ),
-                                },
-                            ],
-                        },
-                    ],
-                ),
+                                kexp: RawStr(
+                                    "bar",
+                                ),
+                            },
+                        ],
+                    },
+                ],
             ),
-        ],
-    ),
+        ),
+    ],
 )

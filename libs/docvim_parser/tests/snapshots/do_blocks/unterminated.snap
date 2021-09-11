@@ -4,9 +4,7 @@ do
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Err(
-    ParserError {
-        kind: UnexpectedEndOfInput,
-        position: 75,
-    },
-)
+ParserError {
+    kind: UnexpectedEndOfInput,
+    position: 75,
+}

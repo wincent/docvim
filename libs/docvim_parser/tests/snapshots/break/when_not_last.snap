@@ -7,9 +7,7 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Err(
-    ParserError {
-        kind: UnexpectedToken,
-        position: 25,
-    },
-)
+ParserError {
+    kind: UnexpectedToken,
+    position: 25,
+}

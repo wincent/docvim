@@ -2,15 +2,13 @@ calculate()
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            FunctionCallStatement {
-                pexp: NamedVar(
-                    "calculate",
-                ),
-                args: [],
-            },
-        ],
-    ),
+Block(
+    [
+        FunctionCallStatement {
+            pexp: NamedVar(
+                "calculate",
+            ),
+            args: [],
+        },
+    ],
 )

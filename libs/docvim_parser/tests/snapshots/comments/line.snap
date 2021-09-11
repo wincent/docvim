@@ -4,19 +4,17 @@ local thing = true
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Ok(
-    Block(
-        [
-            LocalDeclaration {
-                namelist: [
-                    Name(
-                        "thing",
-                    ),
-                ],
-                explist: [
-                    True,
-                ],
-            },
-        ],
-    ),
+Block(
+    [
+        LocalDeclaration {
+            namelist: [
+                Name(
+                    "thing",
+                ),
+            ],
+            explist: [
+                True,
+            ],
+        },
+    ],
 )
