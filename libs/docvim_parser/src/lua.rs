@@ -430,7 +430,7 @@ impl<'a> Parser<'a> {
                     tokens.next();
                     block.0.push(Statement::Break);
                     self.slurp(tokens, PunctuatorToken(SemiToken));
-                    break; // TODO: make sure no statement allowed after this
+                    break;
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(ReturnToken)), .. })) => {
                     tokens.next();
@@ -441,7 +441,7 @@ impl<'a> Parser<'a> {
                     };
                     block.0.push(Statement::Return(explist));
                     self.slurp(tokens, PunctuatorToken(SemiToken));
-                    break; // TODO: make sure no statement allowed after this
+                    break;
                 }
                 Some(&Ok(Token { .. })) => {
                     // TODO: when we're done, should be able to turn this into an error and tests should still pass

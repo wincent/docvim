@@ -1,0 +1,15 @@
+while true do
+  break
+
+  -- Syntax error, because `break` must be the last statement in a block.
+  print("Unreachable")
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Err(
+    ParserError {
+        kind: UnexpectedToken,
+        position: 25,
+    },
+)

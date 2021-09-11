@@ -1,0 +1,15 @@
+function bad()
+  return
+
+  -- Syntax error, because `return` must be the last statement in a block.
+  print("Unreachable")
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Err(
+    ParserError {
+        kind: UnexpectedToken,
+        position: 27,
+    },
+)
