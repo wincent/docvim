@@ -1,0 +1,33 @@
+local function one(foo)
+  foo()
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            LocalFunctionDeclaration {
+                name: Name(
+                    "one",
+                ),
+                parlist: [
+                    Name(
+                        "foo",
+                    ),
+                ],
+                varargs: false,
+                block: Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "foo",
+                            ),
+                            args: [],
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)

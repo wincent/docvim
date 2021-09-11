@@ -1,0 +1,50 @@
+local function three(foo, bar, baz)
+  foo(bar(baz))
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            LocalFunctionDeclaration {
+                name: Name(
+                    "three",
+                ),
+                parlist: [
+                    Name(
+                        "foo",
+                    ),
+                    Name(
+                        "bar",
+                    ),
+                    Name(
+                        "baz",
+                    ),
+                ],
+                varargs: false,
+                block: Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "foo",
+                            ),
+                            args: [
+                                FunctionCall {
+                                    pexp: NamedVar(
+                                        "bar",
+                                    ),
+                                    args: [
+                                        NamedVar(
+                                            "baz",
+                                        ),
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)

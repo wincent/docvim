@@ -11,6 +11,7 @@ use docvim_lexer::lua::KeywordKind::Elseif as ElseifToken;
 use docvim_lexer::lua::KeywordKind::End as EndToken;
 use docvim_lexer::lua::KeywordKind::False as FalseToken;
 use docvim_lexer::lua::KeywordKind::For as ForToken;
+use docvim_lexer::lua::KeywordKind::Function as FunctionToken;
 use docvim_lexer::lua::KeywordKind::If as IfToken;
 use docvim_lexer::lua::KeywordKind::In as InToken;
 use docvim_lexer::lua::KeywordKind::Local as LocalToken;
@@ -41,6 +42,7 @@ use docvim_lexer::lua::OpKind::Percent as PercentToken;
 use docvim_lexer::lua::OpKind::Plus as PlusToken;
 use docvim_lexer::lua::OpKind::Slash as SlashToken;
 use docvim_lexer::lua::OpKind::Star as StarToken;
+use docvim_lexer::lua::OpKind::Vararg as VarargToken;
 use docvim_lexer::lua::PunctuatorKind::Colon as ColonToken;
 use docvim_lexer::lua::PunctuatorKind::Comma as CommaToken;
 use docvim_lexer::lua::PunctuatorKind::Dot as DotToken;
@@ -132,6 +134,7 @@ pub enum Exp<'a> {
         exp: Box<Exp<'a>>,
         op: UnOp,
     },
+    Varargs,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -183,6 +186,22 @@ pub enum Statement<'a> {
         pexp: Box<Exp<'a>>,
         args: Vec<Exp<'a>>,
     },
+    FunctionDeclaration {
+        /// A name may consist of a single Name (eg. "foo") or multiple via property access (eg.
+        /// "foo.bar", "foo.bar.baz" etc).
+        name: Vec<Name<'a>>,
+
+        /// A name may optionally terminate with a final "method" component (eg. "bar" in
+        /// "foo:bar").
+        method: Option<Name<'a>>,
+
+        /// Named parameters (eg. "a" and "b" in "(a, b)").
+        parlist: Vec<Name<'a>>,
+
+        /// Does the function accept varags (eg. "...")?
+        varargs: bool,
+        block: Block<'a>,
+    },
     IfStatement {
         consequents: Vec<Consequent<'a>>,
         alternate: Option<Block<'a>>,
@@ -190,6 +209,12 @@ pub enum Statement<'a> {
     LocalDeclaration {
         namelist: Vec<Name<'a>>,
         explist: Vec<Exp<'a>>,
+    },
+    LocalFunctionDeclaration {
+        name: Name<'a>,
+        parlist: Vec<Name<'a>>,
+        varargs: bool,
+        block: Block<'a>,
     },
     MethodCallStatement {
         pexp: Box<Exp<'a>>,
@@ -426,12 +451,17 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_namelist(
+    /// Returns a list of named parameters, and boolean to indicate whether the list terminates
+    /// with vararg syntax ("...").
+    fn parse_parlist(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Vec<Name<'a>>, Box<dyn Error>> {
+    ) -> Result<(Vec<Name<'a>>, bool), Box<dyn Error>> {
+        self.consume(tokens, PunctuatorToken(LparenToken))?;
         let mut namelist = vec![];
-        let mut allow_comma = false;
+        if self.slurp(tokens, PunctuatorToken(RparenToken)) {
+            return Ok((namelist, false));
+        }
         let mut expect_name = true;
         loop {
             match tokens.peek() {
@@ -439,22 +469,86 @@ impl<'a> Parser<'a> {
                     if expect_name {
                         tokens.next();
                         namelist.push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
-                        allow_comma = true;
+                        expect_name = false;
+                    } else {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedToken,
+                            position: token.char_start,
+                        }));
+                    }
+                }
+                Some(&Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. })) => {
+                    if expect_name {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedComma,
+                            position: token.char_start,
+                        }));
+                    } else {
+                        tokens.next();
+                        expect_name = true;
+                    }
+                }
+                Some(&Ok(token @ Token { kind: PunctuatorToken(RparenToken), .. })) => {
+                    if expect_name {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedToken,
+                            position: token.char_start,
+                        }));
+                    } else {
+                        tokens.next();
+                        return Ok((namelist, false));
+                    }
+                }
+                Some(&Ok(token @ Token { kind: OpToken(VarargToken), .. })) => {
+                    if expect_name {
+                        tokens.next();
+                        self.consume(tokens, PunctuatorToken(RparenToken))?;
+                        return Ok((namelist, true));
+                    } else {
+                        return Err(Box::new(ParserError {
+                            kind: ParserErrorKind::UnexpectedToken,
+                            position: token.char_start,
+                        }));
+                    }
+                }
+                Some(&Ok(token @ Token { .. })) => {
+                    return Err(Box::new(ParserError {
+                        kind: ParserErrorKind::UnexpectedToken,
+                        position: token.char_start,
+                    }));
+                }
+                Some(&Err(err)) => return Err(Box::new(err)),
+                None => return Err(self.unexpected_end_of_input()),
+            }
+        }
+    }
+
+    fn parse_namelist(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Vec<Name<'a>>, Box<dyn Error>> {
+        let mut namelist = vec![];
+        let mut expect_name = true;
+        loop {
+            match tokens.peek() {
+                Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
+                    if expect_name {
+                        tokens.next();
+                        namelist.push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
                         expect_name = false;
                     } else {
                         break;
                     }
                 }
                 Some(&Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. })) => {
-                    if allow_comma {
-                        tokens.next();
-                        allow_comma = false;
-                        expect_name = true;
-                    } else {
+                    if expect_name {
                         return Err(Box::new(ParserError {
                             kind: ParserErrorKind::UnexpectedComma,
                             position: token.char_start,
                         }));
+                    } else {
+                        tokens.next();
+                        expect_name = true;
                     }
                 }
                 Some(&Ok(token @ Token { .. })) => {
@@ -509,7 +603,7 @@ impl<'a> Parser<'a> {
                             | LiteralToken(StrToken(LongToken { .. }))
                             | NameToken(IdentifierToken)
                             | NameToken(KeywordToken(FalseToken | NilToken | NotToken | TrueToken))
-                            | OpToken(HashToken | MinusToken)
+                            | OpToken(HashToken | MinusToken | VarargToken)
                             | PunctuatorToken(LcurlyToken | LparenToken),
                         ..
                     },
@@ -625,25 +719,28 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Statement<'a>, Box<dyn Error>> {
-        self.consume(tokens, NameToken(KeywordToken(LocalToken)))?;
-
         // Example inputs:
         //
         // local x
         // local x = 10
         // local x, y = 10, 20
-        //
-        // -- TODO: this:
         // local function Name funcbody
-
-        let namelist = self.parse_namelist(tokens)?;
-        let explist = if self.slurp(tokens, OpToken(AssignToken)) {
-            self.parse_explist(tokens)?
+        self.consume(tokens, NameToken(KeywordToken(LocalToken)))?;
+        if self.slurp(tokens, NameToken(KeywordToken(FunctionToken))) {
+            let name = self.parse_name(tokens)?;
+            let (parlist, varargs) = self.parse_parlist(tokens)?;
+            let block = self.parse_block(tokens)?;
+            self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+            Ok(Statement::LocalFunctionDeclaration { name, parlist, varargs, block })
         } else {
-            vec![]
-        };
-
-        Ok(Statement::LocalDeclaration { explist, namelist })
+            let namelist = self.parse_namelist(tokens)?;
+            let explist = if self.slurp(tokens, OpToken(AssignToken)) {
+                self.parse_explist(tokens)?
+            } else {
+                vec![]
+            };
+            Ok(Statement::LocalDeclaration { explist, namelist })
+        }
     }
 
     /// A "cooked" string is one in which escape sequences have been replaced with their equivalent
@@ -944,10 +1041,13 @@ impl<'a> Parser<'a> {
                 tokens.next();
                 Exp::True
             }
+            Some(&Ok(Token { kind: OpToken(VarargToken), .. })) => {
+                tokens.next();
+                Exp::Varargs
+            }
 
             // TODO: handle remaining "primaries":
             // - function
-            // - ...
             //
             Some(&Ok(Token {
                 kind: NameToken(IdentifierToken) | PunctuatorToken(LparenToken),

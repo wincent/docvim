@@ -1,0 +1,44 @@
+local function add(first, second, ...)
+  adder(first, second, ...)
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            LocalFunctionDeclaration {
+                name: Name(
+                    "add",
+                ),
+                parlist: [
+                    Name(
+                        "first",
+                    ),
+                    Name(
+                        "second",
+                    ),
+                ],
+                varargs: true,
+                block: Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "adder",
+                            ),
+                            args: [
+                                NamedVar(
+                                    "first",
+                                ),
+                                NamedVar(
+                                    "second",
+                                ),
+                                Varargs,
+                            ],
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)
