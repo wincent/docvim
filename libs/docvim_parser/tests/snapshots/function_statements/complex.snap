@@ -1,0 +1,58 @@
+function a.b.c:d(e, f, ...)
+  e(f)(...)
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            FunctionDeclaration {
+                name: [
+                    Name(
+                        "a",
+                    ),
+                    Name(
+                        "b",
+                    ),
+                    Name(
+                        "c",
+                    ),
+                ],
+                method: Some(
+                    Name(
+                        "d",
+                    ),
+                ),
+                parlist: [
+                    Name(
+                        "e",
+                    ),
+                    Name(
+                        "f",
+                    ),
+                ],
+                varargs: true,
+                block: Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: FunctionCall {
+                                pexp: NamedVar(
+                                    "e",
+                                ),
+                                args: [
+                                    NamedVar(
+                                        "f",
+                                    ),
+                                ],
+                            },
+                            args: [
+                                Varargs,
+                            ],
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)

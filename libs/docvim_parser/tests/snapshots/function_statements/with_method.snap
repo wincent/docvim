@@ -1,0 +1,47 @@
+function some:thing(a, b)
+  a(b)
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            FunctionDeclaration {
+                name: [
+                    Name(
+                        "some",
+                    ),
+                ],
+                method: Some(
+                    Name(
+                        "thing",
+                    ),
+                ),
+                parlist: [
+                    Name(
+                        "a",
+                    ),
+                    Name(
+                        "b",
+                    ),
+                ],
+                varargs: false,
+                block: Block(
+                    [
+                        FunctionCallStatement {
+                            pexp: NamedVar(
+                                "a",
+                            ),
+                            args: [
+                                NamedVar(
+                                    "b",
+                                ),
+                            ],
+                        },
+                    ],
+                ),
+            },
+        ],
+    ),
+)

@@ -312,6 +312,10 @@ impl<'a> Parser<'a> {
                     block.0.push(self.parse_for(tokens)?);
                     self.slurp(tokens, PunctuatorToken(SemiToken));
                 }
+                Some(&Ok(Token { kind: NameToken(KeywordToken(FunctionToken)), .. })) => {
+                    block.0.push(self.parse_function(tokens)?);
+                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(IfToken)), .. })) => {
                     block.0.push(self.parse_if(tokens)?);
                     self.slurp(tokens, PunctuatorToken(SemiToken));
@@ -713,6 +717,26 @@ impl<'a> Parser<'a> {
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
         Ok(Statement::While { cexp, block })
+    }
+
+    fn parse_function(
+        &self,
+        tokens: &mut std::iter::Peekable<Tokens>,
+    ) -> Result<Statement<'a>, Box<dyn Error>> {
+        self.consume(tokens, NameToken(KeywordToken(FunctionToken)))?;
+        let mut name = vec![self.parse_name(tokens)?];
+        while self.slurp(tokens, PunctuatorToken(DotToken)) {
+            name.push(self.parse_name(tokens)?);
+        }
+        let method = if self.slurp(tokens, PunctuatorToken(ColonToken)) {
+            Some(self.parse_name(tokens)?)
+        } else {
+            None
+        };
+        let (parlist, varargs) = self.parse_parlist(tokens)?;
+        let block = self.parse_block(tokens)?;
+        self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+        Ok(Statement::FunctionDeclaration { name, method, parlist, varargs, block })
     }
 
     fn parse_local(
