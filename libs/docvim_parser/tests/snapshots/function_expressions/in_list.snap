@@ -1,0 +1,93 @@
+local callbacks = {
+  function()
+    setup()
+  end,
+  function()
+    notify()
+  end,
+  function()
+    cleanup()
+  end,
+}
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            LocalDeclaration {
+                namelist: [
+                    Name(
+                        "callbacks",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: Some(
+                                    1,
+                                ),
+                                lexp: Nil,
+                                rexp: Function {
+                                    parlist: [],
+                                    varargs: false,
+                                    block: Block(
+                                        [
+                                            FunctionCallStatement {
+                                                pexp: NamedVar(
+                                                    "setup",
+                                                ),
+                                                args: [],
+                                            },
+                                        ],
+                                    ),
+                                },
+                            },
+                            Field {
+                                index: Some(
+                                    2,
+                                ),
+                                lexp: Nil,
+                                rexp: Function {
+                                    parlist: [],
+                                    varargs: false,
+                                    block: Block(
+                                        [
+                                            FunctionCallStatement {
+                                                pexp: NamedVar(
+                                                    "notify",
+                                                ),
+                                                args: [],
+                                            },
+                                        ],
+                                    ),
+                                },
+                            },
+                            Field {
+                                index: Some(
+                                    3,
+                                ),
+                                lexp: Nil,
+                                rexp: Function {
+                                    parlist: [],
+                                    varargs: false,
+                                    block: Block(
+                                        [
+                                            FunctionCallStatement {
+                                                pexp: NamedVar(
+                                                    "cleanup",
+                                                ),
+                                                args: [],
+                                            },
+                                        ],
+                                    ),
+                                },
+                            },
+                        ],
+                    ),
+                ],
+            },
+        ],
+    ),
+)

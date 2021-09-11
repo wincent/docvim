@@ -1,0 +1,86 @@
+local handlers = {
+  onclick = function(event)
+    report(event)
+  end,
+  onkeydown = function(event)
+    report(event)
+  end,
+}
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            LocalDeclaration {
+                namelist: [
+                    Name(
+                        "handlers",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: None,
+                                lexp: RawStr(
+                                    "onclick",
+                                ),
+                                rexp: Function {
+                                    parlist: [
+                                        Name(
+                                            "event",
+                                        ),
+                                    ],
+                                    varargs: false,
+                                    block: Block(
+                                        [
+                                            FunctionCallStatement {
+                                                pexp: NamedVar(
+                                                    "report",
+                                                ),
+                                                args: [
+                                                    NamedVar(
+                                                        "event",
+                                                    ),
+                                                ],
+                                            },
+                                        ],
+                                    ),
+                                },
+                            },
+                            Field {
+                                index: None,
+                                lexp: RawStr(
+                                    "onkeydown",
+                                ),
+                                rexp: Function {
+                                    parlist: [
+                                        Name(
+                                            "event",
+                                        ),
+                                    ],
+                                    varargs: false,
+                                    block: Block(
+                                        [
+                                            FunctionCallStatement {
+                                                pexp: NamedVar(
+                                                    "report",
+                                                ),
+                                                args: [
+                                                    NamedVar(
+                                                        "event",
+                                                    ),
+                                                ],
+                                            },
+                                        ],
+                                    ),
+                                },
+                            },
+                        ],
+                    ),
+                ],
+            },
+        ],
+    ),
+)

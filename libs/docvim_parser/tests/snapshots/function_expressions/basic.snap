@@ -1,0 +1,35 @@
+local x = function()
+  foo()
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Ok(
+    Block(
+        [
+            LocalDeclaration {
+                namelist: [
+                    Name(
+                        "x",
+                    ),
+                ],
+                explist: [
+                    Function {
+                        parlist: [],
+                        varargs: false,
+                        block: Block(
+                            [
+                                FunctionCallStatement {
+                                    pexp: NamedVar(
+                                        "foo",
+                                    ),
+                                    args: [],
+                                },
+                            ],
+                        ),
+                    },
+                ],
+            },
+        ],
+    ),
+)

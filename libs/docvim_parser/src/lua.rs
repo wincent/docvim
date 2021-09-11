@@ -107,6 +107,11 @@ pub enum Exp<'a> {
         pexp: Box<Exp<'a>>,
         args: Vec<Exp<'a>>,
     },
+    Function {
+        parlist: Vec<Name<'a>>,
+        varargs: bool,
+        block: Block<'a>,
+    },
     Index {
         /// The "prefix expression" (ie. LHS in `foo[bar]; that is, `foo`), which is the table to
         /// be indexed.
@@ -606,7 +611,9 @@ impl<'a> Parser<'a> {
                             | LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken))
                             | LiteralToken(StrToken(LongToken { .. }))
                             | NameToken(IdentifierToken)
-                            | NameToken(KeywordToken(FalseToken | NilToken | NotToken | TrueToken))
+                            | NameToken(KeywordToken(
+                                FalseToken | FunctionToken | NilToken | NotToken | TrueToken,
+                            ))
                             | OpToken(HashToken | MinusToken | VarargToken)
                             | PunctuatorToken(LcurlyToken | LparenToken),
                         ..
@@ -851,7 +858,6 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Vec<Exp<'a>>, Box<dyn Error>> {
-        // TODO: use parse_explist here (and elsewhere)
         match tokens.peek() {
             Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 tokens.next();
@@ -1069,15 +1075,17 @@ impl<'a> Parser<'a> {
                 tokens.next();
                 Exp::Varargs
             }
-
-            // TODO: handle remaining "primaries":
-            // - function
-            //
             Some(&Ok(Token {
                 kind: NameToken(IdentifierToken) | PunctuatorToken(LparenToken),
                 ..
             })) => self.parse_prefixexp(tokens)?,
-
+            Some(&Ok(Token { kind: NameToken(KeywordToken(FunctionToken)), .. })) => {
+                self.consume(tokens, NameToken(KeywordToken(FunctionToken)))?;
+                let (parlist, varargs) = self.parse_parlist(tokens)?;
+                let block = self.parse_block(tokens)?;
+                self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+                Exp::Function { parlist, varargs, block }
+            }
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 self.parse_table_constructor(tokens)?
             }
