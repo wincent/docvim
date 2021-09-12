@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use crate::error::*;
 
 // Lexer token types are imported aliased (all with a "Token" suffix) to avoid collisions with
@@ -291,14 +289,21 @@ impl<'a> Parser<'a> {
         Self { lexer: Lexer::new(input) }
     }
 
-    fn unexpected_end_of_input(&self) -> Box<dyn Error> {
-        return Box::new(ParserError {
-            kind: ParserErrorKind::UnexpectedEndOfInput,
-            position: self.lexer.input.chars().count(),
-        });
+    fn pretty_error(&self, error: ParserError) -> String {
+        // hard to do anything with dyn error here: see - https://www.reddit.com/r/rust/comments/al68dy/question_am_i_being_idiomatic_in_how_i_handle/
+        // should do this: https://doc.rust-lang.org/std/convert/trait.From.html
+        // so i may need to return more specific errors (and wrap other errors)
+        String::from("TODO")
     }
 
-    pub fn parse(&self) -> Result<Block, Box<dyn Error>> {
+    fn unexpected_end_of_input(&self) -> ParserError {
+        return ParserError {
+            kind: ParserErrorKind::UnexpectedEndOfInput,
+            position: self.lexer.input.chars().count(),
+        };
+    }
+
+    pub fn parse(&self) -> Result<Block, ParserError> {
         let mut tokens = self.lexer.tokens().peekable();
         self.parse_block(&mut tokens)
     }
@@ -306,7 +311,7 @@ impl<'a> Parser<'a> {
     fn parse_block(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Block<'a>, Box<dyn Error>> {
+    ) -> Result<Block<'a>, ParserError> {
         let mut block = Block(vec![]);
         loop {
             match tokens.peek() {
@@ -383,10 +388,10 @@ impl<'a> Parser<'a> {
                                         if allow_comma {
                                             allow_comma = false;
                                         } else {
-                                            return Err(Box::new(ParserError {
+                                            return Err(ParserError {
                                                 kind: ParserErrorKind::UnexpectedComma,
                                                 position: char_start,
-                                            }));
+                                            });
                                         }
                                     }
                                     Some(&Ok(Token {
@@ -394,10 +399,10 @@ impl<'a> Parser<'a> {
                                         char_start,
                                         ..
                                     })) => {
-                                        return Err(Box::new(ParserError {
+                                        return Err(ParserError {
                                             kind: ParserErrorKind::UnexpectedToken,
                                             position: char_start,
-                                        }));
+                                        });
                                     }
                                     Some(&Ok(Token { .. })) => {
                                         let pexp = self.parse_prefixexp(tokens)?;
@@ -406,15 +411,15 @@ impl<'a> Parser<'a> {
                                                 varlist.push(pexp);
                                             }
                                             _ => {
-                                                return Err(Box::new(ParserError {
+                                                return Err(ParserError {
                                                     kind: ParserErrorKind::UnexpectedToken,
                                                     position: token.char_start,
-                                                }))
+                                                })
                                             }
                                         }
                                         allow_comma = true;
                                     }
-                                    Some(&Err(err)) => return Err(Box::new(err)),
+                                    Some(&Err(err)) => return Err(ParserError::from(err)),
                                     None => return Err(self.unexpected_end_of_input()),
                                 }
                             }
@@ -422,10 +427,10 @@ impl<'a> Parser<'a> {
 
                         // TODO: might want to come up with a better error than this
                         _ => {
-                            return Err(Box::new(ParserError {
+                            return Err(ParserError {
                                 kind: ParserErrorKind::UnexpectedToken,
                                 position: token.char_start,
-                            }))
+                            })
                         }
                     }
                 }
@@ -455,12 +460,12 @@ impl<'a> Parser<'a> {
                 }
                 Some(&Ok(token @ Token { .. })) => {
                     // TODO: include token UnexpectedToken error message
-                    return Err(Box::new(ParserError {
+                    return Err(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
                         position: token.char_start,
-                    }));
+                    });
                 }
-                Some(&Err(err)) => return Err(Box::new(err)),
+                Some(&Err(err)) => return Err(ParserError::from(err)),
                 None => break,
             }
         }
@@ -470,7 +475,7 @@ impl<'a> Parser<'a> {
     fn parse_do_block(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, Box<dyn Error>> {
+    ) -> Result<Statement<'a>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
@@ -480,16 +485,16 @@ impl<'a> Parser<'a> {
     fn parse_name(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Name<'a>, Box<dyn Error>> {
+    ) -> Result<Name<'a>, ParserError> {
         match tokens.next() {
             Some(Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
                 Ok(Name(&self.lexer.input[token.byte_start..token.byte_end]))
             }
-            Some(Ok(token)) => Err(Box::new(ParserError {
+            Some(Ok(token)) => Err(ParserError {
                 kind: ParserErrorKind::UnexpectedToken,
                 position: token.char_start,
-            })),
-            Some(Err(err)) => Err(Box::new(err)),
+            }),
+            Some(Err(err)) => Err(ParserError::from(err)),
             None => Err(self.unexpected_end_of_input()),
         }
     }
@@ -499,7 +504,7 @@ impl<'a> Parser<'a> {
     fn parse_parlist(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<(Vec<Name<'a>>, bool), Box<dyn Error>> {
+    ) -> Result<(Vec<Name<'a>>, bool), ParserError> {
         self.consume(tokens, PunctuatorToken(LparenToken))?;
         let mut namelist = vec![];
         if self.slurp(tokens, PunctuatorToken(RparenToken)) {
@@ -514,18 +519,18 @@ impl<'a> Parser<'a> {
                         namelist.push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
                         expect_name = false;
                     } else {
-                        return Err(Box::new(ParserError {
+                        return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
                             position: token.char_start,
-                        }));
+                        });
                     }
                 }
                 Some(&Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. })) => {
                     if expect_name {
-                        return Err(Box::new(ParserError {
+                        return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedComma,
                             position: token.char_start,
-                        }));
+                        });
                     } else {
                         tokens.next();
                         expect_name = true;
@@ -533,10 +538,10 @@ impl<'a> Parser<'a> {
                 }
                 Some(&Ok(token @ Token { kind: PunctuatorToken(RparenToken), .. })) => {
                     if expect_name {
-                        return Err(Box::new(ParserError {
+                        return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
                             position: token.char_start,
-                        }));
+                        });
                     } else {
                         tokens.next();
                         return Ok((namelist, false));
@@ -548,19 +553,19 @@ impl<'a> Parser<'a> {
                         self.consume(tokens, PunctuatorToken(RparenToken))?;
                         return Ok((namelist, true));
                     } else {
-                        return Err(Box::new(ParserError {
+                        return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
                             position: token.char_start,
-                        }));
+                        });
                     }
                 }
                 Some(&Ok(token @ Token { .. })) => {
-                    return Err(Box::new(ParserError {
+                    return Err(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
                         position: token.char_start,
-                    }));
+                    });
                 }
-                Some(&Err(err)) => return Err(Box::new(err)),
+                Some(&Err(err)) => return Err(ParserError::from(err)),
                 None => return Err(self.unexpected_end_of_input()),
             }
         }
@@ -569,7 +574,7 @@ impl<'a> Parser<'a> {
     fn parse_namelist(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Vec<Name<'a>>, Box<dyn Error>> {
+    ) -> Result<Vec<Name<'a>>, ParserError> {
         let mut namelist = vec![];
         let mut expect_name = true;
         loop {
@@ -585,10 +590,10 @@ impl<'a> Parser<'a> {
                 }
                 Some(&Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. })) => {
                     if expect_name {
-                        return Err(Box::new(ParserError {
+                        return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedComma,
                             position: token.char_start,
-                        }));
+                        });
                     } else {
                         tokens.next();
                         expect_name = true;
@@ -596,15 +601,15 @@ impl<'a> Parser<'a> {
                 }
                 Some(&Ok(token @ Token { .. })) => {
                     if expect_name {
-                        return Err(Box::new(ParserError {
+                        return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
                             position: token.char_start,
-                        }));
+                        });
                     } else {
                         break;
                     }
                 }
-                Some(&Err(err)) => return Err(Box::new(err)),
+                Some(&Err(err)) => return Err(ParserError::from(err)),
                 None => {
                     if expect_name {
                         return Err(self.unexpected_end_of_input());
@@ -620,7 +625,7 @@ impl<'a> Parser<'a> {
     fn parse_explist(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Vec<Exp<'a>>, Box<dyn Error>> {
+    ) -> Result<Vec<Exp<'a>>, ParserError> {
         let mut explist = vec![];
         let mut allow_comma = false;
         loop {
@@ -630,10 +635,10 @@ impl<'a> Parser<'a> {
                         tokens.next();
                         allow_comma = false;
                     } else {
-                        return Err(Box::new(ParserError {
+                        return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedComma,
                             position: char_start,
-                        }));
+                        });
                     }
                 }
                 Some(&Ok(
@@ -657,16 +662,16 @@ impl<'a> Parser<'a> {
                         explist.push(self.parse_exp(tokens, 0)?);
                         allow_comma = true;
                     } else {
-                        return Err(Box::new(ParserError {
+                        return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
                             position: token.char_start,
-                        }));
+                        });
                     }
                 }
                 Some(&Ok(_)) => {
                     break;
                 }
-                Some(&Err(err)) => return Err(Box::new(err)),
+                Some(&Err(err)) => return Err(ParserError::from(err)),
                 None => {
                     if allow_comma {
                         break;
@@ -683,7 +688,7 @@ impl<'a> Parser<'a> {
     fn parse_for(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, Box<dyn Error>> {
+    ) -> Result<Statement<'a>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(ForToken)))?;
         let mut namelist = self.parse_namelist(tokens)?;
 
@@ -714,7 +719,7 @@ impl<'a> Parser<'a> {
     fn parse_if(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, Box<dyn Error>> {
+    ) -> Result<Statement<'a>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(IfToken)))?;
         let cexp = Box::new(self.parse_exp(tokens, 0)?);
         self.consume(tokens, NameToken(KeywordToken(ThenToken)))?;
@@ -740,7 +745,7 @@ impl<'a> Parser<'a> {
     fn parse_repeat(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, Box<dyn Error>> {
+    ) -> Result<Statement<'a>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(RepeatToken)))?;
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(UntilToken)))?;
@@ -751,7 +756,7 @@ impl<'a> Parser<'a> {
     fn parse_while(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, Box<dyn Error>> {
+    ) -> Result<Statement<'a>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(WhileToken)))?;
         let cexp = Box::new(self.parse_exp(tokens, 0)?);
         self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
@@ -763,7 +768,7 @@ impl<'a> Parser<'a> {
     fn parse_function(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, Box<dyn Error>> {
+    ) -> Result<Statement<'a>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(FunctionToken)))?;
         let mut name = vec![self.parse_name(tokens)?];
         while self.slurp(tokens, PunctuatorToken(DotToken)) {
@@ -783,7 +788,7 @@ impl<'a> Parser<'a> {
     fn parse_local(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, Box<dyn Error>> {
+    ) -> Result<Statement<'a>, ParserError> {
         // Example inputs:
         //
         // local x
@@ -812,7 +817,7 @@ impl<'a> Parser<'a> {
     /// bytes. For example, the sequence "\n" is replaced with an actual newline, and so on.
     ///
     /// In contrast, a "raw" string preserves the exact form it had in the original source.
-    fn cook_str(&self, token: Token) -> Result<Exp<'a>, Box<dyn Error>> {
+    fn cook_str(&self, token: Token) -> Result<Exp<'a>, ParserError> {
         let byte_start = token.byte_start + 1;
         let byte_end = token.byte_end - 1;
         let char_start = token.char_start + 1;
@@ -855,14 +860,15 @@ impl<'a> Parser<'a> {
                                         break;
                                     }
                                 }
+                                // TODO: make this better... we lose position info here
                                 let number = std::str::from_utf8(&digits)?.parse::<u8>()?;
                                 number as char
                             }
                             _ => {
-                                return Err(Box::new(ParserError {
+                                return Err(ParserError {
                                     kind: ParserErrorKind::InvalidEscapeSequence,
                                     position: char_start + idx,
-                                }));
+                                });
                             }
                         }
                     } else {
@@ -881,7 +887,7 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
         op: UnOp,
-    ) -> Result<Exp<'a>, Box<dyn Error>> {
+    ) -> Result<Exp<'a>, ParserError> {
         let bp = unop_binding(op);
         let rhs = self.parse_exp(tokens, bp)?;
         Ok(Exp::Unary { exp: Box::new(rhs), op })
@@ -891,7 +897,7 @@ impl<'a> Parser<'a> {
     fn parse_args(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Vec<Exp<'a>>, Box<dyn Error>> {
+    ) -> Result<Vec<Exp<'a>>, ParserError> {
         match tokens.peek() {
             Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 tokens.next();
@@ -907,11 +913,10 @@ impl<'a> Parser<'a> {
             | Some(&Ok(Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
                 Ok(vec![self.parse_exp(tokens, 0)?])
             }
-            Some(&Ok(Token { char_start, .. })) => Err(Box::new(ParserError {
-                kind: ParserErrorKind::UnexpectedToken,
-                position: char_start,
-            })),
-            Some(&Err(err)) => Err(Box::new(err)),
+            Some(&Ok(Token { char_start, .. })) => {
+                Err(ParserError { kind: ParserErrorKind::UnexpectedToken, position: char_start })
+            }
+            Some(&Err(err)) => Err(ParserError::from(err)),
             None => Err(self.unexpected_end_of_input()),
         }
     }
@@ -931,7 +936,7 @@ impl<'a> Parser<'a> {
     fn parse_prefixexp(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Exp<'a>, Box<dyn Error>> {
+    ) -> Result<Exp<'a>, ParserError> {
         let prefixexp = match tokens.next() {
             Some(Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 let lhs = self.parse_exp(tokens, 0)?;
@@ -939,12 +944,12 @@ impl<'a> Parser<'a> {
                 match token {
                     Some(Ok(Token { kind: PunctuatorToken(RparenToken), .. })) => lhs,
                     Some(Ok(token)) => {
-                        return Err(Box::new(ParserError {
+                        return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
                             position: token.char_start,
-                        }))
+                        })
                     }
-                    Some(Err(err)) => return Err(Box::new(err)),
+                    Some(Err(err)) => return Err(ParserError::from(err)),
                     None => return Err(self.unexpected_end_of_input()),
                 }
             }
@@ -963,12 +968,12 @@ impl<'a> Parser<'a> {
                                     ..
                                 })) => &self.lexer.input[byte_start..byte_end],
                                 Some(Ok(Token { char_start, .. })) => {
-                                    return Err(Box::new(ParserError {
+                                    return Err(ParserError {
                                         kind: ParserErrorKind::UnexpectedToken,
                                         position: char_start,
-                                    }));
+                                    });
                                 }
-                                Some(Err(err)) => return Err(Box::new(err)),
+                                Some(Err(err)) => return Err(ParserError::from(err)),
                                 None => return Err(self.unexpected_end_of_input()),
                             };
                             pexp = Exp::MethodCall {
@@ -991,12 +996,12 @@ impl<'a> Parser<'a> {
                                     Exp::RawStr(name)
                                 }
                                 Some(Ok(Token { char_start, .. })) => {
-                                    return Err(Box::new(ParserError {
+                                    return Err(ParserError {
                                         kind: ParserErrorKind::UnexpectedToken,
                                         position: char_start,
-                                    }));
+                                    });
                                 }
-                                Some(Err(err)) => return Err(Box::new(err)),
+                                Some(Err(err)) => return Err(ParserError::from(err)),
                                 None => return Err(self.unexpected_end_of_input()),
                             };
                             pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
@@ -1030,12 +1035,12 @@ impl<'a> Parser<'a> {
                 pexp
             }
             Some(Ok(Token { char_start, .. })) => {
-                return Err(Box::new(ParserError {
+                return Err(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
                     position: char_start,
-                }));
+                });
             }
-            Some(Err(err)) => return Err(Box::new(err)),
+            Some(Err(err)) => return Err(ParserError::from(err)),
             None => return Err(self.unexpected_end_of_input()),
         };
         Ok(prefixexp)
@@ -1046,7 +1051,7 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
         minimum_bp: u8,
-    ) -> Result<Exp<'a>, Box<dyn Error>> {
+    ) -> Result<Exp<'a>, ParserError> {
         let mut lhs = match tokens.peek() {
             //
             // Primaries (literals etc).
@@ -1141,13 +1146,13 @@ impl<'a> Parser<'a> {
             }
 
             Some(&Ok(token)) => {
-                return Err(Box::new(ParserError {
+                return Err(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
                     position: token.char_start,
-                }))
+                })
             }
 
-            Some(&Err(err)) => return Err(Box::new(err)),
+            Some(&Err(err)) => return Err(ParserError::from(err)),
 
             None => return Err(self.unexpected_end_of_input()),
         };
@@ -1173,7 +1178,7 @@ impl<'a> Parser<'a> {
                 Some(&Ok(Token { kind: OpToken(SlashToken), .. })) => Some(BinOp::Slash),
                 Some(&Ok(Token { kind: OpToken(StarToken), .. })) => Some(BinOp::Star),
                 Some(&Ok(_)) => None, // No operator, we're done, will return lhs.
-                Some(&Err(err)) => return Err(Box::new(err)),
+                Some(&Err(err)) => return Err(ParserError::from(err)),
                 None => None, // End of input, will return lhs.
             };
 
@@ -1199,7 +1204,7 @@ impl<'a> Parser<'a> {
     fn parse_table_constructor(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Exp<'a>, Box<dyn Error>> {
+    ) -> Result<Exp<'a>, ParserError> {
         match tokens.next() {
             Some(Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 let mut fieldsep_allowed = false;
@@ -1221,10 +1226,10 @@ impl<'a> Parser<'a> {
                                 tokens.next();
                                 fieldsep_allowed = false;
                             } else {
-                                return Err(Box::new(ParserError {
+                                return Err(ParserError {
                                     kind: ParserErrorKind::UnexpectedFieldSeparator,
                                     position: char_start,
-                                }));
+                                });
                             }
                         }
                         Some(&Ok(Token { .. })) => {
@@ -1235,18 +1240,18 @@ impl<'a> Parser<'a> {
                             fields.push(field);
                             fieldsep_allowed = true;
                         }
-                        Some(&Err(err)) => return Err(Box::new(err)),
+                        Some(&Err(err)) => return Err(ParserError::from(err)),
                         None => return Err(self.unexpected_end_of_input()),
                     }
                 }
             }
             Some(Ok(Token { char_start, .. })) => {
-                return Err(Box::new(ParserError {
+                return Err(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
                     position: char_start,
-                }))
+                })
             }
-            Some(Err(err)) => return Err(Box::new(err)),
+            Some(Err(err)) => return Err(ParserError::from(err)),
             None => return Err(self.unexpected_end_of_input()),
         }
     }
@@ -1258,19 +1263,19 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
         kind: docvim_lexer::lua::TokenKind,
-    ) -> Result<Token, Box<dyn Error>> {
+    ) -> Result<Token, ParserError> {
         match tokens.next() {
             Some(Ok(token @ Token { .. })) => {
                 if token.kind == kind {
                     Ok(token)
                 } else {
-                    Err(Box::new(ParserError {
+                    Err(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
                         position: token.char_start,
-                    }))
+                    })
                 }
             }
-            Some(Err(err)) => Err(Box::new(err)),
+            Some(Err(err)) => Err(ParserError::from(err)),
             None => Err(self.unexpected_end_of_input()),
         }
     }
@@ -1317,7 +1322,7 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
         index: usize,
-    ) -> Result<Field<'a>, Box<dyn Error>> {
+    ) -> Result<Field<'a>, ParserError> {
         let token = tokens.peek();
         match token {
             Some(&Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
@@ -1363,7 +1368,7 @@ impl<'a> Parser<'a> {
                 // call or a vararg expression, then all values returned by this expression enter the
                 // list consecutively"
             }
-            Some(&Err(err)) => return Err(Box::new(err)),
+            Some(&Err(err)) => return Err(ParserError::from(err)),
             None => Err(self.unexpected_end_of_input()),
         }
     }
