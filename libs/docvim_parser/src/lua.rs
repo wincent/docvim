@@ -860,8 +860,16 @@ impl<'a> Parser<'a> {
                                         break;
                                     }
                                 }
-                                // TODO: make this better... we lose position info here
-                                let number = std::str::from_utf8(&digits)?.parse::<u8>()?;
+                                let number = std::str::from_utf8(&digits)
+                                    .map_err(|_err| ParserError {
+                                        kind: ParserErrorKind::Utf8Error,
+                                        position: char_start + idx,
+                                    })?
+                                    .parse::<u8>()
+                                    .map_err(|_err| ParserError {
+                                        kind: ParserErrorKind::ParseIntError,
+                                        position: char_start + idx,
+                                    })?;
                                 number as char
                             }
                             _ => {

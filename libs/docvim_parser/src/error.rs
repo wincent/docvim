@@ -1,7 +1,5 @@
 use std::error::Error;
 use std::fmt;
-use std::num::ParseIntError;
-use std::str::Utf8Error;
 
 use docvim_lexer::error::LexerError;
 
@@ -23,28 +21,6 @@ impl Error for ParserError {}
 impl From<LexerError> for ParserError {
     fn from(error: LexerError) -> Self {
         ParserError { kind: ParserErrorKind::LexerError, position: error.position }
-    }
-}
-
-impl From<ParseIntError> for ParserError {
-    // TODO: probably to_string() this error and jam it in the struct somewhere...
-    fn from(_error: ParseIntError) -> Self {
-        ParserError {
-            kind: ParserErrorKind::Utf8Error,
-            // position: error.position, // what here?
-            position: 0,
-        }
-    }
-}
-
-impl From<Utf8Error> for ParserError {
-    // TODO: probably to_string() this error and jam it in the struct somewhere...
-    fn from(_error: Utf8Error) -> Self {
-        ParserError {
-            kind: ParserErrorKind::Utf8Error,
-            // position: error.position, // what here?
-            position: 0,
-        }
     }
 }
 
