@@ -6,6 +6,6 @@ fn transform(input: &str) -> String {
     let parser = Parser::new(input);
     match parser.parse() {
         Ok(ast) => format!("{:#?}", ast),
-        Err(error) => format!("{:#?}", error),
+        Err(error) => parser.pretty_error(error),
     }
 }

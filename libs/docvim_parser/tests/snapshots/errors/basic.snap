@@ -1,12 +1,11 @@
-while true do
-  break
-
-  -- Syntax error, because `break` must be the last statement in a block.
-  print("Unreachable")
+function hello()
+  if something
+    print("forgot the then")
+  end
 end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
   |
-4 |   -- Syntax error, because `break` must be the last statement in a block.
-  |   ^ unexpected token at 4:3
+3 |     print("forgot the then")
+  |     ^ unexpected token at 3:5

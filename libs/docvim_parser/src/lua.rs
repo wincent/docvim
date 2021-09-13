@@ -289,11 +289,52 @@ impl<'a> Parser<'a> {
         Self { lexer: Lexer::new(input) }
     }
 
-    fn pretty_error(&self, error: ParserError) -> String {
-        // hard to do anything with dyn error here: see - https://www.reddit.com/r/rust/comments/al68dy/question_am_i_being_idiomatic_in_how_i_handle/
-        // should do this: https://doc.rust-lang.org/std/convert/trait.From.html
-        // so i may need to return more specific errors (and wrap other errors)
-        String::from("TODO")
+    pub fn pretty_error(&self, error: ParserError) -> String {
+        let mut iter = self.lexer.input.char_indices();
+        let mut column = 1;
+        let mut line = 1;
+        let mut context = String::new();
+        let mut found = false;
+        while let Some((idx, ch)) = iter.next() {
+            if idx == error.position {
+                found = true;
+            }
+            match ch {
+                '\n' => {
+                    if found {
+                        break;
+                    } else {
+                        line = line + 1;
+                        column = 1;
+                        context.clear();
+                    }
+                }
+                _ => {
+                    if !found {
+                        column = column + 1;
+                    }
+                    context.push(ch);
+                }
+            }
+        }
+
+        let mut output = String::new();
+        let line_str = line.to_string();
+        if line > 1 {
+            output.push_str(&(" ".repeat(line_str.len())));
+            output.push_str(" |");
+            output.push('\n');
+        }
+        output.push_str(&line_str);
+        output.push_str(" | ");
+        output.push_str(&context);
+        output.push('\n');
+        output.push_str(&(" ".repeat(line_str.len())));
+        output.push_str(" | ");
+        output.push_str(&(" ".repeat(column - 1)));
+        output.push_str(&format!("^ {:} at {:}:{:}", error.kind.to_str(), line, column));
+        output.push('\n');
+        output
     }
 
     fn unexpected_end_of_input(&self) -> ParserError {

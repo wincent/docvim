@@ -40,7 +40,7 @@ pub enum ParserErrorKind {
 }
 
 impl ParserErrorKind {
-    fn to_str(&self) -> &'static str {
+    pub fn to_str(&self) -> &'static str {
         match *self {
             ParserErrorKind::InvalidEscapeSequence => "invalid escape sequence",
             ParserErrorKind::LexerError => "lexer error",

@@ -7,7 +7,6 @@ end
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-ParserError {
-    kind: UnexpectedToken,
-    position: 27,
-}
+  |
+4 |   -- Syntax error, because `return` must be the last statement in a block.
+  |   ^ unexpected token at 4:3
