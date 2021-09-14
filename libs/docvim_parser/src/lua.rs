@@ -988,7 +988,7 @@ impl<'a> Parser<'a> {
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
     ) -> Result<Exp<'a>, ParserError> {
-        let prefixexp = match tokens.next() {
+        let mut pexp = match tokens.next() {
             Some(Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
                 let lhs = self.parse_exp(tokens, 0)?;
                 let token = tokens.next();
@@ -1005,85 +1005,7 @@ impl<'a> Parser<'a> {
                 }
             }
             Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
-                let mut pexp = Exp::NamedVar(&self.lexer.input[byte_start..byte_end]);
-                loop {
-                    match tokens.peek() {
-                        Some(&Ok(Token { kind: PunctuatorToken(ColonToken), .. })) => {
-                            // `prefixexp : Name args`
-                            tokens.next();
-                            let method_name = match tokens.next() {
-                                Some(Ok(Token {
-                                    kind: NameToken(IdentifierToken),
-                                    byte_start,
-                                    byte_end,
-                                    ..
-                                })) => &self.lexer.input[byte_start..byte_end],
-                                Some(Ok(Token { char_start, .. })) => {
-                                    return Err(ParserError {
-                                        kind: ParserErrorKind::UnexpectedToken,
-                                        position: char_start,
-                                    });
-                                }
-                                Some(Err(err)) => return Err(ParserError::from(err)),
-                                None => return Err(self.unexpected_end_of_input()),
-                            };
-                            pexp = Exp::MethodCall {
-                                pexp: Box::new(pexp),
-                                name: method_name,
-                                args: self.parse_args(tokens)?,
-                            };
-                        }
-                        Some(&Ok(Token { kind: PunctuatorToken(DotToken), .. })) => {
-                            // ie. `foo.bar`, which is syntactic sugar for `foo['bar']`
-                            tokens.next();
-                            let kexp = match tokens.next() {
-                                Some(Ok(Token {
-                                    kind: NameToken(IdentifierToken),
-                                    byte_start,
-                                    byte_end,
-                                    ..
-                                })) => {
-                                    let name = &self.lexer.input[byte_start..byte_end];
-                                    Exp::RawStr(name)
-                                }
-                                Some(Ok(Token { char_start, .. })) => {
-                                    return Err(ParserError {
-                                        kind: ParserErrorKind::UnexpectedToken,
-                                        position: char_start,
-                                    });
-                                }
-                                Some(Err(err)) => return Err(ParserError::from(err)),
-                                None => return Err(self.unexpected_end_of_input()),
-                            };
-                            pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
-                        }
-                        Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
-                            // ie. `foo[bar]`
-                            tokens.next();
-                            let kexp = self.parse_exp(tokens, 0)?;
-                            self.consume(tokens, PunctuatorToken(RbracketToken))?;
-                            pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
-                        }
-                        Some(&Ok(Token {
-                            kind: PunctuatorToken(LcurlyToken | LparenToken),
-                            ..
-                        }))
-                        | Some(&Ok(Token {
-                            kind: LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken)),
-                            ..
-                        }))
-                        | Some(&Ok(Token {
-                            kind: LiteralToken(StrToken(LongToken { .. })), ..
-                        })) => {
-                            pexp = Exp::FunctionCall {
-                                pexp: Box::new(pexp),
-                                args: self.parse_args(tokens)?,
-                            };
-                        }
-                        _ => break,
-                    }
-                }
-                pexp
+                Exp::NamedVar(&self.lexer.input[byte_start..byte_end])
             }
             Some(Ok(Token { char_start, .. })) => {
                 return Err(ParserError {
@@ -1094,7 +1016,84 @@ impl<'a> Parser<'a> {
             Some(Err(err)) => return Err(ParserError::from(err)),
             None => return Err(self.unexpected_end_of_input()),
         };
-        Ok(prefixexp)
+        loop {
+            match tokens.peek() {
+                Some(&Ok(Token { kind: PunctuatorToken(ColonToken), .. })) => {
+                    // `prefixexp : Name args`
+                    tokens.next();
+                    let method_name = match tokens.next() {
+                        Some(Ok(Token {
+                            kind: NameToken(IdentifierToken),
+                            byte_start,
+                            byte_end,
+                            ..
+                        })) => &self.lexer.input[byte_start..byte_end],
+                        Some(Ok(Token { char_start, .. })) => {
+                            return Err(ParserError {
+                                kind: ParserErrorKind::UnexpectedToken,
+                                position: char_start,
+                            });
+                        }
+                        Some(Err(err)) => return Err(ParserError::from(err)),
+                        None => return Err(self.unexpected_end_of_input()),
+                    };
+                    pexp = Exp::MethodCall {
+                        pexp: Box::new(pexp),
+                        name: method_name,
+                        args: self.parse_args(tokens)?,
+                    };
+                }
+                Some(&Ok(Token { kind: PunctuatorToken(DotToken), .. })) => {
+                    // ie. `foo.bar`, which is syntactic sugar for `foo['bar']`
+                    tokens.next();
+                    let kexp = match tokens.next() {
+                        Some(Ok(Token {
+                            kind: NameToken(IdentifierToken),
+                            byte_start,
+                            byte_end,
+                            ..
+                        })) => {
+                            let name = &self.lexer.input[byte_start..byte_end];
+                            Exp::RawStr(name)
+                        }
+                        Some(Ok(Token { char_start, .. })) => {
+                            return Err(ParserError {
+                                kind: ParserErrorKind::UnexpectedToken,
+                                position: char_start,
+                            });
+                        }
+                        Some(Err(err)) => return Err(ParserError::from(err)),
+                        None => return Err(self.unexpected_end_of_input()),
+                    };
+                    pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
+                }
+                Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
+                    // ie. `foo[bar]`
+                    tokens.next();
+                    let kexp = self.parse_exp(tokens, 0)?;
+                    self.consume(tokens, PunctuatorToken(RbracketToken))?;
+                    pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
+                }
+                Some(&Ok(Token {
+                    kind: PunctuatorToken(LcurlyToken | LparenToken),
+                    ..
+                }))
+                | Some(&Ok(Token {
+                    kind: LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken)),
+                    ..
+                }))
+                | Some(&Ok(Token {
+                    kind: LiteralToken(StrToken(LongToken { .. })), ..
+                })) => {
+                    pexp = Exp::FunctionCall {
+                        pexp: Box::new(pexp),
+                        args: self.parse_args(tokens)?,
+                    };
+                }
+                _ => break,
+            }
+        }
+        Ok(pexp)
     }
 
     /// See doc/lua.md for an explanation of `minimum_bp`.
