@@ -706,6 +706,10 @@ impl<'a> Parser<'a> {
                         break;
                     }
                 }
+                Some(&Ok(Token { kind: CommentToken(..), .. })) => {
+                    // Just skip, for now...
+                    tokens.next();
+                }
                 Some(&Ok(_)) => {
                     break;
                 }
@@ -959,6 +963,9 @@ impl<'a> Parser<'a> {
             | Some(&Ok(Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
                 Ok(vec![self.parse_exp(tokens, 0)?])
             }
+            // TODO: probably need to skip comments here too
+            // Some(&Ok(Token { kind: CommentToken(_) .. })) => {
+            // }
             Some(&Ok(Token { char_start, .. })) => {
                 Err(ParserError { kind: ParserErrorKind::UnexpectedToken, position: char_start })
             }

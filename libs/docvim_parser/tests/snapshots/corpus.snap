@@ -646,6 +646,6 @@ return corpus
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-   |
-99 |               false, -- listed?
-   |                      ^ unexpected token at 99:22
+    |
+238 |   -- Returns config from the `CorpusDirectories` (Lua global) for
+    |   ^ unexpected token at 238:3
