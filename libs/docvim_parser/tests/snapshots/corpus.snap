@@ -647,5 +647,5 @@ return corpus
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
     |
-241 |   config_for_file = function(file)
-    |                   ^ unexpected token at 241:19
+488 |             ({lines[1]:gsub('^..', '  ')})[1],
+    |                       ^ unexpected token at 488:23

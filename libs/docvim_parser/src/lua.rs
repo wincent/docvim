@@ -1289,6 +1289,12 @@ impl<'a> Parser<'a> {
                                 });
                             }
                         }
+                        Some(&Ok(Token {
+                            kind: CommentToken(BlockCommentToken | LineCommentToken),
+                            ..
+                        })) => {
+                            tokens.next(); // TODO: don't skip, accumulate
+                        }
                         Some(&Ok(Token { .. })) => {
                             let field = self.parse_table_field(tokens, index)?;
                             if matches!(field, Field { index: Some(_), .. }) {
