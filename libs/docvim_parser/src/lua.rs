@@ -683,8 +683,6 @@ impl<'a> Parser<'a> {
                     }
                 }
                 Some(&Ok(
-                    token
-                    @
                     Token {
                         kind:
                             LiteralToken(NumberToken)
@@ -1388,24 +1386,32 @@ impl<'a> Parser<'a> {
     ) -> Result<Field<'a>, ParserError> {
         let token = tokens.peek();
         match token {
-            Some(&Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
-                let name = &self.lexer.input[byte_start..byte_end];
-                tokens.next();
-                if matches!(tokens.peek(), Some(&Ok(Token { kind: OpToken(AssignToken), .. }))) {
-                    // `name = exp`; equivalent to `["name"] = exp`.
-                    self.consume(tokens, OpToken(AssignToken))?;
-                    let exp = self.parse_exp(tokens, 0)?;
-                    Ok(Field {
-                        index: None,
-                        lexp: Box::new(Exp::RawStr(name)),
-                        rexp: Box::new(exp),
-                    })
+            Some(&Ok(Token { kind: NameToken(IdentifierToken), .. })) => {
+                let lexp = self.parse_exp(tokens, 0)?;
+                if let Exp::NamedVar(name) = lexp {
+                    // Name = exp
+                    if self.slurp(tokens, OpToken(AssignToken)) {
+                        // `name = exp`; equivalent to `["name"] = exp`.
+                        let rexp = self.parse_exp(tokens, 0)?;
+                        Ok(Field {
+                            index: None,
+                            lexp: Box::new(Exp::RawStr(name)),
+                            rexp: Box::new(rexp),
+                        })
+                    } else {
+                        // `exp`; syntactic sugar for `[index] = exp`
+                        Ok(Field {
+                            index: Some(index),
+                            lexp: Box::new(Exp::Nil),
+                            rexp: Box::new(lexp),
+                        })
+                    }
                 } else {
-                    // `exp`; syntactic sugar for `[index] = exp`
+                    // exp; syntactic sugar for `[index] = exp`
                     Ok(Field {
                         index: Some(index),
                         lexp: Box::new(Exp::Nil),
-                        rexp: Box::new(Exp::NamedVar(name)),
+                        rexp: Box::new(lexp),
                     })
                 }
             }

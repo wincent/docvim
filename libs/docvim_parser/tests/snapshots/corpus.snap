@@ -648,4 +648,4 @@ return corpus
 
     |
 488 |             ({lines[1]:gsub('^..', '  ')})[1],
-    |                       ^ unexpected token at 488:23
+    |                                              ^ unexpected token at 488:46
