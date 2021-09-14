@@ -1105,6 +1105,10 @@ impl<'a> Parser<'a> {
         tokens: &mut std::iter::Peekable<Tokens>,
         minimum_bp: u8,
     ) -> Result<Exp<'a>, ParserError> {
+        while let Some(&Ok(Token { kind: CommentToken(BlockCommentToken | LineCommentToken), .. })) = tokens.peek() {
+            // TODO: accumulate comments; for now just skip over
+            tokens.next();
+        }
         let mut lhs = match tokens.peek() {
             //
             // Primaries (literals etc).

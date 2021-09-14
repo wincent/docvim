@@ -647,5 +647,5 @@ return corpus
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
     |
-238 |   -- Returns config from the `CorpusDirectories` (Lua global) for
-    |   ^ unexpected token at 238:3
+241 |   config_for_file = function(file)
+    |                   ^ unexpected token at 241:19
