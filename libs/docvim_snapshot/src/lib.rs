@@ -65,24 +65,24 @@ pub fn check_snapshot(
     let contents = fs::read_to_string(snapshot)?;
 
     // Extract input and expected output.
-    // TODO: think about whether to slurp and/or require blank lines around divider.
     if let Some(divider_idx) = contents.find(DIVIDER) {
         let output_idx = divider_idx + DIVIDER.len();
-        let input = contents[0..divider_idx].trim();
-        let expected = contents[output_idx..contents.len()].trim();
-        let transformed = String::from(callback(&input).trim_end());
+        let input = &contents[0..divider_idx];
+        let expected = &contents[output_idx..contents.len()];
+        let mut transformed = String::from(callback(&input));
+        if !transformed.ends_with("\n") {
+            transformed.push('\n');
+        }
 
         if std::env::var_os(UPDATE_SNAPSHOTS).is_some() && !dry_run {
             let mut updated = String::from(input);
             updated.push_str(DIVIDER);
             updated.push_str(&transformed);
-            updated.push('\n');
             fs::write(snapshot, updated)?;
             Ok(true)
         } else if expected == transformed {
             Ok(true)
         } else {
-            // TODO: maybe don't use lines(); do i actually want to keep the trailing line endings?
             let expected_lines = expected.lines().collect::<Vec<&str>>();
             let transformed_lines = transformed.lines().collect::<Vec<&str>>();
 
@@ -96,11 +96,14 @@ pub fn check_snapshot(
         }
     } else {
         // No divider found, so assume this is a new snapshot that we need to fill out.
-        let mut input = String::from(contents.trim());
-        let transformed = String::from(callback(&input).trim_end());
+        let mut input = String::from(contents);
+        let transformed = String::from(callback(&input));
         input.push_str(DIVIDER);
         input.push_str(&transformed);
-        input.push('\n');
+
+        if !transformed.ends_with("\n") {
+            input.push('\n');
+        }
         if !dry_run {
             fs::write(snapshot, input)?;
         }
