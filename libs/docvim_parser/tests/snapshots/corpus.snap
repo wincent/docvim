@@ -647,5 +647,5 @@ return corpus
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
    |
-52 |       selection = selection:sub(0, -2)
-   |       ^ unexpected token at 52:7
+99 |               false, -- listed?
+   |                      ^ unexpected token at 99:22

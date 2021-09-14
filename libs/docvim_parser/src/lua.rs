@@ -703,10 +703,7 @@ impl<'a> Parser<'a> {
                         explist.push(self.parse_exp(tokens, 0)?);
                         allow_comma = true;
                     } else {
-                        return Err(ParserError {
-                            kind: ParserErrorKind::UnexpectedToken,
-                            position: token.char_start,
-                        });
+                        break;
                     }
                 }
                 Some(&Ok(_)) => {
