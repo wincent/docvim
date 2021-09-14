@@ -4,7 +4,6 @@ use std::fmt;
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum LexerErrorKind {
     InvalidEscapeSequence,
-    InvalidLongStringDelimiter,
     InvalidOperator,
     InvalidNumberLiteral,
     UnterminatedBlockComment,
@@ -16,7 +15,6 @@ impl LexerErrorKind {
     fn to_str(&self) -> &'static str {
         match *self {
             LexerErrorKind::InvalidEscapeSequence => "invalid escape sequence",
-            LexerErrorKind::InvalidLongStringDelimiter => "invalid long string delimiter",
             LexerErrorKind::InvalidNumberLiteral => "invalid number literal",
             LexerErrorKind::InvalidOperator => "invalid operator",
             LexerErrorKind::UnterminatedBlockComment => "unterminated block comment",
