@@ -1133,22 +1133,8 @@ impl<'a> Parser<'a> {
                 tokens.next();
                 self.cook_str(token)?
             }
-            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
+            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { level })), .. })) => {
                 tokens.next();
-                // Unforunate workaround needed until: https://github.com/rust-lang/rust/issues/65490
-                //
-                // Can't write: Some(Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { level })), .. }))
-                //                this: ^^^^^                             at same time as this: ^^^^^
-                //
-                // Rust says, "pattern bindings after an `@` are unstable".
-                let level = if let Token {
-                    kind: LiteralToken(StrToken(LongToken { level })), ..
-                } = token
-                {
-                    level
-                } else {
-                    panic!();
-                };
 
                 // As a convenience, Lua omits any newline at position 0 in a long format string.
                 let first = self.lexer.input.as_bytes()[token.byte_start + 2 + level];
