@@ -5,6 +5,6 @@ proc-macro = true
 
 [package]
 authors = ["Greg Hurrell <greg@hurrell.net>"]
-edition = "2018"
+edition = "2021"
 name = "docvim_macros"
 version = "0.1.0"
