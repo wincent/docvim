@@ -2,9 +2,9 @@
 
 ## Criteria
 
-- **Speed:** We want something faster than the default hash function because we control all the inputs and don't wish to pay the cost of a DoS-resitant hash.
+- **Speed:** We want something faster than the default hash function because we control all the inputs and don't wish to pay the cost of a DoS-resistant hash.
 - **Simplicity:** We want something simple enough for us to actually implement.
-- **Collision-resitance:** We want something good enough for hash table use, but we don't need cryptographic hash.
+- **Collision-resistance:** We want something good enough for hash table use, but we don't need cryptographic hash.
 - **Good for short strings:** We'll mostly be hashing source code (or source-code-like) things, so that means relatively short strings of 0 to 80 characters in length.
 
 Reviewing the resources (see below), we can see that there are a bunch of complicated trade-offs to be evaluated, and different commentators arrive at totally contradictory conclusions based on evaluation of the same candidate functions.
@@ -65,7 +65,7 @@ Source: ["SMhasher"](https://github.com/rurban/smhasher) hash comparisons.
 
 As noted in the introduction, this is a complex topic with a lot of trade-offs (speaking of which, see the decision graph at the end of ["A Seven-Dimensional Analysis of Hashing Methods and its Implications on Query Processing"](https://bigdata.uni-saarland.de/publications/p249-richter.pdf)).
 
-In the end, I'm going with djb2a (although djb2) would be fine too because it is:
+In the end, I'm going with djb2a (although djb2 would be fine too) because it is:
 
 - Collision-resistant enough for use in a hash table that won't be subjected to DoS attacks.
 - Simple enough that I can implement it.
