@@ -47,7 +47,6 @@ pub enum Exp<'a> {
     Index {
         /// The "prefix expression" (ie. LHS in `foo[bar]; that is, `foo`), which is the table to
         /// be indexed.
-        // TODO: decide whether we should type this more narrowly (bc prefixexp is a subset of Exp)...
         pexp: Box<Exp<'a>>,
         /// The "key expression" (ie. RHS in `foo[bar]`; that is, `bar`).
         kexp: Box<Exp<'a>>,
