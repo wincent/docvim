@@ -57,7 +57,7 @@ where
 /// first part of the Myers paper. Note that `N` here is the _sum_ of the lengths of the inputs
 /// and "D" is the length of the minimal edit script, so, following the convention used elsewhere
 /// in the paper (where `N` and `M` refer to the input lengths), we could also write the time and
-/// space requirement as `D(N + M)`. Given that the upper bound for `D` is `N + M`, we have have
+/// space requirement as `D(N + M)`. Given that the upper bound for `D` is `N + M`, we have
 /// quadratic growth which makes this algorithm impractical for anything but the most modest input
 /// sizes.
 ///
