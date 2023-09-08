@@ -4943,7 +4943,7 @@ Block(
                                                                                                                                                                     "match",
                                                                                                                                                                 ),
                                                                                                                                                                 CookedStr(
-                                                                                                                                                                    "\u{0}",
+                                                                                                                                                                    "\0",
                                                                                                                                                                 ),
                                                                                                                                                             ],
                                                                                                                                                         },
@@ -6667,7 +6667,7 @@ Block(
                                                                                                                                                                     "match",
                                                                                                                                                                 ),
                                                                                                                                                                 CookedStr(
-                                                                                                                                                                    "\u{0}",
+                                                                                                                                                                    "\0",
                                                                                                                                                                 ),
                                                                                                                                                             ],
                                                                                                                                                         },

@@ -3,3 +3,4 @@ members = [
   "exe",
   "libs/*"
 ]
+resolver = "2"
