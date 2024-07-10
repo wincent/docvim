@@ -38,7 +38,8 @@ Available options:
 stack install docvim
 
 # Cabal:
-cabal install docvim
+cabal update # Do if you see "Warning: The package list for 'hackage.haskell.org' does not exist."
+cabal install
 ```
 
 ## Syntax
