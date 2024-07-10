@@ -314,7 +314,7 @@ compress = map prioritizeBreakTag . group
 plaintext :: Parser Node
 plaintext = Plaintext <$> wordChars
   where
-    wordChars = many1 $ choice [ try $ char '<' <* notFollowedBy (string' "br")
+    wordChars = many1 $ choice [ try $ char '<' <* notFollowedBy (caseString' "br")
                                , noneOf " \n\t<|`"
                                ]
 
@@ -329,8 +329,8 @@ char' c = satisfy $ \x -> toUpper x == toUpper c
 --
 -- Based on `caseString` function in:
 -- https://hackage.haskell.org/package/hsemail-1.3/docs/Text-ParserCombinators-Parsec-Rfc2234.html
-string' :: String -> Parser String
-string' s = mapM_ char' s >> pure s <?> s
+caseString' :: String -> Parser String
+caseString' s = mapM_ char' s >> pure s <?> s
 
 -- | Tokenized whitespace.
 --
@@ -343,8 +343,8 @@ whitespace = Whitespace <$ ws
 br :: Parser Node
 br = BreakTag <$ (try htmlTag <|> try xhtmlTag) <?> "<br />"
   where
-    htmlTag = string' "<br>"
-    xhtmlTag = string' "<br" >> optional ws >> string "/>"
+    htmlTag = caseString' "<br>"
+    xhtmlTag = caseString' "<br" >> optional ws >> string "/>"
 
 link :: Parser Node
 link = Link <$> (bar *> linkText <* bar)
