@@ -179,26 +179,42 @@ impl<'a> Tokens<'a> {
     fn scan_comment(&mut self) -> Result<Token, LexerError> {
         let char_start = self.iter.char_idx - 2; // Subtract length of "--" prefix.
         let byte_start = self.iter.byte_idx - 2;
-        if self.consume_char('[') && self.consume_char('[') {
-            self.scan_block_comment(char_start, byte_start)
-        } else {
-            self.scan_line_comment(char_start, byte_start)
+        if self.consume_char('[') {
+            let mut eq_count = 0;
+            loop {
+                if self.consume_char('=') {
+                    eq_count += 1;
+                } else {
+                    break;
+                }
+            }
+            if self.consume_char('[') {
+                return self.scan_block_comment(char_start, byte_start, eq_count);
+            }
         }
+        self.scan_line_comment(char_start, byte_start)
     }
 
-    /// Scans until seeing "]]".
-    /// BUG: we aren't handling delimiters like `--[===[` and so on (see `scan_long_string()` for
-    /// example of how we're handling the similar case of strings with `[===[` delimiters).
+    /// Scans until seeing "]]" (or "]=]", or "]==]" etc).
     fn scan_block_comment(
         &mut self,
         char_start: usize,
         byte_start: usize,
+        eq_count: i32,
     ) -> Result<Token, LexerError> {
         loop {
             let ch = self.iter.next();
             match ch {
                 Some(']') => {
-                    if self.consume_char(']') {
+                    let mut found_eq = 0;
+                    while found_eq < eq_count {
+                        if self.consume_char('=') {
+                            found_eq += 1;
+                        } else {
+                            break;
+                        }
+                    }
+                    if found_eq == eq_count && self.consume_char(']') {
                         return Ok(Token::new(
                             Comment(BlockComment),
                             char_start,
@@ -944,6 +960,36 @@ mod tests {
                 byte_end: 13,
                 byte_start: 0,
                 char_end: 13,
+                char_start: 0,
+                kind: Comment(BlockComment),
+            }]
+        );
+        assert_lexes!(
+            "--[=[\nstuff\n]=]",
+            vec![Token {
+                byte_end: 15,
+                byte_start: 0,
+                char_end: 15,
+                char_start: 0,
+                kind: Comment(BlockComment),
+            }]
+        );
+        assert_lexes!(
+            "--[==[\nstuff\n]==]",
+            vec![Token {
+                byte_end: 17,
+                byte_start: 0,
+                char_end: 17,
+                char_start: 0,
+                kind: Comment(BlockComment),
+            }]
+        );
+        assert_lexes!(
+            "--[===[\ncomment continues after: ]]\n]===]",
+            vec![Token {
+                byte_end: 41,
+                byte_start: 0,
+                char_end: 41,
                 char_start: 0,
                 kind: Comment(BlockComment),
             }]
