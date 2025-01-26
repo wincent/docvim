@@ -127,6 +127,18 @@ pub enum TokenKind {
     Unknown,
 }
 
+macro_rules! make_token {
+    ($self:expr, $kind:expr) => {
+        Some(Ok(Token::new(
+            $kind,
+            $self.char_start,
+            $self.iter.char_idx,
+            $self.byte_start,
+            $self.iter.byte_idx,
+        )))
+    };
+}
+
 pub struct Lexer<'a> {
     pub input: &'a str,
 }
@@ -138,7 +150,7 @@ impl<'a> Lexer<'a> {
 
     /// Returns an iterator over the tokens produced by the lexer.
     pub fn tokens(&self) -> Tokens<'_> {
-        Tokens { iter: Peekable::new(self.input) }
+        Tokens { iter: Peekable::new(self.input), char_start: 0, byte_start: 0 }
     }
 
     /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
@@ -161,6 +173,8 @@ impl<'a> Lexer<'a> {
 
 pub struct Tokens<'a> {
     iter: Peekable<'a>,
+    char_start: usize,
+    byte_start: usize,
 }
 
 impl<'a> Tokens<'a> {
@@ -176,9 +190,9 @@ impl<'a> Tokens<'a> {
         }
     }
 
-    fn scan_comment(&mut self) -> Result<Token, LexerError> {
-        let char_start = self.iter.char_idx - 2; // Subtract length of "--" prefix.
-        let byte_start = self.iter.byte_idx - 2;
+    fn scan_comment(&mut self) -> Option<Result<Token, LexerError>> {
+        self.char_start = self.iter.char_idx - 2; // Subtract length of "--" prefix.
+        self.byte_start = self.iter.byte_idx - 2;
         if self.consume_char('[') {
             let mut eq_count = 0;
             loop {
@@ -189,19 +203,14 @@ impl<'a> Tokens<'a> {
                 }
             }
             if self.consume_char('[') {
-                return self.scan_block_comment(char_start, byte_start, eq_count);
+                return self.scan_block_comment(eq_count);
             }
         }
-        self.scan_line_comment(char_start, byte_start)
+        self.scan_line_comment()
     }
 
     /// Scans until seeing "]]" (or "]=]", or "]==]" etc).
-    fn scan_block_comment(
-        &mut self,
-        char_start: usize,
-        byte_start: usize,
-        eq_count: i32,
-    ) -> Result<Token, LexerError> {
+    fn scan_block_comment(&mut self, eq_count: i32) -> Option<Result<Token, LexerError>> {
         loop {
             let ch = self.iter.next();
             match ch {
@@ -215,20 +224,14 @@ impl<'a> Tokens<'a> {
                         }
                     }
                     if found_eq == eq_count && self.consume_char(']') {
-                        return Ok(Token::new(
-                            Comment(BlockComment),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ));
+                        return make_token!(self, Comment(BlockComment));
                     }
                 }
                 None => {
-                    return Err(LexerError {
+                    return Some(Err(LexerError {
                         kind: LexerErrorKind::UnterminatedBlockComment,
                         position: self.iter.char_idx,
-                    });
+                    }));
                 }
                 _ => (),
             }
@@ -236,22 +239,12 @@ impl<'a> Tokens<'a> {
     }
 
     /// Scans until end of line, or end of input.
-    fn scan_line_comment(
-        &mut self,
-        char_start: usize,
-        byte_start: usize,
-    ) -> Result<Token, LexerError> {
+    fn scan_line_comment(&mut self) -> Option<Result<Token, LexerError>> {
         loop {
             let ch = self.iter.next();
             match ch {
                 Some('\n') | None => {
-                    return Ok(Token::new(
-                        Comment(LineComment),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    ));
+                    return make_token!(self, Comment(LineComment));
                 }
                 _ => (),
             }
@@ -558,85 +551,43 @@ impl<'a> Iterator for Tokens<'a> {
 
     fn next(&mut self) -> Option<Result<Token, LexerError>> {
         self.skip_whitespace();
-        let char_start = self.iter.char_idx;
-        let byte_start = self.iter.byte_idx;
+        self.char_start = self.iter.char_idx;
+        self.byte_start = self.iter.byte_idx;
         if let Some(&c) = self.iter.peek() {
             match c {
                 '-' => {
                     self.iter.next();
                     if self.consume_char('-') {
-                        Some(self.scan_comment())
+                        self.scan_comment()
                     } else {
-                        Some(Ok(Token::new(
-                            Op(Minus),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )))
+                        make_token!(self, Op(Minus))
                     }
                 }
                 '+' => {
                     // TODO: make macro to reduce verbosity here (once overall shape has settled
                     // down).
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Op(Plus),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Op(Plus))
                 }
                 '*' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Op(Star),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Op(Star))
                 }
                 '/' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Op(Slash),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Op(Slash))
                 }
                 '%' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Op(Percent),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Op(Percent))
                 }
                 '^' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Op(Caret),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Op(Caret))
                 }
                 '#' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Op(Hash),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Op(Hash))
                 }
                 '=' => {
                     let mut eq_count = 0;
@@ -644,23 +595,11 @@ impl<'a> Iterator for Tokens<'a> {
                         eq_count += 1;
                     }
                     match eq_count {
-                        1 => Some(Ok(Token::new(
-                            Op(Assign),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))),
-                        2 => Some(Ok(Token::new(
-                            Op(Eq),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))),
+                        1 => make_token!(self, Op(Assign)),
+                        2 => make_token!(self, Op(Eq)),
                         _ => Some(Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: char_start,
+                            position: self.char_start,
                         })),
                     }
                 }
@@ -672,99 +611,45 @@ impl<'a> Iterator for Tokens<'a> {
                     // could also let parser deal with it
                     self.iter.next();
                     if self.consume_char('=') {
-                        Some(Ok(Token::new(
-                            Op(Ne),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )))
+                        make_token!(self, Op(Ne))
                     } else {
                         Some(Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: char_start,
+                            position: self.char_start,
                         }))
                     }
                 }
                 '<' => {
                     self.iter.next();
                     if self.consume_char('=') {
-                        Some(Ok(Token::new(
-                            Op(Lte),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )))
+                        make_token!(self, Op(Lte))
                     } else {
-                        Some(Ok(Token::new(
-                            Op(Lt),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )))
+                        make_token!(self, Op(Lt))
                     }
                 }
                 '>' => {
                     self.iter.next();
                     if self.consume_char('=') {
-                        Some(Ok(Token::new(
-                            Op(Gte),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )))
+                        make_token!(self, Op(Gte))
                     } else {
-                        Some(Ok(Token::new(
-                            Op(Gt),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        )))
+                        make_token!(self, Op(Gt))
                     }
                 }
                 '(' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Punctuator(Lparen),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Punctuator(Lparen))
                 }
                 ')' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Punctuator(Rparen),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Punctuator(Rparen))
                 }
                 '{' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Punctuator(Lcurly),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Punctuator(Lcurly))
                 }
                 '}' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Punctuator(Rcurly),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Punctuator(Rcurly))
                 }
                 '[' => {
                     self.iter.next();
@@ -781,59 +666,29 @@ impl<'a> Iterator for Tokens<'a> {
                             } else {
                                 Some(Err(LexerError {
                                     kind: LexerErrorKind::InvalidOperator,
-                                    position: char_start,
+                                    position: self.char_start,
                                 }))
                             }
                         } else {
-                            Some(Ok(Token::new(
-                                Punctuator(Lbracket),
-                                char_start,
-                                self.iter.char_idx,
-                                byte_start,
-                                self.iter.byte_idx,
-                            )))
+                            make_token!(self, Punctuator(Lbracket))
                         }
                     }
                 }
                 ']' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Punctuator(Rbracket),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Punctuator(Rbracket))
                 }
                 ';' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Punctuator(Semi),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Punctuator(Semi))
                 }
                 ':' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Punctuator(Colon),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Punctuator(Colon))
                 }
                 ',' => {
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Punctuator(Comma),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Punctuator(Comma))
                 }
                 '.' => {
                     let mut dot_count = 0;
@@ -841,30 +696,12 @@ impl<'a> Iterator for Tokens<'a> {
                         dot_count += 1;
                     }
                     match dot_count {
-                        1 => Some(Ok(Token::new(
-                            Punctuator(Dot),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))),
-                        2 => Some(Ok(Token::new(
-                            Op(Concat),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))),
-                        3 => Some(Ok(Token::new(
-                            Op(Vararg),
-                            char_start,
-                            self.iter.char_idx,
-                            byte_start,
-                            self.iter.byte_idx,
-                        ))),
+                        1 => make_token!(self, Punctuator(Dot)),
+                        2 => make_token!(self, Op(Concat)),
+                        3 => make_token!(self, Op(Vararg)),
                         _ => Some(Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: char_start,
+                            position: self.char_start,
                         })),
                     }
                 }
@@ -876,13 +713,7 @@ impl<'a> Iterator for Tokens<'a> {
                     // "Unknown" tokens for stuff we don't recognize, so that it can at least take
                     // its best shot at generating documentation.
                     self.iter.next();
-                    Some(Ok(Token::new(
-                        Unknown,
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                    )))
+                    make_token!(self, Unknown)
                 }
             }
         } else {
