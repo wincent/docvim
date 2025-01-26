@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt;
 
-use docvim_lexer::error::{LexerError,LexerErrorKind};
+use docvim_lexer::error::{LexerError, LexerErrorKind};
 
 #[derive(Debug)]
 pub struct ParserError {
@@ -22,12 +22,24 @@ impl From<LexerError> for ParserError {
         let kind = error.kind;
         let position = error.position;
         match kind {
-            LexerErrorKind::InvalidEscapeSequence => ParserError { kind: ParserErrorKind::InvalidEscapeSequence, position },
-            LexerErrorKind::InvalidNumberLiteral => ParserError { kind: ParserErrorKind::InvalidNumberLiteral, position },
-            LexerErrorKind::InvalidOperator => ParserError { kind: ParserErrorKind::InvalidOperator, position },
-            LexerErrorKind::UnterminatedBlockComment => ParserError { kind: ParserErrorKind::UnterminatedBlockComment, position },
-            LexerErrorKind::UnterminatedEscapeSequence => ParserError { kind: ParserErrorKind::UnterminatedEscapeSequence, position },
-            LexerErrorKind::UnterminatedStringLiteral => ParserError { kind: ParserErrorKind::UnterminatedStringLiteral, position },
+            LexerErrorKind::InvalidEscapeSequence => {
+                ParserError { kind: ParserErrorKind::InvalidEscapeSequence, position }
+            }
+            LexerErrorKind::InvalidNumberLiteral => {
+                ParserError { kind: ParserErrorKind::InvalidNumberLiteral, position }
+            }
+            LexerErrorKind::InvalidOperator => {
+                ParserError { kind: ParserErrorKind::InvalidOperator, position }
+            }
+            LexerErrorKind::UnterminatedBlockComment => {
+                ParserError { kind: ParserErrorKind::UnterminatedBlockComment, position }
+            }
+            LexerErrorKind::UnterminatedEscapeSequence => {
+                ParserError { kind: ParserErrorKind::UnterminatedEscapeSequence, position }
+            }
+            LexerErrorKind::UnterminatedStringLiteral => {
+                ParserError { kind: ParserErrorKind::UnterminatedStringLiteral, position }
+            }
         }
     }
 }

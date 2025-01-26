@@ -682,21 +682,19 @@ impl<'a> Parser<'a> {
                         });
                     }
                 }
-                Some(&Ok(
-                    Token {
-                        kind:
-                            LiteralToken(NumberToken)
-                            | LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken))
-                            | LiteralToken(StrToken(LongToken { .. }))
-                            | NameToken(IdentifierToken)
-                            | NameToken(KeywordToken(
-                                FalseToken | FunctionToken | NilToken | NotToken | TrueToken,
-                            ))
-                            | OpToken(HashToken | MinusToken | VarargToken)
-                            | PunctuatorToken(LcurlyToken | LparenToken),
-                        ..
-                    },
-                )) => {
+                Some(&Ok(Token {
+                    kind:
+                        LiteralToken(NumberToken)
+                        | LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken))
+                        | LiteralToken(StrToken(LongToken { .. }))
+                        | NameToken(IdentifierToken)
+                        | NameToken(KeywordToken(
+                            FalseToken | FunctionToken | NilToken | NotToken | TrueToken,
+                        ))
+                        | OpToken(HashToken | MinusToken | VarargToken)
+                        | PunctuatorToken(LcurlyToken | LparenToken),
+                    ..
+                })) => {
                     if !allow_comma {
                         explist.push(self.parse_exp(tokens, 0)?);
                         allow_comma = true;
@@ -1074,21 +1072,14 @@ impl<'a> Parser<'a> {
                     self.consume(tokens, PunctuatorToken(RbracketToken))?;
                     pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
                 }
-                Some(&Ok(Token {
-                    kind: PunctuatorToken(LcurlyToken | LparenToken),
-                    ..
-                }))
+                Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken | LparenToken), .. }))
                 | Some(&Ok(Token {
                     kind: LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken)),
                     ..
                 }))
-                | Some(&Ok(Token {
-                    kind: LiteralToken(StrToken(LongToken { .. })), ..
-                })) => {
-                    pexp = Exp::FunctionCall {
-                        pexp: Box::new(pexp),
-                        args: self.parse_args(tokens)?,
-                    };
+                | Some(&Ok(Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
+                    pexp =
+                        Exp::FunctionCall { pexp: Box::new(pexp), args: self.parse_args(tokens)? };
                 }
                 _ => break,
             }
@@ -1102,7 +1093,11 @@ impl<'a> Parser<'a> {
         tokens: &mut std::iter::Peekable<Tokens>,
         minimum_bp: u8,
     ) -> Result<Exp<'a>, ParserError> {
-        while let Some(&Ok(Token { kind: CommentToken(BlockCommentToken | LineCommentToken), .. })) = tokens.peek() {
+        while let Some(&Ok(Token {
+            kind: CommentToken(BlockCommentToken | LineCommentToken),
+            ..
+        })) = tokens.peek()
+        {
             // TODO: accumulate comments; for now just skip over
             tokens.next();
         }
@@ -1123,9 +1118,7 @@ impl<'a> Parser<'a> {
                 Exp::Number(&self.lexer.input[token.byte_start..token.byte_end])
             }
             Some(&Ok(
-                token
-                @
-                Token {
+                token @ Token {
                     kind: LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken)),
                     ..
                 },
@@ -1393,11 +1386,7 @@ impl<'a> Parser<'a> {
                     }
                 } else {
                     // exp; syntactic sugar for `[index] = exp`
-                    Ok(Field {
-                        index: Some(index),
-                        lexp: Box::new(Exp::Nil),
-                        rexp: Box::new(lexp),
-                    })
+                    Ok(Field { index: Some(index), lexp: Box::new(Exp::Nil), rexp: Box::new(lexp) })
                 }
             }
             Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {

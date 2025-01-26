@@ -186,7 +186,9 @@ impl<'a> Tokens<'a> {
         }
     }
 
-    /// Scans until seeing "--]]".
+    /// Scans until seeing "]]".
+    /// BUG: we aren't handling delimiters like `--[===[` and so on (see `scan_long_string()` for
+    /// example of how we're handling the similar case of strings with `[===[` delimiters).
     fn scan_block_comment(
         &mut self,
         char_start: usize,
@@ -195,15 +197,8 @@ impl<'a> Tokens<'a> {
         loop {
             let ch = self.iter.next();
             match ch {
-                Some('-') => {
-                    // Can't just chain `consume_char` calls here (for "-", "-", "[", and "[")
-                    // because the greedy match would fail for text like "---[[" which is also a
-                    // valid marker to end a block comment.
-                    let mut dash_count = 1;
-                    while self.consume_char('-') {
-                        dash_count += 1;
-                    }
-                    if dash_count >= 2 && self.consume_char(']') && self.consume_char(']') {
+                Some(']') => {
+                    if self.consume_char(']') {
                         return Ok(Token::new(
                             Comment(BlockComment),
                             char_start,
@@ -944,11 +939,11 @@ mod tests {
     #[test]
     fn lexes_block_comments() {
         assert_lexes!(
-            "--[[\nstuff\n--]]",
+            "--[[\nstuff\n]]",
             vec![Token {
-                byte_end: 15,
+                byte_end: 13,
                 byte_start: 0,
-                char_end: 15,
+                char_end: 13,
                 char_start: 0,
                 kind: Comment(BlockComment),
             }]
