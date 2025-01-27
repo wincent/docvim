@@ -4,22 +4,25 @@ local item = foo.bar
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "item",
-                ),
-            ],
-            explist: [
-                Index {
-                    pexp: NamedVar(
-                        "foo",
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "item",
                     ),
-                    kexp: RawStr(
-                        "bar",
-                    ),
-                },
-            ],
+                ],
+                explist: [
+                    Index {
+                        pexp: NamedVar(
+                            "foo",
+                        ),
+                        kexp: RawStr(
+                            "bar",
+                        ),
+                    },
+                ],
+            },
         },
     ],
 )

@@ -6,22 +6,28 @@ end
 
 Block(
     [
-        LocalFunctionDeclaration {
-            name: Name(
-                "secret",
-            ),
-            parlist: [],
-            varargs: false,
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: NamedVar(
-                            "foo",
-                        ),
-                        args: [],
-                    },
-                ],
-            ),
+        Node {
+            comments: [],
+            node: LocalFunctionDeclaration {
+                name: Name(
+                    "secret",
+                ),
+                parlist: [],
+                varargs: false,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "foo",
+                                ),
+                                args: [],
+                            },
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

@@ -4,11 +4,14 @@ calculate()
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "calculate",
-            ),
-            args: [],
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "calculate",
+                ),
+                args: [],
+            },
         },
     ],
 )

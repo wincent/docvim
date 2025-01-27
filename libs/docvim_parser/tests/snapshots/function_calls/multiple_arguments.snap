@@ -4,21 +4,24 @@ add(1, 2, "three")
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "add",
-            ),
-            args: [
-                Number(
-                    "1",
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "add",
                 ),
-                Number(
-                    "2",
-                ),
-                CookedStr(
-                    "three",
-                ),
-            ],
+                args: [
+                    Number(
+                        "1",
+                    ),
+                    Number(
+                        "2",
+                    ),
+                    CookedStr(
+                        "three",
+                    ),
+                ],
+            },
         },
     ],
 )

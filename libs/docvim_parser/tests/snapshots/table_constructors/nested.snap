@@ -9,46 +9,49 @@ local list = {
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "list",
-                ),
-            ],
-            explist: [
-                Table(
-                    [
-                        Field {
-                            index: Some(
-                                1,
-                            ),
-                            lexp: Nil,
-                            rexp: NamedVar(
-                                "one",
-                            ),
-                        },
-                        Field {
-                            index: None,
-                            lexp: RawStr(
-                                "nested",
-                            ),
-                            rexp: Table(
-                                [
-                                    Field {
-                                        index: None,
-                                        lexp: CookedStr(
-                                            "two",
-                                        ),
-                                        rexp: Number(
-                                            "2",
-                                        ),
-                                    },
-                                ],
-                            ),
-                        },
-                    ],
-                ),
-            ],
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "list",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: Some(
+                                    1,
+                                ),
+                                lexp: Nil,
+                                rexp: NamedVar(
+                                    "one",
+                                ),
+                            },
+                            Field {
+                                index: None,
+                                lexp: RawStr(
+                                    "nested",
+                                ),
+                                rexp: Table(
+                                    [
+                                        Field {
+                                            index: None,
+                                            lexp: CookedStr(
+                                                "two",
+                                            ),
+                                            rexp: Number(
+                                                "2",
+                                            ),
+                                        },
+                                    ],
+                                ),
+                            },
+                        ],
+                    ),
+                ],
+            },
         },
     ],
 )

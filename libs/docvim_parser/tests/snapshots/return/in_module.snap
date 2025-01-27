@@ -6,22 +6,28 @@ return true
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "print",
-            ),
-            args: [
-                CookedStr(
-                    "in a module",
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "print",
                 ),
-            ],
-        },
-        Return(
-            Some(
-                [
-                    True,
+                args: [
+                    CookedStr(
+                        "in a module",
+                    ),
                 ],
+            },
+        },
+        Node {
+            comments: [],
+            node: Return(
+                Some(
+                    [
+                        True,
+                    ],
+                ),
             ),
-        ),
+        },
     ],
 )

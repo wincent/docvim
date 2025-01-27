@@ -4,17 +4,20 @@ local item = (100)
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "item",
-                ),
-            ],
-            explist: [
-                Number(
-                    "100",
-                ),
-            ],
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "item",
+                    ),
+                ],
+                explist: [
+                    Number(
+                        "100",
+                    ),
+                ],
+            },
         },
     ],
 )

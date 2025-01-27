@@ -13,22 +13,25 @@ local item = list[100]
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "item",
-                ),
-            ],
-            explist: [
-                Index {
-                    pexp: NamedVar(
-                        "list",
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "item",
                     ),
-                    kexp: Number(
-                        "100",
-                    ),
-                },
-            ],
+                ],
+                explist: [
+                    Index {
+                        pexp: NamedVar(
+                            "list",
+                        ),
+                        kexp: Number(
+                            "100",
+                        ),
+                    },
+                ],
+            },
         },
     ],
 )

@@ -4,24 +4,27 @@ bar:baz { force = true }
 
 Block(
     [
-        MethodCallStatement {
-            pexp: NamedVar(
-                "bar",
-            ),
-            name: "baz",
-            args: [
-                Table(
-                    [
-                        Field {
-                            index: None,
-                            lexp: RawStr(
-                                "force",
-                            ),
-                            rexp: True,
-                        },
-                    ],
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: NamedVar(
+                    "bar",
                 ),
-            ],
+                name: "baz",
+                args: [
+                    Table(
+                        [
+                            Field {
+                                index: None,
+                                lexp: RawStr(
+                                    "force",
+                                ),
+                                rexp: True,
+                            },
+                        ],
+                    ),
+                ],
+            },
         },
     ],
 )

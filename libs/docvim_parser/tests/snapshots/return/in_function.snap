@@ -12,96 +12,111 @@ end
 
 Block(
     [
-        FunctionDeclaration {
-            name: [
-                Name(
-                    "cmp",
-                ),
-            ],
-            method: None,
-            parlist: [
-                Name(
-                    "a",
-                ),
-                Name(
-                    "b",
-                ),
-            ],
-            varargs: false,
-            block: Block(
-                [
-                    IfStatement {
-                        consequents: [
-                            Consequent {
-                                cexp: Binary {
-                                    lexp: NamedVar(
-                                        "a",
-                                    ),
-                                    op: Lt,
-                                    rexp: NamedVar(
-                                        "b",
-                                    ),
-                                },
-                                block: Block(
-                                    [
-                                        Return(
-                                            Some(
-                                                [
-                                                    Unary {
-                                                        exp: Number(
-                                                            "1",
-                                                        ),
-                                                        op: Minus,
-                                                    },
-                                                ],
+        Node {
+            comments: [],
+            node: FunctionDeclaration {
+                name: [
+                    Name(
+                        "cmp",
+                    ),
+                ],
+                method: None,
+                parlist: [
+                    Name(
+                        "a",
+                    ),
+                    Name(
+                        "b",
+                    ),
+                ],
+                varargs: false,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: IfStatement {
+                                consequents: [
+                                    Consequent {
+                                        cexp: Binary {
+                                            lexp: NamedVar(
+                                                "a",
                                             ),
-                                        ),
-                                    ],
-                                ),
-                            },
-                            Consequent {
-                                cexp: Binary {
-                                    lexp: NamedVar(
-                                        "a",
-                                    ),
-                                    op: Gt,
-                                    rexp: NamedVar(
-                                        "b",
-                                    ),
-                                },
-                                block: Block(
-                                    [
-                                        Return(
-                                            Some(
-                                                [
-                                                    Number(
-                                                        "1",
-                                                    ),
-                                                ],
+                                            op: Lt,
+                                            rexp: NamedVar(
+                                                "b",
                                             ),
-                                        ),
-                                    ],
-                                ),
-                            },
-                        ],
-                        alternate: Some(
-                            Block(
-                                [
-                                    Return(
-                                        Some(
+                                        },
+                                        block: Block(
                                             [
-                                                Number(
-                                                    "0",
-                                                ),
+                                                Node {
+                                                    comments: [],
+                                                    node: Return(
+                                                        Some(
+                                                            [
+                                                                Unary {
+                                                                    exp: Number(
+                                                                        "1",
+                                                                    ),
+                                                                    op: Minus,
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ),
+                                                },
                                             ],
                                         ),
-                                    ),
+                                    },
+                                    Consequent {
+                                        cexp: Binary {
+                                            lexp: NamedVar(
+                                                "a",
+                                            ),
+                                            op: Gt,
+                                            rexp: NamedVar(
+                                                "b",
+                                            ),
+                                        },
+                                        block: Block(
+                                            [
+                                                Node {
+                                                    comments: [],
+                                                    node: Return(
+                                                        Some(
+                                                            [
+                                                                Number(
+                                                                    "1",
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    ),
+                                                },
+                                            ],
+                                        ),
+                                    },
                                 ],
-                            ),
-                        ),
-                    },
-                ],
-            ),
+                                alternate: Some(
+                                    Block(
+                                        [
+                                            Node {
+                                                comments: [],
+                                                node: Return(
+                                                    Some(
+                                                        [
+                                                            Number(
+                                                                "0",
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ),
+                                            },
+                                        ],
+                                    ),
+                                ),
+                            },
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

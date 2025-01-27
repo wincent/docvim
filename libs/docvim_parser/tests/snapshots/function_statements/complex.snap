@@ -6,51 +6,57 @@ end
 
 Block(
     [
-        FunctionDeclaration {
-            name: [
-                Name(
-                    "a",
-                ),
-                Name(
-                    "b",
-                ),
-                Name(
-                    "c",
-                ),
-            ],
-            method: Some(
-                Name(
-                    "d",
-                ),
-            ),
-            parlist: [
-                Name(
-                    "e",
-                ),
-                Name(
-                    "f",
-                ),
-            ],
-            varargs: true,
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: FunctionCall {
-                            pexp: NamedVar(
-                                "e",
-                            ),
-                            args: [
-                                NamedVar(
-                                    "f",
-                                ),
-                            ],
-                        },
-                        args: [
-                            Varargs,
-                        ],
-                    },
+        Node {
+            comments: [],
+            node: FunctionDeclaration {
+                name: [
+                    Name(
+                        "a",
+                    ),
+                    Name(
+                        "b",
+                    ),
+                    Name(
+                        "c",
+                    ),
                 ],
-            ),
+                method: Some(
+                    Name(
+                        "d",
+                    ),
+                ),
+                parlist: [
+                    Name(
+                        "e",
+                    ),
+                    Name(
+                        "f",
+                    ),
+                ],
+                varargs: true,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: FunctionCall {
+                                    pexp: NamedVar(
+                                        "e",
+                                    ),
+                                    args: [
+                                        NamedVar(
+                                            "f",
+                                        ),
+                                    ],
+                                },
+                                args: [
+                                    Varargs,
+                                ],
+                            },
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

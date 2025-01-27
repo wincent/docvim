@@ -13,14 +13,17 @@ return "We're done here"
 
 Block(
     [
-        Return(
-            Some(
-                [
-                    CookedStr(
-                        "We're done here",
-                    ),
-                ],
+        Node {
+            comments: [],
+            node: Return(
+                Some(
+                    [
+                        CookedStr(
+                            "We're done here",
+                        ),
+                    ],
+                ),
             ),
-        ),
+        },
     ],
 )

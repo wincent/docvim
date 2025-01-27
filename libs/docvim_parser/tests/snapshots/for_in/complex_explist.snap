@@ -6,52 +6,58 @@ end
 
 Block(
     [
-        ForIn {
-            namelist: [
-                Name(
-                    "x",
-                ),
-                Name(
-                    "y",
-                ),
-            ],
-            explist: [
-                Table(
-                    [
-                        Field {
-                            index: None,
-                            lexp: RawStr(
-                                "something",
-                            ),
-                            rexp: CookedStr(
-                                "foo",
-                            ),
-                        },
-                    ],
-                ),
-                CookedStr(
-                    "bar",
-                ),
-            ],
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: NamedVar(
-                            "print",
-                        ),
-                        args: [
-                            Index {
-                                pexp: NamedVar(
-                                    "x",
+        Node {
+            comments: [],
+            node: ForIn {
+                namelist: [
+                    Name(
+                        "x",
+                    ),
+                    Name(
+                        "y",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: None,
+                                lexp: RawStr(
+                                    "something",
                                 ),
-                                kexp: NamedVar(
-                                    "y",
+                                rexp: CookedStr(
+                                    "foo",
                                 ),
                             },
                         ],
-                    },
+                    ),
+                    CookedStr(
+                        "bar",
+                    ),
                 ],
-            ),
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "print",
+                                ),
+                                args: [
+                                    Index {
+                                        pexp: NamedVar(
+                                            "x",
+                                        ),
+                                        kexp: NamedVar(
+                                            "y",
+                                        ),
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

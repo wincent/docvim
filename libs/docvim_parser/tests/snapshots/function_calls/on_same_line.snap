@@ -4,35 +4,44 @@ print(1) print(2) print(3)
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "print",
-            ),
-            args: [
-                Number(
-                    "1",
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "print",
                 ),
-            ],
+                args: [
+                    Number(
+                        "1",
+                    ),
+                ],
+            },
         },
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "print",
-            ),
-            args: [
-                Number(
-                    "2",
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "print",
                 ),
-            ],
+                args: [
+                    Number(
+                        "2",
+                    ),
+                ],
+            },
         },
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "print",
-            ),
-            args: [
-                Number(
-                    "3",
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "print",
                 ),
-            ],
+                args: [
+                    Number(
+                        "3",
+                    ),
+                ],
+            },
         },
     ],
 )

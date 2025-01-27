@@ -6,35 +6,44 @@ baz [[long]]
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "foo",
-            ),
-            args: [
-                CookedStr(
-                    "single",
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "foo",
                 ),
-            ],
+                args: [
+                    CookedStr(
+                        "single",
+                    ),
+                ],
+            },
         },
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "bar",
-            ),
-            args: [
-                CookedStr(
-                    "double",
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "bar",
                 ),
-            ],
+                args: [
+                    CookedStr(
+                        "double",
+                    ),
+                ],
+            },
         },
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "baz",
-            ),
-            args: [
-                RawStr(
-                    "long",
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "baz",
                 ),
-            ],
+                args: [
+                    RawStr(
+                        "long",
+                    ),
+                ],
+            },
         },
     ],
 )

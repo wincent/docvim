@@ -4,24 +4,27 @@ y:z(a:b(c))
 
 Block(
     [
-        MethodCallStatement {
-            pexp: NamedVar(
-                "y",
-            ),
-            name: "z",
-            args: [
-                MethodCall {
-                    pexp: NamedVar(
-                        "a",
-                    ),
-                    name: "b",
-                    args: [
-                        NamedVar(
-                            "c",
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: NamedVar(
+                    "y",
+                ),
+                name: "z",
+                args: [
+                    MethodCall {
+                        pexp: NamedVar(
+                            "a",
                         ),
-                    ],
-                },
-            ],
+                        name: "b",
+                        args: [
+                            NamedVar(
+                                "c",
+                            ),
+                        ],
+                    },
+                ],
+            },
         },
     ],
 )

@@ -7,35 +7,44 @@ end
 
 Block(
     [
-        DoBlock(
-            Block(
-                [
-                    LocalDeclaration {
-                        namelist: [
-                            Name(
-                                "foo",
-                            ),
-                        ],
-                        explist: [
-                            CookedStr(
-                                "foo",
-                            ),
-                        ],
-                    },
-                    LocalDeclaration {
-                        namelist: [
-                            Name(
-                                "bar",
-                            ),
-                        ],
-                        explist: [
-                            CookedStr(
-                                "bar",
-                            ),
-                        ],
-                    },
-                ],
+        Node {
+            comments: [],
+            node: DoBlock(
+                Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: LocalDeclaration {
+                                namelist: [
+                                    Name(
+                                        "foo",
+                                    ),
+                                ],
+                                explist: [
+                                    CookedStr(
+                                        "foo",
+                                    ),
+                                ],
+                            },
+                        },
+                        Node {
+                            comments: [],
+                            node: LocalDeclaration {
+                                namelist: [
+                                    Name(
+                                        "bar",
+                                    ),
+                                ],
+                                explist: [
+                                    CookedStr(
+                                        "bar",
+                                    ),
+                                ],
+                            },
+                        },
+                    ],
+                ),
             ),
-        ),
+        },
     ],
 )

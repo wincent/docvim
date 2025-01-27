@@ -6,43 +6,49 @@ end
 
 Block(
     [
-        LocalFunctionDeclaration {
-            name: Name(
-                "three",
-            ),
-            parlist: [
-                Name(
-                    "foo",
+        Node {
+            comments: [],
+            node: LocalFunctionDeclaration {
+                name: Name(
+                    "three",
                 ),
-                Name(
-                    "bar",
-                ),
-                Name(
-                    "baz",
-                ),
-            ],
-            varargs: false,
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: NamedVar(
-                            "foo",
-                        ),
-                        args: [
-                            FunctionCall {
+                parlist: [
+                    Name(
+                        "foo",
+                    ),
+                    Name(
+                        "bar",
+                    ),
+                    Name(
+                        "baz",
+                    ),
+                ],
+                varargs: false,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
                                 pexp: NamedVar(
-                                    "bar",
+                                    "foo",
                                 ),
                                 args: [
-                                    NamedVar(
-                                        "baz",
-                                    ),
+                                    FunctionCall {
+                                        pexp: NamedVar(
+                                            "bar",
+                                        ),
+                                        args: [
+                                            NamedVar(
+                                                "baz",
+                                            ),
+                                        ],
+                                    },
                                 ],
                             },
-                        ],
-                    },
-                ],
-            ),
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

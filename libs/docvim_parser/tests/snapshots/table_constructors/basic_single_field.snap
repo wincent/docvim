@@ -4,27 +4,30 @@ local stuff = { one = 1 }
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "stuff",
-                ),
-            ],
-            explist: [
-                Table(
-                    [
-                        Field {
-                            index: None,
-                            lexp: RawStr(
-                                "one",
-                            ),
-                            rexp: Number(
-                                "1",
-                            ),
-                        },
-                    ],
-                ),
-            ],
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "stuff",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: None,
+                                lexp: RawStr(
+                                    "one",
+                                ),
+                                rexp: Number(
+                                    "1",
+                                ),
+                            },
+                        ],
+                    ),
+                ],
+            },
         },
     ],
 )

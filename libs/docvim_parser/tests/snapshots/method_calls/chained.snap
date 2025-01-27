@@ -16,22 +16,25 @@ y:z():followed_by():this(true)
 
 Block(
     [
-        MethodCallStatement {
-            pexp: MethodCall {
+        Node {
+            comments: [],
+            node: MethodCallStatement {
                 pexp: MethodCall {
-                    pexp: NamedVar(
-                        "y",
-                    ),
-                    name: "z",
+                    pexp: MethodCall {
+                        pexp: NamedVar(
+                            "y",
+                        ),
+                        name: "z",
+                        args: [],
+                    },
+                    name: "followed_by",
                     args: [],
                 },
-                name: "followed_by",
-                args: [],
+                name: "this",
+                args: [
+                    True,
+                ],
             },
-            name: "this",
-            args: [
-                True,
-            ],
         },
     ],
 )

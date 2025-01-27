@@ -4,27 +4,36 @@ foo(); bar(true); baz(nil);
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "foo",
-            ),
-            args: [],
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "foo",
+                ),
+                args: [],
+            },
         },
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "bar",
-            ),
-            args: [
-                True,
-            ],
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "bar",
+                ),
+                args: [
+                    True,
+                ],
+            },
         },
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "baz",
-            ),
-            args: [
-                Nil,
-            ],
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "baz",
+                ),
+                args: [
+                    Nil,
+                ],
+            },
         },
     ],
 )

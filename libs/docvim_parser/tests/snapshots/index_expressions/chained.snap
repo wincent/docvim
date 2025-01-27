@@ -4,32 +4,35 @@ local item = list[100][200][300]
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "item",
-                ),
-            ],
-            explist: [
-                Index {
-                    pexp: Index {
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "item",
+                    ),
+                ],
+                explist: [
+                    Index {
                         pexp: Index {
-                            pexp: NamedVar(
-                                "list",
-                            ),
+                            pexp: Index {
+                                pexp: NamedVar(
+                                    "list",
+                                ),
+                                kexp: Number(
+                                    "100",
+                                ),
+                            },
                             kexp: Number(
-                                "100",
+                                "200",
                             ),
                         },
                         kexp: Number(
-                            "200",
+                            "300",
                         ),
                     },
-                    kexp: Number(
-                        "300",
-                    ),
-                },
-            ],
+                ],
+            },
         },
     ],
 )

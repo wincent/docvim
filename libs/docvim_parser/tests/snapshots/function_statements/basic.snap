@@ -6,25 +6,31 @@ end
 
 Block(
     [
-        FunctionDeclaration {
-            name: [
-                Name(
-                    "simple",
-                ),
-            ],
-            method: None,
-            parlist: [],
-            varargs: false,
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: NamedVar(
-                            "foo",
-                        ),
-                        args: [],
-                    },
+        Node {
+            comments: [],
+            node: FunctionDeclaration {
+                name: [
+                    Name(
+                        "simple",
+                    ),
                 ],
-            ),
+                method: None,
+                parlist: [],
+                varargs: false,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "foo",
+                                ),
+                                args: [],
+                            },
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

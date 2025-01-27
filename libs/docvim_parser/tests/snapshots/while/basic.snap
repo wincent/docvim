@@ -6,30 +6,36 @@ end
 
 Block(
     [
-        While {
-            cexp: Binary {
-                lexp: NamedVar(
-                    "x",
-                ),
-                op: Lt,
-                rexp: Number(
-                    "100",
+        Node {
+            comments: [],
+            node: While {
+                cexp: Binary {
+                    lexp: NamedVar(
+                        "x",
+                    ),
+                    op: Lt,
+                    rexp: Number(
+                        "100",
+                    ),
+                },
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "inc",
+                                ),
+                                args: [
+                                    NamedVar(
+                                        "x",
+                                    ),
+                                ],
+                            },
+                        },
+                    ],
                 ),
             },
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: NamedVar(
-                            "inc",
-                        ),
-                        args: [
-                            NamedVar(
-                                "x",
-                            ),
-                        ],
-                    },
-                ],
-            ),
         },
     ],
 )

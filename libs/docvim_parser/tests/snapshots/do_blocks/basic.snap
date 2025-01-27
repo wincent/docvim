@@ -6,28 +6,34 @@ end
 
 Block(
     [
-        DoBlock(
-            Block(
-                [
-                    LocalDeclaration {
-                        namelist: [
-                            Name(
-                                "item",
-                            ),
-                        ],
-                        explist: [
-                            Index {
-                                pexp: NamedVar(
-                                    "foo",
-                                ),
-                                kexp: RawStr(
-                                    "bar",
-                                ),
+        Node {
+            comments: [],
+            node: DoBlock(
+                Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: LocalDeclaration {
+                                namelist: [
+                                    Name(
+                                        "item",
+                                    ),
+                                ],
+                                explist: [
+                                    Index {
+                                        pexp: NamedVar(
+                                            "foo",
+                                        ),
+                                        kexp: RawStr(
+                                            "bar",
+                                        ),
+                                    },
+                                ],
                             },
-                        ],
-                    },
-                ],
+                        },
+                    ],
+                ),
             ),
-        ),
+        },
     ],
 )

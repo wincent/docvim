@@ -4,15 +4,18 @@ len("contents")
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "len",
-            ),
-            args: [
-                CookedStr(
-                    "contents",
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "len",
                 ),
-            ],
+                args: [
+                    CookedStr(
+                        "contents",
+                    ),
+                ],
+            },
         },
     ],
 )

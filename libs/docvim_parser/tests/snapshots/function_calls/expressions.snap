@@ -6,30 +6,33 @@ local result = add(1, 2, "three")
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "result",
-                ),
-            ],
-            explist: [
-                FunctionCall {
-                    pexp: NamedVar(
-                        "add",
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "result",
                     ),
-                    args: [
-                        Number(
-                            "1",
+                ],
+                explist: [
+                    FunctionCall {
+                        pexp: NamedVar(
+                            "add",
                         ),
-                        Number(
-                            "2",
-                        ),
-                        CookedStr(
-                            "three",
-                        ),
-                    ],
-                },
-            ],
+                        args: [
+                            Number(
+                                "1",
+                            ),
+                            Number(
+                                "2",
+                            ),
+                            CookedStr(
+                                "three",
+                            ),
+                        ],
+                    },
+                ],
+            },
         },
     ],
 )

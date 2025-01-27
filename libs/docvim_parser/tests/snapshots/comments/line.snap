@@ -6,15 +6,18 @@ local thing = true
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "thing",
-                ),
-            ],
-            explist: [
-                True,
-            ],
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "thing",
+                    ),
+                ],
+                explist: [
+                    True,
+                ],
+            },
         },
     ],
 )

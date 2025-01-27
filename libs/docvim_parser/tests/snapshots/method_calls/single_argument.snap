@@ -4,14 +4,17 @@ bar:baz(nil)
 
 Block(
     [
-        MethodCallStatement {
-            pexp: NamedVar(
-                "bar",
-            ),
-            name: "baz",
-            args: [
-                Nil,
-            ],
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: NamedVar(
+                    "bar",
+                ),
+                name: "baz",
+                args: [
+                    Nil,
+                ],
+            },
         },
     ],
 )

@@ -6,28 +6,31 @@ local foo = bar:baz("hello", "world")
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "foo",
-                ),
-            ],
-            explist: [
-                MethodCall {
-                    pexp: NamedVar(
-                        "bar",
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "foo",
                     ),
-                    name: "baz",
-                    args: [
-                        CookedStr(
-                            "hello",
+                ],
+                explist: [
+                    MethodCall {
+                        pexp: NamedVar(
+                            "bar",
                         ),
-                        CookedStr(
-                            "world",
-                        ),
-                    ],
-                },
-            ],
+                        name: "baz",
+                        args: [
+                            CookedStr(
+                                "hello",
+                            ),
+                            CookedStr(
+                                "world",
+                            ),
+                        ],
+                    },
+                ],
+            },
         },
     ],
 )

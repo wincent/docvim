@@ -4,86 +4,89 @@ local demo =  not (1 * 2 + 3 - 4 / 5 ^ -6 > -7 ^ 8 + (9 - 10) * 11)
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "demo",
-                ),
-            ],
-            explist: [
-                Unary {
-                    exp: Binary {
-                        lexp: Binary {
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "demo",
+                    ),
+                ],
+                explist: [
+                    Unary {
+                        exp: Binary {
                             lexp: Binary {
-                                lexp: Number(
-                                    "1",
-                                ),
-                                op: Star,
-                                rexp: Number(
-                                    "2",
-                                ),
-                            },
-                            op: Plus,
-                            rexp: Binary {
-                                lexp: Number(
-                                    "3",
-                                ),
-                                op: Minus,
+                                lexp: Binary {
+                                    lexp: Number(
+                                        "1",
+                                    ),
+                                    op: Star,
+                                    rexp: Number(
+                                        "2",
+                                    ),
+                                },
+                                op: Plus,
                                 rexp: Binary {
                                     lexp: Number(
-                                        "4",
+                                        "3",
                                     ),
-                                    op: Slash,
+                                    op: Minus,
                                     rexp: Binary {
                                         lexp: Number(
-                                            "5",
+                                            "4",
                                         ),
-                                        op: Caret,
-                                        rexp: Unary {
-                                            exp: Number(
-                                                "6",
+                                        op: Slash,
+                                        rexp: Binary {
+                                            lexp: Number(
+                                                "5",
                                             ),
-                                            op: Minus,
+                                            op: Caret,
+                                            rexp: Unary {
+                                                exp: Number(
+                                                    "6",
+                                                ),
+                                                op: Minus,
+                                            },
                                         },
                                     },
                                 },
                             },
-                        },
-                        op: Gt,
-                        rexp: Binary {
-                            lexp: Unary {
-                                exp: Binary {
-                                    lexp: Number(
-                                        "7",
-                                    ),
-                                    op: Caret,
-                                    rexp: Number(
-                                        "8",
-                                    ),
-                                },
-                                op: Minus,
-                            },
-                            op: Plus,
+                            op: Gt,
                             rexp: Binary {
-                                lexp: Binary {
-                                    lexp: Number(
-                                        "9",
-                                    ),
+                                lexp: Unary {
+                                    exp: Binary {
+                                        lexp: Number(
+                                            "7",
+                                        ),
+                                        op: Caret,
+                                        rexp: Number(
+                                            "8",
+                                        ),
+                                    },
                                     op: Minus,
+                                },
+                                op: Plus,
+                                rexp: Binary {
+                                    lexp: Binary {
+                                        lexp: Number(
+                                            "9",
+                                        ),
+                                        op: Minus,
+                                        rexp: Number(
+                                            "10",
+                                        ),
+                                    },
+                                    op: Star,
                                     rexp: Number(
-                                        "10",
+                                        "11",
                                     ),
                                 },
-                                op: Star,
-                                rexp: Number(
-                                    "11",
-                                ),
                             },
                         },
+                        op: Not,
                     },
-                    op: Not,
-                },
-            ],
+                ],
+            },
         },
     ],
 )

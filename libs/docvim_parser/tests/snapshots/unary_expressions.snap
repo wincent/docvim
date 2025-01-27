@@ -8,50 +8,59 @@ local z = -1000
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "x",
-                ),
-            ],
-            explist: [
-                Unary {
-                    exp: NamedVar(
-                        "value",
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "x",
                     ),
-                    op: Not,
-                },
-            ],
+                ],
+                explist: [
+                    Unary {
+                        exp: NamedVar(
+                            "value",
+                        ),
+                        op: Not,
+                    },
+                ],
+            },
         },
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "y",
-                ),
-            ],
-            explist: [
-                Unary {
-                    exp: NamedVar(
-                        "items",
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "y",
                     ),
-                    op: Length,
-                },
-            ],
+                ],
+                explist: [
+                    Unary {
+                        exp: NamedVar(
+                            "items",
+                        ),
+                        op: Length,
+                    },
+                ],
+            },
         },
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "z",
-                ),
-            ],
-            explist: [
-                Unary {
-                    exp: Number(
-                        "1000",
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "z",
                     ),
-                    op: Minus,
-                },
-            ],
+                ],
+                explist: [
+                    Unary {
+                        exp: Number(
+                            "1000",
+                        ),
+                        op: Minus,
+                    },
+                ],
+            },
         },
     ],
 )

@@ -4,25 +4,28 @@ calculate(intermediate(inner()))
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: NamedVar(
-                "calculate",
-            ),
-            args: [
-                FunctionCall {
-                    pexp: NamedVar(
-                        "intermediate",
-                    ),
-                    args: [
-                        FunctionCall {
-                            pexp: NamedVar(
-                                "inner",
-                            ),
-                            args: [],
-                        },
-                    ],
-                },
-            ],
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: NamedVar(
+                    "calculate",
+                ),
+                args: [
+                    FunctionCall {
+                        pexp: NamedVar(
+                            "intermediate",
+                        ),
+                        args: [
+                            FunctionCall {
+                                pexp: NamedVar(
+                                    "inner",
+                                ),
+                                args: [],
+                            },
+                        ],
+                    },
+                ],
+            },
         },
     ],
 )

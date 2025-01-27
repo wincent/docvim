@@ -8,29 +8,38 @@ end
 
 Block(
     [
-        DoBlock(
-            Block(
-                [
-                    DoBlock(
-                        Block(
-                            [
-                                LocalDeclaration {
-                                    namelist: [
-                                        Name(
-                                            "one",
-                                        ),
+        Node {
+            comments: [],
+            node: DoBlock(
+                Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: DoBlock(
+                                Block(
+                                    [
+                                        Node {
+                                            comments: [],
+                                            node: LocalDeclaration {
+                                                namelist: [
+                                                    Name(
+                                                        "one",
+                                                    ),
+                                                ],
+                                                explist: [
+                                                    Number(
+                                                        "1",
+                                                    ),
+                                                ],
+                                            },
+                                        },
                                     ],
-                                    explist: [
-                                        Number(
-                                            "1",
-                                        ),
-                                    ],
-                                },
-                            ],
-                        ),
-                    ),
-                ],
+                                ),
+                            ),
+                        },
+                    ],
+                ),
             ),
-        ),
+        },
     ],
 )

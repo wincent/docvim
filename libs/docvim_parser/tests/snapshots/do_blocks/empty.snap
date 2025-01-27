@@ -5,10 +5,13 @@ end
 
 Block(
     [
-        DoBlock(
-            Block(
-                [],
+        Node {
+            comments: [],
+            node: DoBlock(
+                Block(
+                    [],
+                ),
             ),
-        ),
+        },
     ],
 )

@@ -90,7 +90,18 @@ pub enum BinOp {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Block<'a>(Vec<Statement<'a>>);
+pub struct Node<'a, T> {
+    pub comments: Vec<Comment<'a>>,
+    pub node: T,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Block<'a>(Vec<Node<'a, Statement<'a>>>);
+
+#[derive(Debug, PartialEq)]
+pub struct Comment<'a> {
+    pub content: &'a str,
+}
 
 #[derive(Debug, PartialEq)]
 pub enum Exp<'a> {
@@ -396,11 +407,17 @@ impl<'a> Parser<'a> {
                     let pexp = self.parse_prefixexp(tokens)?;
                     match pexp {
                         Exp::FunctionCall { pexp, args } => {
-                            block.0.push(Statement::FunctionCallStatement { pexp, args });
+                            block.0.push(
+                                self.make_node(Statement::FunctionCallStatement { pexp, args }),
+                            );
                             self.slurp(tokens, PunctuatorToken(SemiToken));
                         }
                         Exp::MethodCall { pexp, name, args } => {
-                            block.0.push(Statement::MethodCallStatement { pexp, name, args });
+                            block.0.push(self.make_node(Statement::MethodCallStatement {
+                                pexp,
+                                name,
+                                args,
+                            }));
                             self.slurp(tokens, PunctuatorToken(SemiToken));
                         }
                         Exp::NamedVar(_) | Exp::Index { .. } => {
@@ -413,10 +430,12 @@ impl<'a> Parser<'a> {
                                 match tokens.peek() {
                                     Some(&Ok(Token { kind: OpToken(AssignToken), .. })) => {
                                         tokens.next();
-                                        block.0.push(Statement::VarlistDeclaration {
-                                            varlist,
-                                            explist: self.parse_explist(tokens)?,
-                                        });
+                                        block.0.push(self.make_node(
+                                            Statement::VarlistDeclaration {
+                                                varlist,
+                                                explist: self.parse_explist(tokens)?,
+                                            },
+                                        ));
                                         self.slurp(tokens, PunctuatorToken(SemiToken));
                                         break;
                                     }
@@ -477,7 +496,7 @@ impl<'a> Parser<'a> {
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(BreakToken)), .. })) => {
                     tokens.next();
-                    block.0.push(Statement::Break);
+                    block.0.push(self.make_node(Statement::Break));
                     self.slurp(tokens, PunctuatorToken(SemiToken));
                     break;
                 }
@@ -488,7 +507,7 @@ impl<'a> Parser<'a> {
                     } else {
                         None
                     };
-                    block.0.push(Statement::Return(explist));
+                    block.0.push(self.make_node(Statement::Return(explist)));
                     self.slurp(tokens, PunctuatorToken(SemiToken));
                     break;
                 }
@@ -513,14 +532,19 @@ impl<'a> Parser<'a> {
         Ok(block)
     }
 
+    fn make_node(&self, node: Statement<'a>) -> Node<'a, Statement<'a>> {
+        let comments = vec![];
+        Node { comments, node }
+    }
+
     fn parse_do_block(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, ParserError> {
+    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
-        Ok(Statement::DoBlock(block))
+        Ok(self.make_node(Statement::DoBlock(block)))
     }
 
     fn parse_name(
@@ -726,7 +750,7 @@ impl<'a> Parser<'a> {
     fn parse_for(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, ParserError> {
+    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(ForToken)))?;
         let mut namelist = self.parse_namelist(tokens)?;
 
@@ -742,7 +766,7 @@ impl<'a> Parser<'a> {
                 None
             };
             let block = self.parse_block(tokens)?;
-            Ok(Statement::For { name, startexp, endexp, stepexp, block })
+            Ok(self.make_node(Statement::For { name, startexp, endexp, stepexp, block }))
         } else {
             // Parse: for namelist in explist do block end
             self.consume(tokens, NameToken(KeywordToken(InToken)))?;
@@ -750,14 +774,14 @@ impl<'a> Parser<'a> {
             self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
             let block = self.parse_block(tokens)?;
             self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
-            Ok(Statement::ForIn { namelist, explist, block })
+            Ok(self.make_node(Statement::ForIn { namelist, explist, block }))
         }
     }
 
     fn parse_if(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, ParserError> {
+    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(IfToken)))?;
         let cexp = Box::new(self.parse_exp(tokens, 0)?);
         self.consume(tokens, NameToken(KeywordToken(ThenToken)))?;
@@ -777,36 +801,36 @@ impl<'a> Parser<'a> {
         };
 
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
-        Ok(Statement::IfStatement { consequents, alternate })
+        Ok(self.make_node(Statement::IfStatement { consequents, alternate }))
     }
 
     fn parse_repeat(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, ParserError> {
+    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(RepeatToken)))?;
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(UntilToken)))?;
         let cexp = Box::new(self.parse_exp(tokens, 0)?);
-        Ok(Statement::Repeat { block, cexp })
+        Ok(self.make_node(Statement::Repeat { block, cexp }))
     }
 
     fn parse_while(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, ParserError> {
+    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(WhileToken)))?;
         let cexp = Box::new(self.parse_exp(tokens, 0)?);
         self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
-        Ok(Statement::While { cexp, block })
+        Ok(self.make_node(Statement::While { cexp, block }))
     }
 
     fn parse_function(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, ParserError> {
+    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
         self.consume(tokens, NameToken(KeywordToken(FunctionToken)))?;
         let mut name = vec![self.parse_name(tokens)?];
         while self.slurp(tokens, PunctuatorToken(DotToken)) {
@@ -820,13 +844,13 @@ impl<'a> Parser<'a> {
         let (parlist, varargs) = self.parse_parlist(tokens)?;
         let block = self.parse_block(tokens)?;
         self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
-        Ok(Statement::FunctionDeclaration { name, method, parlist, varargs, block })
+        Ok(self.make_node(Statement::FunctionDeclaration { name, method, parlist, varargs, block }))
     }
 
     fn parse_local(
         &self,
         tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Statement<'a>, ParserError> {
+    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
         // Example inputs:
         //
         // local x
@@ -839,7 +863,12 @@ impl<'a> Parser<'a> {
             let (parlist, varargs) = self.parse_parlist(tokens)?;
             let block = self.parse_block(tokens)?;
             self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
-            Ok(Statement::LocalFunctionDeclaration { name, parlist, varargs, block })
+            Ok(self.make_node(Statement::LocalFunctionDeclaration {
+                name,
+                parlist,
+                varargs,
+                block,
+            }))
         } else {
             let namelist = self.parse_namelist(tokens)?;
             let explist = if self.slurp(tokens, OpToken(AssignToken)) {
@@ -847,7 +876,7 @@ impl<'a> Parser<'a> {
             } else {
                 vec![]
             };
-            Ok(Statement::LocalDeclaration { explist, namelist })
+            Ok(self.make_node(Statement::LocalDeclaration { explist, namelist }))
         }
     }
 
@@ -1427,9 +1456,9 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("foo")],
-                explist: vec![],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration { namelist: vec![Name("foo")], explist: vec![] }
             }])
         );
 
@@ -1437,9 +1466,12 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("bar")],
-                explist: vec![Exp::False],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("bar")],
+                    explist: vec![Exp::False],
+                }
             }])
         );
 
@@ -1447,9 +1479,12 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("baz")],
-                explist: vec![Exp::Nil],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("baz")],
+                    explist: vec![Exp::Nil],
+                }
             }])
         );
 
@@ -1457,9 +1492,12 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("w")],
-                explist: vec![Exp::Number("1")],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("w")],
+                    explist: vec![Exp::Number("1")],
+                }
             }])
         );
 
@@ -1467,9 +1505,12 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("x")],
-                explist: vec![Exp::CookedStr(Box::new(String::from("wat")))],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("x")],
+                    explist: vec![Exp::CookedStr(Box::new(String::from("wat")))],
+                }
             }])
         );
 
@@ -1477,9 +1518,12 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("y")],
-                explist: vec![Exp::CookedStr(Box::new(String::from("don't say \"hello\"!")))],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("y")],
+                    explist: vec![Exp::CookedStr(Box::new(String::from("don't say \"hello\"!")))],
+                }
             }])
         );
 
@@ -1487,9 +1531,12 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("z")],
-                explist: vec![Exp::RawStr("loooong")],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("z")],
+                    explist: vec![Exp::RawStr("loooong")],
+                }
             }])
         );
 
@@ -1497,9 +1544,12 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("qux")],
-                explist: vec![Exp::True],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("qux")],
+                    explist: vec![Exp::True],
+                }
             }])
         );
 
@@ -1507,9 +1557,12 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("neg")],
-                explist: vec![Exp::Unary { exp: Box::new(Exp::True), op: UnOp::Not }],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("neg")],
+                    explist: vec![Exp::Unary { exp: Box::new(Exp::True), op: UnOp::Not }],
+                }
             }])
         );
 
@@ -1517,12 +1570,15 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("len")],
-                explist: vec![Exp::Unary {
-                    exp: Box::new(Exp::CookedStr(Box::new(String::from("sample")))),
-                    op: UnOp::Length,
-                }],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("len")],
+                    explist: vec![Exp::Unary {
+                        exp: Box::new(Exp::CookedStr(Box::new(String::from("sample")))),
+                        op: UnOp::Length,
+                    }],
+                }
             }])
         );
 
@@ -1530,9 +1586,15 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("small")],
-                explist: vec![Exp::Unary { exp: Box::new(Exp::Number("1000")), op: UnOp::Minus }],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("small")],
+                    explist: vec![Exp::Unary {
+                        exp: Box::new(Exp::Number("1000")),
+                        op: UnOp::Minus
+                    }],
+                }
             }])
         );
 
@@ -1540,13 +1602,16 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("sum")],
-                explist: vec![Exp::Binary {
-                    lexp: Box::new(Exp::Number("7")),
-                    op: BinOp::Plus,
-                    rexp: Box::new(Exp::Number("8"))
-                }],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("sum")],
+                    explist: vec![Exp::Binary {
+                        lexp: Box::new(Exp::Number("7")),
+                        op: BinOp::Plus,
+                        rexp: Box::new(Exp::Number("8"))
+                    }],
+                }
             }])
         );
 
@@ -1564,58 +1629,61 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("demo")],
-                explist: vec![Exp::Unary {
-                    exp: Box::new(Exp::Binary {
-                        lexp: Box::new(Exp::Binary {
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("demo")],
+                    explist: vec![Exp::Unary {
+                        exp: Box::new(Exp::Binary {
                             lexp: Box::new(Exp::Binary {
-                                lexp: Box::new(Exp::Number("1")),
-                                op: BinOp::Star,
-                                rexp: Box::new(Exp::Number("2")),
-                            }),
-                            op: BinOp::Plus,
-                            rexp: Box::new(Exp::Binary {
-                                lexp: Box::new(Exp::Number("3")),
-                                op: BinOp::Minus,
+                                lexp: Box::new(Exp::Binary {
+                                    lexp: Box::new(Exp::Number("1")),
+                                    op: BinOp::Star,
+                                    rexp: Box::new(Exp::Number("2")),
+                                }),
+                                op: BinOp::Plus,
                                 rexp: Box::new(Exp::Binary {
-                                    lexp: Box::new(Exp::Number("4")),
-                                    op: BinOp::Slash,
+                                    lexp: Box::new(Exp::Number("3")),
+                                    op: BinOp::Minus,
                                     rexp: Box::new(Exp::Binary {
-                                        lexp: Box::new(Exp::Number("5")),
-                                        op: BinOp::Caret,
-                                        rexp: Box::new(Exp::Unary {
-                                            exp: Box::new(Exp::Number("6")),
-                                            op: UnOp::Minus,
+                                        lexp: Box::new(Exp::Number("4")),
+                                        op: BinOp::Slash,
+                                        rexp: Box::new(Exp::Binary {
+                                            lexp: Box::new(Exp::Number("5")),
+                                            op: BinOp::Caret,
+                                            rexp: Box::new(Exp::Unary {
+                                                exp: Box::new(Exp::Number("6")),
+                                                op: UnOp::Minus,
+                                            })
                                         })
                                     })
                                 })
+                            }),
+                            op: BinOp::Gt,
+                            rexp: Box::new(Exp::Binary {
+                                lexp: Box::new(Exp::Unary {
+                                    exp: Box::new(Exp::Binary {
+                                        lexp: Box::new(Exp::Number("7")),
+                                        op: BinOp::Caret,
+                                        rexp: Box::new(Exp::Number("8")),
+                                    }),
+                                    op: UnOp::Minus,
+                                }),
+                                op: BinOp::Plus,
+                                rexp: Box::new(Exp::Binary {
+                                    lexp: Box::new(Exp::Binary {
+                                        lexp: Box::new(Exp::Number("9")),
+                                        op: BinOp::Minus,
+                                        rexp: Box::new(Exp::Number("10")),
+                                    }),
+                                    op: BinOp::Star,
+                                    rexp: Box::new(Exp::Number("11"))
+                                })
                             })
                         }),
-                        op: BinOp::Gt,
-                        rexp: Box::new(Exp::Binary {
-                            lexp: Box::new(Exp::Unary {
-                                exp: Box::new(Exp::Binary {
-                                    lexp: Box::new(Exp::Number("7")),
-                                    op: BinOp::Caret,
-                                    rexp: Box::new(Exp::Number("8")),
-                                }),
-                                op: UnOp::Minus,
-                            }),
-                            op: BinOp::Plus,
-                            rexp: Box::new(Exp::Binary {
-                                lexp: Box::new(Exp::Binary {
-                                    lexp: Box::new(Exp::Number("9")),
-                                    op: BinOp::Minus,
-                                    rexp: Box::new(Exp::Number("10")),
-                                }),
-                                op: BinOp::Star,
-                                rexp: Box::new(Exp::Number("11"))
-                            })
-                        })
-                    }),
-                    op: UnOp::Not
-                }]
+                        op: UnOp::Not
+                    }]
+                }
             }])
         );
     }
@@ -1626,9 +1694,15 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("foo")],
-                explist: vec![Exp::Unary { exp: Box::new(Exp::NamedVar("bar")), op: UnOp::Not }],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("foo")],
+                    explist: vec![Exp::Unary {
+                        exp: Box::new(Exp::NamedVar("bar")),
+                        op: UnOp::Not
+                    }],
+                }
             }])
         );
     }
@@ -1639,13 +1713,16 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Statement::LocalDeclaration {
-                namelist: vec![Name("stuff")],
-                explist: vec![Exp::Table(vec![Field {
-                    index: None,
-                    lexp: Box::new(Exp::CookedStr(Box::new(String::from("foo")))),
-                    rexp: Box::new(Exp::NamedVar("bar"))
-                }])],
+            Block(vec![Node {
+                comments: vec![],
+                node: Statement::LocalDeclaration {
+                    namelist: vec![Name("stuff")],
+                    explist: vec![Exp::Table(vec![Field {
+                        index: None,
+                        lexp: Box::new(Exp::CookedStr(Box::new(String::from("foo")))),
+                        rexp: Box::new(Exp::NamedVar("bar"))
+                    }])],
+                }
             }])
         );
     }

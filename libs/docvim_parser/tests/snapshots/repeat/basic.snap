@@ -6,29 +6,35 @@ until x < 100
 
 Block(
     [
-        Repeat {
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: NamedVar(
-                            "inc",
-                        ),
-                        args: [
-                            NamedVar(
-                                "x",
-                            ),
-                        ],
-                    },
-                ],
-            ),
-            cexp: Binary {
-                lexp: NamedVar(
-                    "x",
+        Node {
+            comments: [],
+            node: Repeat {
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "inc",
+                                ),
+                                args: [
+                                    NamedVar(
+                                        "x",
+                                    ),
+                                ],
+                            },
+                        },
+                    ],
                 ),
-                op: Lt,
-                rexp: Number(
-                    "100",
-                ),
+                cexp: Binary {
+                    lexp: NamedVar(
+                        "x",
+                    ),
+                    op: Lt,
+                    rexp: Number(
+                        "100",
+                    ),
+                },
             },
         },
     ],

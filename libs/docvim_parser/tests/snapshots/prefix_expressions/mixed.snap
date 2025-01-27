@@ -10,61 +10,67 @@ a()({force = true})("boo!")
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: FunctionCall {
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
                 pexp: FunctionCall {
-                    pexp: NamedVar(
-                        "a",
-                    ),
-                    args: [],
+                    pexp: FunctionCall {
+                        pexp: NamedVar(
+                            "a",
+                        ),
+                        args: [],
+                    },
+                    args: [
+                        Table(
+                            [
+                                Field {
+                                    index: None,
+                                    lexp: RawStr(
+                                        "force",
+                                    ),
+                                    rexp: True,
+                                },
+                            ],
+                        ),
+                    ],
                 },
                 args: [
-                    Table(
-                        [
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "force",
-                                ),
-                                rexp: True,
-                            },
-                        ],
+                    CookedStr(
+                        "boo!",
                     ),
                 ],
             },
-            args: [
-                CookedStr(
-                    "boo!",
-                ),
-            ],
         },
-        FunctionCallStatement {
-            pexp: FunctionCall {
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
                 pexp: FunctionCall {
-                    pexp: NamedVar(
-                        "a",
-                    ),
-                    args: [],
+                    pexp: FunctionCall {
+                        pexp: NamedVar(
+                            "a",
+                        ),
+                        args: [],
+                    },
+                    args: [
+                        Table(
+                            [
+                                Field {
+                                    index: None,
+                                    lexp: RawStr(
+                                        "force",
+                                    ),
+                                    rexp: True,
+                                },
+                            ],
+                        ),
+                    ],
                 },
                 args: [
-                    Table(
-                        [
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "force",
-                                ),
-                                rexp: True,
-                            },
-                        ],
+                    CookedStr(
+                        "boo!",
                     ),
                 ],
             },
-            args: [
-                CookedStr(
-                    "boo!",
-                ),
-            ],
         },
     ],
 )

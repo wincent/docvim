@@ -5,15 +5,18 @@ end
 
 Block(
     [
-        LocalFunctionDeclaration {
-            name: Name(
-                "empty",
-            ),
-            parlist: [],
-            varargs: false,
-            block: Block(
-                [],
-            ),
+        Node {
+            comments: [],
+            node: LocalFunctionDeclaration {
+                name: Name(
+                    "empty",
+                ),
+                parlist: [],
+                varargs: false,
+                block: Block(
+                    [],
+                ),
+            },
         },
     ],
 )

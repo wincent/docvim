@@ -8,39 +8,72 @@ freaky {1, 2} {3, 4}
 
 Block(
     [
-        FunctionCallStatement {
-            pexp: FunctionCall {
-                pexp: NamedVar(
-                    "calculate",
-                ),
-                args: [],
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: FunctionCall {
+                    pexp: NamedVar(
+                        "calculate",
+                    ),
+                    args: [],
+                },
+                args: [
+                    True,
+                ],
             },
-            args: [
-                True,
-            ],
         },
-        FunctionCallStatement {
-            pexp: FunctionCall {
-                pexp: NamedVar(
-                    "thing",
-                ),
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: FunctionCall {
+                    pexp: NamedVar(
+                        "thing",
+                    ),
+                    args: [
+                        CookedStr(
+                            "a",
+                        ),
+                    ],
+                },
                 args: [
                     CookedStr(
-                        "a",
+                        "b",
                     ),
                 ],
             },
-            args: [
-                CookedStr(
-                    "b",
-                ),
-            ],
         },
-        FunctionCallStatement {
-            pexp: FunctionCall {
-                pexp: NamedVar(
-                    "freaky",
-                ),
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: FunctionCall {
+                    pexp: NamedVar(
+                        "freaky",
+                    ),
+                    args: [
+                        Table(
+                            [
+                                Field {
+                                    index: Some(
+                                        1,
+                                    ),
+                                    lexp: Nil,
+                                    rexp: Number(
+                                        "1",
+                                    ),
+                                },
+                                Field {
+                                    index: Some(
+                                        2,
+                                    ),
+                                    lexp: Nil,
+                                    rexp: Number(
+                                        "2",
+                                    ),
+                                },
+                            ],
+                        ),
+                    ],
+                },
                 args: [
                     Table(
                         [
@@ -50,7 +83,7 @@ Block(
                                 ),
                                 lexp: Nil,
                                 rexp: Number(
-                                    "1",
+                                    "3",
                                 ),
                             },
                             Field {
@@ -59,37 +92,13 @@ Block(
                                 ),
                                 lexp: Nil,
                                 rexp: Number(
-                                    "2",
+                                    "4",
                                 ),
                             },
                         ],
                     ),
                 ],
             },
-            args: [
-                Table(
-                    [
-                        Field {
-                            index: Some(
-                                1,
-                            ),
-                            lexp: Nil,
-                            rexp: Number(
-                                "3",
-                            ),
-                        },
-                        Field {
-                            index: Some(
-                                2,
-                            ),
-                            lexp: Nil,
-                            rexp: Number(
-                                "4",
-                            ),
-                        },
-                    ],
-                ),
-            ],
         },
     ],
 )

@@ -6,31 +6,37 @@ end
 
 Block(
     [
-        LocalFunctionDeclaration {
-            name: Name(
-                "debug",
-            ),
-            parlist: [],
-            varargs: true,
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: NamedVar(
-                            "print",
-                        ),
-                        args: [
-                            FunctionCall {
+        Node {
+            comments: [],
+            node: LocalFunctionDeclaration {
+                name: Name(
+                    "debug",
+                ),
+                parlist: [],
+                varargs: true,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
                                 pexp: NamedVar(
-                                    "inspect",
+                                    "print",
                                 ),
                                 args: [
-                                    Varargs,
+                                    FunctionCall {
+                                        pexp: NamedVar(
+                                            "inspect",
+                                        ),
+                                        args: [
+                                            Varargs,
+                                        ],
+                                    },
                                 ],
                             },
-                        ],
-                    },
-                ],
-            ),
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

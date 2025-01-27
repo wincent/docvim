@@ -10,38 +10,50 @@ end
 
 Block(
     [
-        While {
-            cexp: True,
-            block: Block(
-                [
-                    IfStatement {
-                        consequents: [
-                            Consequent {
-                                cexp: FunctionCall {
-                                    pexp: NamedVar(
-                                        "test",
-                                    ),
-                                    args: [],
-                                },
-                                block: Block(
-                                    [
-                                        Return(
-                                            None,
+        Node {
+            comments: [],
+            node: While {
+                cexp: True,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: IfStatement {
+                                consequents: [
+                                    Consequent {
+                                        cexp: FunctionCall {
+                                            pexp: NamedVar(
+                                                "test",
+                                            ),
+                                            args: [],
+                                        },
+                                        block: Block(
+                                            [
+                                                Node {
+                                                    comments: [],
+                                                    node: Return(
+                                                        None,
+                                                    ),
+                                                },
+                                            ],
                                         ),
-                                    ],
+                                    },
+                                ],
+                                alternate: Some(
+                                    Block(
+                                        [
+                                            Node {
+                                                comments: [],
+                                                node: Break,
+                                            },
+                                        ],
+                                    ),
                                 ),
                             },
-                        ],
-                        alternate: Some(
-                            Block(
-                                [
-                                    Break,
-                                ],
-                            ),
-                        ),
-                    },
-                ],
-            ),
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

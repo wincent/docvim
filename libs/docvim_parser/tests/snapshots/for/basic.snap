@@ -6,37 +6,46 @@ end
 
 Block(
     [
-        For {
-            name: Name(
-                "i",
-            ),
-            startexp: Number(
-                "1",
-            ),
-            endexp: Number(
-                "10",
-            ),
-            stepexp: None,
-            block: Block(
-                [
-                    DoBlock(
-                        Block(
-                            [
-                                FunctionCallStatement {
-                                    pexp: NamedVar(
-                                        "print",
-                                    ),
-                                    args: [
-                                        NamedVar(
-                                            "i",
-                                        ),
+        Node {
+            comments: [],
+            node: For {
+                name: Name(
+                    "i",
+                ),
+                startexp: Number(
+                    "1",
+                ),
+                endexp: Number(
+                    "10",
+                ),
+                stepexp: None,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: DoBlock(
+                                Block(
+                                    [
+                                        Node {
+                                            comments: [],
+                                            node: FunctionCallStatement {
+                                                pexp: NamedVar(
+                                                    "print",
+                                                ),
+                                                args: [
+                                                    NamedVar(
+                                                        "i",
+                                                    ),
+                                                ],
+                                            },
+                                        },
                                     ],
-                                },
-                            ],
-                        ),
-                    ),
-                ],
-            ),
+                                ),
+                            ),
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

@@ -4,19 +4,22 @@ bar:baz("hello", "world")
 
 Block(
     [
-        MethodCallStatement {
-            pexp: NamedVar(
-                "bar",
-            ),
-            name: "baz",
-            args: [
-                CookedStr(
-                    "hello",
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: NamedVar(
+                    "bar",
                 ),
-                CookedStr(
-                    "world",
-                ),
-            ],
+                name: "baz",
+                args: [
+                    CookedStr(
+                        "hello",
+                    ),
+                    CookedStr(
+                        "world",
+                    ),
+                ],
+            },
         },
     ],
 )

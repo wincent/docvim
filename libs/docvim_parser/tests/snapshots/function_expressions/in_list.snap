@@ -14,78 +14,90 @@ local callbacks = {
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "callbacks",
-                ),
-            ],
-            explist: [
-                Table(
-                    [
-                        Field {
-                            index: Some(
-                                1,
-                            ),
-                            lexp: Nil,
-                            rexp: Function {
-                                parlist: [],
-                                varargs: false,
-                                block: Block(
-                                    [
-                                        FunctionCallStatement {
-                                            pexp: NamedVar(
-                                                "setup",
-                                            ),
-                                            args: [],
-                                        },
-                                    ],
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "callbacks",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: Some(
+                                    1,
                                 ),
+                                lexp: Nil,
+                                rexp: Function {
+                                    parlist: [],
+                                    varargs: false,
+                                    block: Block(
+                                        [
+                                            Node {
+                                                comments: [],
+                                                node: FunctionCallStatement {
+                                                    pexp: NamedVar(
+                                                        "setup",
+                                                    ),
+                                                    args: [],
+                                                },
+                                            },
+                                        ],
+                                    ),
+                                },
                             },
-                        },
-                        Field {
-                            index: Some(
-                                2,
-                            ),
-                            lexp: Nil,
-                            rexp: Function {
-                                parlist: [],
-                                varargs: false,
-                                block: Block(
-                                    [
-                                        FunctionCallStatement {
-                                            pexp: NamedVar(
-                                                "notify",
-                                            ),
-                                            args: [],
-                                        },
-                                    ],
+                            Field {
+                                index: Some(
+                                    2,
                                 ),
+                                lexp: Nil,
+                                rexp: Function {
+                                    parlist: [],
+                                    varargs: false,
+                                    block: Block(
+                                        [
+                                            Node {
+                                                comments: [],
+                                                node: FunctionCallStatement {
+                                                    pexp: NamedVar(
+                                                        "notify",
+                                                    ),
+                                                    args: [],
+                                                },
+                                            },
+                                        ],
+                                    ),
+                                },
                             },
-                        },
-                        Field {
-                            index: Some(
-                                3,
-                            ),
-                            lexp: Nil,
-                            rexp: Function {
-                                parlist: [],
-                                varargs: false,
-                                block: Block(
-                                    [
-                                        FunctionCallStatement {
-                                            pexp: NamedVar(
-                                                "cleanup",
-                                            ),
-                                            args: [],
-                                        },
-                                    ],
+                            Field {
+                                index: Some(
+                                    3,
                                 ),
+                                lexp: Nil,
+                                rexp: Function {
+                                    parlist: [],
+                                    varargs: false,
+                                    block: Block(
+                                        [
+                                            Node {
+                                                comments: [],
+                                                node: FunctionCallStatement {
+                                                    pexp: NamedVar(
+                                                        "cleanup",
+                                                    ),
+                                                    args: [],
+                                                },
+                                            },
+                                        ],
+                                    ),
+                                },
                             },
-                        },
-                    ],
-                ),
-            ],
+                        ],
+                    ),
+                ],
+            },
         },
     ],
 )

@@ -6,37 +6,43 @@ end
 
 Block(
     [
-        ForIn {
-            namelist: [
-                Name(
-                    "x",
-                ),
-                Name(
-                    "y",
-                ),
-            ],
-            explist: [
-                NamedVar(
-                    "a",
-                ),
-                NamedVar(
-                    "b",
-                ),
-            ],
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: NamedVar(
-                            "x",
-                        ),
-                        args: [
-                            NamedVar(
-                                "y",
-                            ),
-                        ],
-                    },
+        Node {
+            comments: [],
+            node: ForIn {
+                namelist: [
+                    Name(
+                        "x",
+                    ),
+                    Name(
+                        "y",
+                    ),
                 ],
-            ),
+                explist: [
+                    NamedVar(
+                        "a",
+                    ),
+                    NamedVar(
+                        "b",
+                    ),
+                ],
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "x",
+                                ),
+                                args: [
+                                    NamedVar(
+                                        "y",
+                                    ),
+                                ],
+                            },
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )

@@ -4,27 +4,30 @@ local stuff = { ["foo"] = bar }
 
 Block(
     [
-        LocalDeclaration {
-            namelist: [
-                Name(
-                    "stuff",
-                ),
-            ],
-            explist: [
-                Table(
-                    [
-                        Field {
-                            index: None,
-                            lexp: CookedStr(
-                                "foo",
-                            ),
-                            rexp: NamedVar(
-                                "bar",
-                            ),
-                        },
-                    ],
-                ),
-            ],
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "stuff",
+                    ),
+                ],
+                explist: [
+                    Table(
+                        [
+                            Field {
+                                index: None,
+                                lexp: CookedStr(
+                                    "foo",
+                                ),
+                                rexp: NamedVar(
+                                    "bar",
+                                ),
+                            },
+                        ],
+                    ),
+                ],
+            },
         },
     ],
 )

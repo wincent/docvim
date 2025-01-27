@@ -6,29 +6,35 @@ end
 
 Block(
     [
-        IfStatement {
-            consequents: [
-                Consequent {
-                    cexp: Binary {
-                        lexp: NamedVar(
-                            "a",
+        Node {
+            comments: [],
+            node: IfStatement {
+                consequents: [
+                    Consequent {
+                        cexp: Binary {
+                            lexp: NamedVar(
+                                "a",
+                            ),
+                            op: Ne,
+                            rexp: Nil,
+                        },
+                        block: Block(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: FunctionCallStatement {
+                                        pexp: NamedVar(
+                                            "a",
+                                        ),
+                                        args: [],
+                                    },
+                                },
+                            ],
                         ),
-                        op: Ne,
-                        rexp: Nil,
                     },
-                    block: Block(
-                        [
-                            FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "a",
-                                ),
-                                args: [],
-                            },
-                        ],
-                    ),
-                },
-            ],
-            alternate: None,
+                ],
+                alternate: None,
+            },
         },
     ],
 )

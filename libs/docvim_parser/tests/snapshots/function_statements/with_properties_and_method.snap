@@ -6,35 +6,41 @@ end
 
 Block(
     [
-        FunctionDeclaration {
-            name: [
-                Name(
-                    "a",
-                ),
-                Name(
-                    "b",
-                ),
-                Name(
-                    "c",
-                ),
-            ],
-            method: Some(
-                Name(
-                    "d",
-                ),
-            ),
-            parlist: [],
-            varargs: false,
-            block: Block(
-                [
-                    FunctionCallStatement {
-                        pexp: NamedVar(
-                            "yes",
-                        ),
-                        args: [],
-                    },
+        Node {
+            comments: [],
+            node: FunctionDeclaration {
+                name: [
+                    Name(
+                        "a",
+                    ),
+                    Name(
+                        "b",
+                    ),
+                    Name(
+                        "c",
+                    ),
                 ],
-            ),
+                method: Some(
+                    Name(
+                        "d",
+                    ),
+                ),
+                parlist: [],
+                varargs: false,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: NamedVar(
+                                    "yes",
+                                ),
+                                args: [],
+                            },
+                        },
+                    ],
+                ),
+            },
         },
     ],
 )
