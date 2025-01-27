@@ -3,6 +3,10 @@
   More block comment.
 --]]
 
+--[[ A block comment on one line. ]]
+
+--[====[ With an arbitrary number of equals signs. ]====]
+
 return "We're done here"
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
