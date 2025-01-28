@@ -533,7 +533,7 @@ impl<'a> Parser<'a> {
         Ok(block)
     }
 
-    fn make_node(&mut self, comments: Vec<Comment<'a>>, node: StatementKind<'a>) -> Statement<'a> {
+    fn make_node<T>(&mut self, comments: Vec<Comment<'a>>, node: T) -> Node<'a, T> {
         let node = Node { comments, node };
         node
     }
