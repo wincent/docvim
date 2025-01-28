@@ -2,4 +2,4 @@
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Token { kind: Literal(Str(DoubleQuoted)), char_start: 0, char_end: 7, byte_start: 0, byte_end: 7 }: "hello"
+Token { kind: Literal(Str(DoubleQuoted)), char_start: 0, char_end: 7, byte_start: 0, byte_end: 7, column_start: 1, column_end: 8, line_start: 1, line_end: 1 }: "hello"

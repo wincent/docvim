@@ -12,10 +12,10 @@
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Token { kind: Literal(Str(Long { level: 0 })), char_start: 0, char_end: 16, byte_start: 0, byte_end: 16 }: [[a simple one]]
-Token { kind: Literal(Str(Long { level: 1 })), char_start: 18, char_end: 37, byte_start: 18, byte_end: 37 }: [=[a level 1 one]=]
-Token { kind: Literal(Str(Long { level: 2 })), char_start: 39, char_end: 60, byte_start: 39, byte_end: 60 }: [==[a level 2 one]==]
-Token { kind: Literal(Str(Long { level: 3 })), char_start: 62, char_end: 116, byte_start: 62, byte_end: 116 }: [===[
+Token { kind: Literal(Str(Long { level: 0 })), char_start: 0, char_end: 16, byte_start: 0, byte_end: 16, column_start: 1, column_end: 17, line_start: 1, line_end: 1 }: [[a simple one]]
+Token { kind: Literal(Str(Long { level: 1 })), char_start: 18, char_end: 37, byte_start: 18, byte_end: 37, column_start: 1, column_end: 20, line_start: 3, line_end: 3 }: [=[a level 1 one]=]
+Token { kind: Literal(Str(Long { level: 2 })), char_start: 39, char_end: 60, byte_start: 39, byte_end: 60, column_start: 1, column_end: 22, line_start: 5, line_end: 5 }: [==[a level 2 one]==]
+Token { kind: Literal(Str(Long { level: 3 })), char_start: 62, char_end: 116, byte_start: 62, byte_end: 116, column_start: 1, column_end: 6, line_start: 7, line_end: 11 }: [===[
   backslashes: \
   newlines
   [[brackets]]

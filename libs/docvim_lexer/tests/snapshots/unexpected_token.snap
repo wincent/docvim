@@ -10,14 +10,14 @@ The unexpected token is the second curly, which starts at position
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
-Token { kind: Name(Keyword(Local)), char_start: 0, char_end: 5, byte_start: 0, byte_end: 5 }: local
-Token { kind: Name(Identifier), char_start: 6, char_end: 7, byte_start: 6, byte_end: 7 }: x
-Token { kind: Op(Assign), char_start: 8, char_end: 9, byte_start: 8, byte_end: 9 }: =
-Token { kind: Punctuator(Lcurly), char_start: 10, char_end: 11, byte_start: 10, byte_end: 11 }: {
-Token { kind: Literal(Number), char_start: 12, char_end: 13, byte_start: 12, byte_end: 13 }: 1
-Token { kind: Punctuator(Rcurly), char_start: 14, char_end: 15, byte_start: 14, byte_end: 15 }: }
-Token { kind: Punctuator(Rcurly), char_start: 15, char_end: 16, byte_start: 15, byte_end: 16 }: }
-Token { kind: Comment(BlockComment), char_start: 18, char_end: 185, byte_start: 18, byte_end: 185 }: --[[
+Token { kind: Name(Keyword(Local)), char_start: 0, char_end: 5, byte_start: 0, byte_end: 5, column_start: 1, column_end: 6, line_start: 1, line_end: 1 }: local
+Token { kind: Name(Identifier), char_start: 6, char_end: 7, byte_start: 6, byte_end: 7, column_start: 7, column_end: 8, line_start: 1, line_end: 1 }: x
+Token { kind: Op(Assign), char_start: 8, char_end: 9, byte_start: 8, byte_end: 9, column_start: 9, column_end: 10, line_start: 1, line_end: 1 }: =
+Token { kind: Punctuator(Lcurly), char_start: 10, char_end: 11, byte_start: 10, byte_end: 11, column_start: 11, column_end: 12, line_start: 1, line_end: 1 }: {
+Token { kind: Literal(Number), char_start: 12, char_end: 13, byte_start: 12, byte_end: 13, column_start: 13, column_end: 14, line_start: 1, line_end: 1 }: 1
+Token { kind: Punctuator(Rcurly), char_start: 14, char_end: 15, byte_start: 14, byte_end: 15, column_start: 15, column_end: 16, line_start: 1, line_end: 1 }: }
+Token { kind: Punctuator(Rcurly), char_start: 15, char_end: 16, byte_start: 15, byte_end: 16, column_start: 16, column_end: 17, line_start: 1, line_end: 1 }: }
+Token { kind: Comment(BlockComment), char_start: 18, char_end: 185, byte_start: 18, byte_end: 185, column_start: 1, column_end: 5, line_start: 3, line_end: 9 }: --[[
 0123456789111111
           012345
 

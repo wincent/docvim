@@ -17,6 +17,12 @@ pub struct Token {
     pub char_end: usize,
     pub byte_start: usize,
     pub byte_end: usize,
+
+    // 1-indexed, as these are all editor-centric fields.
+    pub column_start: usize,
+    pub column_end: usize,
+    pub line_start: usize,
+    pub line_end: usize,
 }
 
 impl Token {
@@ -26,8 +32,22 @@ impl Token {
         char_end: usize,
         byte_start: usize,
         byte_end: usize,
+        column_start: usize,
+        column_end: usize,
+        line_start: usize,
+        line_end: usize,
     ) -> Token {
-        Token { kind, char_start, char_end, byte_start, byte_end }
+        Token {
+            kind,
+            char_start,
+            char_end,
+            byte_start,
+            byte_end,
+            column_start,
+            column_end,
+            line_start,
+            line_end,
+        }
     }
 }
 
@@ -135,6 +155,10 @@ macro_rules! make_token {
             $self.iter.char_idx,
             $self.byte_start,
             $self.iter.byte_idx,
+            $self.column_start,
+            $self.iter.column_idx,
+            $self.line_start,
+            $self.iter.line_idx,
         )))
     };
 }
@@ -148,7 +172,14 @@ impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
         Self {
             input,
-            tokens: Tokens { iter: Peekable::new(input), char_start: 0, byte_start: 0 }.peekable(),
+            tokens: Tokens {
+                iter: Peekable::new(input),
+                char_start: 0,
+                byte_start: 0,
+                column_start: 1,
+                line_start: 1,
+            }
+            .peekable(),
         }
     }
 
@@ -174,6 +205,8 @@ pub struct Tokens<'a> {
     iter: Peekable<'a>,
     char_start: usize,
     byte_start: usize,
+    column_start: usize,
+    line_start: usize,
 }
 
 impl<'a> Tokens<'a> {
@@ -257,6 +290,8 @@ impl<'a> Tokens<'a> {
     fn scan_name(&mut self) -> Result<Token, LexerError> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
+        let column_start = self.iter.column_idx;
+        let line_start = self.iter.line_idx;
         let mut name = Vec::new();
         while let Some(&c) = self.iter.peek() {
             match c {
@@ -293,12 +328,24 @@ impl<'a> Tokens<'a> {
             "while" => Name(Keyword(While)),
             _ => Name(Identifier),
         };
-        Ok(Token::new(kind, char_start, self.iter.char_idx, byte_start, self.iter.byte_idx))
+        Ok(Token::new(
+            kind,
+            char_start,
+            self.iter.char_idx,
+            byte_start,
+            self.iter.byte_idx,
+            column_start,
+            self.iter.column_idx,
+            line_start,
+            self.iter.line_idx,
+        ))
     }
 
     fn scan_number(&mut self) -> Result<Token, LexerError> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
+        let column_start = self.iter.column_idx;
+        let line_start = self.iter.line_idx;
         let ch = self.iter.next().unwrap();
         if ch == '0' && self.consume_char('x') {
             let mut seen_separator = false;
@@ -338,6 +385,10 @@ impl<'a> Tokens<'a> {
                 self.iter.char_idx,
                 byte_start,
                 self.iter.byte_idx,
+                column_start,
+                self.iter.column_idx,
+                line_start,
+                self.iter.line_idx,
             ));
         } else {
             let mut seen_separator = false;
@@ -388,6 +439,10 @@ impl<'a> Tokens<'a> {
                                 self.iter.char_idx,
                                 byte_start,
                                 self.iter.byte_idx,
+                                column_start,
+                                self.iter.column_idx,
+                                line_start,
+                                self.iter.line_idx,
                             ));
                         } else {
                             return Err(LexerError {
@@ -408,12 +463,18 @@ impl<'a> Tokens<'a> {
             self.iter.char_idx,
             byte_start,
             self.iter.byte_idx,
+            column_start,
+            self.iter.column_idx,
+            line_start,
+            self.iter.line_idx,
         ))
     }
 
     fn scan_string(&mut self) -> Result<Token, LexerError> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
+        let column_start = self.iter.column_idx;
+        let line_start = self.iter.line_idx;
         let quote = self.iter.next().unwrap();
         while let Some(c) = self.iter.next() {
             if c == quote {
@@ -424,6 +485,10 @@ impl<'a> Tokens<'a> {
                         self.iter.char_idx,
                         byte_start,
                         self.iter.byte_idx,
+                        column_start,
+                        self.iter.column_idx,
+                        line_start,
+                        self.iter.line_idx,
                     ));
                 } else {
                     return Ok(Token::new(
@@ -432,6 +497,10 @@ impl<'a> Tokens<'a> {
                         self.iter.char_idx,
                         byte_start,
                         self.iter.byte_idx,
+                        column_start,
+                        self.iter.column_idx,
+                        line_start,
+                        self.iter.line_idx,
                     ));
                 }
             }
@@ -504,6 +573,8 @@ impl<'a> Tokens<'a> {
     fn scan_long_string(&mut self, level: usize) -> Result<Token, LexerError> {
         let byte_start = self.iter.byte_idx - level - 2;
         let char_start = self.iter.char_idx - level - 2;
+        let column_start = self.iter.column_idx - level - 2;
+        let line_start = self.iter.line_idx;
         while let Some(c) = self.iter.next() {
             if c == ']' {
                 let mut eq_count = 0;
@@ -521,6 +592,10 @@ impl<'a> Tokens<'a> {
                         self.iter.char_idx,
                         byte_start,
                         self.iter.byte_idx,
+                        column_start,
+                        self.iter.column_idx,
+                        line_start,
+                        self.iter.line_idx,
                     ));
                 }
             }
@@ -552,6 +627,8 @@ impl<'a> Iterator for Tokens<'a> {
         self.skip_whitespace();
         self.char_start = self.iter.char_idx;
         self.byte_start = self.iter.byte_idx;
+        self.column_start = self.iter.column_idx;
+        self.line_start = self.iter.line_idx;
         if let Some(&c) = self.iter.peek() {
             match c {
                 '-' => {
@@ -745,6 +822,10 @@ mod tests {
                     byte_start: 0,
                     char_end: 9,
                     char_start: 0,
+                    column_start: 1,
+                    column_end: 1,
+                    line_start: 1,
+                    line_end: 2,
                     kind: Comment(LineComment),
                 },
                 Token {
@@ -752,6 +833,10 @@ mod tests {
                     byte_start: 11,
                     char_end: 19,
                     char_start: 9,
+                    column_start: 1,
+                    column_end: 11,
+                    line_start: 2,
+                    line_end: 2,
                     kind: Comment(LineComment),
                 }
             ]
@@ -767,6 +852,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 18,
                 char_start: 0,
+                column_start: 1,
+                column_end: 19,
+                line_start: 1,
+                line_end: 1,
                 kind: Comment(LineComment),
             }]
         );
@@ -777,6 +866,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 41,
                 char_start: 0,
+                column_start: 1,
+                column_end: 42,
+                line_start: 1,
+                line_end: 1,
                 kind: Comment(LineComment),
             }]
         );
@@ -791,6 +884,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 13,
                 char_start: 0,
+                column_start: 1,
+                column_end: 3,
+                line_start: 1,
+                line_end: 3,
                 kind: Comment(BlockComment),
             }]
         );
@@ -801,6 +898,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 15,
                 char_start: 0,
+                column_start: 1,
+                column_end: 4,
+                line_start: 1,
+                line_end: 3,
                 kind: Comment(BlockComment),
             }]
         );
@@ -811,6 +912,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 17,
                 char_start: 0,
+                column_start: 1,
+                column_end: 5,
+                line_start: 1,
+                line_end: 3,
                 kind: Comment(BlockComment),
             }]
         );
@@ -821,6 +926,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 41,
                 char_start: 0,
+                column_start: 1,
+                column_end: 6,
+                line_start: 1,
+                line_end: 3,
                 kind: Comment(BlockComment),
             }]
         );
@@ -836,6 +945,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 1,
                 char_start: 0,
+                column_start: 1,
+                column_end: 2,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -846,6 +959,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 3,
                 char_start: 0,
+                column_start: 1,
+                column_end: 4,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -856,6 +973,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 6,
                 char_start: 0,
+                column_start: 1,
+                column_end: 7,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -866,6 +987,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 9,
                 char_start: 0,
+                column_start: 1,
+                column_end: 10,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -876,6 +1001,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 9,
                 char_start: 0,
+                column_start: 1,
+                column_end: 10,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -886,6 +1015,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 4,
                 char_start: 0,
+                column_start: 1,
+                column_end: 5,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -896,6 +1029,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 4,
                 char_start: 0,
+                column_start: 1,
+                column_end: 5,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -908,6 +1045,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 6,
                 char_start: 0,
+                column_start: 1,
+                column_end: 7,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -918,6 +1059,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 7,
                 char_start: 0,
+                column_start: 1,
+                column_end: 8,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -928,6 +1073,10 @@ mod tests {
                 byte_start: 0,
                 char_end: 7,
                 char_start: 0,
+                column_start: 1,
+                column_end: 8,
+                line_start: 1,
+                line_end: 1,
                 kind: Literal(Number),
             }]
         );
@@ -939,14 +1088,32 @@ mod tests {
                     byte_start: 0,
                     char_end: 5,
                     char_start: 0,
+                    column_start: 1,
+                    column_end: 6,
+                    line_start: 1,
+                    line_end: 1,
                     kind: Literal(Number),
                 },
-                Token { byte_end: 6, byte_start: 5, char_end: 6, char_start: 5, kind: Op(Minus) },
+                Token {
+                    byte_end: 6,
+                    byte_start: 5,
+                    char_end: 6,
+                    char_start: 5,
+                    column_start: 6,
+                    column_end: 7,
+                    line_start: 1,
+                    line_end: 1,
+                    kind: Op(Minus)
+                },
                 Token {
                     byte_end: 8,
                     byte_start: 6,
                     char_end: 8,
                     char_start: 6,
+                    column_start: 7,
+                    column_end: 9,
+                    line_start: 1,
+                    line_end: 1,
                     kind: Literal(Number),
                 }
             ]
@@ -956,9 +1123,13 @@ mod tests {
             vec![Token {
                 byte_end: 9,
                 char_end: 9,
-                kind: Literal(Number),
                 char_start: 0,
                 byte_start: 0,
+                column_start: 1,
+                column_end: 10,
+                line_start: 1,
+                line_end: 1,
+                kind: Literal(Number),
             }]
         );
     }
@@ -993,6 +1164,10 @@ mod tests {
                 char_end: 7,
                 byte_start: 0,
                 byte_end: 7,
+                column_start: 1,
+                column_end: 8,
+                line_start: 1,
+                line_end: 1,
             }]
         );
         assert_lexes!(
@@ -1003,6 +1178,10 @@ mod tests {
                 char_end: 5,
                 byte_start: 0,
                 byte_end: 5,
+                column_start: 1,
+                column_end: 6,
+                line_start: 1,
+                line_end: 1,
             }]
         );
     }
@@ -1017,6 +1196,10 @@ mod tests {
                 char_end: 9,
                 byte_start: 0,
                 byte_end: 9,
+                column_start: 1,
+                column_end: 10,
+                line_start: 1,
+                line_end: 1,
             }]
         );
         assert_lexes!(
@@ -1027,6 +1210,10 @@ mod tests {
                 char_end: 15,
                 byte_start: 0,
                 byte_end: 15,
+                column_start: 1,
+                column_end: 16,
+                line_start: 1,
+                line_end: 1,
             }]
         );
     }
