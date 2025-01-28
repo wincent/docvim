@@ -11,7 +11,11 @@ a()({force = true})("boo!")
 Block(
     [
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "-- We can mix various kinds of prefixexps together.\n",
+                },
+            ],
             node: FunctionCallStatement {
                 pexp: FunctionCall {
                     pexp: FunctionCall {
@@ -42,7 +46,11 @@ Block(
             },
         },
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "-- Equivalent to (identical AST):\n",
+                },
+            ],
             node: FunctionCallStatement {
                 pexp: FunctionCall {
                     pexp: FunctionCall {

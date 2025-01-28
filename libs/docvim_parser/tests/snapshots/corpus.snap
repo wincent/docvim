@@ -649,7 +649,14 @@ return corpus
 Block(
     [
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "-- Copyright 2015-present Greg Hurrell. All rights reserved.\n",
+                },
+                Comment {
+                    content: "-- Licensed under the terms of the MIT license.\n",
+                },
+            ],
             node: LocalDeclaration {
                 namelist: [
                     Name(
@@ -768,7 +775,11 @@ Block(
             },
         },
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "-- TODO: can we make these a bit more private?\n",
+                },
+            ],
             node: LocalDeclaration {
                 namelist: [
                     Name(
@@ -781,7 +792,11 @@ Block(
             },
         },
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "-- TODO: detect pre-existing mappings, save them, and restore them if needed.\n",
+                },
+            ],
             node: LocalDeclaration {
                 namelist: [
                     Name(
@@ -833,7 +848,11 @@ Block(
             },
         },
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "-- TODO sub to VimResized autocmd\n",
+                },
+            ],
             node: LocalDeclaration {
                 namelist: [
                     Name(
@@ -922,7 +941,17 @@ Block(
             },
         },
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "-- TODO unsub to VimResized autocmd\n",
+                },
+                Comment {
+                    content: "-- TODO make most of these private (really only want them public for testing\n",
+                },
+                Comment {
+                    content: "-- during development)\n",
+                },
+            ],
             node: LocalDeclaration {
                 namelist: [
                     Name(
@@ -997,7 +1026,14 @@ Block(
                                                                 block: Block(
                                                                     [
                                                                         Node {
-                                                                            comments: [],
+                                                                            comments: [
+                                                                                Comment {
+                                                                                    content: "-- TODO: find out if bang from old version was actually necessary\n",
+                                                                                },
+                                                                                Comment {
+                                                                                    content: "-- vim.cmd('silent! cunmap ' .. lhs)\n",
+                                                                                },
+                                                                            ],
                                                                             node: FunctionCallStatement {
                                                                                 pexp: Index {
                                                                                     pexp: Index {
@@ -1282,7 +1318,11 @@ Block(
                                                             block: Block(
                                                                 [
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- In a Corpus directory, trying to open a file.\n",
+                                                                            },
+                                                                        ],
                                                                         node: FunctionCallStatement {
                                                                             pexp: Index {
                                                                                 pexp: NamedVar(
@@ -1330,7 +1370,11 @@ Block(
                                                         Block(
                                                             [
                                                                 Node {
-                                                                    comments: [],
+                                                                    comments: [
+                                                                        Comment {
+                                                                            content: "-- In create mode, or not in a Corpus directory.\n",
+                                                                        },
+                                                                    ],
                                                                     node: LocalDeclaration {
                                                                         namelist: [
                                                                             Name(
@@ -1917,7 +1961,14 @@ Block(
                                                                                                                                     block: Block(
                                                                                                                                         [
                                                                                                                                             Node {
-                                                                                                                                                comments: [],
+                                                                                                                                                comments: [
+                                                                                                                                                    Comment {
+                                                                                                                                                        content: "-- listed?\n",
+                                                                                                                                                    },
+                                                                                                                                                    Comment {
+                                                                                                                                                        content: "-- scratch?\n",
+                                                                                                                                                    },
+                                                                                                                                                ],
                                                                                                                                                 node: VarlistDeclaration {
                                                                                                                                                     varlist: [
                                                                                                                                                         NamedVar(
@@ -1948,7 +1999,11 @@ Block(
                                                                                                                                                 },
                                                                                                                                             },
                                                                                                                                             Node {
-                                                                                                                                                comments: [],
+                                                                                                                                                comments: [
+                                                                                                                                                    Comment {
+                                                                                                                                                        content: "--[[ enter? --]]",
+                                                                                                                                                    },
+                                                                                                                                                ],
                                                                                                                                                 node: VarlistDeclaration {
                                                                                                                                                     varlist: [
                                                                                                                                                         NamedVar(
@@ -2175,7 +2230,11 @@ Block(
                                                                                                                                                             block: Block(
                                                                                                                                                                 [
                                                                                                                                                                     Node {
-                                                                                                                                                                        comments: [],
+                                                                                                                                                                        comments: [
+                                                                                                                                                                            Comment {
+                                                                                                                                                                                content: "-- 1 because Neovim cursor indexing is 1-based, as are Lua lists.\n",
+                                                                                                                                                                            },
+                                                                                                                                                                        ],
                                                                                                                                                                         node: VarlistDeclaration {
                                                                                                                                                                             varlist: [
                                                                                                                                                                                 NamedVar(
@@ -2351,7 +2410,11 @@ Block(
                                                                                                                                                                                                                     block: Block(
                                                                                                                                                                                                                         [
                                                                                                                                                                                                                             Node {
-                                                                                                                                                                                                                                comments: [],
+                                                                                                                                                                                                                                comments: [
+                                                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                                                        content: "-- Right pad so that selection highlight extends fully across.\n",
+                                                                                                                                                                                                                                    },
+                                                                                                                                                                                                                                ],
                                                                                                                                                                                                                                 node: Return(
                                                                                                                                                                                                                                     Some(
                                                                                                                                                                                                                                         [
@@ -2409,7 +2472,11 @@ Block(
                                                                                                                                                                                                                 Block(
                                                                                                                                                                                                                     [
                                                                                                                                                                                                                         Node {
-                                                                                                                                                                                                                            comments: [],
+                                                                                                                                                                                                                            comments: [
+                                                                                                                                                                                                                                Comment {
+                                                                                                                                                                                                                                    content: "-- Avoid: \"invalid format (width or precision too long)\"\n",
+                                                                                                                                                                                                                                },
+                                                                                                                                                                                                                            ],
                                                                                                                                                                                                                             node: LocalDeclaration {
                                                                                                                                                                                                                                 namelist: [
                                                                                                                                                                                                                                     Name(
@@ -2594,7 +2661,17 @@ Block(
                                                                                                                                                 },
                                                                                                                                             },
                                                                                                                                             Node {
-                                                                                                                                                comments: [],
+                                                                                                                                                comments: [
+                                                                                                                                                    Comment {
+                                                                                                                                                        content: "-- start\n",
+                                                                                                                                                    },
+                                                                                                                                                    Comment {
+                                                                                                                                                        content: "-- end\n",
+                                                                                                                                                    },
+                                                                                                                                                    Comment {
+                                                                                                                                                        content: "-- strict indexing?\n",
+                                                                                                                                                    },
+                                                                                                                                                ],
                                                                                                                                                 node: FunctionCallStatement {
                                                                                                                                                     pexp: Index {
                                                                                                                                                         pexp: Index {
@@ -2630,7 +2707,11 @@ Block(
                                                                                                                                                 },
                                                                                                                                             },
                                                                                                                                             Node {
-                                                                                                                                                comments: [],
+                                                                                                                                                comments: [
+                                                                                                                                                    Comment {
+                                                                                                                                                        content: "-- Reserve two lines for statusline and command line.\n",
+                                                                                                                                                    },
+                                                                                                                                                ],
                                                                                                                                                 node: FunctionCallStatement {
                                                                                                                                                     pexp: Index {
                                                                                                                                                         pexp: Index {
@@ -2672,7 +2753,11 @@ Block(
                                                                                                                                                 },
                                                                                                                                             },
                                                                                                                                             Node {
-                                                                                                                                                comments: [],
+                                                                                                                                                comments: [
+                                                                                                                                                    Comment {
+                                                                                                                                                        content: "-- TODO: only do this if lines actually changed, or selection changed\n",
+                                                                                                                                                    },
+                                                                                                                                                ],
                                                                                                                                                 node: FunctionCallStatement {
                                                                                                                                                     pexp: Index {
                                                                                                                                                         pexp: NamedVar(
@@ -2854,7 +2939,11 @@ Block(
                                                             block: Block(
                                                                 [
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "--[[ force? --]]",
+                                                                            },
+                                                                        ],
                                                                         node: FunctionCallStatement {
                                                                             pexp: Index {
                                                                                 pexp: Index {
@@ -2912,7 +3001,11 @@ Block(
                                                             block: Block(
                                                                 [
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "--[[ force? --]]",
+                                                                            },
+                                                                        ],
                                                                         node: FunctionCallStatement {
                                                                             pexp: Index {
                                                                                 pexp: Index {
@@ -3100,7 +3193,11 @@ Block(
                                                                         },
                                                                     },
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- Just in case this is a new file (otherwise `git commit` will fail).\n",
+                                                                            },
+                                                                        ],
                                                                         node: LocalDeclaration {
                                                                             namelist: [
                                                                                 Name(
@@ -3186,7 +3283,20 @@ Block(
                                                                         },
                                                                     },
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- TODO: check v:shell_error for this one ^^^\n",
+                                                                            },
+                                                                            Comment {
+                                                                                content: "-- vim.api.nvim_get_vvar('shell_error')\n",
+                                                                            },
+                                                                            Comment {
+                                                                                content: "-- Note that this will fail silently if there are no changes to the\n",
+                                                                            },
+                                                                            Comment {
+                                                                                content: "-- file (because we aren't passing `--allow-empty`) and that's ok.\n",
+                                                                            },
+                                                                        ],
                                                                         node: FunctionCallStatement {
                                                                             pexp: Index {
                                                                                 pexp: NamedVar(
@@ -3305,7 +3415,11 @@ Block(
                                                                                     block: Block(
                                                                                         [
                                                                                             Node {
-                                                                                                comments: [],
+                                                                                                comments: [
+                                                                                                    Comment {
+                                                                                                        content: "-- strip \".md\"\n",
+                                                                                                    },
+                                                                                                ],
                                                                                                 node: LocalDeclaration {
                                                                                                     namelist: [
                                                                                                         Name(
@@ -3342,7 +3456,11 @@ Block(
                                                                                                 },
                                                                                             },
                                                                                             Node {
-                                                                                                comments: [],
+                                                                                                comments: [
+                                                                                                    Comment {
+                                                                                                        content: "-- strip \"Corpus \"\n",
+                                                                                                    },
+                                                                                                ],
                                                                                                 node: LocalDeclaration {
                                                                                                     namelist: [
                                                                                                         Name(
@@ -3396,7 +3514,17 @@ Block(
                                                                                                             block: Block(
                                                                                                                 [
                                                                                                                     Node {
-                                                                                                                        comments: [],
+                                                                                                                        comments: [
+                                                                                                                            Comment {
+                                                                                                                                content: "-- If on \"foo bar bazzzz\"\n",
+                                                                                                                            },
+                                                                                                                            Comment {
+                                                                                                                                content: "--                   ^\n",
+                                                                                                                            },
+                                                                                                                            Comment {
+                                                                                                                                content: "-- Must return \"bazzzz\", not \"zzz\".\n",
+                                                                                                                            },
+                                                                                                                        ],
                                                                                                                         node: LocalDeclaration {
                                                                                                                             namelist: [
                                                                                                                                 Name(
@@ -3605,7 +3733,17 @@ Block(
                                     block: Block(
                                         [
                                             Node {
-                                                comments: [],
+                                                comments: [
+                                                    Comment {
+                                                        content: "-- Returns config from the `CorpusDirectories` (Lua global) for\n",
+                                                    },
+                                                    Comment {
+                                                        content: "-- `file`, or an empty table if `file` is not in one of the\n",
+                                                    },
+                                                    Comment {
+                                                        content: "-- directories defined in `CorpusDirectories`.\n",
+                                                    },
+                                                ],
                                                 node: LocalDeclaration {
                                                     namelist: [
                                                         Name(
@@ -3895,7 +4033,14 @@ Block(
                                                             block: Block(
                                                                 [
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- If current working directory is a configured Corpus directory, returns it.\n",
+                                                                            },
+                                                                            Comment {
+                                                                                content: "-- Otherwise, returns the first found default.\n",
+                                                                            },
+                                                                        ],
                                                                         node: Return(
                                                                             Some(
                                                                                 [
@@ -4173,7 +4318,14 @@ Block(
                                     block: Block(
                                         [
                                             Node {
-                                                comments: [],
+                                                comments: [
+                                                    Comment {
+                                                        content: "-- Adds 'corpus' to the 'filetype' if the current file is under a directory\n",
+                                                    },
+                                                    Comment {
+                                                        content: "-- configured via `CorpusDirectories`.\n",
+                                                    },
+                                                ],
                                                 node: LocalDeclaration {
                                                     namelist: [
                                                         Name(
@@ -4400,7 +4552,11 @@ Block(
                                                             block: Block(
                                                                 [
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- Strip leading \"> \" or \"  \", and append extension.\n",
+                                                                            },
+                                                                        ],
                                                                         node: LocalDeclaration {
                                                                             namelist: [
                                                                                 Name(
@@ -4618,7 +4774,11 @@ Block(
                                                             block: Block(
                                                                 [
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- TODO: decide whether it's right to do this unconditionally like this\n",
+                                                                            },
+                                                                        ],
                                                                         node: FunctionCallStatement {
                                                                             pexp: Index {
                                                                                 pexp: NamedVar(
@@ -4848,7 +5008,14 @@ Block(
                                                                         },
                                                                     },
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- TODO only clear whole buffer when resetting\n",
+                                                                            },
+                                                                            Comment {
+                                                                                content: "-- (just clearing previous would suffice)\n",
+                                                                            },
+                                                                        ],
                                                                         node: FunctionCallStatement {
                                                                             pexp: Index {
                                                                                 pexp: Index {
@@ -4883,7 +5050,17 @@ Block(
                                                                         },
                                                                     },
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- line (0-indexed)\n",
+                                                                            },
+                                                                            Comment {
+                                                                                content: "-- col_start\n",
+                                                                            },
+                                                                            Comment {
+                                                                                content: "-- col_end (end-of-line)\n",
+                                                                            },
+                                                                        ],
                                                                         node: FunctionCallStatement {
                                                                             pexp: Index {
                                                                                 pexp: Index {
@@ -5091,7 +5268,11 @@ Block(
                                                             block: Block(
                                                                 [
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- List all documents in the corpus.\n",
+                                                                            },
+                                                                        ],
                                                                         node: FunctionCallStatement {
                                                                             pexp: Index {
                                                                                 pexp: NamedVar(
@@ -5169,7 +5350,14 @@ Block(
                                                         Block(
                                                             [
                                                                 Node {
-                                                                    comments: [],
+                                                                    comments: [
+                                                                        Comment {
+                                                                            content: "-- Using util.run here just for consistency, although the truth is this\n",
+                                                                        },
+                                                                        Comment {
+                                                                            content: "-- one is not going to be a bottleneck.\n",
+                                                                        },
+                                                                    ],
                                                                     node: LocalDeclaration {
                                                                         namelist: [
                                                                             Name(
@@ -5323,7 +5511,23 @@ Block(
                                                                                                                             block: Block(
                                                                                                                                 [
                                                                                                                                     Node {
-                                                                                                                                        comments: [],
+                                                                                                                                        comments: [
+                                                                                                                                            Comment {
+                                                                                                                                                content: "-- Take care to ensure we don't cut a filename in half given:\n",
+                                                                                                                                            },
+                                                                                                                                            Comment {
+                                                                                                                                                content: "--\n",
+                                                                                                                                            },
+                                                                                                                                            Comment {
+                                                                                                                                                content: "--    chunk[1]: first file name\\0second file\n",
+                                                                                                                                            },
+                                                                                                                                            Comment {
+                                                                                                                                                content: "--    chunk[2]: name\\0third file name\\0\n",
+                                                                                                                                            },
+                                                                                                                                            Comment {
+                                                                                                                                                content: "--\n",
+                                                                                                                                            },
+                                                                                                                                        ],
                                                                                                                                         node: LocalDeclaration {
                                                                                                                                             namelist: [
                                                                                                                                                 Name(
@@ -5668,7 +5872,14 @@ Block(
                                                             block: Block(
                                                                 [
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "-- listed?\n",
+                                                                            },
+                                                                            Comment {
+                                                                                content: "-- scratch?\n",
+                                                                            },
+                                                                        ],
                                                                         node: VarlistDeclaration {
                                                                             varlist: [
                                                                                 NamedVar(
@@ -5788,7 +5999,11 @@ Block(
                                                                         },
                                                                     },
                                                                     Node {
-                                                                        comments: [],
+                                                                        comments: [
+                                                                            Comment {
+                                                                                content: "--[[ enter? --]]",
+                                                                            },
+                                                                        ],
                                                                         node: VarlistDeclaration {
                                                                             varlist: [
                                                                                 NamedVar(
@@ -6072,7 +6287,14 @@ Block(
                                                         Block(
                                                             [
                                                                 Node {
-                                                                    comments: [],
+                                                                    comments: [
+                                                                        Comment {
+                                                                            content: "-- if \"b\" then binary\n",
+                                                                        },
+                                                                        Comment {
+                                                                            content: "-- maximum lines\n",
+                                                                        },
+                                                                    ],
                                                                     node: VarlistDeclaration {
                                                                         varlist: [
                                                                             NamedVar(
@@ -6115,7 +6337,14 @@ Block(
                                                 },
                                             },
                                             Node {
-                                                comments: [],
+                                                comments: [
+                                                    Comment {
+                                                        content: "-- Pad buffer with blank lines to make foldcolumn extend all the way down.\n",
+                                                    },
+                                                    Comment {
+                                                        content: "-- Subtract two for statusline and command line.\n",
+                                                    },
+                                                ],
                                                 node: LocalDeclaration {
                                                     namelist: [
                                                         Name(
@@ -6204,7 +6433,17 @@ Block(
                                                                 ),
                                                             },
                                                             Node {
-                                                                comments: [],
+                                                                comments: [
+                                                                    Comment {
+                                                                        content: "-- start\n",
+                                                                    },
+                                                                    Comment {
+                                                                        content: "-- end\n",
+                                                                    },
+                                                                    Comment {
+                                                                        content: "-- strict indexing?\n",
+                                                                    },
+                                                                ],
                                                                 node: FunctionCallStatement {
                                                                     pexp: Index {
                                                                         pexp: Index {
@@ -6374,7 +6613,11 @@ Block(
                                                                                                 },
                                                                                             },
                                                                                             Node {
-                                                                                                comments: [],
+                                                                                                comments: [
+                                                                                                    Comment {
+                                                                                                        content: "-- strict indexing?\n",
+                                                                                                    },
+                                                                                                ],
                                                                                                 node: FunctionCallStatement {
                                                                                                     pexp: Index {
                                                                                                         pexp: Index {
@@ -6593,7 +6836,11 @@ Block(
                                                                                     block: Block(
                                                                                         [
                                                                                             Node {
-                                                                                                comments: [],
+                                                                                                comments: [
+                                                                                                    Comment {
+                                                                                                        content: "-- TODO: DRY this up; it is very similar to preview_next\n",
+                                                                                                    },
+                                                                                                ],
                                                                                                 node: LocalDeclaration {
                                                                                                     namelist: [
                                                                                                         Name(
@@ -6638,7 +6885,11 @@ Block(
                                                                                                 },
                                                                                             },
                                                                                             Node {
-                                                                                                comments: [],
+                                                                                                comments: [
+                                                                                                    Comment {
+                                                                                                        content: "-- strict indexing?\n",
+                                                                                                    },
+                                                                                                ],
                                                                                                 node: FunctionCallStatement {
                                                                                                     pexp: Index {
                                                                                                         pexp: Index {
@@ -7221,7 +7472,14 @@ Block(
                                                                                                                             block: Block(
                                                                                                                                 [
                                                                                                                                     Node {
-                                                                                                                                        comments: [],
+                                                                                                                                        comments: [
+                                                                                                                                            Comment {
+                                                                                                                                                content: "-- Just like in `corpus.list()`, beware of file names that are\n",
+                                                                                                                                            },
+                                                                                                                                            Comment {
+                                                                                                                                                content: "-- split over two chunks.\n",
+                                                                                                                                            },
+                                                                                                                                        ],
                                                                                                                                         node: LocalDeclaration {
                                                                                                                                             namelist: [
                                                                                                                                                 Name(
@@ -7359,7 +7617,35 @@ Block(
                                                                                                                                                                                                 },
                                                                                                                                                                                             },
                                                                                                                                                                                             Node {
-                                                                                                                                                                                                comments: [],
+                                                                                                                                                                                                comments: [
+                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                        content: "-- Note Git Bug here: -z here doesn't always prevent stuff\n",
+                                                                                                                                                                                                    },
+                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                        content: "-- from getting escaped; if in a subdirectory, `git grep` may\n",
+                                                                                                                                                                                                    },
+                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                        content: "-- return results like:\n",
+                                                                                                                                                                                                    },
+                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                        content: "--\n",
+                                                                                                                                                                                                    },
+                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                        content: "--    \"\\\"HTML is probably what you want\\\".md\"\n",
+                                                                                                                                                                                                    },
+                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                        content: "--    Akephalos.md\n",
+                                                                                                                                                                                                    },
+                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                        content: "--    JavaScript loading.md\n",
+                                                                                                                                                                                                    },
+                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                        content: "--\n",
+                                                                                                                                                                                                    },
+                                                                                                                                                                                                    Comment {
+                                                                                                                                                                                                        content: "-- See: https://public-inbox.org/git/CAOyLvt9=wRfpvGGJqLMi7=wLWu881pOur8c9qNEg+Xqhf8W2ww@mail.gmail.com/\n",
+                                                                                                                                                                                                    },
+                                                                                                                                                                                                ],
                                                                                                                                                                                                 node: VarlistDeclaration {
                                                                                                                                                                                                     varlist: [
                                                                                                                                                                                                         NamedVar(
@@ -7568,7 +7854,11 @@ Block(
                                                                                                                             block: Block(
                                                                                                                                 [
                                                                                                                                     Node {
-                                                                                                                                        comments: [],
+                                                                                                                                        comments: [
+                                                                                                                                            Comment {
+                                                                                                                                                content: "-- No matches, but \"git grep\" itself was correctly invoked.\n",
+                                                                                                                                            },
+                                                                                                                                        ],
                                                                                                                                         node: FunctionCallStatement {
                                                                                                                                             pexp: NamedVar(
                                                                                                                                                 "callback",
@@ -7623,7 +7913,11 @@ Block(
                                                                                                                             block: Block(
                                                                                                                                 [
                                                                                                                                     Node {
-                                                                                                                                        comments: [],
+                                                                                                                                        comments: [
+                                                                                                                                            Comment {
+                                                                                                                                                content: "-- Seems unlikely we'd get an `err` here, but...\n",
+                                                                                                                                            },
+                                                                                                                                        ],
                                                                                                                                         node: FunctionCallStatement {
                                                                                                                                             pexp: Index {
                                                                                                                                                 pexp: NamedVar(
@@ -7685,7 +7979,14 @@ Block(
                                     block: Block(
                                         [
                                             Node {
-                                                comments: [],
+                                                comments: [
+                                                    Comment {
+                                                        content: "-- Turns `afile` into a simplified absolute path with all symlinks resolved.\n",
+                                                    },
+                                                    Comment {
+                                                        content: "-- If `afile` corresponds to a directory any trailing slash will be removed.\n",
+                                                    },
+                                                ],
                                                 node: LocalDeclaration {
                                                     namelist: [
                                                         Name(
@@ -8015,7 +8316,14 @@ Block(
                                                                             block: Block(
                                                                                 [
                                                                                     Node {
-                                                                                        comments: [],
+                                                                                        comments: [
+                                                                                            Comment {
+                                                                                                content: "-- TODO: better name for the param here (it's more than just args; it is\n",
+                                                                                            },
+                                                                                            Comment {
+                                                                                                content: "-- command plus args)\n",
+                                                                                            },
+                                                                                        ],
                                                                                         node: Return(
                                                                                             Some(
                                                                                                 [
@@ -8104,7 +8412,14 @@ Block(
                                     block: Block(
                                         [
                                             Node {
-                                                comments: [],
+                                                comments: [
+                                                    Comment {
+                                                        content: "-- Like 'smartcase', will be case-insensitive unless argument contains an\n",
+                                                    },
+                                                    Comment {
+                                                        content: "-- uppercase letter.\n",
+                                                    },
+                                                ],
                                                 node: Return(
                                                     Some(
                                                         [

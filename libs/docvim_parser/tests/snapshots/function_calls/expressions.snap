@@ -7,7 +7,11 @@ local result = add(1, 2, "three")
 Block(
     [
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "-- ie. function call in expression position, rather than as a standalone FunctionCallStatement\n",
+                },
+            ],
             node: LocalDeclaration {
                 namelist: [
                     Name(

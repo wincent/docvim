@@ -14,7 +14,17 @@ return "We're done here"
 Block(
     [
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "--[[\n  A block comment.\n  More block comment.\n--]]",
+                },
+                Comment {
+                    content: "--[[ A block comment on one line. ]]",
+                },
+                Comment {
+                    content: "--[====[ With an arbitrary number of equals signs. ]====]",
+                },
+            ],
             node: Return(
                 Some(
                     [

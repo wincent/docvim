@@ -4,7 +4,7 @@ use docvim_macros::check_snapshots;
 #[check_snapshots(docvim_lexer)]
 fn transform(input: &str) -> String {
     let mut output = vec![];
-    for result in Lexer::new(input).tokens() {
+    for result in Lexer::new(input).tokens {
         output.push(match result {
             Ok(token) => {
                 format!("{:?}: {}", token, &input[token.byte_start..token.byte_end])

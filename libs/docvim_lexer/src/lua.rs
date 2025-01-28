@@ -141,24 +141,23 @@ macro_rules! make_token {
 
 pub struct Lexer<'a> {
     pub input: &'a str,
+    pub tokens: std::iter::Peekable<Tokens<'a>>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
-        Self { input }
-    }
-
-    /// Returns an iterator over the tokens produced by the lexer.
-    pub fn tokens(&self) -> Tokens<'_> {
-        Tokens { iter: Peekable::new(self.input), char_start: 0, byte_start: 0 }
+        Self {
+            input,
+            tokens: Tokens { iter: Peekable::new(input), char_start: 0, byte_start: 0 }.peekable(),
+        }
     }
 
     /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
     /// `None` if the input is valid.
     #[cfg(test)]
-    fn validate(&self) -> Option<LexerError> {
+    fn validate(&mut self) -> Option<LexerError> {
         loop {
-            match self.tokens().next() {
+            match self.tokens.next() {
                 Some(Err(e)) => {
                     return Some(e);
                 }
@@ -730,7 +729,7 @@ mod tests {
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
             assert_eq!(
-                Lexer::new(&$input).tokens().map(|token| token.unwrap()).collect::<Vec<Token>>(),
+                Lexer::new(&$input).tokens.map(|token| token.unwrap()).collect::<Vec<Token>>(),
                 $expected
             )
         };

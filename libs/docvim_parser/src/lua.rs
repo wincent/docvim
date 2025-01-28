@@ -63,7 +63,9 @@ use docvim_lexer::lua::TokenKind::Literal as LiteralToken;
 use docvim_lexer::lua::TokenKind::Name as NameToken;
 use docvim_lexer::lua::TokenKind::Op as OpToken;
 use docvim_lexer::lua::TokenKind::Punctuator as PunctuatorToken;
-use docvim_lexer::lua::{Lexer, Token, Tokens};
+use docvim_lexer::lua::{Lexer, Token};
+
+use std::mem;
 
 // TODO these node types will eventually wind up in another file, and end up referring specifically
 // to Lua, but for now developing them "in situ".
@@ -293,11 +295,12 @@ fn unop_binding(op: UnOp) -> u8 {
 
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
+    comments: Vec<Comment<'a>>,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(input: &'a str) -> Self {
-        Self { lexer: Lexer::new(input) }
+        Self { lexer: Lexer::new(input), comments: vec![] }
     }
 
     pub fn pretty_error(&self, error: ParserError) -> String {
@@ -355,21 +358,17 @@ impl<'a> Parser<'a> {
         };
     }
 
-    pub fn parse(&self) -> Result<Block, ParserError> {
-        let mut tokens = self.lexer.tokens().peekable();
-        self.parse_block(&mut tokens)
+    pub fn parse(&mut self) -> Result<Block, ParserError> {
+        self.parse_block()
     }
 
-    fn parse_block(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Block<'a>, ParserError> {
+    fn parse_block(&mut self) -> Result<Block<'a>, ParserError> {
         let mut block = Block(vec![]);
         loop {
-            match tokens.peek() {
+            match self.lexer.tokens.peek() {
                 Some(&Ok(Token { kind: NameToken(KeywordToken(DoToken)), .. })) => {
-                    block.0.push(self.parse_do_block(tokens)?);
-                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    block.0.push(self.parse_do_block()?);
+                    self.slurp(PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token {
                     kind: NameToken(KeywordToken(ElseToken | ElseifToken | EndToken | UntilToken)),
@@ -378,39 +377,39 @@ impl<'a> Parser<'a> {
                     break;
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(ForToken)), .. })) => {
-                    block.0.push(self.parse_for(tokens)?);
-                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    block.0.push(self.parse_for()?);
+                    self.slurp(PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(FunctionToken)), .. })) => {
-                    block.0.push(self.parse_function(tokens)?);
-                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    block.0.push(self.parse_function()?);
+                    self.slurp(PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(IfToken)), .. })) => {
-                    block.0.push(self.parse_if(tokens)?);
-                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    block.0.push(self.parse_if()?);
+                    self.slurp(PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(LocalToken)), .. })) => {
-                    block.0.push(self.parse_local(tokens)?);
-                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    block.0.push(self.parse_local()?);
+                    self.slurp(PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(RepeatToken)), .. })) => {
-                    block.0.push(self.parse_repeat(tokens)?);
-                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    block.0.push(self.parse_repeat()?);
+                    self.slurp(PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(WhileToken)), .. })) => {
-                    block.0.push(self.parse_while(tokens)?);
-                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    block.0.push(self.parse_while()?);
+                    self.slurp(PunctuatorToken(SemiToken));
                 }
                 Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
                     // prefixexp ::= var | functioncall | `(´ exp `)´
                     // functioncall ::=  prefixexp args | prefixexp `:´ Name args
-                    let pexp = self.parse_prefixexp(tokens)?;
+                    let pexp = self.parse_prefixexp()?;
                     match pexp {
                         Exp::FunctionCall { pexp, args } => {
                             block.0.push(
                                 self.make_node(Statement::FunctionCallStatement { pexp, args }),
                             );
-                            self.slurp(tokens, PunctuatorToken(SemiToken));
+                            self.slurp(PunctuatorToken(SemiToken));
                         }
                         Exp::MethodCall { pexp, name, args } => {
                             block.0.push(self.make_node(Statement::MethodCallStatement {
@@ -418,7 +417,7 @@ impl<'a> Parser<'a> {
                                 name,
                                 args,
                             }));
-                            self.slurp(tokens, PunctuatorToken(SemiToken));
+                            self.slurp(PunctuatorToken(SemiToken));
                         }
                         Exp::NamedVar(_) | Exp::Index { .. } => {
                             // varlist `=´ explist
@@ -427,16 +426,14 @@ impl<'a> Parser<'a> {
                             let mut varlist = vec![pexp];
                             let mut allow_comma = true;
                             loop {
-                                match tokens.peek() {
+                                match self.lexer.tokens.peek() {
                                     Some(&Ok(Token { kind: OpToken(AssignToken), .. })) => {
-                                        tokens.next();
+                                        self.lexer.tokens.next();
+                                        let explist = self.parse_explist()?;
                                         block.0.push(self.make_node(
-                                            Statement::VarlistDeclaration {
-                                                varlist,
-                                                explist: self.parse_explist(tokens)?,
-                                            },
+                                            Statement::VarlistDeclaration { varlist, explist },
                                         ));
-                                        self.slurp(tokens, PunctuatorToken(SemiToken));
+                                        self.slurp(PunctuatorToken(SemiToken));
                                         break;
                                     }
                                     Some(&Ok(Token {
@@ -444,7 +441,7 @@ impl<'a> Parser<'a> {
                                         char_start,
                                         ..
                                     })) => {
-                                        tokens.next();
+                                        self.lexer.tokens.next();
                                         if allow_comma {
                                             allow_comma = false;
                                         } else {
@@ -465,7 +462,7 @@ impl<'a> Parser<'a> {
                                         });
                                     }
                                     Some(&Ok(Token { .. })) => {
-                                        let pexp = self.parse_prefixexp(tokens)?;
+                                        let pexp = self.parse_prefixexp()?;
                                         match pexp {
                                             Exp::NamedVar(_) | Exp::Index { .. } => {
                                                 varlist.push(pexp);
@@ -495,28 +492,27 @@ impl<'a> Parser<'a> {
                     }
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(BreakToken)), .. })) => {
-                    tokens.next();
+                    self.lexer.tokens.next();
                     block.0.push(self.make_node(Statement::Break));
-                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(ReturnToken)), .. })) => {
-                    tokens.next();
-                    let explist = if self.peek_exp(tokens) {
-                        Some(self.parse_explist(tokens)?)
-                    } else {
-                        None
-                    };
+                    self.lexer.tokens.next();
+                    let explist = if self.peek_exp() { Some(self.parse_explist()?) } else { None };
                     block.0.push(self.make_node(Statement::Return(explist)));
-                    self.slurp(tokens, PunctuatorToken(SemiToken));
+                    self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
                 Some(&Ok(Token {
                     kind: CommentToken(BlockCommentToken | LineCommentToken),
+                    byte_start,
+                    byte_end,
                     ..
                 })) => {
-                    // TODO: accumulate comments; for now just skip
-                    tokens.next();
+                    let content = &self.lexer.input[byte_start..byte_end];
+                    self.comments.push(Comment { content });
+                    self.lexer.tokens.next();
                 }
                 Some(&Ok(token @ Token { .. })) => {
                     // TODO: include token UnexpectedToken error message
@@ -532,26 +528,21 @@ impl<'a> Parser<'a> {
         Ok(block)
     }
 
-    fn make_node(&self, node: Statement<'a>) -> Node<'a, Statement<'a>> {
-        let comments = vec![];
-        Node { comments, node }
+    fn make_node(&mut self, node: Statement<'a>) -> Node<'a, Statement<'a>> {
+        let comments = mem::take(&mut self.comments);
+        let node = Node { comments, node };
+        node
     }
 
-    fn parse_do_block(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
-        self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
-        let block = self.parse_block(tokens)?;
-        self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+    fn parse_do_block(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        self.consume(NameToken(KeywordToken(DoToken)))?;
+        let block = self.parse_block()?;
+        self.consume(NameToken(KeywordToken(EndToken)))?;
         Ok(self.make_node(Statement::DoBlock(block)))
     }
 
-    fn parse_name(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Name<'a>, ParserError> {
-        match tokens.next() {
+    fn parse_name(&mut self) -> Result<Name<'a>, ParserError> {
+        match self.lexer.tokens.next() {
             Some(Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
                 Ok(Name(&self.lexer.input[token.byte_start..token.byte_end]))
             }
@@ -566,21 +557,18 @@ impl<'a> Parser<'a> {
 
     /// Returns a list of named parameters, and boolean to indicate whether the list terminates
     /// with vararg syntax ("...").
-    fn parse_parlist(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<(Vec<Name<'a>>, bool), ParserError> {
-        self.consume(tokens, PunctuatorToken(LparenToken))?;
+    fn parse_parlist(&mut self) -> Result<(Vec<Name<'a>>, bool), ParserError> {
+        self.consume(PunctuatorToken(LparenToken))?;
         let mut namelist = vec![];
-        if self.slurp(tokens, PunctuatorToken(RparenToken)) {
+        if self.slurp(PunctuatorToken(RparenToken)) {
             return Ok((namelist, false));
         }
         let mut expect_name = true;
         loop {
-            match tokens.peek() {
+            match self.lexer.tokens.peek() {
                 Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
                     if expect_name {
-                        tokens.next();
+                        self.lexer.tokens.next();
                         namelist.push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
                         expect_name = false;
                     } else {
@@ -597,7 +585,7 @@ impl<'a> Parser<'a> {
                             position: token.char_start,
                         });
                     } else {
-                        tokens.next();
+                        self.lexer.tokens.next();
                         expect_name = true;
                     }
                 }
@@ -608,14 +596,14 @@ impl<'a> Parser<'a> {
                             position: token.char_start,
                         });
                     } else {
-                        tokens.next();
+                        self.lexer.tokens.next();
                         return Ok((namelist, false));
                     }
                 }
                 Some(&Ok(token @ Token { kind: OpToken(VarargToken), .. })) => {
                     if expect_name {
-                        tokens.next();
-                        self.consume(tokens, PunctuatorToken(RparenToken))?;
+                        self.lexer.tokens.next();
+                        self.consume(PunctuatorToken(RparenToken))?;
                         return Ok((namelist, true));
                     } else {
                         return Err(ParserError {
@@ -636,17 +624,14 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_namelist(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Vec<Name<'a>>, ParserError> {
+    fn parse_namelist(&mut self) -> Result<Vec<Name<'a>>, ParserError> {
         let mut namelist = vec![];
         let mut expect_name = true;
         loop {
-            match tokens.peek() {
+            match self.lexer.tokens.peek() {
                 Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
                     if expect_name {
-                        tokens.next();
+                        self.lexer.tokens.next();
                         namelist.push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
                         expect_name = false;
                     } else {
@@ -660,7 +645,7 @@ impl<'a> Parser<'a> {
                             position: token.char_start,
                         });
                     } else {
-                        tokens.next();
+                        self.lexer.tokens.next();
                         expect_name = true;
                     }
                 }
@@ -687,17 +672,14 @@ impl<'a> Parser<'a> {
         Ok(namelist)
     }
 
-    fn parse_explist(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Vec<Exp<'a>>, ParserError> {
+    fn parse_explist(&mut self) -> Result<Vec<Exp<'a>>, ParserError> {
         let mut explist = vec![];
         let mut allow_comma = false;
         loop {
-            match tokens.peek() {
+            match self.lexer.tokens.peek() {
                 Some(&Ok(Token { kind: PunctuatorToken(CommaToken), char_start, .. })) => {
                     if allow_comma {
-                        tokens.next();
+                        self.lexer.tokens.next();
                         allow_comma = false;
                     } else {
                         return Err(ParserError {
@@ -720,15 +702,16 @@ impl<'a> Parser<'a> {
                     ..
                 })) => {
                     if !allow_comma {
-                        explist.push(self.parse_exp(tokens, 0)?);
+                        explist.push(self.parse_exp(0)?);
                         allow_comma = true;
                     } else {
                         break;
                     }
                 }
-                Some(&Ok(Token { kind: CommentToken(..), .. })) => {
-                    // Just skip, for now...
-                    tokens.next();
+                Some(&Ok(Token { kind: CommentToken(..), byte_start, byte_end, .. })) => {
+                    let content = &self.lexer.input[byte_start..byte_end];
+                    self.comments.push(Comment { content });
+                    self.lexer.tokens.next();
                 }
                 Some(&Ok(_)) => {
                     break;
@@ -747,122 +730,101 @@ impl<'a> Parser<'a> {
         Ok(explist)
     }
 
-    fn parse_for(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
-        self.consume(tokens, NameToken(KeywordToken(ForToken)))?;
-        let mut namelist = self.parse_namelist(tokens)?;
+    fn parse_for(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        self.consume(NameToken(KeywordToken(ForToken)))?;
+        let mut namelist = self.parse_namelist()?;
 
-        if namelist.len() == 1 && self.slurp(tokens, OpToken(AssignToken)) {
+        if namelist.len() == 1 && self.slurp(OpToken(AssignToken)) {
             // Parse: for Name `=´ exp `,´ exp [`,´ exp] do block end
             let name = namelist.remove(0);
-            let startexp = Box::new(self.parse_exp(tokens, 0)?);
-            self.consume(tokens, PunctuatorToken(CommaToken))?;
-            let endexp = Box::new(self.parse_exp(tokens, 0)?);
-            let stepexp = if self.slurp(tokens, PunctuatorToken(CommaToken)) {
-                Some(Box::new(self.parse_exp(tokens, 0)?))
+            let startexp = Box::new(self.parse_exp(0)?);
+            self.consume(PunctuatorToken(CommaToken))?;
+            let endexp = Box::new(self.parse_exp(0)?);
+            let stepexp = if self.slurp(PunctuatorToken(CommaToken)) {
+                Some(Box::new(self.parse_exp(0)?))
             } else {
                 None
             };
-            let block = self.parse_block(tokens)?;
+            let block = self.parse_block()?;
             Ok(self.make_node(Statement::For { name, startexp, endexp, stepexp, block }))
         } else {
             // Parse: for namelist in explist do block end
-            self.consume(tokens, NameToken(KeywordToken(InToken)))?;
-            let explist = self.parse_explist(tokens)?;
-            self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
-            let block = self.parse_block(tokens)?;
-            self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+            self.consume(NameToken(KeywordToken(InToken)))?;
+            let explist = self.parse_explist()?;
+            self.consume(NameToken(KeywordToken(DoToken)))?;
+            let block = self.parse_block()?;
+            self.consume(NameToken(KeywordToken(EndToken)))?;
             Ok(self.make_node(Statement::ForIn { namelist, explist, block }))
         }
     }
 
-    fn parse_if(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
-        self.consume(tokens, NameToken(KeywordToken(IfToken)))?;
-        let cexp = Box::new(self.parse_exp(tokens, 0)?);
-        self.consume(tokens, NameToken(KeywordToken(ThenToken)))?;
-        let block = self.parse_block(tokens)?;
+    fn parse_if(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        self.consume(NameToken(KeywordToken(IfToken)))?;
+        let cexp = Box::new(self.parse_exp(0)?);
+        self.consume(NameToken(KeywordToken(ThenToken)))?;
+        let block = self.parse_block()?;
         let mut consequents = vec![Consequent { cexp, block }];
 
-        while self.slurp(tokens, NameToken(KeywordToken(ElseifToken))) {
-            let cexp = Box::new(self.parse_exp(tokens, 0)?);
-            self.consume(tokens, NameToken(KeywordToken(ThenToken)))?;
-            let block = self.parse_block(tokens)?;
+        while self.slurp(NameToken(KeywordToken(ElseifToken))) {
+            let cexp = Box::new(self.parse_exp(0)?);
+            self.consume(NameToken(KeywordToken(ThenToken)))?;
+            let block = self.parse_block()?;
             consequents.push(Consequent { cexp, block });
         }
 
-        let alternate = match self.slurp(tokens, NameToken(KeywordToken(ElseToken))) {
-            true => Some(self.parse_block(tokens)?),
+        let alternate = match self.slurp(NameToken(KeywordToken(ElseToken))) {
+            true => Some(self.parse_block()?),
             false => None,
         };
 
-        self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+        self.consume(NameToken(KeywordToken(EndToken)))?;
         Ok(self.make_node(Statement::IfStatement { consequents, alternate }))
     }
 
-    fn parse_repeat(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
-        self.consume(tokens, NameToken(KeywordToken(RepeatToken)))?;
-        let block = self.parse_block(tokens)?;
-        self.consume(tokens, NameToken(KeywordToken(UntilToken)))?;
-        let cexp = Box::new(self.parse_exp(tokens, 0)?);
+    fn parse_repeat(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        self.consume(NameToken(KeywordToken(RepeatToken)))?;
+        let block = self.parse_block()?;
+        self.consume(NameToken(KeywordToken(UntilToken)))?;
+        let cexp = Box::new(self.parse_exp(0)?);
         Ok(self.make_node(Statement::Repeat { block, cexp }))
     }
 
-    fn parse_while(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
-        self.consume(tokens, NameToken(KeywordToken(WhileToken)))?;
-        let cexp = Box::new(self.parse_exp(tokens, 0)?);
-        self.consume(tokens, NameToken(KeywordToken(DoToken)))?;
-        let block = self.parse_block(tokens)?;
-        self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+    fn parse_while(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        self.consume(NameToken(KeywordToken(WhileToken)))?;
+        let cexp = Box::new(self.parse_exp(0)?);
+        self.consume(NameToken(KeywordToken(DoToken)))?;
+        let block = self.parse_block()?;
+        self.consume(NameToken(KeywordToken(EndToken)))?;
         Ok(self.make_node(Statement::While { cexp, block }))
     }
 
-    fn parse_function(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
-        self.consume(tokens, NameToken(KeywordToken(FunctionToken)))?;
-        let mut name = vec![self.parse_name(tokens)?];
-        while self.slurp(tokens, PunctuatorToken(DotToken)) {
-            name.push(self.parse_name(tokens)?);
+    fn parse_function(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        self.consume(NameToken(KeywordToken(FunctionToken)))?;
+        let mut name = vec![self.parse_name()?];
+        while self.slurp(PunctuatorToken(DotToken)) {
+            name.push(self.parse_name()?);
         }
-        let method = if self.slurp(tokens, PunctuatorToken(ColonToken)) {
-            Some(self.parse_name(tokens)?)
-        } else {
-            None
-        };
-        let (parlist, varargs) = self.parse_parlist(tokens)?;
-        let block = self.parse_block(tokens)?;
-        self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+        let method =
+            if self.slurp(PunctuatorToken(ColonToken)) { Some(self.parse_name()?) } else { None };
+        let (parlist, varargs) = self.parse_parlist()?;
+        let block = self.parse_block()?;
+        self.consume(NameToken(KeywordToken(EndToken)))?;
         Ok(self.make_node(Statement::FunctionDeclaration { name, method, parlist, varargs, block }))
     }
 
-    fn parse_local(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Node<'a, Statement<'a>>, ParserError> {
+    fn parse_local(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
         // Example inputs:
         //
         // local x
         // local x = 10
         // local x, y = 10, 20
         // local function Name funcbody
-        self.consume(tokens, NameToken(KeywordToken(LocalToken)))?;
-        if self.slurp(tokens, NameToken(KeywordToken(FunctionToken))) {
-            let name = self.parse_name(tokens)?;
-            let (parlist, varargs) = self.parse_parlist(tokens)?;
-            let block = self.parse_block(tokens)?;
-            self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+        self.consume(NameToken(KeywordToken(LocalToken)))?;
+        if self.slurp(NameToken(KeywordToken(FunctionToken))) {
+            let name = self.parse_name()?;
+            let (parlist, varargs) = self.parse_parlist()?;
+            let block = self.parse_block()?;
+            self.consume(NameToken(KeywordToken(EndToken)))?;
             Ok(self.make_node(Statement::LocalFunctionDeclaration {
                 name,
                 parlist,
@@ -870,12 +832,9 @@ impl<'a> Parser<'a> {
                 block,
             }))
         } else {
-            let namelist = self.parse_namelist(tokens)?;
-            let explist = if self.slurp(tokens, OpToken(AssignToken)) {
-                self.parse_explist(tokens)?
-            } else {
-                vec![]
-            };
+            let namelist = self.parse_namelist()?;
+            let explist =
+                if self.slurp(OpToken(AssignToken)) { self.parse_explist()? } else { vec![] };
             Ok(self.make_node(Statement::LocalDeclaration { explist, namelist }))
         }
     }
@@ -958,35 +917,28 @@ impl<'a> Parser<'a> {
         Ok(Exp::CookedStr(Box::new(unescaped)))
     }
 
-    fn parse_unop_exp(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-        op: UnOp,
-    ) -> Result<Exp<'a>, ParserError> {
+    fn parse_unop_exp(&mut self, op: UnOp) -> Result<Exp<'a>, ParserError> {
         let bp = unop_binding(op);
-        let rhs = self.parse_exp(tokens, bp)?;
+        let rhs = self.parse_exp(bp)?;
         Ok(Exp::Unary { exp: Box::new(rhs), op })
     }
 
     /// args ::=  `(´ [explist] `)´ | tableconstructor | String
-    fn parse_args(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Vec<Exp<'a>>, ParserError> {
-        match tokens.peek() {
+    fn parse_args(&mut self) -> Result<Vec<Exp<'a>>, ParserError> {
+        match self.lexer.tokens.peek() {
             Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
-                tokens.next();
-                let args = self.parse_explist(tokens)?;
-                self.consume(tokens, PunctuatorToken(RparenToken))?;
+                self.lexer.tokens.next();
+                let args = self.parse_explist()?;
+                self.consume(PunctuatorToken(RparenToken))?;
                 Ok(args)
             }
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
-                Ok(vec![self.parse_table_constructor(tokens)?])
+                Ok(vec![self.parse_table_constructor()?])
             }
             Some(&Ok(Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
             | Some(&Ok(Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. }))
             | Some(&Ok(Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
-                Ok(vec![self.parse_exp(tokens, 0)?])
+                Ok(vec![self.parse_exp(0)?])
             }
             // TODO: probably need to skip comments here too
             // Some(&Ok(Token { kind: CommentToken(_) .. })) => {
@@ -1011,14 +963,11 @@ impl<'a> Parser<'a> {
     ///           | prefixexp:Name {...} (methodcall)
     ///           | prefixexp:Name (...) (methodcall)
     /// ```
-    fn parse_prefixexp(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Exp<'a>, ParserError> {
-        let mut pexp = match tokens.next() {
+    fn parse_prefixexp(&mut self) -> Result<Exp<'a>, ParserError> {
+        let mut pexp = match self.lexer.tokens.next() {
             Some(Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
-                let lhs = self.parse_exp(tokens, 0)?;
-                let token = tokens.next();
+                let lhs = self.parse_exp(0)?;
+                let token = self.lexer.tokens.next();
                 match token {
                     Some(Ok(Token { kind: PunctuatorToken(RparenToken), .. })) => lhs,
                     Some(Ok(token)) => {
@@ -1044,11 +993,11 @@ impl<'a> Parser<'a> {
             None => return Err(self.unexpected_end_of_input()),
         };
         loop {
-            match tokens.peek() {
+            match self.lexer.tokens.peek() {
                 Some(&Ok(Token { kind: PunctuatorToken(ColonToken), .. })) => {
                     // `prefixexp : Name args`
-                    tokens.next();
-                    let method_name = match tokens.next() {
+                    self.lexer.tokens.next();
+                    let method_name = match self.lexer.tokens.next() {
                         Some(Ok(Token {
                             kind: NameToken(IdentifierToken),
                             byte_start,
@@ -1067,13 +1016,13 @@ impl<'a> Parser<'a> {
                     pexp = Exp::MethodCall {
                         pexp: Box::new(pexp),
                         name: method_name,
-                        args: self.parse_args(tokens)?,
+                        args: self.parse_args()?,
                     };
                 }
                 Some(&Ok(Token { kind: PunctuatorToken(DotToken), .. })) => {
                     // ie. `foo.bar`, which is syntactic sugar for `foo['bar']`
-                    tokens.next();
-                    let kexp = match tokens.next() {
+                    self.lexer.tokens.next();
+                    let kexp = match self.lexer.tokens.next() {
                         Some(Ok(Token {
                             kind: NameToken(IdentifierToken),
                             byte_start,
@@ -1096,9 +1045,9 @@ impl<'a> Parser<'a> {
                 }
                 Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
                     // ie. `foo[bar]`
-                    tokens.next();
-                    let kexp = self.parse_exp(tokens, 0)?;
-                    self.consume(tokens, PunctuatorToken(RbracketToken))?;
+                    self.lexer.tokens.next();
+                    let kexp = self.parse_exp(0)?;
+                    self.consume(PunctuatorToken(RbracketToken))?;
                     pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
                 }
                 Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken | LparenToken), .. }))
@@ -1107,8 +1056,7 @@ impl<'a> Parser<'a> {
                     ..
                 }))
                 | Some(&Ok(Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
-                    pexp =
-                        Exp::FunctionCall { pexp: Box::new(pexp), args: self.parse_args(tokens)? };
+                    pexp = Exp::FunctionCall { pexp: Box::new(pexp), args: self.parse_args()? };
                 }
                 _ => break,
             }
@@ -1117,33 +1065,32 @@ impl<'a> Parser<'a> {
     }
 
     /// See doc/lua.md for an explanation of `minimum_bp`.
-    fn parse_exp(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-        minimum_bp: u8,
-    ) -> Result<Exp<'a>, ParserError> {
+    fn parse_exp(&mut self, minimum_bp: u8) -> Result<Exp<'a>, ParserError> {
         while let Some(&Ok(Token {
             kind: CommentToken(BlockCommentToken | LineCommentToken),
+            byte_start,
+            byte_end,
             ..
-        })) = tokens.peek()
+        })) = self.lexer.tokens.peek()
         {
-            // TODO: accumulate comments; for now just skip over
-            tokens.next();
+            let content = &self.lexer.input[byte_start..byte_end];
+            self.comments.push(Comment { content });
+            self.lexer.tokens.next();
         }
-        let mut lhs = match tokens.peek() {
+        let mut lhs = match self.lexer.tokens.peek() {
             //
             // Primaries (literals etc).
             //
             Some(&Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })) => {
-                tokens.next();
+                self.lexer.tokens.next();
                 Exp::False
             }
             Some(&Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })) => {
-                tokens.next();
+                self.lexer.tokens.next();
                 Exp::Nil
             }
             Some(&Ok(token @ Token { kind: LiteralToken(NumberToken), .. })) => {
-                tokens.next();
+                self.lexer.tokens.next();
                 Exp::Number(&self.lexer.input[token.byte_start..token.byte_end])
             }
             Some(&Ok(
@@ -1152,11 +1099,11 @@ impl<'a> Parser<'a> {
                     ..
                 },
             )) => {
-                tokens.next();
+                self.lexer.tokens.next();
                 self.cook_str(token)?
             }
             Some(&Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { level })), .. })) => {
-                tokens.next();
+                self.lexer.tokens.next();
 
                 // As a convenience, Lua omits any newline at position 0 in a long format string.
                 let first = self.lexer.input.as_bytes()[token.byte_start + 2 + level];
@@ -1169,42 +1116,42 @@ impl<'a> Parser<'a> {
                 Exp::RawStr(&self.lexer.input[start..end])
             }
             Some(&Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })) => {
-                tokens.next();
+                self.lexer.tokens.next();
                 Exp::True
             }
             Some(&Ok(Token { kind: OpToken(VarargToken), .. })) => {
-                tokens.next();
+                self.lexer.tokens.next();
                 Exp::Varargs
             }
             Some(&Ok(Token {
                 kind: NameToken(IdentifierToken) | PunctuatorToken(LparenToken),
                 ..
-            })) => self.parse_prefixexp(tokens)?,
+            })) => self.parse_prefixexp()?,
             Some(&Ok(Token { kind: NameToken(KeywordToken(FunctionToken)), .. })) => {
-                self.consume(tokens, NameToken(KeywordToken(FunctionToken)))?;
-                let (parlist, varargs) = self.parse_parlist(tokens)?;
-                let block = self.parse_block(tokens)?;
-                self.consume(tokens, NameToken(KeywordToken(EndToken)))?;
+                self.consume(NameToken(KeywordToken(FunctionToken)))?;
+                let (parlist, varargs) = self.parse_parlist()?;
+                let block = self.parse_block()?;
+                self.consume(NameToken(KeywordToken(EndToken)))?;
                 Exp::Function { parlist, varargs, block }
             }
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
-                self.parse_table_constructor(tokens)?
+                self.parse_table_constructor()?
             }
 
             //
             // Unary operators.
             //
             Some(&Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })) => {
-                tokens.next();
-                self.parse_unop_exp(tokens, UnOp::Not)?
+                self.lexer.tokens.next();
+                self.parse_unop_exp(UnOp::Not)?
             }
             Some(&Ok(Token { kind: OpToken(HashToken), .. })) => {
-                tokens.next();
-                self.parse_unop_exp(tokens, UnOp::Length)?
+                self.lexer.tokens.next();
+                self.parse_unop_exp(UnOp::Length)?
             }
             Some(&Ok(Token { kind: OpToken(MinusToken), .. })) => {
-                tokens.next();
-                self.parse_unop_exp(tokens, UnOp::Minus)?
+                self.lexer.tokens.next();
+                self.parse_unop_exp(UnOp::Minus)?
             }
 
             Some(&Ok(token)) => {
@@ -1220,7 +1167,7 @@ impl<'a> Parser<'a> {
         };
 
         loop {
-            let token = tokens.peek();
+            let token = self.lexer.tokens.peek();
             let op = match token {
                 Some(&Ok(Token { kind: NameToken(KeywordToken(AndToken)), .. })) => {
                     Some(BinOp::And)
@@ -1249,8 +1196,8 @@ impl<'a> Parser<'a> {
                 if left_bp < minimum_bp {
                     break;
                 } else {
-                    tokens.next();
-                    let rhs = self.parse_exp(tokens, right_bp)?;
+                    self.lexer.tokens.next();
+                    let rhs = self.parse_exp(right_bp)?;
                     lhs = Exp::Binary { lexp: Box::new(lhs), op, rexp: Box::new(rhs) };
                 }
             } else {
@@ -1263,20 +1210,17 @@ impl<'a> Parser<'a> {
 
     // fieldlist ::= field {fieldsep field} [fieldsep]
     // fieldsep ::= `,´ | `;´
-    fn parse_table_constructor(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-    ) -> Result<Exp<'a>, ParserError> {
-        match tokens.next() {
+    fn parse_table_constructor(&mut self) -> Result<Exp<'a>, ParserError> {
+        match self.lexer.tokens.next() {
             Some(Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 let mut fieldsep_allowed = false;
                 let mut fields = vec![];
                 let mut index = 1;
                 loop {
-                    let token = tokens.peek();
+                    let token = self.lexer.tokens.peek();
                     match token {
                         Some(&Ok(Token { kind: PunctuatorToken(RcurlyToken), .. })) => {
-                            tokens.next();
+                            self.lexer.tokens.next();
                             return Ok(Exp::Table(fields));
                         }
                         Some(&Ok(Token {
@@ -1285,7 +1229,7 @@ impl<'a> Parser<'a> {
                             ..
                         })) => {
                             if fieldsep_allowed {
-                                tokens.next();
+                                self.lexer.tokens.next();
                                 fieldsep_allowed = false;
                             } else {
                                 return Err(ParserError {
@@ -1296,12 +1240,16 @@ impl<'a> Parser<'a> {
                         }
                         Some(&Ok(Token {
                             kind: CommentToken(BlockCommentToken | LineCommentToken),
+                            byte_start,
+                            byte_end,
                             ..
                         })) => {
-                            tokens.next(); // TODO: don't skip, accumulate
+                            let content = &self.lexer.input[byte_start..byte_end];
+                            self.comments.push(Comment { content });
+                            self.lexer.tokens.next(); // TODO: don't skip, accumulate
                         }
                         Some(&Ok(Token { .. })) => {
-                            let field = self.parse_table_field(tokens, index)?;
+                            let field = self.parse_table_field(index)?;
                             if matches!(field, Field { index: Some(_), .. }) {
                                 index += 1;
                             }
@@ -1327,12 +1275,8 @@ impl<'a> Parser<'a> {
     /// Consume the specified TokenKind, returning an Err if not found.
     ///
     /// Contrast with `slurp()`, which will consume a token if it is present, but does not error.
-    fn consume(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-        kind: docvim_lexer::lua::TokenKind,
-    ) -> Result<Token, ParserError> {
-        match tokens.next() {
+    fn consume(&mut self, kind: docvim_lexer::lua::TokenKind) -> Result<Token, ParserError> {
+        match self.lexer.tokens.next() {
             Some(Ok(token @ Token { .. })) => {
                 if token.kind == kind {
                     Ok(token)
@@ -1349,8 +1293,8 @@ impl<'a> Parser<'a> {
     }
 
     /// Returns true if the next token starts an expression.
-    fn peek_exp(&self, tokens: &mut std::iter::Peekable<Tokens>) -> bool {
-        match tokens.peek() {
+    fn peek_exp(&mut self) -> bool {
+        match self.lexer.tokens.peek() {
             Some(&Ok(Token {
                 kind:
                     LiteralToken(NumberToken)
@@ -1371,14 +1315,10 @@ impl<'a> Parser<'a> {
     /// Consumes the specified TokenKind, if present.
     ///
     /// Returns `true`/`false` to indicate whether a token was slurped.
-    fn slurp(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-        kind: docvim_lexer::lua::TokenKind,
-    ) -> bool {
-        if let Some(&Ok(token @ Token { .. })) = tokens.peek() {
+    fn slurp(&mut self, kind: docvim_lexer::lua::TokenKind) -> bool {
+        if let Some(&Ok(token @ Token { .. })) = self.lexer.tokens.peek() {
             if token.kind == kind {
-                self.consume(tokens, kind).expect("Failed to consume token");
+                self.consume(kind).expect("Failed to consume token");
                 return true;
             }
         }
@@ -1386,20 +1326,16 @@ impl<'a> Parser<'a> {
     }
 
     // field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
-    fn parse_table_field(
-        &self,
-        tokens: &mut std::iter::Peekable<Tokens>,
-        index: usize,
-    ) -> Result<Field<'a>, ParserError> {
-        let token = tokens.peek();
+    fn parse_table_field(&mut self, index: usize) -> Result<Field<'a>, ParserError> {
+        let token = self.lexer.tokens.peek();
         match token {
             Some(&Ok(Token { kind: NameToken(IdentifierToken), .. })) => {
-                let lexp = self.parse_exp(tokens, 0)?;
+                let lexp = self.parse_exp(0)?;
                 if let Exp::NamedVar(name) = lexp {
                     // Name = exp
-                    if self.slurp(tokens, OpToken(AssignToken)) {
+                    if self.slurp(OpToken(AssignToken)) {
                         // `name = exp`; equivalent to `["name"] = exp`.
-                        let rexp = self.parse_exp(tokens, 0)?;
+                        let rexp = self.parse_exp(0)?;
                         Ok(Field {
                             index: None,
                             lexp: Box::new(Exp::RawStr(name)),
@@ -1420,16 +1356,16 @@ impl<'a> Parser<'a> {
             }
             Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
                 // `[exp] = exp`
-                tokens.next();
-                let lexp = self.parse_exp(tokens, 0)?;
-                self.consume(tokens, PunctuatorToken(RbracketToken))?;
-                self.consume(tokens, OpToken(AssignToken))?;
-                let rexp = self.parse_exp(tokens, 0)?; // TODO: confirm binding power of 0 is appropriate here
+                self.lexer.tokens.next();
+                let lexp = self.parse_exp(0)?;
+                self.consume(PunctuatorToken(RbracketToken))?;
+                self.consume(OpToken(AssignToken))?;
+                let rexp = self.parse_exp(0)?; // TODO: confirm binding power of 0 is appropriate here
                 Ok(Field { index: None, lexp: Box::new(lexp), rexp: Box::new(rexp) })
             }
             Some(&Ok(Token { .. })) => {
                 // `exp`; syntactic sugar for `[index] = exp`
-                let exp = self.parse_exp(tokens, 0)?; // TODO: confirm binding power of 0 is appropriate here
+                let exp = self.parse_exp(0)?; // TODO: confirm binding power of 0 is appropriate here
                 Ok(Field {
                     index: Some(index),
                     lexp: Box::new(Exp::Nil), // A hack because we can't create an Exp::Number here without upsetting the borrow checker.
@@ -1452,7 +1388,7 @@ mod tests {
 
     #[test]
     fn parses_local_declarations() {
-        let parser = Parser::new("local foo");
+        let mut parser = Parser::new("local foo");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1462,7 +1398,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local bar = false");
+        let mut parser = Parser::new("local bar = false");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1475,7 +1411,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local baz = nil");
+        let mut parser = Parser::new("local baz = nil");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1488,7 +1424,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local w = 1");
+        let mut parser = Parser::new("local w = 1");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1501,7 +1437,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local x = 'wat'");
+        let mut parser = Parser::new("local x = 'wat'");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1514,7 +1450,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local y = \"don't say \\\"hello\\\"!\"");
+        let mut parser = Parser::new("local y = \"don't say \\\"hello\\\"!\"");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1527,7 +1463,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local z = [[loooong]]");
+        let mut parser = Parser::new("local z = [[loooong]]");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1540,7 +1476,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local qux = true");
+        let mut parser = Parser::new("local qux = true");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1553,7 +1489,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local neg = not true");
+        let mut parser = Parser::new("local neg = not true");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1566,7 +1502,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local len = #'sample'");
+        let mut parser = Parser::new("local len = #'sample'");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1582,7 +1518,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local small = -1000");
+        let mut parser = Parser::new("local small = -1000");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1598,7 +1534,7 @@ mod tests {
             }])
         );
 
-        let parser = Parser::new("local sum = 7 + 8");
+        let mut parser = Parser::new("local sum = 7 + 8");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1624,7 +1560,7 @@ mod tests {
         //
         //      not (((1 * 2) + (3 - (4 / (5 ^ (-6))))) > (-(7 ^ 8) + ((9 - 10) * 11)))
         //
-        let parser =
+        let mut parser =
             Parser::new("local demo =  not (1 * 2 + 3 - 4 / 5 ^ -6 > -7 ^ 8 + (9 - 10) * 11)");
         let ast = parser.parse();
         assert_eq!(
@@ -1690,7 +1626,7 @@ mod tests {
 
     #[test]
     fn parses_unary_not_with_name() {
-        let parser = Parser::new("local foo = not bar");
+        let mut parser = Parser::new("local foo = not bar");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
@@ -1709,7 +1645,7 @@ mod tests {
 
     #[test]
     fn parses_table_constructor() {
-        let parser = Parser::new("local stuff = { [\"foo\"] = bar }");
+        let mut parser = Parser::new("local stuff = { [\"foo\"] = bar }");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),

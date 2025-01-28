@@ -17,7 +17,41 @@ y:z():followed_by():this(true)
 Block(
     [
         Node {
-            comments: [],
+            comments: [
+                Comment {
+                    content: "-- Fun fact: an initial version of this was written as:\n",
+                },
+                Comment {
+                    content: "--\n",
+                },
+                Comment {
+                    content: "--    local x = y:z():then():this(true)\n",
+                },
+                Comment {
+                    content: "--\n",
+                },
+                Comment {
+                    content: "-- We correctly rejecet that with UnexpectedToken (Keyword(Then)), in agreement\n",
+                },
+                Comment {
+                    content: "-- with luajit:\n",
+                },
+                Comment {
+                    content: "--\n",
+                },
+                Comment {
+                    content: "--    '<name>' expected near 'then'\n",
+                },
+                Comment {
+                    content: "--\n",
+                },
+                Comment {
+                    content: "-- Which is slightly surprising to me as I would have expected keywords to be\n",
+                },
+                Comment {
+                    content: "-- allowed in certain positions where they wouldn't be ambiguous.\n",
+                },
+            ],
             node: MethodCallStatement {
                 pexp: MethodCall {
                     pexp: MethodCall {
