@@ -65,8 +65,6 @@ use docvim_lexer::lua::TokenKind::Op as OpToken;
 use docvim_lexer::lua::TokenKind::Punctuator as PunctuatorToken;
 use docvim_lexer::lua::{Lexer, Token};
 
-use std::mem;
-
 // TODO these node types will eventually wind up in another file, and end up referring specifically
 // to Lua, but for now developing them "in situ".
 
@@ -262,7 +260,7 @@ pub enum Statement<'a> {
 
 /// Returns the left and right "binding" power for a given operator, which enables us to parse
 /// binary and unary expressions with left or right associativity via Pratt's "Top Down Operator
-/// Precendence" algorithm, as described in doc/lua.md.
+/// Precedence" algorithm, as described in doc/lua.md.
 ///
 /// See also unop_binding.
 fn binop_binding(op: BinOp) -> (u8, u8) {
@@ -360,6 +358,7 @@ impl<'a> Parser<'a> {
 
     pub fn parse(&mut self) -> Result<Block, ParserError> {
         self.parse_block()
+        // TODO: if there are pending comments here, need to emit them as trailing comments...
     }
 
     fn parse_block(&mut self) -> Result<Block<'a>, ParserError> {
@@ -403,20 +402,21 @@ impl<'a> Parser<'a> {
                 Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
                     // prefixexp ::= var | functioncall | `(´ exp `)´
                     // functioncall ::=  prefixexp args | prefixexp `:´ Name args
+                    let comments = std::mem::take(&mut self.comments);
                     let pexp = self.parse_prefixexp()?;
                     match pexp {
                         Exp::FunctionCall { pexp, args } => {
-                            block.0.push(
-                                self.make_node(Statement::FunctionCallStatement { pexp, args }),
-                            );
+                            block.0.push(self.make_node(
+                                comments,
+                                Statement::FunctionCallStatement { pexp, args },
+                            ));
                             self.slurp(PunctuatorToken(SemiToken));
                         }
                         Exp::MethodCall { pexp, name, args } => {
-                            block.0.push(self.make_node(Statement::MethodCallStatement {
-                                pexp,
-                                name,
-                                args,
-                            }));
+                            block.0.push(self.make_node(
+                                comments,
+                                Statement::MethodCallStatement { pexp, name, args },
+                            ));
                             self.slurp(PunctuatorToken(SemiToken));
                         }
                         Exp::NamedVar(_) | Exp::Index { .. } => {
@@ -431,6 +431,7 @@ impl<'a> Parser<'a> {
                                         self.lexer.tokens.next();
                                         let explist = self.parse_explist()?;
                                         block.0.push(self.make_node(
+                                            comments,
                                             Statement::VarlistDeclaration { varlist, explist },
                                         ));
                                         self.slurp(PunctuatorToken(SemiToken));
@@ -492,15 +493,17 @@ impl<'a> Parser<'a> {
                     }
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(BreakToken)), .. })) => {
+                    let comments = std::mem::take(&mut self.comments);
                     self.lexer.tokens.next();
-                    block.0.push(self.make_node(Statement::Break));
+                    block.0.push(self.make_node(comments, Statement::Break));
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
                 Some(&Ok(Token { kind: NameToken(KeywordToken(ReturnToken)), .. })) => {
+                    let comments = std::mem::take(&mut self.comments);
                     self.lexer.tokens.next();
                     let explist = if self.peek_exp() { Some(self.parse_explist()?) } else { None };
-                    block.0.push(self.make_node(Statement::Return(explist)));
+                    block.0.push(self.make_node(comments, Statement::Return(explist)));
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
@@ -528,17 +531,21 @@ impl<'a> Parser<'a> {
         Ok(block)
     }
 
-    fn make_node(&mut self, node: Statement<'a>) -> Node<'a, Statement<'a>> {
-        let comments = mem::take(&mut self.comments);
+    fn make_node(
+        &mut self,
+        comments: Vec<Comment<'a>>,
+        node: Statement<'a>,
+    ) -> Node<'a, Statement<'a>> {
         let node = Node { comments, node };
         node
     }
 
     fn parse_do_block(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(Statement::DoBlock(block)))
+        Ok(self.make_node(comments, Statement::DoBlock(block)))
     }
 
     fn parse_name(&mut self) -> Result<Name<'a>, ParserError> {
@@ -731,6 +738,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_for(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(ForToken)))?;
         let mut namelist = self.parse_namelist()?;
 
@@ -746,7 +754,7 @@ impl<'a> Parser<'a> {
                 None
             };
             let block = self.parse_block()?;
-            Ok(self.make_node(Statement::For { name, startexp, endexp, stepexp, block }))
+            Ok(self.make_node(comments, Statement::For { name, startexp, endexp, stepexp, block }))
         } else {
             // Parse: for namelist in explist do block end
             self.consume(NameToken(KeywordToken(InToken)))?;
@@ -754,11 +762,12 @@ impl<'a> Parser<'a> {
             self.consume(NameToken(KeywordToken(DoToken)))?;
             let block = self.parse_block()?;
             self.consume(NameToken(KeywordToken(EndToken)))?;
-            Ok(self.make_node(Statement::ForIn { namelist, explist, block }))
+            Ok(self.make_node(comments, Statement::ForIn { namelist, explist, block }))
         }
     }
 
     fn parse_if(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(IfToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
         self.consume(NameToken(KeywordToken(ThenToken)))?;
@@ -778,27 +787,30 @@ impl<'a> Parser<'a> {
         };
 
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(Statement::IfStatement { consequents, alternate }))
+        Ok(self.make_node(comments, Statement::IfStatement { consequents, alternate }))
     }
 
     fn parse_repeat(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(RepeatToken)))?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(UntilToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
-        Ok(self.make_node(Statement::Repeat { block, cexp }))
+        Ok(self.make_node(comments, Statement::Repeat { block, cexp }))
     }
 
     fn parse_while(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(WhileToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
         self.consume(NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(Statement::While { cexp, block }))
+        Ok(self.make_node(comments, Statement::While { cexp, block }))
     }
 
     fn parse_function(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+        let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(FunctionToken)))?;
         let mut name = vec![self.parse_name()?];
         while self.slurp(PunctuatorToken(DotToken)) {
@@ -809,7 +821,10 @@ impl<'a> Parser<'a> {
         let (parlist, varargs) = self.parse_parlist()?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(Statement::FunctionDeclaration { name, method, parlist, varargs, block }))
+        Ok(self.make_node(
+            comments,
+            Statement::FunctionDeclaration { name, method, parlist, varargs, block },
+        ))
     }
 
     fn parse_local(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
@@ -819,23 +834,22 @@ impl<'a> Parser<'a> {
         // local x = 10
         // local x, y = 10, 20
         // local function Name funcbody
+        let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(LocalToken)))?;
         if self.slurp(NameToken(KeywordToken(FunctionToken))) {
             let name = self.parse_name()?;
             let (parlist, varargs) = self.parse_parlist()?;
             let block = self.parse_block()?;
             self.consume(NameToken(KeywordToken(EndToken)))?;
-            Ok(self.make_node(Statement::LocalFunctionDeclaration {
-                name,
-                parlist,
-                varargs,
-                block,
-            }))
+            Ok(self.make_node(
+                comments,
+                Statement::LocalFunctionDeclaration { name, parlist, varargs, block },
+            ))
         } else {
             let namelist = self.parse_namelist()?;
             let explist =
                 if self.slurp(OpToken(AssignToken)) { self.parse_explist()? } else { vec![] };
-            Ok(self.make_node(Statement::LocalDeclaration { explist, namelist }))
+            Ok(self.make_node(comments, Statement::LocalDeclaration { explist, namelist }))
         }
     }
 
