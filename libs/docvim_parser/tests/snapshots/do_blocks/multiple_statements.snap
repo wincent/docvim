@@ -21,9 +21,12 @@ Block(
                                     ),
                                 ],
                                 explist: [
-                                    CookedStr(
-                                        "foo",
-                                    ),
+                                    Node {
+                                        comments: [],
+                                        node: CookedStr(
+                                            "foo",
+                                        ),
+                                    },
                                 ],
                             },
                         },
@@ -36,9 +39,12 @@ Block(
                                     ),
                                 ],
                                 explist: [
-                                    CookedStr(
-                                        "bar",
-                                    ),
+                                    Node {
+                                        comments: [],
+                                        node: CookedStr(
+                                            "bar",
+                                        ),
+                                    },
                                 ],
                             },
                         },

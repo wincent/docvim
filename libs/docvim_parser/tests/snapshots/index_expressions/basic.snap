@@ -27,12 +27,6 @@ Block(
                 Comment {
                     content: "-- args ::=  `(´ [explist] `)´ | tableconstructor | String\n",
                 },
-                Comment {
-                    content: "-- TODO: note that index expressions can appear on the LHS too; eg:\n",
-                },
-                Comment {
-                    content: "-- foo[x] = 1",
-                },
             ],
             node: LocalDeclaration {
                 namelist: [
@@ -41,13 +35,22 @@ Block(
                     ),
                 ],
                 explist: [
-                    Index {
-                        pexp: NamedVar(
-                            "list",
-                        ),
-                        kexp: Number(
-                            "100",
-                        ),
+                    Node {
+                        comments: [],
+                        node: Index {
+                            pexp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "list",
+                                ),
+                            },
+                            kexp: Node {
+                                comments: [],
+                                node: Number(
+                                    "100",
+                                ),
+                            },
+                        },
                     },
                 ],
             },

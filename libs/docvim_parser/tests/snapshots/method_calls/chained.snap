@@ -53,20 +53,32 @@ Block(
                 },
             ],
             node: MethodCallStatement {
-                pexp: MethodCall {
-                    pexp: MethodCall {
-                        pexp: NamedVar(
-                            "y",
-                        ),
-                        name: "z",
+                pexp: Node {
+                    comments: [],
+                    node: MethodCall {
+                        pexp: Node {
+                            comments: [],
+                            node: MethodCall {
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "y",
+                                    ),
+                                },
+                                name: "z",
+                                args: [],
+                            },
+                        },
+                        name: "followed_by",
                         args: [],
                     },
-                    name: "followed_by",
-                    args: [],
                 },
                 name: "this",
                 args: [
-                    True,
+                    Node {
+                        comments: [],
+                        node: True,
+                    },
                 ],
             },
         },

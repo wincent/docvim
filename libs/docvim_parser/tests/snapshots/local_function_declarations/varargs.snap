@@ -26,17 +26,29 @@ Block(
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "adder",
-                                ),
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "adder",
+                                    ),
+                                },
                                 args: [
-                                    NamedVar(
-                                        "first",
-                                    ),
-                                    NamedVar(
-                                        "second",
-                                    ),
-                                    Varargs,
+                                    Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "first",
+                                        ),
+                                    },
+                                    Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "second",
+                                        ),
+                                    },
+                                    Node {
+                                        comments: [],
+                                        node: Varargs,
+                                    },
                                 ],
                             },
                         },

@@ -9,13 +9,19 @@ Block(
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "print",
-                ),
-                args: [
-                    CookedStr(
-                        "in a module",
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "print",
                     ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "in a module",
+                        ),
+                    },
                 ],
             },
         },
@@ -24,7 +30,10 @@ Block(
             node: Return(
                 Some(
                     [
-                        True,
+                        Node {
+                            comments: [],
+                            node: True,
+                        },
                     ],
                 ),
             ),

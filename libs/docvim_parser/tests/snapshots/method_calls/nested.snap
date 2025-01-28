@@ -7,21 +7,33 @@ Block(
         Node {
             comments: [],
             node: MethodCallStatement {
-                pexp: NamedVar(
-                    "y",
-                ),
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "y",
+                    ),
+                },
                 name: "z",
                 args: [
-                    MethodCall {
-                        pexp: NamedVar(
-                            "a",
-                        ),
-                        name: "b",
-                        args: [
-                            NamedVar(
-                                "c",
-                            ),
-                        ],
+                    Node {
+                        comments: [],
+                        node: MethodCall {
+                            pexp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "a",
+                                ),
+                            },
+                            name: "b",
+                            args: [
+                                Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "c",
+                                    ),
+                                },
+                            ],
+                        },
                     },
                 ],
             },

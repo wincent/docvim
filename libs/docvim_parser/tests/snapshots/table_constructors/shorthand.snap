@@ -13,19 +13,31 @@ Block(
                     ),
                 ],
                 explist: [
-                    Table(
-                        [
-                            Field {
-                                index: Some(
-                                    1,
-                                ),
-                                lexp: Nil,
-                                rexp: NamedVar(
-                                    "one",
-                                ),
-                            },
-                        ],
-                    ),
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            1,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "one",
+                                            ),
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
                 ],
             },
         },

@@ -95,6 +95,12 @@ pub struct Node<'a, T> {
     pub node: T,
 }
 
+macro_rules! node_without_comments {
+    ($node:expr) => {
+        Node { comments: vec![], node: $node }
+    };
+}
+
 pub type Statement<'a> = Node<'a, StatementKind<'a>>;
 
 #[derive(Debug, PartialEq)]
@@ -105,8 +111,10 @@ pub struct Comment<'a> {
     pub content: &'a str,
 }
 
+pub type Exp<'a> = Node<'a, ExpKind<'a>>;
+
 #[derive(Debug, PartialEq)]
-pub enum Exp<'a> {
+pub enum ExpKind<'a> {
     Binary {
         lexp: Box<Exp<'a>>,
         op: BinOp,
@@ -149,7 +157,7 @@ pub enum Exp<'a> {
     Nil,
     Number(&'a str),
     RawStr(&'a str),
-    Table(Vec<Field<'a>>),
+    Table(Vec<Node<'a, Field<'a>>>),
     True,
     Unary {
         exp: Box<Exp<'a>>,
@@ -171,9 +179,6 @@ pub struct Field<'a> {
     lexp: Box<Exp<'a>>,
     rexp: Box<Exp<'a>>,
 }
-
-#[derive(Debug, PartialEq)]
-pub struct Table<'a>(Vec<Field<'a>>);
 
 #[derive(Debug, PartialEq)]
 pub struct Name<'a>(&'a str);
@@ -406,22 +411,22 @@ impl<'a> Parser<'a> {
                     // functioncall ::=  prefixexp args | prefixexp `:´ Name args
                     let comments = std::mem::take(&mut self.comments);
                     let pexp = self.parse_prefixexp()?;
-                    match pexp {
-                        Exp::FunctionCall { pexp, args } => {
-                            block.0.push(self.make_node(
+                    match pexp.node {
+                        ExpKind::FunctionCall { pexp, args } => {
+                            block.0.push(Node {
                                 comments,
-                                StatementKind::FunctionCallStatement { pexp, args },
-                            ));
+                                node: StatementKind::FunctionCallStatement { pexp, args },
+                            });
                             self.slurp(PunctuatorToken(SemiToken));
                         }
-                        Exp::MethodCall { pexp, name, args } => {
-                            block.0.push(self.make_node(
+                        ExpKind::MethodCall { pexp, name, args } => {
+                            block.0.push(Node {
                                 comments,
-                                StatementKind::MethodCallStatement { pexp, name, args },
-                            ));
+                                node: StatementKind::MethodCallStatement { pexp, name, args },
+                            });
                             self.slurp(PunctuatorToken(SemiToken));
                         }
-                        Exp::NamedVar(_) | Exp::Index { .. } => {
+                        ExpKind::NamedVar(_) | ExpKind::Index { .. } => {
                             // varlist `=´ explist
                             // varlist ::= var {`,´ var}
                             // var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
@@ -432,10 +437,13 @@ impl<'a> Parser<'a> {
                                     Some(&Ok(Token { kind: OpToken(AssignToken), .. })) => {
                                         self.lexer.tokens.next();
                                         let explist = self.parse_explist()?;
-                                        block.0.push(self.make_node(
+                                        block.0.push(Node {
                                             comments,
-                                            StatementKind::VarlistDeclaration { varlist, explist },
-                                        ));
+                                            node: StatementKind::VarlistDeclaration {
+                                                varlist,
+                                                explist,
+                                            },
+                                        });
                                         self.slurp(PunctuatorToken(SemiToken));
                                         break;
                                     }
@@ -466,8 +474,8 @@ impl<'a> Parser<'a> {
                                     }
                                     Some(&Ok(Token { .. })) => {
                                         let pexp = self.parse_prefixexp()?;
-                                        match pexp {
-                                            Exp::NamedVar(_) | Exp::Index { .. } => {
+                                        match pexp.node {
+                                            ExpKind::NamedVar(_) | ExpKind::Index { .. } => {
                                                 varlist.push(pexp);
                                             }
                                             _ => {
@@ -497,7 +505,7 @@ impl<'a> Parser<'a> {
                 Some(&Ok(Token { kind: NameToken(KeywordToken(BreakToken)), .. })) => {
                     let comments = std::mem::take(&mut self.comments);
                     self.lexer.tokens.next();
-                    block.0.push(self.make_node(comments, StatementKind::Break));
+                    block.0.push(Node { comments, node: StatementKind::Break });
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
@@ -505,7 +513,7 @@ impl<'a> Parser<'a> {
                     let comments = std::mem::take(&mut self.comments);
                     self.lexer.tokens.next();
                     let explist = if self.peek_exp() { Some(self.parse_explist()?) } else { None };
-                    block.0.push(self.make_node(comments, StatementKind::Return(explist)));
+                    block.0.push(Node { comments, node: StatementKind::Return(explist) });
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
@@ -533,17 +541,12 @@ impl<'a> Parser<'a> {
         Ok(block)
     }
 
-    fn make_node<T>(&mut self, comments: Vec<Comment<'a>>, node: T) -> Node<'a, T> {
-        let node = Node { comments, node };
-        node
-    }
-
     fn parse_do_block(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(comments, StatementKind::DoBlock(block)))
+        Ok(Node { comments, node: StatementKind::DoBlock(block) })
     }
 
     fn parse_name(&mut self) -> Result<Name<'a>, ParserError> {
@@ -752,8 +755,10 @@ impl<'a> Parser<'a> {
                 None
             };
             let block = self.parse_block()?;
-            Ok(self
-                .make_node(comments, StatementKind::For { name, startexp, endexp, stepexp, block }))
+            Ok(Node {
+                comments,
+                node: StatementKind::For { name, startexp, endexp, stepexp, block },
+            })
         } else {
             // Parse: for namelist in explist do block end
             self.consume(NameToken(KeywordToken(InToken)))?;
@@ -761,7 +766,7 @@ impl<'a> Parser<'a> {
             self.consume(NameToken(KeywordToken(DoToken)))?;
             let block = self.parse_block()?;
             self.consume(NameToken(KeywordToken(EndToken)))?;
-            Ok(self.make_node(comments, StatementKind::ForIn { namelist, explist, block }))
+            Ok(Node { comments, node: StatementKind::ForIn { namelist, explist, block } })
         }
     }
 
@@ -786,7 +791,7 @@ impl<'a> Parser<'a> {
         };
 
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(comments, StatementKind::IfStatement { consequents, alternate }))
+        Ok(Node { comments, node: StatementKind::IfStatement { consequents, alternate } })
     }
 
     fn parse_repeat(&mut self) -> Result<Statement<'a>, ParserError> {
@@ -795,7 +800,7 @@ impl<'a> Parser<'a> {
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(UntilToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
-        Ok(self.make_node(comments, StatementKind::Repeat { block, cexp }))
+        Ok(Node { comments, node: StatementKind::Repeat { block, cexp } })
     }
 
     fn parse_while(&mut self) -> Result<Statement<'a>, ParserError> {
@@ -805,7 +810,7 @@ impl<'a> Parser<'a> {
         self.consume(NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(comments, StatementKind::While { cexp, block }))
+        Ok(Node { comments, node: StatementKind::While { cexp, block } })
     }
 
     fn parse_function(&mut self) -> Result<Statement<'a>, ParserError> {
@@ -820,10 +825,10 @@ impl<'a> Parser<'a> {
         let (parlist, varargs) = self.parse_parlist()?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(
+        Ok(Node {
             comments,
-            StatementKind::FunctionDeclaration { name, method, parlist, varargs, block },
-        ))
+            node: StatementKind::FunctionDeclaration { name, method, parlist, varargs, block },
+        })
     }
 
     fn parse_local(&mut self) -> Result<Statement<'a>, ParserError> {
@@ -840,15 +845,15 @@ impl<'a> Parser<'a> {
             let (parlist, varargs) = self.parse_parlist()?;
             let block = self.parse_block()?;
             self.consume(NameToken(KeywordToken(EndToken)))?;
-            Ok(self.make_node(
+            Ok(Node {
                 comments,
-                StatementKind::LocalFunctionDeclaration { name, parlist, varargs, block },
-            ))
+                node: StatementKind::LocalFunctionDeclaration { name, parlist, varargs, block },
+            })
         } else {
             let namelist = self.parse_namelist()?;
             let explist =
                 if self.slurp(OpToken(AssignToken)) { self.parse_explist()? } else { vec![] };
-            Ok(self.make_node(comments, StatementKind::LocalDeclaration { explist, namelist }))
+            Ok(Node { comments, node: StatementKind::LocalDeclaration { explist, namelist } })
         }
     }
 
@@ -856,7 +861,7 @@ impl<'a> Parser<'a> {
     /// bytes. For example, the sequence "\n" is replaced with an actual newline, and so on.
     ///
     /// In contrast, a "raw" string preserves the exact form it had in the original source.
-    fn cook_str(&self, token: Token) -> Result<Exp<'a>, ParserError> {
+    fn cook_str(&self, token: Token) -> Result<ExpKind<'a>, ParserError> {
         let byte_start = token.byte_start + 1;
         let byte_end = token.byte_end - 1;
         let char_start = token.char_start + 1;
@@ -927,13 +932,14 @@ impl<'a> Parser<'a> {
             unescaped.push(unescaped_char);
         }
 
-        Ok(Exp::CookedStr(Box::new(unescaped)))
+        Ok(ExpKind::CookedStr(Box::new(unescaped)))
     }
 
     fn parse_unop_exp(&mut self, op: UnOp) -> Result<Exp<'a>, ParserError> {
+        let comments = std::mem::take(&mut self.comments);
         let bp = unop_binding(op);
         let rhs = self.parse_exp(bp)?;
-        Ok(Exp::Unary { exp: Box::new(rhs), op })
+        Ok(Node { comments, node: ExpKind::Unary { exp: Box::new(rhs), op } })
     }
 
     /// args ::=  `(´ [explist] `)´ | tableconstructor | String
@@ -994,7 +1000,8 @@ impl<'a> Parser<'a> {
                 }
             }
             Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
-                Exp::NamedVar(&self.lexer.input[byte_start..byte_end])
+                let comments = std::mem::take(&mut self.comments);
+                Node { comments, node: ExpKind::NamedVar(&self.lexer.input[byte_start..byte_end]) }
             }
             Some(Ok(Token { char_start, .. })) => {
                 return Err(ParserError {
@@ -1026,10 +1033,11 @@ impl<'a> Parser<'a> {
                         Some(Err(err)) => return Err(ParserError::from(err)),
                         None => return Err(self.unexpected_end_of_input()),
                     };
-                    pexp = Exp::MethodCall {
-                        pexp: Box::new(pexp),
-                        name: method_name,
-                        args: self.parse_args()?,
+                    let comments = std::mem::take(&mut pexp.comments);
+                    let args = self.parse_args()?;
+                    pexp = Node {
+                        comments,
+                        node: ExpKind::MethodCall { pexp: Box::new(pexp), name: method_name, args },
                     };
                 }
                 Some(&Ok(Token { kind: PunctuatorToken(DotToken), .. })) => {
@@ -1043,7 +1051,7 @@ impl<'a> Parser<'a> {
                             ..
                         })) => {
                             let name = &self.lexer.input[byte_start..byte_end];
-                            Exp::RawStr(name)
+                            node_without_comments!(ExpKind::RawStr(name))
                         }
                         Some(Ok(Token { char_start, .. })) => {
                             return Err(ParserError {
@@ -1054,14 +1062,22 @@ impl<'a> Parser<'a> {
                         Some(Err(err)) => return Err(ParserError::from(err)),
                         None => return Err(self.unexpected_end_of_input()),
                     };
-                    pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
+                    let comments = std::mem::take(&mut pexp.comments);
+                    pexp = Node {
+                        comments,
+                        node: ExpKind::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) },
+                    };
                 }
                 Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
                     // ie. `foo[bar]`
+                    let comments = std::mem::take(&mut pexp.comments);
                     self.lexer.tokens.next();
                     let kexp = self.parse_exp(0)?;
                     self.consume(PunctuatorToken(RbracketToken))?;
-                    pexp = Exp::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) };
+                    pexp = Node {
+                        comments,
+                        node: ExpKind::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) },
+                    };
                 }
                 Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken | LparenToken), .. }))
                 | Some(&Ok(Token {
@@ -1069,7 +1085,12 @@ impl<'a> Parser<'a> {
                     ..
                 }))
                 | Some(&Ok(Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
-                    pexp = Exp::FunctionCall { pexp: Box::new(pexp), args: self.parse_args()? };
+                    let comments = std::mem::take(&mut pexp.comments);
+                    let args = self.parse_args()?;
+                    pexp = Node {
+                        comments,
+                        node: ExpKind::FunctionCall { pexp: Box::new(pexp), args },
+                    };
                 }
                 _ => break,
             }
@@ -1090,21 +1111,25 @@ impl<'a> Parser<'a> {
             self.comments.push(Comment { content });
             self.lexer.tokens.next();
         }
+        let comments = std::mem::take(&mut self.comments);
         let mut lhs = match self.lexer.tokens.peek() {
             //
             // Primaries (literals etc).
             //
             Some(&Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })) => {
                 self.lexer.tokens.next();
-                Exp::False
+                Node { comments, node: ExpKind::False }
             }
             Some(&Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })) => {
                 self.lexer.tokens.next();
-                Exp::Nil
+                Node { comments, node: ExpKind::Nil }
             }
             Some(&Ok(token @ Token { kind: LiteralToken(NumberToken), .. })) => {
                 self.lexer.tokens.next();
-                Exp::Number(&self.lexer.input[token.byte_start..token.byte_end])
+                Node {
+                    comments,
+                    node: ExpKind::Number(&self.lexer.input[token.byte_start..token.byte_end]),
+                }
             }
             Some(&Ok(
                 token @ Token {
@@ -1113,7 +1138,7 @@ impl<'a> Parser<'a> {
                 },
             )) => {
                 self.lexer.tokens.next();
-                self.cook_str(token)?
+                Node { comments, node: self.cook_str(token)? }
             }
             Some(&Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { level })), .. })) => {
                 self.lexer.tokens.next();
@@ -1126,15 +1151,15 @@ impl<'a> Parser<'a> {
                     token.byte_start + 2 + level
                 };
                 let end = token.byte_end - 2 - level;
-                Exp::RawStr(&self.lexer.input[start..end])
+                Node { comments, node: ExpKind::RawStr(&self.lexer.input[start..end]) }
             }
             Some(&Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })) => {
                 self.lexer.tokens.next();
-                Exp::True
+                Node { comments, node: ExpKind::True }
             }
             Some(&Ok(Token { kind: OpToken(VarargToken), .. })) => {
                 self.lexer.tokens.next();
-                Exp::Varargs
+                Node { comments, node: ExpKind::Varargs }
             }
             Some(&Ok(Token {
                 kind: NameToken(IdentifierToken) | PunctuatorToken(LparenToken),
@@ -1145,7 +1170,7 @@ impl<'a> Parser<'a> {
                 let (parlist, varargs) = self.parse_parlist()?;
                 let block = self.parse_block()?;
                 self.consume(NameToken(KeywordToken(EndToken)))?;
-                Exp::Function { parlist, varargs, block }
+                Node { comments, node: ExpKind::Function { parlist, varargs, block } }
             }
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 self.parse_table_constructor()?
@@ -1211,7 +1236,11 @@ impl<'a> Parser<'a> {
                 } else {
                     self.lexer.tokens.next();
                     let rhs = self.parse_exp(right_bp)?;
-                    lhs = Exp::Binary { lexp: Box::new(lhs), op, rexp: Box::new(rhs) };
+                    let comments = std::mem::take(&mut lhs.comments);
+                    lhs = Node {
+                        comments,
+                        node: ExpKind::Binary { lexp: Box::new(lhs), op, rexp: Box::new(rhs) },
+                    };
                 }
             } else {
                 break;
@@ -1224,6 +1253,7 @@ impl<'a> Parser<'a> {
     // fieldlist ::= field {fieldsep field} [fieldsep]
     // fieldsep ::= `,´ | `;´
     fn parse_table_constructor(&mut self) -> Result<Exp<'a>, ParserError> {
+        let comments = std::mem::take(&mut self.comments);
         match self.lexer.tokens.next() {
             Some(Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 let mut fieldsep_allowed = false;
@@ -1234,7 +1264,7 @@ impl<'a> Parser<'a> {
                     match token {
                         Some(&Ok(Token { kind: PunctuatorToken(RcurlyToken), .. })) => {
                             self.lexer.tokens.next();
-                            return Ok(Exp::Table(fields));
+                            return Ok(Node { comments, node: ExpKind::Table(fields) });
                         }
                         Some(&Ok(Token {
                             kind: PunctuatorToken(CommaToken | SemiToken),
@@ -1263,7 +1293,7 @@ impl<'a> Parser<'a> {
                         }
                         Some(&Ok(Token { .. })) => {
                             let field = self.parse_table_field(index)?;
-                            if matches!(field, Field { index: Some(_), .. }) {
+                            if matches!(field.node, Field { index: Some(_), .. }) {
                                 index += 1;
                             }
                             fields.push(field);
@@ -1339,32 +1369,45 @@ impl<'a> Parser<'a> {
     }
 
     // field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
-    fn parse_table_field(&mut self, index: usize) -> Result<Field<'a>, ParserError> {
+    fn parse_table_field(&mut self, index: usize) -> Result<Node<'a, Field<'a>>, ParserError> {
+        let comments = std::mem::take(&mut self.comments);
         let token = self.lexer.tokens.peek();
         match token {
             Some(&Ok(Token { kind: NameToken(IdentifierToken), .. })) => {
                 let lexp = self.parse_exp(0)?;
-                if let Exp::NamedVar(name) = lexp {
+                if let ExpKind::NamedVar(name) = lexp.node {
                     // Name = exp
                     if self.slurp(OpToken(AssignToken)) {
                         // `name = exp`; equivalent to `["name"] = exp`.
-                        let rexp = self.parse_exp(0)?;
-                        Ok(Field {
-                            index: None,
-                            lexp: Box::new(Exp::RawStr(name)),
-                            rexp: Box::new(rexp),
+                        Ok(Node {
+                            comments,
+                            node: Field {
+                                index: None,
+                                lexp: Box::new(node_without_comments!(ExpKind::RawStr(name))),
+                                rexp: Box::new(self.parse_exp(0)?),
+                            },
                         })
                     } else {
                         // `exp`; syntactic sugar for `[index] = exp`
-                        Ok(Field {
-                            index: Some(index),
-                            lexp: Box::new(Exp::Nil),
-                            rexp: Box::new(lexp),
+                        Ok(Node {
+                            comments,
+                            node: Field {
+                                index: Some(index),
+                                lexp: Box::new(node_without_comments!(ExpKind::Nil)),
+                                rexp: Box::new(lexp),
+                            },
                         })
                     }
                 } else {
                     // exp; syntactic sugar for `[index] = exp`
-                    Ok(Field { index: Some(index), lexp: Box::new(Exp::Nil), rexp: Box::new(lexp) })
+                    Ok(Node {
+                        comments,
+                        node: Field {
+                            index: Some(index),
+                            lexp: Box::new(node_without_comments!(ExpKind::Nil)),
+                            rexp: Box::new(lexp),
+                        },
+                    })
                 }
             }
             Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
@@ -1374,15 +1417,21 @@ impl<'a> Parser<'a> {
                 self.consume(PunctuatorToken(RbracketToken))?;
                 self.consume(OpToken(AssignToken))?;
                 let rexp = self.parse_exp(0)?; // TODO: confirm binding power of 0 is appropriate here
-                Ok(Field { index: None, lexp: Box::new(lexp), rexp: Box::new(rexp) })
+                Ok(Node {
+                    comments,
+                    node: Field { index: None, lexp: Box::new(lexp), rexp: Box::new(rexp) },
+                })
             }
             Some(&Ok(Token { .. })) => {
                 // `exp`; syntactic sugar for `[index] = exp`
                 let exp = self.parse_exp(0)?; // TODO: confirm binding power of 0 is appropriate here
-                Ok(Field {
-                    index: Some(index),
-                    lexp: Box::new(Exp::Nil), // A hack because we can't create an Exp::Number here without upsetting the borrow checker.
-                    rexp: Box::new(exp),
+                Ok(Node {
+                    comments,
+                    node: Field {
+                        index: Some(index),
+                        lexp: Box::new(node_without_comments!(ExpKind::Nil)), // A hack because we can't create an Exp::Number here without upsetting the borrow checker.
+                        rexp: Box::new(exp),
+                    },
                 })
                 // TODO: implement this:
                 // "If the last field in the list has the form exp and the expression is a function
@@ -1405,166 +1454,139 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("foo")],
-                    explist: vec![]
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("foo")],
+                explist: vec![]
+            })])
         );
 
         let mut parser = Parser::new("local bar = false");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("bar")],
-                    explist: vec![Exp::False],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("bar")],
+                explist: vec![node_without_comments!(ExpKind::False)],
+            })])
         );
 
         let mut parser = Parser::new("local baz = nil");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("baz")],
-                    explist: vec![Exp::Nil],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("baz")],
+                explist: vec![node_without_comments!(ExpKind::Nil)],
+            })])
         );
 
         let mut parser = Parser::new("local w = 1");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("w")],
-                    explist: vec![Exp::Number("1")],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("w")],
+                explist: vec![node_without_comments!(ExpKind::Number("1"))],
+            })])
         );
 
         let mut parser = Parser::new("local x = 'wat'");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("x")],
-                    explist: vec![Exp::CookedStr(Box::new(String::from("wat")))],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("x")],
+                explist: vec![node_without_comments!(ExpKind::CookedStr(Box::new(String::from(
+                    "wat"
+                ))))],
+            })])
         );
 
         let mut parser = Parser::new("local y = \"don't say \\\"hello\\\"!\"");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("y")],
-                    explist: vec![Exp::CookedStr(Box::new(String::from("don't say \"hello\"!")))],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("y")],
+                explist: vec![node_without_comments!(ExpKind::CookedStr(Box::new(String::from(
+                    "don't say \"hello\"!"
+                ))))],
+            })])
         );
 
         let mut parser = Parser::new("local z = [[loooong]]");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("z")],
-                    explist: vec![Exp::RawStr("loooong")],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("z")],
+                explist: vec![node_without_comments!(ExpKind::RawStr("loooong"))],
+            })])
         );
 
         let mut parser = Parser::new("local qux = true");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("qux")],
-                    explist: vec![Exp::True],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("qux")],
+                explist: vec![node_without_comments!(ExpKind::True)],
+            })])
         );
 
         let mut parser = Parser::new("local neg = not true");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("neg")],
-                    explist: vec![Exp::Unary { exp: Box::new(Exp::True), op: UnOp::Not }],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("neg")],
+                explist: vec![node_without_comments!(ExpKind::Unary {
+                    exp: Box::new(node_without_comments!(ExpKind::True)),
+                    op: UnOp::Not
+                })],
+            })])
         );
 
         let mut parser = Parser::new("local len = #'sample'");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("len")],
-                    explist: vec![Exp::Unary {
-                        exp: Box::new(Exp::CookedStr(Box::new(String::from("sample")))),
-                        op: UnOp::Length,
-                    }],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("len")],
+                explist: vec![node_without_comments!(ExpKind::Unary {
+                    exp: Box::new(node_without_comments!(ExpKind::CookedStr(Box::new(
+                        String::from("sample")
+                    )))),
+                    op: UnOp::Length,
+                })],
+            })])
         );
 
         let mut parser = Parser::new("local small = -1000");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("small")],
-                    explist: vec![Exp::Unary {
-                        exp: Box::new(Exp::Number("1000")),
-                        op: UnOp::Minus
-                    }],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("small")],
+                explist: vec![node_without_comments!(ExpKind::Unary {
+                    exp: Box::new(node_without_comments!(ExpKind::Number("1000"))),
+                    op: UnOp::Minus
+                })],
+            })])
         );
 
         let mut parser = Parser::new("local sum = 7 + 8");
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("sum")],
-                    explist: vec![Exp::Binary {
-                        lexp: Box::new(Exp::Number("7")),
-                        op: BinOp::Plus,
-                        rexp: Box::new(Exp::Number("8"))
-                    }],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("sum")],
+                explist: vec![node_without_comments!(ExpKind::Binary {
+                    lexp: Box::new(node_without_comments!(ExpKind::Number("7"))),
+                    op: BinOp::Plus,
+                    rexp: Box::new(node_without_comments!(ExpKind::Number("8")))
+                })],
+            })])
         );
 
         // Based on the example from doc/lua.md plus some extra parens and a "not" thrown in for
@@ -1581,62 +1603,63 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("demo")],
-                    explist: vec![Exp::Unary {
-                        exp: Box::new(Exp::Binary {
-                            lexp: Box::new(Exp::Binary {
-                                lexp: Box::new(Exp::Binary {
-                                    lexp: Box::new(Exp::Number("1")),
-                                    op: BinOp::Star,
-                                    rexp: Box::new(Exp::Number("2")),
-                                }),
-                                op: BinOp::Plus,
-                                rexp: Box::new(Exp::Binary {
-                                    lexp: Box::new(Exp::Number("3")),
-                                    op: BinOp::Minus,
-                                    rexp: Box::new(Exp::Binary {
-                                        lexp: Box::new(Exp::Number("4")),
-                                        op: BinOp::Slash,
-                                        rexp: Box::new(Exp::Binary {
-                                            lexp: Box::new(Exp::Number("5")),
-                                            op: BinOp::Caret,
-                                            rexp: Box::new(Exp::Unary {
-                                                exp: Box::new(Exp::Number("6")),
-                                                op: UnOp::Minus,
-                                            })
-                                        })
-                                    })
-                                })
-                            }),
-                            op: BinOp::Gt,
-                            rexp: Box::new(Exp::Binary {
-                                lexp: Box::new(Exp::Unary {
-                                    exp: Box::new(Exp::Binary {
-                                        lexp: Box::new(Exp::Number("7")),
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("demo")],
+                explist: vec![node_without_comments!(ExpKind::Unary {
+                    exp: Box::new(node_without_comments!(ExpKind::Binary {
+                        lexp: Box::new(node_without_comments!(ExpKind::Binary {
+                            lexp: Box::new(node_without_comments!(ExpKind::Binary {
+                                lexp: Box::new(node_without_comments!(ExpKind::Number("1"))),
+                                op: BinOp::Star,
+                                rexp: Box::new(node_without_comments!(ExpKind::Number("2"))),
+                            })),
+                            op: BinOp::Plus,
+                            rexp: Box::new(node_without_comments!(ExpKind::Binary {
+                                lexp: Box::new(node_without_comments!(ExpKind::Number("3"))),
+                                op: BinOp::Minus,
+                                rexp: Box::new(node_without_comments!(ExpKind::Binary {
+                                    lexp: Box::new(node_without_comments!(ExpKind::Number("4"))),
+                                    op: BinOp::Slash,
+                                    rexp: Box::new(node_without_comments!(ExpKind::Binary {
+                                        lexp: Box::new(node_without_comments!(ExpKind::Number(
+                                            "5"
+                                        ))),
                                         op: BinOp::Caret,
-                                        rexp: Box::new(Exp::Number("8")),
-                                    }),
-                                    op: UnOp::Minus,
-                                }),
-                                op: BinOp::Plus,
-                                rexp: Box::new(Exp::Binary {
-                                    lexp: Box::new(Exp::Binary {
-                                        lexp: Box::new(Exp::Number("9")),
-                                        op: BinOp::Minus,
-                                        rexp: Box::new(Exp::Number("10")),
-                                    }),
-                                    op: BinOp::Star,
-                                    rexp: Box::new(Exp::Number("11"))
-                                })
-                            })
-                        }),
-                        op: UnOp::Not
-                    }]
-                }
-            }])
+                                        rexp: Box::new(node_without_comments!(ExpKind::Unary {
+                                            exp: Box::new(node_without_comments!(ExpKind::Number(
+                                                "6"
+                                            ))),
+                                            op: UnOp::Minus,
+                                        }))
+                                    }))
+                                }))
+                            }))
+                        })),
+                        op: BinOp::Gt,
+                        rexp: Box::new(node_without_comments!(ExpKind::Binary {
+                            lexp: Box::new(node_without_comments!(ExpKind::Unary {
+                                exp: Box::new(node_without_comments!(ExpKind::Binary {
+                                    lexp: Box::new(node_without_comments!(ExpKind::Number("7"))),
+                                    op: BinOp::Caret,
+                                    rexp: Box::new(node_without_comments!(ExpKind::Number("8"))),
+                                })),
+                                op: UnOp::Minus,
+                            })),
+                            op: BinOp::Plus,
+                            rexp: Box::new(node_without_comments!(ExpKind::Binary {
+                                lexp: Box::new(node_without_comments!(ExpKind::Binary {
+                                    lexp: Box::new(node_without_comments!(ExpKind::Number("9"))),
+                                    op: BinOp::Minus,
+                                    rexp: Box::new(node_without_comments!(ExpKind::Number("10"))),
+                                })),
+                                op: BinOp::Star,
+                                rexp: Box::new(node_without_comments!(ExpKind::Number("11")))
+                            }))
+                        }))
+                    })),
+                    op: UnOp::Not
+                })]
+            })])
         );
     }
 
@@ -1646,16 +1669,13 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("foo")],
-                    explist: vec![Exp::Unary {
-                        exp: Box::new(Exp::NamedVar("bar")),
-                        op: UnOp::Not
-                    }],
-                }
-            }])
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("foo")],
+                explist: vec![node_without_comments!(ExpKind::Unary {
+                    exp: Box::new(node_without_comments!(ExpKind::NamedVar("bar"))),
+                    op: UnOp::Not
+                })],
+            })])
         );
     }
 
@@ -1665,17 +1685,18 @@ mod tests {
         let ast = parser.parse();
         assert_eq!(
             ast.unwrap(),
-            Block(vec![Node {
-                comments: vec![],
-                node: StatementKind::LocalDeclaration {
-                    namelist: vec![Name("stuff")],
-                    explist: vec![Exp::Table(vec![Field {
+            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
+                namelist: vec![Name("stuff")],
+                explist: vec![node_without_comments!(ExpKind::Table(vec![
+                    node_without_comments!(Field {
                         index: None,
-                        lexp: Box::new(Exp::CookedStr(Box::new(String::from("foo")))),
-                        rexp: Box::new(Exp::NamedVar("bar"))
-                    }])],
-                }
-            }])
+                        lexp: Box::new(node_without_comments!(ExpKind::CookedStr(Box::new(
+                            String::from("foo")
+                        )))),
+                        rexp: Box::new(node_without_comments!(ExpKind::NamedVar("bar")))
+                    })
+                ]))]
+            })])
         );
     }
 }

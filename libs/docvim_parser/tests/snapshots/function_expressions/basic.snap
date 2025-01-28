@@ -15,22 +15,28 @@ Block(
                     ),
                 ],
                 explist: [
-                    Function {
-                        parlist: [],
-                        varargs: false,
-                        block: Block(
-                            [
-                                Node {
-                                    comments: [],
-                                    node: FunctionCallStatement {
-                                        pexp: NamedVar(
-                                            "foo",
-                                        ),
-                                        args: [],
+                    Node {
+                        comments: [],
+                        node: Function {
+                            parlist: [],
+                            varargs: false,
+                            block: Block(
+                                [
+                                    Node {
+                                        comments: [],
+                                        node: FunctionCallStatement {
+                                            pexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "foo",
+                                                ),
+                                            },
+                                            args: [],
+                                        },
                                     },
-                                },
-                            ],
-                        ),
+                                ],
+                            ),
+                        },
                     },
                 ],
             },

@@ -33,13 +33,19 @@ Block(
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "a",
-                                ),
-                                args: [
-                                    NamedVar(
-                                        "b",
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "a",
                                     ),
+                                },
+                                args: [
+                                    Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "b",
+                                        ),
+                                    },
                                 ],
                             },
                         },

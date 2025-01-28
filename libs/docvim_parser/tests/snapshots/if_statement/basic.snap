@@ -11,21 +11,33 @@ Block(
             node: IfStatement {
                 consequents: [
                     Consequent {
-                        cexp: Binary {
-                            lexp: NamedVar(
-                                "a",
-                            ),
-                            op: Ne,
-                            rexp: Nil,
+                        cexp: Node {
+                            comments: [],
+                            node: Binary {
+                                lexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "a",
+                                    ),
+                                },
+                                op: Ne,
+                                rexp: Node {
+                                    comments: [],
+                                    node: Nil,
+                                },
+                            },
                         },
                         block: Block(
                             [
                                 Node {
                                     comments: [],
                                     node: FunctionCallStatement {
-                                        pexp: NamedVar(
-                                            "a",
-                                        ),
+                                        pexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "a",
+                                            ),
+                                        },
                                         args: [],
                                     },
                                 },

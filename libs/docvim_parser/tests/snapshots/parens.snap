@@ -13,9 +13,12 @@ Block(
                     ),
                 ],
                 explist: [
-                    Number(
-                        "100",
-                    ),
+                    Node {
+                        comments: [],
+                        node: Number(
+                            "100",
+                        ),
+                    },
                 ],
             },
         },

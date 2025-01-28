@@ -7,17 +7,26 @@ Block(
         Node {
             comments: [],
             node: MethodCallStatement {
-                pexp: NamedVar(
-                    "bar",
-                ),
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "bar",
+                    ),
+                },
                 name: "baz",
                 args: [
-                    CookedStr(
-                        "hello",
-                    ),
-                    CookedStr(
-                        "world",
-                    ),
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "hello",
+                        ),
+                    },
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "world",
+                        ),
+                    },
                 ],
             },
         },

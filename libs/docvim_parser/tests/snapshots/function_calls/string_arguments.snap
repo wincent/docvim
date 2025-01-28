@@ -9,39 +9,57 @@ Block(
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "foo",
-                ),
-                args: [
-                    CookedStr(
-                        "single",
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "foo",
                     ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "single",
+                        ),
+                    },
                 ],
             },
         },
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "bar",
-                ),
-                args: [
-                    CookedStr(
-                        "double",
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "bar",
                     ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "double",
+                        ),
+                    },
                 ],
             },
         },
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "baz",
-                ),
-                args: [
-                    RawStr(
-                        "long",
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "baz",
                     ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: RawStr(
+                            "long",
+                        ),
+                    },
                 ],
             },
         },

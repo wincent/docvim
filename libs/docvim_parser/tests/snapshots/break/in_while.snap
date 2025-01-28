@@ -12,7 +12,10 @@ Block(
         Node {
             comments: [],
             node: While {
-                cexp: True,
+                cexp: Node {
+                    comments: [],
+                    node: True,
+                },
                 block: Block(
                     [
                         Node {
@@ -20,24 +23,36 @@ Block(
                             node: IfStatement {
                                 consequents: [
                                     Consequent {
-                                        cexp: FunctionCall {
-                                            pexp: NamedVar(
-                                                "test",
-                                            ),
-                                            args: [],
+                                        cexp: Node {
+                                            comments: [],
+                                            node: FunctionCall {
+                                                pexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "test",
+                                                    ),
+                                                },
+                                                args: [],
+                                            },
                                         },
                                         block: Block(
                                             [
                                                 Node {
                                                     comments: [],
                                                     node: FunctionCallStatement {
-                                                        pexp: NamedVar(
-                                                            "print",
-                                                        ),
-                                                        args: [
-                                                            CookedStr(
-                                                                "test passed",
+                                                        pexp: Node {
+                                                            comments: [],
+                                                            node: NamedVar(
+                                                                "print",
                                                             ),
+                                                        },
+                                                        args: [
+                                                            Node {
+                                                                comments: [],
+                                                                node: CookedStr(
+                                                                    "test passed",
+                                                                ),
+                                                            },
                                                         ],
                                                     },
                                                 },

@@ -17,9 +17,12 @@ Block(
             node: IfStatement {
                 consequents: [
                     Consequent {
-                        cexp: NamedVar(
-                            "a",
-                        ),
+                        cexp: Node {
+                            comments: [],
+                            node: NamedVar(
+                                "a",
+                            ),
+                        },
                         block: Block(
                             [
                                 Node {
@@ -27,21 +30,30 @@ Block(
                                     node: IfStatement {
                                         consequents: [
                                             Consequent {
-                                                cexp: NamedVar(
-                                                    "b",
-                                                ),
+                                                cexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "b",
+                                                    ),
+                                                },
                                                 block: Block(
                                                     [
                                                         Node {
                                                             comments: [],
                                                             node: FunctionCallStatement {
-                                                                pexp: NamedVar(
-                                                                    "a",
-                                                                ),
-                                                                args: [
-                                                                    NamedVar(
-                                                                        "b",
+                                                                pexp: Node {
+                                                                    comments: [],
+                                                                    node: NamedVar(
+                                                                        "a",
                                                                     ),
+                                                                },
+                                                                args: [
+                                                                    Node {
+                                                                        comments: [],
+                                                                        node: NamedVar(
+                                                                            "b",
+                                                                        ),
+                                                                    },
                                                                 ],
                                                             },
                                                         },
@@ -55,9 +67,12 @@ Block(
                                                     Node {
                                                         comments: [],
                                                         node: FunctionCallStatement {
-                                                            pexp: NamedVar(
-                                                                "a",
-                                                            ),
+                                                            pexp: Node {
+                                                                comments: [],
+                                                                node: NamedVar(
+                                                                    "a",
+                                                                ),
+                                                            },
                                                             args: [],
                                                         },
                                                     },
@@ -76,9 +91,12 @@ Block(
                             Node {
                                 comments: [],
                                 node: FunctionCallStatement {
-                                    pexp: NamedVar(
-                                        "c",
-                                    ),
+                                    pexp: Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "c",
+                                        ),
+                                    },
                                     args: [],
                                 },
                             },

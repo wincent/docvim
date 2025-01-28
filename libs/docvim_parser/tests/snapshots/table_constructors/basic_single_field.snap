@@ -13,19 +13,31 @@ Block(
                     ),
                 ],
                 explist: [
-                    Table(
-                        [
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "one",
-                                ),
-                                rexp: Number(
-                                    "1",
-                                ),
-                            },
-                        ],
-                    ),
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "one",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Number(
+                                                "1",
+                                            ),
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
                 ],
             },
         },

@@ -13,7 +13,10 @@ Block(
         Node {
             comments: [],
             node: While {
-                cexp: True,
+                cexp: Node {
+                    comments: [],
+                    node: True,
+                },
                 block: Block(
                     [
                         Node {
@@ -21,11 +24,17 @@ Block(
                             node: IfStatement {
                                 consequents: [
                                     Consequent {
-                                        cexp: FunctionCall {
-                                            pexp: NamedVar(
-                                                "test",
-                                            ),
-                                            args: [],
+                                        cexp: Node {
+                                            comments: [],
+                                            node: FunctionCall {
+                                                pexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "test",
+                                                    ),
+                                                },
+                                                args: [],
+                                            },
                                         },
                                         block: Block(
                                             [

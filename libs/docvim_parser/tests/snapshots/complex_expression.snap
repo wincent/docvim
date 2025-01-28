@@ -13,77 +13,149 @@ Block(
                     ),
                 ],
                 explist: [
-                    Unary {
-                        exp: Binary {
-                            lexp: Binary {
-                                lexp: Binary {
-                                    lexp: Number(
-                                        "1",
-                                    ),
-                                    op: Star,
-                                    rexp: Number(
-                                        "2",
-                                    ),
-                                },
-                                op: Plus,
-                                rexp: Binary {
-                                    lexp: Number(
-                                        "3",
-                                    ),
-                                    op: Minus,
-                                    rexp: Binary {
-                                        lexp: Number(
-                                            "4",
-                                        ),
-                                        op: Slash,
-                                        rexp: Binary {
-                                            lexp: Number(
-                                                "5",
-                                            ),
-                                            op: Caret,
-                                            rexp: Unary {
-                                                exp: Number(
-                                                    "6",
-                                                ),
-                                                op: Minus,
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: Binary {
+                                    lexp: Node {
+                                        comments: [],
+                                        node: Binary {
+                                            lexp: Node {
+                                                comments: [],
+                                                node: Binary {
+                                                    lexp: Node {
+                                                        comments: [],
+                                                        node: Number(
+                                                            "1",
+                                                        ),
+                                                    },
+                                                    op: Star,
+                                                    rexp: Node {
+                                                        comments: [],
+                                                        node: Number(
+                                                            "2",
+                                                        ),
+                                                    },
+                                                },
+                                            },
+                                            op: Plus,
+                                            rexp: Node {
+                                                comments: [],
+                                                node: Binary {
+                                                    lexp: Node {
+                                                        comments: [],
+                                                        node: Number(
+                                                            "3",
+                                                        ),
+                                                    },
+                                                    op: Minus,
+                                                    rexp: Node {
+                                                        comments: [],
+                                                        node: Binary {
+                                                            lexp: Node {
+                                                                comments: [],
+                                                                node: Number(
+                                                                    "4",
+                                                                ),
+                                                            },
+                                                            op: Slash,
+                                                            rexp: Node {
+                                                                comments: [],
+                                                                node: Binary {
+                                                                    lexp: Node {
+                                                                        comments: [],
+                                                                        node: Number(
+                                                                            "5",
+                                                                        ),
+                                                                    },
+                                                                    op: Caret,
+                                                                    rexp: Node {
+                                                                        comments: [],
+                                                                        node: Unary {
+                                                                            exp: Node {
+                                                                                comments: [],
+                                                                                node: Number(
+                                                                                    "6",
+                                                                                ),
+                                                                            },
+                                                                            op: Minus,
+                                                                        },
+                                                                    },
+                                                                },
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                    op: Gt,
+                                    rexp: Node {
+                                        comments: [],
+                                        node: Binary {
+                                            lexp: Node {
+                                                comments: [],
+                                                node: Unary {
+                                                    exp: Node {
+                                                        comments: [],
+                                                        node: Binary {
+                                                            lexp: Node {
+                                                                comments: [],
+                                                                node: Number(
+                                                                    "7",
+                                                                ),
+                                                            },
+                                                            op: Caret,
+                                                            rexp: Node {
+                                                                comments: [],
+                                                                node: Number(
+                                                                    "8",
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                    op: Minus,
+                                                },
+                                            },
+                                            op: Plus,
+                                            rexp: Node {
+                                                comments: [],
+                                                node: Binary {
+                                                    lexp: Node {
+                                                        comments: [],
+                                                        node: Binary {
+                                                            lexp: Node {
+                                                                comments: [],
+                                                                node: Number(
+                                                                    "9",
+                                                                ),
+                                                            },
+                                                            op: Minus,
+                                                            rexp: Node {
+                                                                comments: [],
+                                                                node: Number(
+                                                                    "10",
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                    op: Star,
+                                                    rexp: Node {
+                                                        comments: [],
+                                                        node: Number(
+                                                            "11",
+                                                        ),
+                                                    },
+                                                },
                                             },
                                         },
                                     },
                                 },
                             },
-                            op: Gt,
-                            rexp: Binary {
-                                lexp: Unary {
-                                    exp: Binary {
-                                        lexp: Number(
-                                            "7",
-                                        ),
-                                        op: Caret,
-                                        rexp: Number(
-                                            "8",
-                                        ),
-                                    },
-                                    op: Minus,
-                                },
-                                op: Plus,
-                                rexp: Binary {
-                                    lexp: Binary {
-                                        lexp: Number(
-                                            "9",
-                                        ),
-                                        op: Minus,
-                                        rexp: Number(
-                                            "10",
-                                        ),
-                                    },
-                                    op: Star,
-                                    rexp: Number(
-                                        "11",
-                                    ),
-                                },
-                            },
+                            op: Not,
                         },
-                        op: Not,
                     },
                 ],
             },

@@ -29,13 +29,19 @@ Block(
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "bar",
-                                ),
-                                args: [
-                                    NamedVar(
-                                        "baz",
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "bar",
                                     ),
+                                },
+                                args: [
+                                    Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "baz",
+                                        ),
+                                    },
                                 ],
                             },
                         },

@@ -7,39 +7,57 @@ Block(
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "print",
-                ),
-                args: [
-                    Number(
-                        "1",
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "print",
                     ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: Number(
+                            "1",
+                        ),
+                    },
                 ],
             },
         },
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "print",
-                ),
-                args: [
-                    Number(
-                        "2",
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "print",
                     ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: Number(
+                            "2",
+                        ),
+                    },
                 ],
             },
         },
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "print",
-                ),
-                args: [
-                    Number(
-                        "3",
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "print",
                     ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: Number(
+                            "3",
+                        ),
+                    },
                 ],
             },
         },

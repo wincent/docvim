@@ -12,16 +12,25 @@ Block(
                 name: Name(
                     "i",
                 ),
-                startexp: Number(
-                    "1",
-                ),
-                endexp: Number(
-                    "10",
-                ),
-                stepexp: Some(
-                    Number(
-                        "2",
+                startexp: Node {
+                    comments: [],
+                    node: Number(
+                        "1",
                     ),
+                },
+                endexp: Node {
+                    comments: [],
+                    node: Number(
+                        "10",
+                    ),
+                },
+                stepexp: Some(
+                    Node {
+                        comments: [],
+                        node: Number(
+                            "2",
+                        ),
+                    },
                 ),
                 block: Block(
                     [
@@ -33,13 +42,19 @@ Block(
                                         Node {
                                             comments: [],
                                             node: FunctionCallStatement {
-                                                pexp: NamedVar(
-                                                    "print",
-                                                ),
-                                                args: [
-                                                    NamedVar(
-                                                        "i",
+                                                pexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "print",
                                                     ),
+                                                },
+                                                args: [
+                                                    Node {
+                                                        comments: [],
+                                                        node: NamedVar(
+                                                            "i",
+                                                        ),
+                                                    },
                                                 ],
                                             },
                                         },

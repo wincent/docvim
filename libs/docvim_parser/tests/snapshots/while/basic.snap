@@ -9,27 +9,42 @@ Block(
         Node {
             comments: [],
             node: While {
-                cexp: Binary {
-                    lexp: NamedVar(
-                        "x",
-                    ),
-                    op: Lt,
-                    rexp: Number(
-                        "100",
-                    ),
+                cexp: Node {
+                    comments: [],
+                    node: Binary {
+                        lexp: Node {
+                            comments: [],
+                            node: NamedVar(
+                                "x",
+                            ),
+                        },
+                        op: Lt,
+                        rexp: Node {
+                            comments: [],
+                            node: Number(
+                                "100",
+                            ),
+                        },
+                    },
                 },
                 block: Block(
                     [
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "inc",
-                                ),
-                                args: [
-                                    NamedVar(
-                                        "x",
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "inc",
                                     ),
+                                },
+                                args: [
+                                    Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "x",
+                                        ),
+                                    },
                                 ],
                             },
                         },

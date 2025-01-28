@@ -20,72 +20,105 @@ Block(
                     ),
                 ],
                 explist: [
-                    Table(
-                        [
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "onclick",
-                                ),
-                                rexp: Function {
-                                    parlist: [
-                                        Name(
-                                            "event",
-                                        ),
-                                    ],
-                                    varargs: false,
-                                    block: Block(
-                                        [
-                                            Node {
-                                                comments: [],
-                                                node: FunctionCallStatement {
-                                                    pexp: NamedVar(
-                                                        "report",
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "onclick",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Function {
+                                                parlist: [
+                                                    Name(
+                                                        "event",
                                                     ),
-                                                    args: [
-                                                        NamedVar(
-                                                            "event",
-                                                        ),
+                                                ],
+                                                varargs: false,
+                                                block: Block(
+                                                    [
+                                                        Node {
+                                                            comments: [],
+                                                            node: FunctionCallStatement {
+                                                                pexp: Node {
+                                                                    comments: [],
+                                                                    node: NamedVar(
+                                                                        "report",
+                                                                    ),
+                                                                },
+                                                                args: [
+                                                                    Node {
+                                                                        comments: [],
+                                                                        node: NamedVar(
+                                                                            "event",
+                                                                        ),
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
                                                     ],
-                                                },
+                                                ),
                                             },
-                                        ],
-                                    ),
+                                        },
+                                    },
                                 },
-                            },
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "onkeydown",
-                                ),
-                                rexp: Function {
-                                    parlist: [
-                                        Name(
-                                            "event",
-                                        ),
-                                    ],
-                                    varargs: false,
-                                    block: Block(
-                                        [
-                                            Node {
-                                                comments: [],
-                                                node: FunctionCallStatement {
-                                                    pexp: NamedVar(
-                                                        "report",
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "onkeydown",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Function {
+                                                parlist: [
+                                                    Name(
+                                                        "event",
                                                     ),
-                                                    args: [
-                                                        NamedVar(
-                                                            "event",
-                                                        ),
+                                                ],
+                                                varargs: false,
+                                                block: Block(
+                                                    [
+                                                        Node {
+                                                            comments: [],
+                                                            node: FunctionCallStatement {
+                                                                pexp: Node {
+                                                                    comments: [],
+                                                                    node: NamedVar(
+                                                                        "report",
+                                                                    ),
+                                                                },
+                                                                args: [
+                                                                    Node {
+                                                                        comments: [],
+                                                                        node: NamedVar(
+                                                                            "event",
+                                                                        ),
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
                                                     ],
-                                                },
+                                                ),
                                             },
-                                        ],
-                                    ),
+                                        },
+                                    },
                                 },
-                            },
-                        ],
-                    ),
+                            ],
+                        ),
+                    },
                 ],
             },
         },

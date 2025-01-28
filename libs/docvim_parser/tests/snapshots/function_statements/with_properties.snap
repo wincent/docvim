@@ -28,9 +28,12 @@ Block(
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "die",
-                                ),
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "die",
+                                    ),
+                                },
                                 args: [],
                             },
                         },

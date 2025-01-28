@@ -17,11 +17,17 @@ Block(
                     ),
                 ],
                 explist: [
-                    Unary {
-                        exp: NamedVar(
-                            "value",
-                        ),
-                        op: Not,
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "value",
+                                ),
+                            },
+                            op: Not,
+                        },
                     },
                 ],
             },
@@ -35,11 +41,17 @@ Block(
                     ),
                 ],
                 explist: [
-                    Unary {
-                        exp: NamedVar(
-                            "items",
-                        ),
-                        op: Length,
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "items",
+                                ),
+                            },
+                            op: Length,
+                        },
                     },
                 ],
             },
@@ -53,11 +65,17 @@ Block(
                     ),
                 ],
                 explist: [
-                    Unary {
-                        exp: Number(
-                            "1000",
-                        ),
-                        op: Minus,
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: Number(
+                                    "1000",
+                                ),
+                            },
+                            op: Minus,
+                        },
                     },
                 ],
             },

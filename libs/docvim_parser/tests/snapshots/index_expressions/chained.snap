@@ -13,23 +13,44 @@ Block(
                     ),
                 ],
                 explist: [
-                    Index {
-                        pexp: Index {
-                            pexp: Index {
-                                pexp: NamedVar(
-                                    "list",
-                                ),
-                                kexp: Number(
-                                    "100",
+                    Node {
+                        comments: [],
+                        node: Index {
+                            pexp: Node {
+                                comments: [],
+                                node: Index {
+                                    pexp: Node {
+                                        comments: [],
+                                        node: Index {
+                                            pexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "list",
+                                                ),
+                                            },
+                                            kexp: Node {
+                                                comments: [],
+                                                node: Number(
+                                                    "100",
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    kexp: Node {
+                                        comments: [],
+                                        node: Number(
+                                            "200",
+                                        ),
+                                    },
+                                },
+                            },
+                            kexp: Node {
+                                comments: [],
+                                node: Number(
+                                    "300",
                                 ),
                             },
-                            kexp: Number(
-                                "200",
-                            ),
                         },
-                        kexp: Number(
-                            "300",
-                        ),
                     },
                 ],
             },

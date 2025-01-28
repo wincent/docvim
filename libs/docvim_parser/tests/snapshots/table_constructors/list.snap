@@ -13,51 +13,99 @@ Block(
                     ),
                 ],
                 explist: [
-                    Table(
-                        [
-                            Field {
-                                index: Some(
-                                    1,
-                                ),
-                                lexp: Nil,
-                                rexp: NamedVar(
-                                    "one",
-                                ),
-                            },
-                            Field {
-                                index: Some(
-                                    2,
-                                ),
-                                lexp: Nil,
-                                rexp: CookedStr(
-                                    "two",
-                                ),
-                            },
-                            Field {
-                                index: Some(
-                                    3,
-                                ),
-                                lexp: Nil,
-                                rexp: True,
-                            },
-                            Field {
-                                index: Some(
-                                    4,
-                                ),
-                                lexp: Nil,
-                                rexp: Nil,
-                            },
-                            Field {
-                                index: Some(
-                                    5,
-                                ),
-                                lexp: Nil,
-                                rexp: Number(
-                                    "5",
-                                ),
-                            },
-                        ],
-                    ),
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            1,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "one",
+                                            ),
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            2,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: CookedStr(
+                                                "two",
+                                            ),
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            3,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: True,
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            4,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            5,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Number(
+                                                "5",
+                                            ),
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
                 ],
             },
         },

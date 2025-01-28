@@ -7,19 +7,31 @@ Block(
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "add",
-                ),
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "add",
+                    ),
+                },
                 args: [
-                    Number(
-                        "1",
-                    ),
-                    Number(
-                        "2",
-                    ),
-                    CookedStr(
-                        "three",
-                    ),
+                    Node {
+                        comments: [],
+                        node: Number(
+                            "1",
+                        ),
+                    },
+                    Node {
+                        comments: [],
+                        node: Number(
+                            "2",
+                        ),
+                    },
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "three",
+                        ),
+                    },
                 ],
             },
         },

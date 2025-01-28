@@ -39,18 +39,30 @@ Block(
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: FunctionCall {
-                                    pexp: NamedVar(
-                                        "e",
-                                    ),
-                                    args: [
-                                        NamedVar(
-                                            "f",
-                                        ),
-                                    ],
+                                pexp: Node {
+                                    comments: [],
+                                    node: FunctionCall {
+                                        pexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "e",
+                                            ),
+                                        },
+                                        args: [
+                                            Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "f",
+                                                ),
+                                            },
+                                        ],
+                                    },
                                 },
                                 args: [
-                                    Varargs,
+                                    Node {
+                                        comments: [],
+                                        node: Varargs,
+                                    },
                                 ],
                             },
                         },

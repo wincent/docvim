@@ -17,33 +17,63 @@ Block(
                     ),
                 ],
                 explist: [
-                    Table(
-                        [
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "one",
-                                ),
-                                rexp: Number(
-                                    "1",
-                                ),
-                            },
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "two",
-                                ),
-                                rexp: True,
-                            },
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "three",
-                                ),
-                                rexp: Nil,
-                            },
-                        ],
-                    ),
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "one",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Number(
+                                                "1",
+                                            ),
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "two",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: True,
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "three",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
                 ],
             },
         },

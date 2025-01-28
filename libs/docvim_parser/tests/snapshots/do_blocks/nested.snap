@@ -27,9 +27,12 @@ Block(
                                                     ),
                                                 ],
                                                 explist: [
-                                                    Number(
-                                                        "1",
-                                                    ),
+                                                    Node {
+                                                        comments: [],
+                                                        node: Number(
+                                                            "1",
+                                                        ),
+                                                    },
                                                 ],
                                             },
                                         },

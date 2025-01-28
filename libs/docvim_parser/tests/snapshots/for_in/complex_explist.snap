@@ -18,39 +18,66 @@ Block(
                     ),
                 ],
                 explist: [
-                    Table(
-                        [
-                            Field {
-                                index: None,
-                                lexp: RawStr(
-                                    "something",
-                                ),
-                                rexp: CookedStr(
-                                    "foo",
-                                ),
-                            },
-                        ],
-                    ),
-                    CookedStr(
-                        "bar",
-                    ),
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "something",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: CookedStr(
+                                                "foo",
+                                            ),
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "bar",
+                        ),
+                    },
                 ],
                 block: Block(
                     [
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "print",
-                                ),
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "print",
+                                    ),
+                                },
                                 args: [
-                                    Index {
-                                        pexp: NamedVar(
-                                            "x",
-                                        ),
-                                        kexp: NamedVar(
-                                            "y",
-                                        ),
+                                    Node {
+                                        comments: [],
+                                        node: Index {
+                                            pexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "x",
+                                                ),
+                                            },
+                                            kexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "y",
+                                                ),
+                                            },
+                                        },
                                     },
                                 ],
                             },

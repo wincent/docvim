@@ -20,13 +20,22 @@ Block(
                                     ),
                                 ],
                                 explist: [
-                                    Index {
-                                        pexp: NamedVar(
-                                            "foo",
-                                        ),
-                                        kexp: RawStr(
-                                            "bar",
-                                        ),
+                                    Node {
+                                        comments: [],
+                                        node: Index {
+                                            pexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "foo",
+                                                ),
+                                            },
+                                            kexp: Node {
+                                                comments: [],
+                                                node: RawStr(
+                                                    "bar",
+                                                ),
+                                            },
+                                        },
                                     },
                                 ],
                             },

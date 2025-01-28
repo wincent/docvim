@@ -13,18 +13,33 @@ Block(
                     ),
                 ],
                 explist: [
-                    Index {
-                        pexp: Index {
-                            pexp: NamedVar(
-                                "foo",
-                            ),
-                            kexp: RawStr(
-                                "bar",
-                            ),
+                    Node {
+                        comments: [],
+                        node: Index {
+                            pexp: Node {
+                                comments: [],
+                                node: Index {
+                                    pexp: Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "foo",
+                                        ),
+                                    },
+                                    kexp: Node {
+                                        comments: [],
+                                        node: RawStr(
+                                            "bar",
+                                        ),
+                                    },
+                                },
+                            },
+                            kexp: Node {
+                                comments: [],
+                                node: RawStr(
+                                    "baz",
+                                ),
+                            },
                         },
-                        kexp: RawStr(
-                            "baz",
-                        ),
                     },
                 ],
             },

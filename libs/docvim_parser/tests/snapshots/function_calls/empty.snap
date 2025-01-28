@@ -7,9 +7,12 @@ Block(
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "calculate",
-                ),
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "calculate",
+                    ),
+                },
                 args: [],
             },
         },

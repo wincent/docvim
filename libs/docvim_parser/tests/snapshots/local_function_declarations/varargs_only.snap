@@ -19,17 +19,29 @@ Block(
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "print",
-                                ),
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "print",
+                                    ),
+                                },
                                 args: [
-                                    FunctionCall {
-                                        pexp: NamedVar(
-                                            "inspect",
-                                        ),
-                                        args: [
-                                            Varargs,
-                                        ],
+                                    Node {
+                                        comments: [],
+                                        node: FunctionCall {
+                                            pexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "inspect",
+                                                ),
+                                            },
+                                            args: [
+                                                Node {
+                                                    comments: [],
+                                                    node: Varargs,
+                                                },
+                                            ],
+                                        },
                                     },
                                 ],
                             },

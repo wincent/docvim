@@ -37,14 +37,23 @@ Block(
                             node: IfStatement {
                                 consequents: [
                                     Consequent {
-                                        cexp: Binary {
-                                            lexp: NamedVar(
-                                                "a",
-                                            ),
-                                            op: Lt,
-                                            rexp: NamedVar(
-                                                "b",
-                                            ),
+                                        cexp: Node {
+                                            comments: [],
+                                            node: Binary {
+                                                lexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "a",
+                                                    ),
+                                                },
+                                                op: Lt,
+                                                rexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "b",
+                                                    ),
+                                                },
+                                            },
                                         },
                                         block: Block(
                                             [
@@ -53,11 +62,17 @@ Block(
                                                     node: Return(
                                                         Some(
                                                             [
-                                                                Unary {
-                                                                    exp: Number(
-                                                                        "1",
-                                                                    ),
-                                                                    op: Minus,
+                                                                Node {
+                                                                    comments: [],
+                                                                    node: Unary {
+                                                                        exp: Node {
+                                                                            comments: [],
+                                                                            node: Number(
+                                                                                "1",
+                                                                            ),
+                                                                        },
+                                                                        op: Minus,
+                                                                    },
                                                                 },
                                                             ],
                                                         ),
@@ -67,14 +82,23 @@ Block(
                                         ),
                                     },
                                     Consequent {
-                                        cexp: Binary {
-                                            lexp: NamedVar(
-                                                "a",
-                                            ),
-                                            op: Gt,
-                                            rexp: NamedVar(
-                                                "b",
-                                            ),
+                                        cexp: Node {
+                                            comments: [],
+                                            node: Binary {
+                                                lexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "a",
+                                                    ),
+                                                },
+                                                op: Gt,
+                                                rexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "b",
+                                                    ),
+                                                },
+                                            },
                                         },
                                         block: Block(
                                             [
@@ -83,9 +107,12 @@ Block(
                                                     node: Return(
                                                         Some(
                                                             [
-                                                                Number(
-                                                                    "1",
-                                                                ),
+                                                                Node {
+                                                                    comments: [],
+                                                                    node: Number(
+                                                                        "1",
+                                                                    ),
+                                                                },
                                                             ],
                                                         ),
                                                     ),
@@ -102,9 +129,12 @@ Block(
                                                 node: Return(
                                                     Some(
                                                         [
-                                                            Number(
-                                                                "0",
-                                                            ),
+                                                            Node {
+                                                                comments: [],
+                                                                node: Number(
+                                                                    "0",
+                                                                ),
+                                                            },
                                                         ],
                                                     ),
                                                 ),

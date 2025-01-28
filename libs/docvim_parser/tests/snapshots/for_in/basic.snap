@@ -18,25 +18,37 @@ Block(
                     ),
                 ],
                 explist: [
-                    NamedVar(
-                        "a",
-                    ),
-                    NamedVar(
-                        "b",
-                    ),
+                    Node {
+                        comments: [],
+                        node: NamedVar(
+                            "a",
+                        ),
+                    },
+                    Node {
+                        comments: [],
+                        node: NamedVar(
+                            "b",
+                        ),
+                    },
                 ],
                 block: Block(
                     [
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "x",
-                                ),
-                                args: [
-                                    NamedVar(
-                                        "y",
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "x",
                                     ),
+                                },
+                                args: [
+                                    Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "y",
+                                        ),
+                                    },
                                 ],
                             },
                         },

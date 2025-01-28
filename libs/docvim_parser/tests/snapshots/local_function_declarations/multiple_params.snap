@@ -29,19 +29,31 @@ Block(
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "foo",
-                                ),
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "foo",
+                                    ),
+                                },
                                 args: [
-                                    FunctionCall {
-                                        pexp: NamedVar(
-                                            "bar",
-                                        ),
-                                        args: [
-                                            NamedVar(
-                                                "baz",
-                                            ),
-                                        ],
+                                    Node {
+                                        comments: [],
+                                        node: FunctionCall {
+                                            pexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "bar",
+                                                ),
+                                            },
+                                            args: [
+                                                Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "baz",
+                                                    ),
+                                                },
+                                            ],
+                                        },
                                     },
                                 ],
                             },

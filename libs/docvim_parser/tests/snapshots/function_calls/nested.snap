@@ -7,22 +7,37 @@ Block(
         Node {
             comments: [],
             node: FunctionCallStatement {
-                pexp: NamedVar(
-                    "calculate",
-                ),
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "calculate",
+                    ),
+                },
                 args: [
-                    FunctionCall {
-                        pexp: NamedVar(
-                            "intermediate",
-                        ),
-                        args: [
-                            FunctionCall {
-                                pexp: NamedVar(
-                                    "inner",
+                    Node {
+                        comments: [],
+                        node: FunctionCall {
+                            pexp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "intermediate",
                                 ),
-                                args: [],
                             },
-                        ],
+                            args: [
+                                Node {
+                                    comments: [],
+                                    node: FunctionCall {
+                                        pexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "inner",
+                                            ),
+                                        },
+                                        args: [],
+                                    },
+                                },
+                            ],
+                        },
                     },
                 ],
             },

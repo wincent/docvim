@@ -32,9 +32,12 @@ Block(
                         Node {
                             comments: [],
                             node: FunctionCallStatement {
-                                pexp: NamedVar(
-                                    "yes",
-                                ),
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "yes",
+                                    ),
+                                },
                                 args: [],
                             },
                         },

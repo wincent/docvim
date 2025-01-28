@@ -19,7 +19,10 @@ Block(
                     ),
                 ],
                 explist: [
-                    True,
+                    Node {
+                        comments: [],
+                        node: True,
+                    },
                 ],
             },
         },

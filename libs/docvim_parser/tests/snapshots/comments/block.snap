@@ -28,9 +28,12 @@ Block(
             node: Return(
                 Some(
                     [
-                        CookedStr(
-                            "We're done here",
-                        ),
+                        Node {
+                            comments: [],
+                            node: CookedStr(
+                                "We're done here",
+                            ),
+                        },
                     ],
                 ),
             ),
