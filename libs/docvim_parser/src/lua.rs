@@ -95,8 +95,10 @@ pub struct Node<'a, T> {
     pub node: T,
 }
 
+pub type Statement<'a> = Node<'a, StatementKind<'a>>;
+
 #[derive(Debug, PartialEq)]
-pub struct Block<'a>(Vec<Node<'a, Statement<'a>>>);
+pub struct Block<'a>(Vec<Statement<'a>>);
 
 #[derive(Debug, PartialEq)]
 pub struct Comment<'a> {
@@ -183,7 +185,7 @@ pub struct Consequent<'a> {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Statement<'a> {
+pub enum StatementKind<'a> {
     // TODO: think about naming consistency here (some enum variants end in "Statement", others don't etc)
     Break,
     DoBlock(Block<'a>),
@@ -408,14 +410,14 @@ impl<'a> Parser<'a> {
                         Exp::FunctionCall { pexp, args } => {
                             block.0.push(self.make_node(
                                 comments,
-                                Statement::FunctionCallStatement { pexp, args },
+                                StatementKind::FunctionCallStatement { pexp, args },
                             ));
                             self.slurp(PunctuatorToken(SemiToken));
                         }
                         Exp::MethodCall { pexp, name, args } => {
                             block.0.push(self.make_node(
                                 comments,
-                                Statement::MethodCallStatement { pexp, name, args },
+                                StatementKind::MethodCallStatement { pexp, name, args },
                             ));
                             self.slurp(PunctuatorToken(SemiToken));
                         }
@@ -432,7 +434,7 @@ impl<'a> Parser<'a> {
                                         let explist = self.parse_explist()?;
                                         block.0.push(self.make_node(
                                             comments,
-                                            Statement::VarlistDeclaration { varlist, explist },
+                                            StatementKind::VarlistDeclaration { varlist, explist },
                                         ));
                                         self.slurp(PunctuatorToken(SemiToken));
                                         break;
@@ -495,7 +497,7 @@ impl<'a> Parser<'a> {
                 Some(&Ok(Token { kind: NameToken(KeywordToken(BreakToken)), .. })) => {
                     let comments = std::mem::take(&mut self.comments);
                     self.lexer.tokens.next();
-                    block.0.push(self.make_node(comments, Statement::Break));
+                    block.0.push(self.make_node(comments, StatementKind::Break));
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
@@ -503,7 +505,7 @@ impl<'a> Parser<'a> {
                     let comments = std::mem::take(&mut self.comments);
                     self.lexer.tokens.next();
                     let explist = if self.peek_exp() { Some(self.parse_explist()?) } else { None };
-                    block.0.push(self.make_node(comments, Statement::Return(explist)));
+                    block.0.push(self.make_node(comments, StatementKind::Return(explist)));
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
@@ -531,21 +533,17 @@ impl<'a> Parser<'a> {
         Ok(block)
     }
 
-    fn make_node(
-        &mut self,
-        comments: Vec<Comment<'a>>,
-        node: Statement<'a>,
-    ) -> Node<'a, Statement<'a>> {
+    fn make_node(&mut self, comments: Vec<Comment<'a>>, node: StatementKind<'a>) -> Statement<'a> {
         let node = Node { comments, node };
         node
     }
 
-    fn parse_do_block(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+    fn parse_do_block(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(comments, Statement::DoBlock(block)))
+        Ok(self.make_node(comments, StatementKind::DoBlock(block)))
     }
 
     fn parse_name(&mut self) -> Result<Name<'a>, ParserError> {
@@ -737,7 +735,7 @@ impl<'a> Parser<'a> {
         Ok(explist)
     }
 
-    fn parse_for(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+    fn parse_for(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(ForToken)))?;
         let mut namelist = self.parse_namelist()?;
@@ -754,7 +752,8 @@ impl<'a> Parser<'a> {
                 None
             };
             let block = self.parse_block()?;
-            Ok(self.make_node(comments, Statement::For { name, startexp, endexp, stepexp, block }))
+            Ok(self
+                .make_node(comments, StatementKind::For { name, startexp, endexp, stepexp, block }))
         } else {
             // Parse: for namelist in explist do block end
             self.consume(NameToken(KeywordToken(InToken)))?;
@@ -762,11 +761,11 @@ impl<'a> Parser<'a> {
             self.consume(NameToken(KeywordToken(DoToken)))?;
             let block = self.parse_block()?;
             self.consume(NameToken(KeywordToken(EndToken)))?;
-            Ok(self.make_node(comments, Statement::ForIn { namelist, explist, block }))
+            Ok(self.make_node(comments, StatementKind::ForIn { namelist, explist, block }))
         }
     }
 
-    fn parse_if(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+    fn parse_if(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(IfToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
@@ -787,29 +786,29 @@ impl<'a> Parser<'a> {
         };
 
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(comments, Statement::IfStatement { consequents, alternate }))
+        Ok(self.make_node(comments, StatementKind::IfStatement { consequents, alternate }))
     }
 
-    fn parse_repeat(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+    fn parse_repeat(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(RepeatToken)))?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(UntilToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
-        Ok(self.make_node(comments, Statement::Repeat { block, cexp }))
+        Ok(self.make_node(comments, StatementKind::Repeat { block, cexp }))
     }
 
-    fn parse_while(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+    fn parse_while(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(WhileToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
         self.consume(NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(self.make_node(comments, Statement::While { cexp, block }))
+        Ok(self.make_node(comments, StatementKind::While { cexp, block }))
     }
 
-    fn parse_function(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+    fn parse_function(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         self.consume(NameToken(KeywordToken(FunctionToken)))?;
         let mut name = vec![self.parse_name()?];
@@ -823,11 +822,11 @@ impl<'a> Parser<'a> {
         self.consume(NameToken(KeywordToken(EndToken)))?;
         Ok(self.make_node(
             comments,
-            Statement::FunctionDeclaration { name, method, parlist, varargs, block },
+            StatementKind::FunctionDeclaration { name, method, parlist, varargs, block },
         ))
     }
 
-    fn parse_local(&mut self) -> Result<Node<'a, Statement<'a>>, ParserError> {
+    fn parse_local(&mut self) -> Result<Statement<'a>, ParserError> {
         // Example inputs:
         //
         // local x
@@ -843,13 +842,13 @@ impl<'a> Parser<'a> {
             self.consume(NameToken(KeywordToken(EndToken)))?;
             Ok(self.make_node(
                 comments,
-                Statement::LocalFunctionDeclaration { name, parlist, varargs, block },
+                StatementKind::LocalFunctionDeclaration { name, parlist, varargs, block },
             ))
         } else {
             let namelist = self.parse_namelist()?;
             let explist =
                 if self.slurp(OpToken(AssignToken)) { self.parse_explist()? } else { vec![] };
-            Ok(self.make_node(comments, Statement::LocalDeclaration { explist, namelist }))
+            Ok(self.make_node(comments, StatementKind::LocalDeclaration { explist, namelist }))
         }
     }
 
@@ -1408,7 +1407,10 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration { namelist: vec![Name("foo")], explist: vec![] }
+                node: StatementKind::LocalDeclaration {
+                    namelist: vec![Name("foo")],
+                    explist: vec![]
+                }
             }])
         );
 
@@ -1418,7 +1420,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("bar")],
                     explist: vec![Exp::False],
                 }
@@ -1431,7 +1433,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("baz")],
                     explist: vec![Exp::Nil],
                 }
@@ -1444,7 +1446,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("w")],
                     explist: vec![Exp::Number("1")],
                 }
@@ -1457,7 +1459,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("x")],
                     explist: vec![Exp::CookedStr(Box::new(String::from("wat")))],
                 }
@@ -1470,7 +1472,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("y")],
                     explist: vec![Exp::CookedStr(Box::new(String::from("don't say \"hello\"!")))],
                 }
@@ -1483,7 +1485,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("z")],
                     explist: vec![Exp::RawStr("loooong")],
                 }
@@ -1496,7 +1498,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("qux")],
                     explist: vec![Exp::True],
                 }
@@ -1509,7 +1511,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("neg")],
                     explist: vec![Exp::Unary { exp: Box::new(Exp::True), op: UnOp::Not }],
                 }
@@ -1522,7 +1524,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("len")],
                     explist: vec![Exp::Unary {
                         exp: Box::new(Exp::CookedStr(Box::new(String::from("sample")))),
@@ -1538,7 +1540,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("small")],
                     explist: vec![Exp::Unary {
                         exp: Box::new(Exp::Number("1000")),
@@ -1554,7 +1556,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("sum")],
                     explist: vec![Exp::Binary {
                         lexp: Box::new(Exp::Number("7")),
@@ -1581,7 +1583,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("demo")],
                     explist: vec![Exp::Unary {
                         exp: Box::new(Exp::Binary {
@@ -1646,7 +1648,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("foo")],
                     explist: vec![Exp::Unary {
                         exp: Box::new(Exp::NamedVar("bar")),
@@ -1665,7 +1667,7 @@ mod tests {
             ast.unwrap(),
             Block(vec![Node {
                 comments: vec![],
-                node: Statement::LocalDeclaration {
+                node: StatementKind::LocalDeclaration {
                     namelist: vec![Name("stuff")],
                     explist: vec![Exp::Table(vec![Field {
                         index: None,
