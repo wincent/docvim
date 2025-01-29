@@ -2,7 +2,7 @@
 
 docvim is a documentation generator for Neovim plug-ins, written in Rust, that works by reading "doc" comments in Lua files and outputting in multiple formats (text files in `'help'` format and Markdown).
 
-docvim was formerly a documention generator _Vim_ plug-ins, was written in _Haskell_, and worked by parsing _Vimscript_ files. The code for the old version of docvim can be seen on [the `haskell` branch](https://github.com/wincent/docvim/tree/haskell).
+docvim was formerly a documentation generator for _Vim_ plug-ins, was written in _Haskell_, and worked by parsing _Vimscript_ files. The code for the old version of docvim can be seen on [the `haskell` branch](https://github.com/wincent/docvim/tree/haskell). An even older prototype, never completed, written in JavaScript, can be seen on [the `js` branch](https://github.com/wincent/docvim/tree/js).
 
 > [!WARNING]
 >
