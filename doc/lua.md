@@ -121,7 +121,7 @@ primary ::= | nil | false | true
             | var | functioncall | `(´ exp `)`
 ```
 
-And we can express that in a form that avoids right-recursive rules, where `{...}` indicates "zero or more repetitions" and can be expressed in terms of a loop rather than a right-recursive call:
+And we can express that in a form that avoids left-recursive rules (eg. `exp :: = exp binop exp`), where `{...}` indicates "zero or more repetitions" and can be expressed in terms of a loop rather than a left-recursive call:
 
 ```
 exp ::= primary { binop primary }
