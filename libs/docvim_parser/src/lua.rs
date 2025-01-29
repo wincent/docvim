@@ -380,6 +380,7 @@ impl<'a> Parser<'a> {
     pub fn parse(&mut self) -> Result<Block, ParserError> {
         self.parse_block()
         // BUG: if there are pending comments here, need to emit them as trailing comments...
+        // see (invalid) test in libs/docvim_parser/tests/snapshots/index_expressions/basic.snap
     }
 
     fn parse_block(&mut self) -> Result<Block<'a>, ParserError> {
