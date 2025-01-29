@@ -1,6 +1,12 @@
-# docvim: a documentation generator for Vim plug-ins
+# docvim: a documentation generator for Neovim plug-ins
 
-docvim is a documentation generator for Vim plug-ins, written in Haskell.
+docvim is a documentation generator for Neovim plug-ins, written in Rust, that works by reading "doc" comments in Lua files and outputting in multiple formats (text files in `'help'` format and Markdown).
+
+docvim was formerly a documention generator _Vim_ plug-ins, was written in _Haskell_, and worked by parsing _Vimscript_ files. The code for the old version of docvim can be seen on [the `haskell` branch](https://github.com/wincent/docvim/tree/haskell).
+
+> [!WARNING]
+>
+> The following documentation is currently out of date and refers to the old, Haskell version of docvim.
 
 ## Quickstart
 
@@ -8,18 +14,18 @@ docvim is a documentation generator for Vim plug-ins, written in Haskell.
 # Print Markdown-formatted help documentation for files in current directory
 docvim
 
-# Write Markdown README + Vim help text file for $PLUGIN
+# Write Markdown README + Neovim help text file for $PLUGIN
 docvim -c ~/code/$PLUGIN ~/code/$PLUGIN/doc/$PLUGIN.txt ~/code/$PLUGIN/README.md
 ```
 
 ## Usage
 
 ```
-docvim - a documentation generator for Vim plug-ins
+docvim - a documentation generator for Neovim plug-ins
 
 Usage: docvim [--version] [OUTFILES...] [-d|--debug] [-c|--directory DIRECTORY]
               [-v|--verbose]
-  Generate documentation for a Vim plug-in
+  Generate documentation for a Neovim plug-in
 
 Available options:
   -h,--help                Show this help text
