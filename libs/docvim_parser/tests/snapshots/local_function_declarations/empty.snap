@@ -1,0 +1,22 @@
+local function empty()
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalFunctionDeclaration {
+                name: Name(
+                    "empty",
+                ),
+                parlist: [],
+                varargs: false,
+                block: Block(
+                    [],
+                ),
+            },
+        },
+    ],
+)

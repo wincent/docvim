@@ -1,0 +1,49 @@
+function a.b.c:d()
+  yes()
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: FunctionDeclaration {
+                name: [
+                    Name(
+                        "a",
+                    ),
+                    Name(
+                        "b",
+                    ),
+                    Name(
+                        "c",
+                    ),
+                ],
+                method: Some(
+                    Name(
+                        "d",
+                    ),
+                ),
+                parlist: [],
+                varargs: false,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "yes",
+                                    ),
+                                },
+                                args: [],
+                            },
+                        },
+                    ],
+                ),
+            },
+        },
+    ],
+)

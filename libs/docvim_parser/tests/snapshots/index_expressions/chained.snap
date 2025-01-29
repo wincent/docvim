@@ -1,0 +1,59 @@
+local item = list[100][200][300]
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "item",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Index {
+                            pexp: Node {
+                                comments: [],
+                                node: Index {
+                                    pexp: Node {
+                                        comments: [],
+                                        node: Index {
+                                            pexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "list",
+                                                ),
+                                            },
+                                            kexp: Node {
+                                                comments: [],
+                                                node: Number(
+                                                    "100",
+                                                ),
+                                            },
+                                        },
+                                    },
+                                    kexp: Node {
+                                        comments: [],
+                                        node: Number(
+                                            "200",
+                                        ),
+                                    },
+                                },
+                            },
+                            kexp: Node {
+                                comments: [],
+                                node: Number(
+                                    "300",
+                                ),
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+)

@@ -1,3 +1,0 @@
-#!/bin/sh
-
-GPG_TTY=$(tty) stack upload --pvp-bounds lower .

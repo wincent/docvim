@@ -1,0 +1,42 @@
+y:z(a:b(c))
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "y",
+                    ),
+                },
+                name: "z",
+                args: [
+                    Node {
+                        comments: [],
+                        node: MethodCall {
+                            pexp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "a",
+                                ),
+                            },
+                            name: "b",
+                            args: [
+                                Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "c",
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+)

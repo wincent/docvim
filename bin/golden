@@ -1,4 +1,0 @@
-#!/bin/sh
-
-# Cheating here: for now we just run all the tests, not just the golden ones.
-stack test :tasty --ghc-options -Werror

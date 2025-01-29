@@ -1,2 +1,0 @@
-fu! Foo()
-endf

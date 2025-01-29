@@ -1,0 +1,54 @@
+local function debug(...)
+  print(inspect(...))
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalFunctionDeclaration {
+                name: Name(
+                    "debug",
+                ),
+                parlist: [],
+                varargs: true,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "print",
+                                    ),
+                                },
+                                args: [
+                                    Node {
+                                        comments: [],
+                                        node: FunctionCall {
+                                            pexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "inspect",
+                                                ),
+                                            },
+                                            args: [
+                                                Node {
+                                                    comments: [],
+                                                    node: Varargs,
+                                                },
+                                            ],
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                ),
+            },
+        },
+    ],
+)

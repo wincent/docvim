@@ -1,0 +1,34 @@
+bar:baz("hello", "world")
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "bar",
+                    ),
+                },
+                name: "baz",
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "hello",
+                        ),
+                    },
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "world",
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

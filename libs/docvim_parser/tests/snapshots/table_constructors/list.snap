@@ -1,0 +1,113 @@
+local list = { one, "two", true, nil, 5 }
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "list",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            1,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "one",
+                                            ),
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            2,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: CookedStr(
+                                                "two",
+                                            ),
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            3,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: True,
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            4,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            5,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Number(
+                                                "5",
+                                            ),
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

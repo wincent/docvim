@@ -1,0 +1,57 @@
+-- ie. function call in expression position, rather than as a standalone FunctionCallStatement
+
+local result = add(1, 2, "three")
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [
+                Comment {
+                    content: "-- ie. function call in expression position, rather than as a standalone FunctionCallStatement\n",
+                },
+            ],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "result",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: FunctionCall {
+                            pexp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "add",
+                                ),
+                            },
+                            args: [
+                                Node {
+                                    comments: [],
+                                    node: Number(
+                                        "1",
+                                    ),
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Number(
+                                        "2",
+                                    ),
+                                },
+                                Node {
+                                    comments: [],
+                                    node: CookedStr(
+                                        "three",
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+)

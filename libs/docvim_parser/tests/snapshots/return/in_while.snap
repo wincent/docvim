@@ -1,0 +1,68 @@
+while true do
+  if test() then
+    return
+  else
+    break
+  end
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: While {
+                cexp: Node {
+                    comments: [],
+                    node: True,
+                },
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: IfStatement {
+                                consequents: [
+                                    Consequent {
+                                        cexp: Node {
+                                            comments: [],
+                                            node: FunctionCall {
+                                                pexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "test",
+                                                    ),
+                                                },
+                                                args: [],
+                                            },
+                                        },
+                                        block: Block(
+                                            [
+                                                Node {
+                                                    comments: [],
+                                                    node: Return(
+                                                        None,
+                                                    ),
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                ],
+                                alternate: Some(
+                                    Block(
+                                        [
+                                            Node {
+                                                comments: [],
+                                                node: Break,
+                                            },
+                                        ],
+                                    ),
+                                ),
+                            },
+                        },
+                    ],
+                ),
+            },
+        },
+    ],
+)

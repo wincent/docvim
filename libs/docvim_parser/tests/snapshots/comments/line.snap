@@ -1,0 +1,30 @@
+-- A line comment.
+
+local thing = true
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [
+                Comment {
+                    content: "-- A line comment.\n",
+                },
+            ],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "thing",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: True,
+                    },
+                ],
+            },
+        },
+    ],
+)

@@ -1,0 +1,70 @@
+b:c 'single'
+e:f "double"
+h:i [[long]]
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "b",
+                    ),
+                },
+                name: "c",
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "single",
+                        ),
+                    },
+                ],
+            },
+        },
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "e",
+                    ),
+                },
+                name: "f",
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "double",
+                        ),
+                    },
+                ],
+            },
+        },
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "h",
+                    ),
+                },
+                name: "i",
+                args: [
+                    Node {
+                        comments: [],
+                        node: RawStr(
+                            "long",
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

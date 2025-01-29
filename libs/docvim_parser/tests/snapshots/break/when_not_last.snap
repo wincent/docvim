@@ -1,0 +1,12 @@
+while true do
+  break
+
+  -- Syntax error, because `break` must be the last statement in a block.
+  print("Unreachable")
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+  |
+4 |   -- Syntax error, because `break` must be the last statement in a block.
+  |   ^ unexpected token at 4:3

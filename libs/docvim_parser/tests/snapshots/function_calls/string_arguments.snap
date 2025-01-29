@@ -1,0 +1,67 @@
+foo 'single'
+bar "double"
+baz [[long]]
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "foo",
+                    ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "single",
+                        ),
+                    },
+                ],
+            },
+        },
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "bar",
+                    ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "double",
+                        ),
+                    },
+                ],
+            },
+        },
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "baz",
+                    ),
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: RawStr(
+                            "long",
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

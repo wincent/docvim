@@ -1,0 +1,45 @@
+local stuff = { one }
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "stuff",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            1,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "one",
+                                            ),
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

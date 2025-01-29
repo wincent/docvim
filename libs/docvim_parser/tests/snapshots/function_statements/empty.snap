@@ -1,0 +1,25 @@
+function empty()
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: FunctionDeclaration {
+                name: [
+                    Name(
+                        "empty",
+                    ),
+                ],
+                method: None,
+                parlist: [],
+                varargs: false,
+                block: Block(
+                    [],
+                ),
+            },
+        },
+    ],
+)

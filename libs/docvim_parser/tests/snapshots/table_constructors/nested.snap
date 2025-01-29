@@ -1,0 +1,87 @@
+local list = {
+  one,
+  nested = {
+    ["two"] = 2,
+  }
+}
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "list",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: Some(
+                                            1,
+                                        ),
+                                        lexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "one",
+                                            ),
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "nested",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Table(
+                                                [
+                                                    Node {
+                                                        comments: [],
+                                                        node: Field {
+                                                            index: None,
+                                                            lexp: Node {
+                                                                comments: [],
+                                                                node: CookedStr(
+                                                                    "two",
+                                                                ),
+                                                            },
+                                                            rexp: Node {
+                                                                comments: [],
+                                                                node: Number(
+                                                                    "2",
+                                                                ),
+                                                            },
+                                                        },
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

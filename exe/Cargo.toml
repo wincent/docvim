@@ -1,0 +1,17 @@
+[[bin]]
+name = "docvim"
+
+[dependencies]
+# docvim_lexer = { path = "../libs/docvim_lexer" }
+docvim_parser = { path = "../libs/docvim_parser" }
+
+[lib]
+
+[package]
+authors = ["Greg Hurrell <greg@hurrell.net>"]
+default-run = "docvim"
+description = "Produces Neovim/Vim help and HTML (via Markdown) documentation"
+edition = "2021"
+license-file = "LICENSE.md"
+name = "docvim"
+version = "0.1.0"

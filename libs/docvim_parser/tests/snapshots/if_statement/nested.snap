@@ -1,0 +1,109 @@
+if a then
+  if b then
+    a(b)
+  else
+    a()
+  end
+else
+  c()
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: IfStatement {
+                consequents: [
+                    Consequent {
+                        cexp: Node {
+                            comments: [],
+                            node: NamedVar(
+                                "a",
+                            ),
+                        },
+                        block: Block(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: IfStatement {
+                                        consequents: [
+                                            Consequent {
+                                                cexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "b",
+                                                    ),
+                                                },
+                                                block: Block(
+                                                    [
+                                                        Node {
+                                                            comments: [],
+                                                            node: FunctionCallStatement {
+                                                                pexp: Node {
+                                                                    comments: [],
+                                                                    node: NamedVar(
+                                                                        "a",
+                                                                    ),
+                                                                },
+                                                                args: [
+                                                                    Node {
+                                                                        comments: [],
+                                                                        node: NamedVar(
+                                                                            "b",
+                                                                        ),
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                ),
+                                            },
+                                        ],
+                                        alternate: Some(
+                                            Block(
+                                                [
+                                                    Node {
+                                                        comments: [],
+                                                        node: FunctionCallStatement {
+                                                            pexp: Node {
+                                                                comments: [],
+                                                                node: NamedVar(
+                                                                    "a",
+                                                                ),
+                                                            },
+                                                            args: [],
+                                                        },
+                                                    },
+                                                ],
+                                            ),
+                                        ),
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                ],
+                alternate: Some(
+                    Block(
+                        [
+                            Node {
+                                comments: [],
+                                node: FunctionCallStatement {
+                                    pexp: Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "c",
+                                        ),
+                                    },
+                                    args: [],
+                                },
+                            },
+                        ],
+                    ),
+                ),
+            },
+        },
+    ],
+)

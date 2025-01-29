@@ -1,0 +1,10 @@
+[dependencies]
+docvim_diff = { path = "../docvim_diff" }
+
+[lib]
+
+[package]
+authors = ["Greg Hurrell <greg@hurrell.net>"]
+edition = "2021"
+name = "docvim_snapshot"
+version = "0.1.0"

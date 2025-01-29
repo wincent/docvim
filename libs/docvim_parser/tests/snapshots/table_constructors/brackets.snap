@@ -1,0 +1,45 @@
+local stuff = { ["foo"] = bar }
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "stuff",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: CookedStr(
+                                                "foo",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "bar",
+                                            ),
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

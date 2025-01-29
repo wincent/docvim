@@ -1,0 +1,132 @@
+-- We can mix various kinds of prefixexps together.
+
+a() { force = true } "boo!"
+
+-- Equivalent to (identical AST):
+
+a()({force = true})("boo!")
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [
+                Comment {
+                    content: "-- We can mix various kinds of prefixexps together.\n",
+                },
+            ],
+            node: FunctionCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: FunctionCall {
+                        pexp: Node {
+                            comments: [],
+                            node: FunctionCall {
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "a",
+                                    ),
+                                },
+                                args: [],
+                            },
+                        },
+                        args: [
+                            Node {
+                                comments: [],
+                                node: Table(
+                                    [
+                                        Node {
+                                            comments: [],
+                                            node: Field {
+                                                index: None,
+                                                lexp: Node {
+                                                    comments: [],
+                                                    node: RawStr(
+                                                        "force",
+                                                    ),
+                                                },
+                                                rexp: Node {
+                                                    comments: [],
+                                                    node: True,
+                                                },
+                                            },
+                                        },
+                                    ],
+                                ),
+                            },
+                        ],
+                    },
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "boo!",
+                        ),
+                    },
+                ],
+            },
+        },
+        Node {
+            comments: [
+                Comment {
+                    content: "-- Equivalent to (identical AST):\n",
+                },
+            ],
+            node: FunctionCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: FunctionCall {
+                        pexp: Node {
+                            comments: [],
+                            node: FunctionCall {
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "a",
+                                    ),
+                                },
+                                args: [],
+                            },
+                        },
+                        args: [
+                            Node {
+                                comments: [],
+                                node: Table(
+                                    [
+                                        Node {
+                                            comments: [],
+                                            node: Field {
+                                                index: None,
+                                                lexp: Node {
+                                                    comments: [],
+                                                    node: RawStr(
+                                                        "force",
+                                                    ),
+                                                },
+                                                rexp: Node {
+                                                    comments: [],
+                                                    node: True,
+                                                },
+                                            },
+                                        },
+                                    ],
+                                ),
+                            },
+                        ],
+                    },
+                },
+                args: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "boo!",
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

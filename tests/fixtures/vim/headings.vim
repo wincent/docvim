@@ -1,1 +1,0 @@
-../markdown/headings.vim

@@ -1,0 +1,45 @@
+bar:baz { force = true }
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: MethodCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "bar",
+                    ),
+                },
+                name: "baz",
+                args: [
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "force",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: True,
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

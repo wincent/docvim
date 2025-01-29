@@ -1,0 +1,56 @@
+do
+  local foo = 'foo'
+  local bar = 'bar'
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: DoBlock(
+                Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: LocalDeclaration {
+                                namelist: [
+                                    Name(
+                                        "foo",
+                                    ),
+                                ],
+                                explist: [
+                                    Node {
+                                        comments: [],
+                                        node: CookedStr(
+                                            "foo",
+                                        ),
+                                    },
+                                ],
+                            },
+                        },
+                        Node {
+                            comments: [],
+                            node: LocalDeclaration {
+                                namelist: [
+                                    Name(
+                                        "bar",
+                                    ),
+                                ],
+                                explist: [
+                                    Node {
+                                        comments: [],
+                                        node: CookedStr(
+                                            "bar",
+                                        ),
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                ),
+            ),
+        },
+    ],
+)

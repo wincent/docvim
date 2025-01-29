@@ -1,6 +1,0 @@
-Project
-  [ DocBlock
-      [ PluginAnnotation "Foo" "Description with trailing whitespace"
-      , TOC []
-      ]
-  ]

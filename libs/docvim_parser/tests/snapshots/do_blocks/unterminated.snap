@@ -1,0 +1,9 @@
+do
+  local item = foo.bar
+  -- Will error because of missing "end" keyword.
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+  |
+3 |   -- Will error because of missing "end" keyword.
+  |                                                  ^ unexpected end-of-input at 3:50

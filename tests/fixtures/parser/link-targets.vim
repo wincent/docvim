@@ -1,4 +1,0 @@
-""
-" *single-target*
-"
-" *multiple* *targets*

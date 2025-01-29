@@ -1,3 +1,0 @@
-#!/bin/sh
-
-stack repl --ghci-options -fdefer-type-errors

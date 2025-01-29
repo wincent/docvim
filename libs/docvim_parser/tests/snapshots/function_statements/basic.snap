@@ -1,0 +1,39 @@
+function simple()
+  foo()
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: FunctionDeclaration {
+                name: [
+                    Name(
+                        "simple",
+                    ),
+                ],
+                method: None,
+                parlist: [],
+                varargs: false,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "foo",
+                                    ),
+                                },
+                                args: [],
+                            },
+                        },
+                    ],
+                ),
+            },
+        },
+    ],
+)

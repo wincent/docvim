@@ -1,0 +1,70 @@
+for i = 1, 10, 2 do
+  print(i)
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: For {
+                name: Name(
+                    "i",
+                ),
+                startexp: Node {
+                    comments: [],
+                    node: Number(
+                        "1",
+                    ),
+                },
+                endexp: Node {
+                    comments: [],
+                    node: Number(
+                        "10",
+                    ),
+                },
+                stepexp: Some(
+                    Node {
+                        comments: [],
+                        node: Number(
+                            "2",
+                        ),
+                    },
+                ),
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: DoBlock(
+                                Block(
+                                    [
+                                        Node {
+                                            comments: [],
+                                            node: FunctionCallStatement {
+                                                pexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "print",
+                                                    ),
+                                                },
+                                                args: [
+                                                    Node {
+                                                        comments: [],
+                                                        node: NamedVar(
+                                                            "i",
+                                                        ),
+                                                    },
+                                                ],
+                                            },
+                                        },
+                                    ],
+                                ),
+                            ),
+                        },
+                    ],
+                ),
+            },
+        },
+    ],
+)

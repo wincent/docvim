@@ -1,0 +1,84 @@
+local x = not value
+
+local y = #items
+
+local z = -1000
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "x",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "value",
+                                ),
+                            },
+                            op: Not,
+                        },
+                    },
+                ],
+            },
+        },
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "y",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "items",
+                                ),
+                            },
+                            op: Length,
+                        },
+                    },
+                ],
+            },
+        },
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "z",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: Number(
+                                    "1000",
+                                ),
+                            },
+                            op: Minus,
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+)

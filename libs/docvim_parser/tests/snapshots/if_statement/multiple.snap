@@ -1,0 +1,113 @@
+if a then
+  a()
+elseif b then
+  b()
+elseif c then
+  c()
+else
+  d()
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: IfStatement {
+                consequents: [
+                    Consequent {
+                        cexp: Node {
+                            comments: [],
+                            node: NamedVar(
+                                "a",
+                            ),
+                        },
+                        block: Block(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: FunctionCallStatement {
+                                        pexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "a",
+                                            ),
+                                        },
+                                        args: [],
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                    Consequent {
+                        cexp: Node {
+                            comments: [],
+                            node: NamedVar(
+                                "b",
+                            ),
+                        },
+                        block: Block(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: FunctionCallStatement {
+                                        pexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "b",
+                                            ),
+                                        },
+                                        args: [],
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                    Consequent {
+                        cexp: Node {
+                            comments: [],
+                            node: NamedVar(
+                                "c",
+                            ),
+                        },
+                        block: Block(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: FunctionCallStatement {
+                                        pexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "c",
+                                            ),
+                                        },
+                                        args: [],
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                ],
+                alternate: Some(
+                    Block(
+                        [
+                            Node {
+                                comments: [],
+                                node: FunctionCallStatement {
+                                    pexp: Node {
+                                        comments: [],
+                                        node: NamedVar(
+                                            "d",
+                                        ),
+                                    },
+                                    args: [],
+                                },
+                            },
+                        ],
+                    ),
+                ),
+            },
+        },
+    ],
+)

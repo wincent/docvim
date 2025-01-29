@@ -1,0 +1,152 @@
+function cmp(a, b)
+  if a < b then
+    return -1
+  elseif a > b then
+    return 1
+  else
+    return 0
+  end
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: FunctionDeclaration {
+                name: [
+                    Name(
+                        "cmp",
+                    ),
+                ],
+                method: None,
+                parlist: [
+                    Name(
+                        "a",
+                    ),
+                    Name(
+                        "b",
+                    ),
+                ],
+                varargs: false,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: IfStatement {
+                                consequents: [
+                                    Consequent {
+                                        cexp: Node {
+                                            comments: [],
+                                            node: Binary {
+                                                lexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "a",
+                                                    ),
+                                                },
+                                                op: Lt,
+                                                rexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "b",
+                                                    ),
+                                                },
+                                            },
+                                        },
+                                        block: Block(
+                                            [
+                                                Node {
+                                                    comments: [],
+                                                    node: Return(
+                                                        Some(
+                                                            [
+                                                                Node {
+                                                                    comments: [],
+                                                                    node: Unary {
+                                                                        exp: Node {
+                                                                            comments: [],
+                                                                            node: Number(
+                                                                                "1",
+                                                                            ),
+                                                                        },
+                                                                        op: Minus,
+                                                                    },
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ),
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                    Consequent {
+                                        cexp: Node {
+                                            comments: [],
+                                            node: Binary {
+                                                lexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "a",
+                                                    ),
+                                                },
+                                                op: Gt,
+                                                rexp: Node {
+                                                    comments: [],
+                                                    node: NamedVar(
+                                                        "b",
+                                                    ),
+                                                },
+                                            },
+                                        },
+                                        block: Block(
+                                            [
+                                                Node {
+                                                    comments: [],
+                                                    node: Return(
+                                                        Some(
+                                                            [
+                                                                Node {
+                                                                    comments: [],
+                                                                    node: Number(
+                                                                        "1",
+                                                                    ),
+                                                                },
+                                                            ],
+                                                        ),
+                                                    ),
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                ],
+                                alternate: Some(
+                                    Block(
+                                        [
+                                            Node {
+                                                comments: [],
+                                                node: Return(
+                                                    Some(
+                                                        [
+                                                            Node {
+                                                                comments: [],
+                                                                node: Number(
+                                                                    "0",
+                                                                ),
+                                                            },
+                                                        ],
+                                                    ),
+                                                ),
+                                            },
+                                        ],
+                                    ),
+                                ),
+                            },
+                        },
+                    ],
+                ),
+            },
+        },
+    ],
+)

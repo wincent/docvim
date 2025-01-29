@@ -1,0 +1,36 @@
+local function secret()
+  foo()
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalFunctionDeclaration {
+                name: Name(
+                    "secret",
+                ),
+                parlist: [],
+                varargs: false,
+                block: Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: FunctionCallStatement {
+                                pexp: Node {
+                                    comments: [],
+                                    node: NamedVar(
+                                        "foo",
+                                    ),
+                                },
+                                args: [],
+                            },
+                        },
+                    ],
+                ),
+            },
+        },
+    ],
+)

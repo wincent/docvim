@@ -1,0 +1,20 @@
+calculate()
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: FunctionCallStatement {
+                pexp: Node {
+                    comments: [],
+                    node: NamedVar(
+                        "calculate",
+                    ),
+                },
+                args: [],
+            },
+        },
+    ],
+)

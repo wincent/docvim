@@ -1,0 +1,54 @@
+local x = function(a, ...)
+  a(...)
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "x",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Function {
+                            parlist: [
+                                Name(
+                                    "a",
+                                ),
+                            ],
+                            varargs: true,
+                            block: Block(
+                                [
+                                    Node {
+                                        comments: [],
+                                        node: FunctionCallStatement {
+                                            pexp: Node {
+                                                comments: [],
+                                                node: NamedVar(
+                                                    "a",
+                                                ),
+                                            },
+                                            args: [
+                                                Node {
+                                                    comments: [],
+                                                    node: Varargs,
+                                                },
+                                            ],
+                                        },
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+)

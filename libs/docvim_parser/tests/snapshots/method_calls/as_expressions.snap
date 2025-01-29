@@ -1,0 +1,52 @@
+-- ie. method call in expression position, rather than as an independent statement.
+
+local foo = bar:baz("hello", "world")
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [
+                Comment {
+                    content: "-- ie. method call in expression position, rather than as an independent statement.\n",
+                },
+            ],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "foo",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: MethodCall {
+                            pexp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "bar",
+                                ),
+                            },
+                            name: "baz",
+                            args: [
+                                Node {
+                                    comments: [],
+                                    node: CookedStr(
+                                        "hello",
+                                    ),
+                                },
+                                Node {
+                                    comments: [],
+                                    node: CookedStr(
+                                        "world",
+                                    ),
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+)

@@ -1,0 +1,9 @@
+[dependencies]
+
+[lib]
+
+[package]
+authors = ["Greg Hurrell <greg@hurrell.net>"]
+edition = "2021"
+name = "docvim_diff"
+version = "0.1.0"

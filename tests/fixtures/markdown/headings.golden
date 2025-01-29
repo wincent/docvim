@@ -1,9 +1,0 @@
-# foo<a name="foo-foo" href="#user-content-foo-foo"></a>
-
-## A heading<a name="foo-a-heading" href="#user-content-foo-a-heading"></a>
-
-### A subheading<a name="foo-a-subheading" href="#user-content-foo-a-subheading"></a>
-
-## An overlength heading when I really should have chose something shorter<a name="foo-an-overlength-heading-when-i-really-should-have-chose-something-shorter" href="#user-content-foo-an-overlength-heading-when-i-really-should-have-chose-something-shorter"></a>
-
-Note that in order for that last one to be shown as a heading in Vim, we can't allow the usual hard-wrapping rules to apply.

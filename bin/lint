@@ -1,3 +1,0 @@
-#!/bin/sh
-
-stack test :hlint --ghc-options -Werror

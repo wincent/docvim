@@ -1,0 +1,59 @@
+-- var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
+-- prefixexp ::= var | functioncall | `(´ exp `)´
+-- functioncall ::=  prefixexp args | prefixexp `:´ Name args
+-- args ::=  `(´ [explist] `)´ | tableconstructor | String
+
+
+local item = list[100]
+
+-- TODO: note that index expressions can appear on the LHS too; eg:
+-- foo[x] = 1
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [
+                Comment {
+                    content: "-- var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name\n",
+                },
+                Comment {
+                    content: "-- prefixexp ::= var | functioncall | `(´ exp `)´\n",
+                },
+                Comment {
+                    content: "-- functioncall ::=  prefixexp args | prefixexp `:´ Name args\n",
+                },
+                Comment {
+                    content: "-- args ::=  `(´ [explist] `)´ | tableconstructor | String\n",
+                },
+            ],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "item",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Index {
+                            pexp: Node {
+                                comments: [],
+                                node: NamedVar(
+                                    "list",
+                                ),
+                            },
+                            kexp: Node {
+                                comments: [],
+                                node: Number(
+                                    "100",
+                                ),
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+)

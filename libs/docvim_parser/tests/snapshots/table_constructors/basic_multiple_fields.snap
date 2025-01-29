@@ -1,0 +1,81 @@
+local stuff = {
+  one = 1,
+  two = true,
+  three = nil
+}
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "stuff",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "one",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Number(
+                                                "1",
+                                            ),
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "two",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: True,
+                                        },
+                                    },
+                                },
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: RawStr(
+                                                "three",
+                                            ),
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: Nil,
+                                        },
+                                    },
+                                },
+                            ],
+                        ),
+                    },
+                ],
+            },
+        },
+    ],
+)

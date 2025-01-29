@@ -1,0 +1,11 @@
+function hello()
+  if something
+    print("forgot the then")
+  end
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+  |
+3 |     print("forgot the then")
+  |     ^ unexpected token at 3:5

@@ -1,0 +1,48 @@
+do
+  do
+    local one = 1
+  end
+end
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: DoBlock(
+                Block(
+                    [
+                        Node {
+                            comments: [],
+                            node: DoBlock(
+                                Block(
+                                    [
+                                        Node {
+                                            comments: [],
+                                            node: LocalDeclaration {
+                                                namelist: [
+                                                    Name(
+                                                        "one",
+                                                    ),
+                                                ],
+                                                explist: [
+                                                    Node {
+                                                        comments: [],
+                                                        node: Number(
+                                                            "1",
+                                                        ),
+                                                    },
+                                                ],
+                                            },
+                                        },
+                                    ],
+                                ),
+                            ),
+                        },
+                    ],
+                ),
+            ),
+        },
+    ],
+)
