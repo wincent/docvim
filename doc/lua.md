@@ -121,7 +121,7 @@ primary ::= | nil | false | true
             | var | functioncall | `(´ exp `)`
 ```
 
-And we can express that in a form that avoids right-recursive rules, where `{...}` indicates "zero or more repetitions" and can be expressed in terms of a loop rather than a left-recursive call:
+And we can express that in a form that avoids right-recursive rules, where `{...}` indicates "zero or more repetitions" and can be expressed in terms of a loop rather than a right-recursive call:
 
 ```
 exp ::= primary { binop primary }
@@ -132,17 +132,17 @@ primary ::= | nil | false | true (etc, as above...)
 
 We can enforce associativity and precedence by applying the Pratt parsing algorithm in conjunction with these left and right binding "powers":
 
-| Operator                         | Left binding power | Right binding power |
-| -------------------------------- | ------------------ | ------------------- |
-| `or`                             | 1                  | 2                   |
-| `and`                            | 3                  | 4                   |
-| `<`, `>`, `<=`, `>=`, `~=`, `==` | 5                  | 6                   |
-| `..`                             | 8                  | 7                   |
-| `+`                              | 9                  | 10                  |
-| `-` (binary)                     | 11                 | 12                  |
-| `*`, `/`, `%`                    | 13                 | 14                  |
-| `not`, `#`, `-` (unary)          | n/a                | 15                  |
-| `^`                              | 18                 | 17                  |
+| Operator                         | Left binding power | Right binding power | Associativity | Arity  |
+| -------------------------------- | ------------------ | ------------------- | ------------- | ------ |
+| `or`                             | 1                  | 2                   | Left          | Binary |
+| `and`                            | 3                  | 4                   | Left          | Binary |
+| `<`, `>`, `<=`, `>=`, `~=`, `==` | 5                  | 6                   | Left          | Binary |
+| `..`                             | 8                  | 7                   | Right         | Binary |
+| `+`                              | 9                  | 10                  | Left          | Binary |
+| `-` (binary)                     | 11                 | 12                  | Left          | Binary |
+| `*`, `/`, `%`                    | 13                 | 14                  | Left          | Binary |
+| `not`, `#`, `-` (unary)          | n/a                | 15                  | Right         | Unary  |
+| `^`                              | 18                 | 17                  | Right         | Binary |
 
 Note how:
 
