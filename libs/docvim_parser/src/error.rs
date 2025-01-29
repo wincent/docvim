@@ -6,7 +6,8 @@ use docvim_lexer::error::{LexerError, LexerErrorKind};
 #[derive(Debug)]
 pub struct ParserError {
     pub kind: ParserErrorKind,
-    pub position: usize,
+    pub line: usize,
+    pub column: usize,
 }
 
 impl fmt::Display for ParserError {
@@ -20,25 +21,26 @@ impl Error for ParserError {}
 impl From<LexerError> for ParserError {
     fn from(error: LexerError) -> Self {
         let kind = error.kind;
-        let position = error.position;
+        let line = error.line;
+        let column = error.column;
         match kind {
             LexerErrorKind::InvalidEscapeSequence => {
-                ParserError { kind: ParserErrorKind::InvalidEscapeSequence, position }
+                ParserError { kind: ParserErrorKind::InvalidEscapeSequence, line, column }
             }
             LexerErrorKind::InvalidNumberLiteral => {
-                ParserError { kind: ParserErrorKind::InvalidNumberLiteral, position }
+                ParserError { kind: ParserErrorKind::InvalidNumberLiteral, line, column }
             }
             LexerErrorKind::InvalidOperator => {
-                ParserError { kind: ParserErrorKind::InvalidOperator, position }
+                ParserError { kind: ParserErrorKind::InvalidOperator, line, column }
             }
             LexerErrorKind::UnterminatedBlockComment => {
-                ParserError { kind: ParserErrorKind::UnterminatedBlockComment, position }
+                ParserError { kind: ParserErrorKind::UnterminatedBlockComment, line, column }
             }
             LexerErrorKind::UnterminatedEscapeSequence => {
-                ParserError { kind: ParserErrorKind::UnterminatedEscapeSequence, position }
+                ParserError { kind: ParserErrorKind::UnterminatedEscapeSequence, line, column }
             }
             LexerErrorKind::UnterminatedStringLiteral => {
-                ParserError { kind: ParserErrorKind::UnterminatedStringLiteral, position }
+                ParserError { kind: ParserErrorKind::UnterminatedStringLiteral, line, column }
             }
         }
     }

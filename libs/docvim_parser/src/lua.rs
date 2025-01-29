@@ -309,13 +309,13 @@ impl<'a> Parser<'a> {
     }
 
     pub fn pretty_error(&self, error: ParserError) -> String {
-        let mut iter = self.lexer.input.char_indices();
+        let mut iter = self.lexer.input.chars();
         let mut column = 1;
         let mut line = 1;
         let mut context = String::new();
         let mut found = false;
-        while let Some((idx, ch)) = iter.next() {
-            if idx == error.position {
+        while let Some(ch) = iter.next() {
+            if line == error.line && column == error.column {
                 found = true;
             }
             match ch {
@@ -357,15 +357,29 @@ impl<'a> Parser<'a> {
     }
 
     fn unexpected_end_of_input(&self) -> ParserError {
+        // Wasteful, but necessary; have to count to the end because there might be no valid
+        // token to query via `self.lexer.tokens.last()`.
+        let mut iter = self.lexer.input.chars();
+        let mut column = 1;
+        let mut line = 1;
+        while let Some(ch) = iter.next() {
+            if ch == '\n' {
+                line += 1;
+                column = 1;
+            } else {
+                column += 1;
+            }
+        }
         return ParserError {
             kind: ParserErrorKind::UnexpectedEndOfInput,
-            position: self.lexer.input.chars().count(),
+            line,
+            column,
         };
     }
 
     pub fn parse(&mut self) -> Result<Block, ParserError> {
         self.parse_block()
-        // TODO: if there are pending comments here, need to emit them as trailing comments...
+        // BUG: if there are pending comments here, need to emit them as trailing comments...
     }
 
     fn parse_block(&mut self) -> Result<Block<'a>, ParserError> {
@@ -449,7 +463,8 @@ impl<'a> Parser<'a> {
                                     }
                                     Some(&Ok(Token {
                                         kind: PunctuatorToken(CommaToken),
-                                        char_start,
+                                        line_start,
+                                        column_start,
                                         ..
                                     })) => {
                                         self.lexer.tokens.next();
@@ -458,21 +473,24 @@ impl<'a> Parser<'a> {
                                         } else {
                                             return Err(ParserError {
                                                 kind: ParserErrorKind::UnexpectedComma,
-                                                position: char_start,
+                                                line: line_start,
+                                                column: column_start,
                                             });
                                         }
                                     }
                                     Some(&Ok(Token {
                                         kind: PunctuatorToken(SemiToken),
-                                        char_start,
+                                        line_start,
+                                        column_start,
                                         ..
                                     })) => {
                                         return Err(ParserError {
                                             kind: ParserErrorKind::UnexpectedToken,
-                                            position: char_start,
+                                            line: line_start,
+                                            column: column_start,
                                         });
                                     }
-                                    Some(&Ok(Token { .. })) => {
+                                    Some(&Ok(Token { line_start, column_start, .. })) => {
                                         let pexp = self.parse_prefixexp()?;
                                         match pexp.node {
                                             ExpKind::NamedVar(_) | ExpKind::Index { .. } => {
@@ -481,7 +499,8 @@ impl<'a> Parser<'a> {
                                             _ => {
                                                 return Err(ParserError {
                                                     kind: ParserErrorKind::UnexpectedToken,
-                                                    position: token.char_start,
+                                                    line: line_start,
+                                                    column: column_start,
                                                 })
                                             }
                                         }
@@ -497,7 +516,8 @@ impl<'a> Parser<'a> {
                         _ => {
                             return Err(ParserError {
                                 kind: ParserErrorKind::UnexpectedToken,
-                                position: token.char_start,
+                                line: token.line_start,
+                                column: token.column_start,
                             })
                         }
                     }
@@ -531,7 +551,8 @@ impl<'a> Parser<'a> {
                     // TODO: include token UnexpectedToken error message
                     return Err(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
-                        position: token.char_start,
+                        line: token.line_start,
+                        column: token.column_start,
                     });
                 }
                 Some(&Err(err)) => return Err(ParserError::from(err)),
@@ -554,9 +575,10 @@ impl<'a> Parser<'a> {
             Some(Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
                 Ok(Name(&self.lexer.input[token.byte_start..token.byte_end]))
             }
-            Some(Ok(token)) => Err(ParserError {
+            Some(Ok(Token { line_start, column_start, .. })) => Err(ParserError {
                 kind: ParserErrorKind::UnexpectedToken,
-                position: token.char_start,
+                line: line_start,
+                column: column_start,
             }),
             Some(Err(err)) => Err(ParserError::from(err)),
             None => Err(self.unexpected_end_of_input()),
@@ -574,41 +596,63 @@ impl<'a> Parser<'a> {
         let mut expect_name = true;
         loop {
             match self.lexer.tokens.peek() {
-                Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
+                Some(&Ok(Token {
+                    kind: NameToken(IdentifierToken),
+                    byte_start,
+                    byte_end,
+                    line_start,
+                    column_start,
+                    ..
+                })) => {
                     if expect_name {
                         self.lexer.tokens.next();
-                        namelist.push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
+                        namelist.push(Name(&self.lexer.input[byte_start..byte_end]));
                         expect_name = false;
                     } else {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
-                            position: token.char_start,
+                            line: line_start,
+                            column: column_start,
                         });
                     }
                 }
-                Some(&Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. })) => {
+                Some(&Ok(Token {
+                    kind: PunctuatorToken(CommaToken),
+                    line_start,
+                    column_start,
+                    ..
+                })) => {
                     if expect_name {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedComma,
-                            position: token.char_start,
+                            line: line_start,
+                            column: column_start,
                         });
                     } else {
                         self.lexer.tokens.next();
                         expect_name = true;
                     }
                 }
-                Some(&Ok(token @ Token { kind: PunctuatorToken(RparenToken), .. })) => {
+                Some(&Ok(Token {
+                    kind: PunctuatorToken(RparenToken),
+                    line_start,
+                    column_start,
+                    ..
+                })) => {
                     if expect_name {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
-                            position: token.char_start,
+                            line: line_start,
+                            column: column_start,
                         });
                     } else {
                         self.lexer.tokens.next();
                         return Ok((namelist, false));
                     }
                 }
-                Some(&Ok(token @ Token { kind: OpToken(VarargToken), .. })) => {
+                Some(&Ok(Token {
+                    kind: OpToken(VarargToken), line_start, column_start, ..
+                })) => {
                     if expect_name {
                         self.lexer.tokens.next();
                         self.consume(PunctuatorToken(RparenToken))?;
@@ -616,14 +660,16 @@ impl<'a> Parser<'a> {
                     } else {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
-                            position: token.char_start,
+                            line: line_start,
+                            column: column_start,
                         });
                     }
                 }
-                Some(&Ok(token @ Token { .. })) => {
+                Some(&Ok(Token { line_start, column_start, .. })) => {
                     return Err(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
-                        position: token.char_start,
+                        line: line_start,
+                        column: column_start,
                     });
                 }
                 Some(&Err(err)) => return Err(ParserError::from(err)),
@@ -646,22 +692,29 @@ impl<'a> Parser<'a> {
                         break;
                     }
                 }
-                Some(&Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. })) => {
+                Some(&Ok(Token {
+                    kind: PunctuatorToken(CommaToken),
+                    line_start,
+                    column_start,
+                    ..
+                })) => {
                     if expect_name {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedComma,
-                            position: token.char_start,
+                            line: line_start,
+                            column: column_start,
                         });
                     } else {
                         self.lexer.tokens.next();
                         expect_name = true;
                     }
                 }
-                Some(&Ok(token @ Token { .. })) => {
+                Some(&Ok(Token { line_start, column_start, .. })) => {
                     if expect_name {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
-                            position: token.char_start,
+                            line: line_start,
+                            column: column_start,
                         });
                     } else {
                         break;
@@ -685,14 +738,20 @@ impl<'a> Parser<'a> {
         let mut allow_comma = false;
         loop {
             match self.lexer.tokens.peek() {
-                Some(&Ok(Token { kind: PunctuatorToken(CommaToken), char_start, .. })) => {
+                Some(&Ok(Token {
+                    kind: PunctuatorToken(CommaToken),
+                    line_start,
+                    column_start,
+                    ..
+                })) => {
                     if allow_comma {
                         self.lexer.tokens.next();
                         allow_comma = false;
                     } else {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedComma,
-                            position: char_start,
+                            line: line_start,
+                            column: column_start,
                         });
                     }
                 }
@@ -864,13 +923,21 @@ impl<'a> Parser<'a> {
     fn cook_str(&self, token: Token) -> Result<ExpKind<'a>, ParserError> {
         let byte_start = token.byte_start + 1;
         let byte_end = token.byte_end - 1;
-        let char_start = token.char_start + 1;
-        let mut escaped = self.lexer.input[byte_start..byte_end].char_indices().peekable();
+        let mut line_idx = token.line_start;
+        let mut column_idx = token.column_start;
+        let mut escaped = self.lexer.input[byte_start..byte_end].chars().peekable();
         let mut unescaped = String::with_capacity(byte_end - byte_start);
-        while let Some((idx, ch)) = escaped.next() {
+        while let Some(ch) = escaped.next() {
             let unescaped_char = match ch {
                 '\\' => {
-                    if let Some((_, next)) = escaped.next() {
+                    column_idx += 1;
+                    if let Some(next) = escaped.next() {
+                        if next == '\n' {
+                            column_idx = 1;
+                            line_idx += 1;
+                        } else {
+                            column_idx += 1;
+                        }
                         match next {
                             'a' => '\x07', // bell
                             'b' => '\x08', // backspace
@@ -889,11 +956,12 @@ impl<'a> Parser<'a> {
                                 // lexer.
                                 let mut digit_count = 1;
                                 while digit_count < 3 {
-                                    if let Some(&(_, digit)) = escaped.peek() {
+                                    if let Some(&digit) = escaped.peek() {
                                         match digit {
                                             '0'..='9' => {
                                                 digits.push(digit as u8);
                                                 escaped.next();
+                                                column_idx += 1;
                                                 digit_count += 1;
                                             }
                                             _ => {
@@ -907,19 +975,22 @@ impl<'a> Parser<'a> {
                                 let number = std::str::from_utf8(&digits)
                                     .map_err(|_err| ParserError {
                                         kind: ParserErrorKind::Utf8Error,
-                                        position: char_start + idx,
+                                        line: line_idx,
+                                        column: column_idx,
                                     })?
                                     .parse::<u8>()
                                     .map_err(|_err| ParserError {
                                         kind: ParserErrorKind::ParseIntError,
-                                        position: char_start + idx,
+                                        line: line_idx,
+                                        column: column_idx,
                                     })?;
                                 number as char
                             }
                             _ => {
                                 return Err(ParserError {
                                     kind: ParserErrorKind::InvalidEscapeSequence,
-                                    position: char_start + idx,
+                                    line: line_idx,
+                                    column: column_idx,
                                 });
                             }
                         }
@@ -927,7 +998,15 @@ impl<'a> Parser<'a> {
                         return Err(self.unexpected_end_of_input());
                     }
                 }
-                other => other,
+                '\n' => {
+                    line_idx += 1;
+                    column_idx = 1;
+                    ch
+                }
+                other => {
+                    column_idx += 1;
+                    other
+                }
             };
             unescaped.push(unescaped_char);
         }
@@ -962,9 +1041,11 @@ impl<'a> Parser<'a> {
             // TODO: probably need to skip comments here too
             // Some(&Ok(Token { kind: CommentToken(_) .. })) => {
             // }
-            Some(&Ok(Token { char_start, .. })) => {
-                Err(ParserError { kind: ParserErrorKind::UnexpectedToken, position: char_start })
-            }
+            Some(&Ok(Token { line_start, column_start, .. })) => Err(ParserError {
+                kind: ParserErrorKind::UnexpectedToken,
+                line: line_start,
+                column: column_start,
+            }),
             Some(&Err(err)) => Err(ParserError::from(err)),
             None => Err(self.unexpected_end_of_input()),
         }
@@ -992,7 +1073,8 @@ impl<'a> Parser<'a> {
                     Some(Ok(token)) => {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
-                            position: token.char_start,
+                            line: token.line_start,
+                            column: token.column_start,
                         })
                     }
                     Some(Err(err)) => return Err(ParserError::from(err)),
@@ -1003,10 +1085,11 @@ impl<'a> Parser<'a> {
                 let comments = std::mem::take(&mut self.comments);
                 Node { comments, node: ExpKind::NamedVar(&self.lexer.input[byte_start..byte_end]) }
             }
-            Some(Ok(Token { char_start, .. })) => {
+            Some(Ok(Token { line_start, column_start, .. })) => {
                 return Err(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
-                    position: char_start,
+                    line: line_start,
+                    column: column_start,
                 });
             }
             Some(Err(err)) => return Err(ParserError::from(err)),
@@ -1024,10 +1107,11 @@ impl<'a> Parser<'a> {
                             byte_end,
                             ..
                         })) => &self.lexer.input[byte_start..byte_end],
-                        Some(Ok(Token { char_start, .. })) => {
+                        Some(Ok(Token { line_start, column_start, .. })) => {
                             return Err(ParserError {
                                 kind: ParserErrorKind::UnexpectedToken,
-                                position: char_start,
+                                line: line_start,
+                                column: column_start,
                             });
                         }
                         Some(Err(err)) => return Err(ParserError::from(err)),
@@ -1053,10 +1137,11 @@ impl<'a> Parser<'a> {
                             let name = &self.lexer.input[byte_start..byte_end];
                             node_without_comments!(ExpKind::RawStr(name))
                         }
-                        Some(Ok(Token { char_start, .. })) => {
+                        Some(Ok(Token { line_start, column_start, .. })) => {
                             return Err(ParserError {
                                 kind: ParserErrorKind::UnexpectedToken,
-                                position: char_start,
+                                line: line_start,
+                                column: column_start,
                             });
                         }
                         Some(Err(err)) => return Err(ParserError::from(err)),
@@ -1195,7 +1280,8 @@ impl<'a> Parser<'a> {
             Some(&Ok(token)) => {
                 return Err(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
-                    position: token.char_start,
+                    line: token.line_start,
+                    column: token.column_start,
                 })
             }
 
@@ -1268,7 +1354,8 @@ impl<'a> Parser<'a> {
                         }
                         Some(&Ok(Token {
                             kind: PunctuatorToken(CommaToken | SemiToken),
-                            char_start,
+                            line_start,
+                            column_start,
                             ..
                         })) => {
                             if fieldsep_allowed {
@@ -1277,7 +1364,8 @@ impl<'a> Parser<'a> {
                             } else {
                                 return Err(ParserError {
                                     kind: ParserErrorKind::UnexpectedFieldSeparator,
-                                    position: char_start,
+                                    line: line_start,
+                                    column: column_start,
                                 });
                             }
                         }
@@ -1289,7 +1377,7 @@ impl<'a> Parser<'a> {
                         })) => {
                             let content = &self.lexer.input[byte_start..byte_end];
                             self.comments.push(Comment { content });
-                            self.lexer.tokens.next(); // TODO: don't skip, accumulate
+                            self.lexer.tokens.next();
                         }
                         Some(&Ok(Token { .. })) => {
                             let field = self.parse_table_field(index)?;
@@ -1304,10 +1392,11 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
-            Some(Ok(Token { char_start, .. })) => {
+            Some(Ok(Token { line_start, column_start, .. })) => {
                 return Err(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
-                    position: char_start,
+                    line: line_start,
+                    column: column_start,
                 })
             }
             Some(Err(err)) => return Err(ParserError::from(err)),
@@ -1326,7 +1415,8 @@ impl<'a> Parser<'a> {
                 } else {
                     Err(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
-                        position: token.char_start,
+                        line: token.line_start,
+                        column: token.column_start,
                     })
                 }
             }

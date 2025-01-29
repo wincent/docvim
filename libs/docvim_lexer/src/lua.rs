@@ -262,7 +262,8 @@ impl<'a> Tokens<'a> {
                 None => {
                     return Some(Err(LexerError {
                         kind: LexerErrorKind::UnterminatedBlockComment,
-                        position: self.iter.char_idx,
+                        line: self.iter.line_idx,
+                        column: self.iter.column_idx,
                     }));
                 }
                 _ => (),
@@ -358,7 +359,7 @@ impl<'a> Tokens<'a> {
                         if seen_separator {
                             return Err(LexerError {
                                 kind: LexerErrorKind::InvalidNumberLiteral,
-                                position: self.iter.char_idx,
+                                line: self.iter.line_idx, column: self.iter.column_idx,
                             });
                         } else {
                             seen_separator = true;
@@ -374,7 +375,7 @@ impl<'a> Tokens<'a> {
                     _ => {
                         return Err(LexerError {
                             kind: LexerErrorKind::InvalidNumberLiteral,
-                            position: self.iter.char_idx,
+                            line: self.iter.line_idx, column: self.iter.column_idx,
                         });
                     }
                 }
@@ -401,7 +402,8 @@ impl<'a> Tokens<'a> {
                         if seen_separator {
                             return Err(LexerError {
                                 kind: LexerErrorKind::InvalidNumberLiteral,
-                                position: self.iter.char_idx,
+                                line: self.iter.line_idx,
+                                column: self.iter.column_idx,
                             });
                         } else {
                             seen_separator = true;
@@ -427,7 +429,7 @@ impl<'a> Tokens<'a> {
                                 _ => {
                                     return Err(LexerError {
                                         kind: LexerErrorKind::InvalidNumberLiteral,
-                                        position: self.iter.char_idx,
+                                        line: self.iter.line_idx, column: self.iter.column_idx,
                                     });
                                 }
                             }
@@ -447,7 +449,8 @@ impl<'a> Tokens<'a> {
                         } else {
                             return Err(LexerError {
                                 kind: LexerErrorKind::InvalidNumberLiteral,
-                                position: self.iter.char_idx,
+                                line: self.iter.line_idx,
+                                column: self.iter.column_idx,
                             });
                         }
                     }
@@ -542,14 +545,15 @@ impl<'a> Tokens<'a> {
                             _ => {
                                 return Err(LexerError {
                                     kind: LexerErrorKind::InvalidEscapeSequence,
-                                    position: self.iter.char_idx,
+                                    line: self.iter.line_idx, column: self.iter.column_idx,
                                 });
                             }
                         }
                     } else {
                         return Err(LexerError {
                             kind: LexerErrorKind::UnterminatedEscapeSequence,
-                            position: self.iter.char_idx,
+                            line: self.iter.line_idx,
+                            column: self.iter.column_idx,
                         });
                     }
                 }
@@ -558,7 +562,8 @@ impl<'a> Tokens<'a> {
         }
         Err(LexerError {
             kind: LexerErrorKind::UnterminatedStringLiteral,
-            position: self.iter.char_idx,
+            line: self.iter.line_idx,
+            column: self.iter.column_idx,
         })
     }
 
@@ -602,7 +607,8 @@ impl<'a> Tokens<'a> {
         }
         Err(LexerError {
             kind: LexerErrorKind::UnterminatedStringLiteral,
-            position: self.iter.char_idx,
+            line: self.iter.line_idx,
+            column: self.iter.column_idx,
         })
     }
 
@@ -675,7 +681,8 @@ impl<'a> Iterator for Tokens<'a> {
                         2 => make_token!(self, Op(Eq)),
                         _ => Some(Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: self.char_start,
+                            line: self.line_start,
+                            column: self.column_start,
                         })),
                     }
                 }
@@ -691,7 +698,8 @@ impl<'a> Iterator for Tokens<'a> {
                     } else {
                         Some(Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: self.char_start,
+                            line: self.line_start,
+                            column: self.column_start,
                         }))
                     }
                 }
@@ -742,7 +750,8 @@ impl<'a> Iterator for Tokens<'a> {
                             } else {
                                 Some(Err(LexerError {
                                     kind: LexerErrorKind::InvalidOperator,
-                                    position: self.char_start,
+                                    line: self.iter.line_idx,
+                                    column: self.iter.column_idx,
                                 }))
                             }
                         } else {
@@ -777,7 +786,8 @@ impl<'a> Iterator for Tokens<'a> {
                         3 => make_token!(self, Op(Vararg)),
                         _ => Some(Err(LexerError {
                             kind: LexerErrorKind::InvalidOperator,
-                            position: self.char_start,
+                            line: self.line_start,
+                            column: self.column_start,
                         })),
                     }
                 }
@@ -1138,19 +1148,19 @@ mod tests {
     fn rejects_invalid_numbers() {
         assert_eq!(
             Lexer::new("3.0.1").validate(),
-            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, position: 3 })
+            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, line: 1, column: 4 })
         );
         assert_eq!(
             Lexer::new("3e-2.1").validate(),
-            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, position: 4 })
+            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, line: 1, column: 5 })
         );
         assert_eq!(
             Lexer::new("0xffx").validate(),
-            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, position: 4 })
+            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, line: 1, column: 5 })
         );
         assert_eq!(
             Lexer::new("0xff.0xff").validate(),
-            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, position: 6 })
+            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, line: 1, column: 7 })
         );
     }
 

@@ -27,18 +27,19 @@ impl LexerErrorKind {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct LexerError {
     pub kind: LexerErrorKind,
-    pub position: usize,
+    pub line: usize,
+    pub column: usize,
 }
 
 impl LexerError {
-    pub fn new(kind: LexerErrorKind, char_idx: usize) -> LexerError {
-        Self { kind, position: char_idx }
+    pub fn new(kind: LexerErrorKind, line: usize, column: usize) -> LexerError {
+        Self { kind, line, column }
     }
 }
 
 impl fmt::Display for LexerError {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "{} ({})", self.kind.to_str(), self.position)
+        write!(fmt, "{} (line {}, column {})", self.kind.to_str(), self.line, self.column)
     }
 }
 
