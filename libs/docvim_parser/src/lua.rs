@@ -107,8 +107,19 @@ pub type Statement<'a> = Node<'a, StatementKind<'a>>;
 pub struct Block<'a>(Vec<Statement<'a>>);
 
 #[derive(Debug, PartialEq)]
+pub enum CommentKind {
+    BlockComment,
+    LineComment,
+}
+
+#[derive(Debug, PartialEq)]
 pub struct Comment<'a> {
+    pub kind: CommentKind,
     pub content: &'a str,
+    pub line_start: usize,
+    pub line_end: usize,
+    pub column_start: usize,
+    pub column_end: usize,
 }
 
 pub type Exp<'a> = Node<'a, ExpKind<'a>>;
@@ -370,11 +381,7 @@ impl<'a> Parser<'a> {
                 column += 1;
             }
         }
-        return ParserError {
-            kind: ParserErrorKind::UnexpectedEndOfInput,
-            line,
-            column,
-        };
+        return ParserError { kind: ParserErrorKind::UnexpectedEndOfInput, line, column };
     }
 
     pub fn parse(&mut self) -> Result<Block, ParserError> {
@@ -539,13 +546,28 @@ impl<'a> Parser<'a> {
                     break;
                 }
                 Some(&Ok(Token {
-                    kind: CommentToken(BlockCommentToken | LineCommentToken),
+                    kind: CommentToken(token_kind),
                     byte_start,
                     byte_end,
+                    line_start,
+                    line_end,
+                    column_start,
+                    column_end,
                     ..
                 })) => {
+                    let kind = match token_kind {
+                        BlockCommentToken => CommentKind::BlockComment,
+                        LineCommentToken => CommentKind::LineComment,
+                    };
                     let content = &self.lexer.input[byte_start..byte_end];
-                    self.comments.push(Comment { content });
+                    self.comments.push(Comment {
+                        kind,
+                        content,
+                        line_start,
+                        line_end,
+                        column_start,
+                        column_end,
+                    });
                     self.lexer.tokens.next();
                 }
                 Some(&Ok(token @ Token { .. })) => {
@@ -776,9 +798,29 @@ impl<'a> Parser<'a> {
                         break;
                     }
                 }
-                Some(&Ok(Token { kind: CommentToken(..), byte_start, byte_end, .. })) => {
+                Some(&Ok(Token {
+                    kind: CommentToken(token_kind),
+                    byte_start,
+                    byte_end,
+                    line_start,
+                    line_end,
+                    column_start,
+                    column_end,
+                    ..
+                })) => {
+                    let kind = match token_kind {
+                        BlockCommentToken => CommentKind::BlockComment,
+                        LineCommentToken => CommentKind::LineComment,
+                    };
                     let content = &self.lexer.input[byte_start..byte_end];
-                    self.comments.push(Comment { content });
+                    self.comments.push(Comment {
+                        kind,
+                        content,
+                        line_start,
+                        line_end,
+                        column_start,
+                        column_end,
+                    });
                     self.lexer.tokens.next();
                 }
                 Some(&Ok(_)) => {
@@ -1187,14 +1229,29 @@ impl<'a> Parser<'a> {
     /// See doc/lua.md for an explanation of `minimum_bp`.
     fn parse_exp(&mut self, minimum_bp: u8) -> Result<Exp<'a>, ParserError> {
         while let Some(&Ok(Token {
-            kind: CommentToken(BlockCommentToken | LineCommentToken),
+            kind: CommentToken(token_kind),
             byte_start,
             byte_end,
+            line_start,
+            line_end,
+            column_start,
+            column_end,
             ..
         })) = self.lexer.tokens.peek()
         {
+            let kind = match token_kind {
+                BlockCommentToken => CommentKind::BlockComment,
+                LineCommentToken => CommentKind::LineComment,
+            };
             let content = &self.lexer.input[byte_start..byte_end];
-            self.comments.push(Comment { content });
+            self.comments.push(Comment {
+                kind,
+                content,
+                line_start,
+                line_end,
+                column_start,
+                column_end,
+            });
             self.lexer.tokens.next();
         }
         let comments = std::mem::take(&mut self.comments);
@@ -1371,13 +1428,28 @@ impl<'a> Parser<'a> {
                             }
                         }
                         Some(&Ok(Token {
-                            kind: CommentToken(BlockCommentToken | LineCommentToken),
+                            kind: CommentToken(token_kind),
                             byte_start,
                             byte_end,
+                            line_start,
+                            line_end,
+                            column_start,
+                            column_end,
                             ..
                         })) => {
+                            let kind = match token_kind {
+                                BlockCommentToken => CommentKind::BlockComment,
+                                LineCommentToken => CommentKind::LineComment,
+                            };
                             let content = &self.lexer.input[byte_start..byte_end];
-                            self.comments.push(Comment { content });
+                            self.comments.push(Comment {
+                                kind,
+                                content,
+                                line_start,
+                                line_end,
+                                column_start,
+                                column_end,
+                            });
                             self.lexer.tokens.next();
                         }
                         Some(&Ok(Token { .. })) => {
