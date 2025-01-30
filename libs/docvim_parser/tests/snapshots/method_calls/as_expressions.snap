@@ -9,7 +9,12 @@ Block(
         Node {
             comments: [
                 Comment {
+                    kind: LineComment,
                     content: "-- ie. method call in expression position, rather than as an independent statement.\n",
+                    line_start: 1,
+                    line_end: 2,
+                    column_start: 1,
+                    column_end: 1,
                 },
             ],
             node: LocalDeclaration {

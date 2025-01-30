@@ -651,10 +651,20 @@ Block(
         Node {
             comments: [
                 Comment {
+                    kind: LineComment,
                     content: "-- Copyright 2015-present Greg Hurrell. All rights reserved.\n",
+                    line_start: 1,
+                    line_end: 2,
+                    column_start: 1,
+                    column_end: 1,
                 },
                 Comment {
+                    kind: LineComment,
                     content: "-- Licensed under the terms of the MIT license.\n",
+                    line_start: 2,
+                    line_end: 3,
+                    column_start: 1,
+                    column_end: 1,
                 },
             ],
             node: LocalDeclaration {
@@ -838,7 +848,12 @@ Block(
         Node {
             comments: [
                 Comment {
+                    kind: LineComment,
                     content: "-- TODO: can we make these a bit more private?\n",
+                    line_start: 16,
+                    line_end: 17,
+                    column_start: 1,
+                    column_end: 1,
                 },
             ],
             node: LocalDeclaration {
@@ -933,7 +948,12 @@ Block(
         Node {
             comments: [
                 Comment {
+                    kind: LineComment,
                     content: "-- TODO: detect pre-existing mappings, save them, and restore them if needed.\n",
+                    line_start: 24,
+                    line_end: 25,
+                    column_start: 1,
+                    column_end: 1,
                 },
             ],
             node: LocalDeclaration {
@@ -1074,7 +1094,12 @@ Block(
         Node {
             comments: [
                 Comment {
+                    kind: LineComment,
                     content: "-- TODO sub to VimResized autocmd\n",
+                    line_start: 29,
+                    line_end: 30,
+                    column_start: 3,
+                    column_end: 1,
                 },
             ],
             node: LocalDeclaration {
@@ -1194,10 +1219,20 @@ Block(
                                                                             Node {
                                                                                 comments: [
                                                                                     Comment {
+                                                                                        kind: LineComment,
                                                                                         content: "-- TODO: find out if bang from old version was actually necessary\n",
+                                                                                        line_start: 35,
+                                                                                        line_end: 36,
+                                                                                        column_start: 7,
+                                                                                        column_end: 1,
                                                                                     },
                                                                                     Comment {
+                                                                                        kind: LineComment,
                                                                                         content: "-- vim.cmd('silent! cunmap ' .. lhs)\n",
+                                                                                        line_start: 36,
+                                                                                        line_end: 37,
+                                                                                        column_start: 7,
+                                                                                        column_end: 1,
                                                                                     },
                                                                                 ],
                                                                                 node: FunctionCallStatement {
@@ -1266,13 +1301,28 @@ Block(
         Node {
             comments: [
                 Comment {
+                    kind: LineComment,
                     content: "-- TODO unsub to VimResized autocmd\n",
+                    line_start: 40,
+                    line_end: 41,
+                    column_start: 3,
+                    column_end: 1,
                 },
                 Comment {
+                    kind: LineComment,
                     content: "-- TODO make most of these private (really only want them public for testing\n",
+                    line_start: 43,
+                    line_end: 44,
+                    column_start: 1,
+                    column_end: 1,
                 },
                 Comment {
+                    kind: LineComment,
                     content: "-- during development)\n",
+                    line_start: 44,
+                    line_end: 45,
+                    column_start: 1,
+                    column_end: 1,
                 },
             ],
             node: VarlistDeclaration {
@@ -1656,7 +1706,12 @@ Block(
                                                                                 Node {
                                                                                     comments: [
                                                                                         Comment {
+                                                                                            kind: LineComment,
                                                                                             content: "-- In a Corpus directory, trying to open a file.\n",
+                                                                                            line_start: 58,
+                                                                                            line_end: 59,
+                                                                                            column_start: 7,
+                                                                                            column_end: 1,
                                                                                         },
                                                                                     ],
                                                                                     node: FunctionCallStatement {
@@ -1744,7 +1799,12 @@ Block(
                                                                             Node {
                                                                                 comments: [
                                                                                     Comment {
+                                                                                        kind: LineComment,
                                                                                         content: "-- In create mode, or not in a Corpus directory.\n",
+                                                                                        line_start: 61,
+                                                                                        line_end: 62,
+                                                                                        column_start: 7,
+                                                                                        column_end: 1,
                                                                                     },
                                                                                 ],
                                                                                 node: LocalDeclaration {
@@ -2740,7 +2800,12 @@ Block(
                                                                                                                                                                                 Node {
                                                                                                                                                                                     comments: [
                                                                                                                                                                                         Comment {
+                                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                                             content: "-- listed?\n",
+                                                                                                                                                                                            line_start: 99,
+                                                                                                                                                                                            line_end: 100,
+                                                                                                                                                                                            column_start: 22,
+                                                                                                                                                                                            column_end: 1,
                                                                                                                                                                                         },
                                                                                                                                                                                     ],
                                                                                                                                                                                     node: True,
@@ -2754,7 +2819,12 @@ Block(
                                                                                                                                                         Node {
                                                                                                                                                             comments: [
                                                                                                                                                                 Comment {
+                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                     content: "-- scratch?\n",
+                                                                                                                                                                    line_start: 100,
+                                                                                                                                                                    line_end: 101,
+                                                                                                                                                                    column_start: 20,
+                                                                                                                                                                    column_end: 1,
                                                                                                                                                                 },
                                                                                                                                                             ],
                                                                                                                                                             node: VarlistDeclaration {
@@ -3161,7 +3231,12 @@ Block(
                                                                                                                                                                                     Node {
                                                                                                                                                                                         comments: [
                                                                                                                                                                                             Comment {
+                                                                                                                                                                                                kind: LineComment,
                                                                                                                                                                                                 content: "-- 1 because Neovim cursor indexing is 1-based, as are Lua lists.\n",
+                                                                                                                                                                                                line_start: 122,
+                                                                                                                                                                                                line_end: 123,
+                                                                                                                                                                                                column_start: 15,
+                                                                                                                                                                                                column_end: 1,
                                                                                                                                                                                             },
                                                                                                                                                                                         ],
                                                                                                                                                                                         node: VarlistDeclaration {
@@ -3404,7 +3479,12 @@ Block(
                                                                                                                                                                                                                             Node {
                                                                                                                                                                                                                                 comments: [
                                                                                                                                                                                                                                     Comment {
+                                                                                                                                                                                                                                        kind: LineComment,
                                                                                                                                                                                                                                         content: "-- Right pad so that selection highlight extends fully across.\n",
+                                                                                                                                                                                                                                        line_start: 133,
+                                                                                                                                                                                                                                        line_end: 134,
+                                                                                                                                                                                                                                        column_start: 17,
+                                                                                                                                                                                                                                        column_end: 1,
                                                                                                                                                                                                                                     },
                                                                                                                                                                                                                                 ],
                                                                                                                                                                                                                                 node: IfStatement {
@@ -3533,7 +3613,12 @@ Block(
                                                                                                                                                                                                                                                 Node {
                                                                                                                                                                                                                                                     comments: [
                                                                                                                                                                                                                                                         Comment {
+                                                                                                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                                                                                                             content: "-- Avoid: \"invalid format (width or precision too long)\"\n",
+                                                                                                                                                                                                                                                            line_start: 137,
+                                                                                                                                                                                                                                                            line_end: 138,
+                                                                                                                                                                                                                                                            column_start: 19,
+                                                                                                                                                                                                                                                            column_end: 1,
                                                                                                                                                                                                                                                         },
                                                                                                                                                                                                                                                     ],
                                                                                                                                                                                                                                                     node: LocalDeclaration {
@@ -3867,7 +3952,12 @@ Block(
                                                                                                                                                                         Node {
                                                                                                                                                                             comments: [
                                                                                                                                                                                 Comment {
+                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                     content: "-- end\n",
+                                                                                                                                                                                    line_start: 154,
+                                                                                                                                                                                    line_end: 155,
+                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                 },
                                                                                                                                                                             ],
                                                                                                                                                                             node: False,
@@ -3884,7 +3974,12 @@ Block(
                                                                                                                                                             Node {
                                                                                                                                                                 comments: [
                                                                                                                                                                     Comment {
+                                                                                                                                                                        kind: LineComment,
                                                                                                                                                                         content: "-- Reserve two lines for statusline and command line.\n",
+                                                                                                                                                                        line_start: 159,
+                                                                                                                                                                        line_end: 160,
+                                                                                                                                                                        column_start: 13,
+                                                                                                                                                                        column_end: 1,
                                                                                                                                                                     },
                                                                                                                                                                 ],
                                                                                                                                                                 node: FunctionCallStatement {
@@ -3969,7 +4064,12 @@ Block(
                                                                                                                                                             Node {
                                                                                                                                                                 comments: [
                                                                                                                                                                     Comment {
+                                                                                                                                                                        kind: LineComment,
                                                                                                                                                                         content: "-- TODO: only do this if lines actually changed, or selection changed\n",
+                                                                                                                                                                        line_start: 165,
+                                                                                                                                                                        line_end: 166,
+                                                                                                                                                                        column_start: 13,
+                                                                                                                                                                        column_end: 1,
                                                                                                                                                                     },
                                                                                                                                                                 ],
                                                                                                                                                                 node: FunctionCallStatement {
@@ -4285,7 +4385,12 @@ Block(
                                                                                 Node {
                                                                                     comments: [
                                                                                         Comment {
+                                                                                            kind: BlockComment,
                                                                                             content: "--[[ force? --]]",
+                                                                                            line_start: 188,
+                                                                                            line_end: 188,
+                                                                                            column_start: 51,
+                                                                                            column_end: 67,
                                                                                         },
                                                                                     ],
                                                                                     node: VarlistDeclaration {
@@ -4383,7 +4488,12 @@ Block(
                                                                                 Node {
                                                                                     comments: [
                                                                                         Comment {
+                                                                                            kind: BlockComment,
                                                                                             content: "--[[ force? --]]",
+                                                                                            line_start: 192,
+                                                                                            line_end: 192,
+                                                                                            column_start: 51,
+                                                                                            column_end: 67,
                                                                                         },
                                                                                     ],
                                                                                     node: VarlistDeclaration {
@@ -4754,7 +4864,12 @@ Block(
                                                                                 Node {
                                                                                     comments: [
                                                                                         Comment {
+                                                                                            kind: LineComment,
                                                                                             content: "-- Just in case this is a new file (otherwise `git commit` will fail).\n",
+                                                                                            line_start: 205,
+                                                                                            line_end: 206,
+                                                                                            column_start: 7,
+                                                                                            column_end: 1,
                                                                                         },
                                                                                     ],
                                                                                     node: FunctionCallStatement {
@@ -4806,16 +4921,36 @@ Block(
                                                                                 Node {
                                                                                     comments: [
                                                                                         Comment {
+                                                                                            kind: LineComment,
                                                                                             content: "-- TODO: check v:shell_error for this one ^^^\n",
+                                                                                            line_start: 207,
+                                                                                            line_end: 208,
+                                                                                            column_start: 7,
+                                                                                            column_end: 1,
                                                                                         },
                                                                                         Comment {
+                                                                                            kind: LineComment,
                                                                                             content: "-- vim.api.nvim_get_vvar('shell_error')\n",
+                                                                                            line_start: 208,
+                                                                                            line_end: 209,
+                                                                                            column_start: 7,
+                                                                                            column_end: 1,
                                                                                         },
                                                                                         Comment {
+                                                                                            kind: LineComment,
                                                                                             content: "-- Note that this will fail silently if there are no changes to the\n",
+                                                                                            line_start: 210,
+                                                                                            line_end: 211,
+                                                                                            column_start: 7,
+                                                                                            column_end: 1,
                                                                                         },
                                                                                         Comment {
+                                                                                            kind: LineComment,
                                                                                             content: "-- file (because we aren't passing `--allow-empty`) and that's ok.\n",
+                                                                                            line_start: 211,
+                                                                                            line_end: 212,
+                                                                                            column_start: 7,
+                                                                                            column_end: 1,
                                                                                         },
                                                                                     ],
                                                                                     node: FunctionCallStatement {
@@ -5068,7 +5203,12 @@ Block(
                                                                                                         Node {
                                                                                                             comments: [
                                                                                                                 Comment {
+                                                                                                                    kind: LineComment,
                                                                                                                     content: "-- strip \".md\"\n",
+                                                                                                                    line_start: 220,
+                                                                                                                    line_end: 221,
+                                                                                                                    column_start: 61,
+                                                                                                                    column_end: 1,
                                                                                                                 },
                                                                                                             ],
                                                                                                             node: LocalDeclaration {
@@ -5113,7 +5253,12 @@ Block(
                                                                                                         Node {
                                                                                                             comments: [
                                                                                                                 Comment {
+                                                                                                                    kind: LineComment,
                                                                                                                     content: "-- strip \"Corpus \"\n",
+                                                                                                                    line_start: 221,
+                                                                                                                    line_end: 222,
+                                                                                                                    column_start: 63,
+                                                                                                                    column_end: 1,
                                                                                                                 },
                                                                                                             ],
                                                                                                             node: IfStatement {
@@ -5160,13 +5305,28 @@ Block(
                                                                                                                                 Node {
                                                                                                                                     comments: [
                                                                                                                                         Comment {
+                                                                                                                                            kind: LineComment,
                                                                                                                                             content: "-- If on \"foo bar bazzzz\"\n",
+                                                                                                                                            line_start: 223,
+                                                                                                                                            line_end: 224,
+                                                                                                                                            column_start: 11,
+                                                                                                                                            column_end: 1,
                                                                                                                                         },
                                                                                                                                         Comment {
+                                                                                                                                            kind: LineComment,
                                                                                                                                             content: "--                   ^\n",
+                                                                                                                                            line_start: 224,
+                                                                                                                                            line_end: 225,
+                                                                                                                                            column_start: 11,
+                                                                                                                                            column_end: 1,
                                                                                                                                         },
                                                                                                                                         Comment {
+                                                                                                                                            kind: LineComment,
                                                                                                                                             content: "-- Must return \"bazzzz\", not \"zzz\".\n",
+                                                                                                                                            line_start: 225,
+                                                                                                                                            line_end: 226,
+                                                                                                                                            column_start: 11,
+                                                                                                                                            column_end: 1,
                                                                                                                                         },
                                                                                                                                     ],
                                                                                                                                     node: LocalDeclaration {
@@ -5466,13 +5626,28 @@ Block(
                                 Node {
                                     comments: [
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- Returns config from the `CorpusDirectories` (Lua global) for\n",
+                                            line_start: 238,
+                                            line_end: 239,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- `file`, or an empty table if `file` is not in one of the\n",
+                                            line_start: 239,
+                                            line_end: 240,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- directories defined in `CorpusDirectories`.\n",
+                                            line_start: 240,
+                                            line_end: 241,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                     ],
                                     node: Field {
@@ -5923,10 +6098,20 @@ Block(
                                 Node {
                                     comments: [
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- If current working directory is a configured Corpus directory, returns it.\n",
+                                            line_start: 257,
+                                            line_end: 258,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- Otherwise, returns the first found default.\n",
+                                            line_start: 258,
+                                            line_end: 259,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                     ],
                                     node: Field {
@@ -6400,10 +6585,20 @@ Block(
                                 Node {
                                     comments: [
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- Adds 'corpus' to the 'filetype' if the current file is under a directory\n",
+                                            line_start: 281,
+                                            line_end: 282,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- configured via `CorpusDirectories`.\n",
+                                            line_start: 282,
+                                            line_end: 283,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                     ],
                                     node: Field {
@@ -6896,7 +7091,12 @@ Block(
                                                                                 Node {
                                                                                     comments: [
                                                                                         Comment {
+                                                                                            kind: LineComment,
                                                                                             content: "-- Strip leading \"> \" or \"  \", and append extension.\n",
+                                                                                            line_start: 303,
+                                                                                            line_end: 304,
+                                                                                            column_start: 7,
+                                                                                            column_end: 1,
                                                                                         },
                                                                                     ],
                                                                                     node: Return(
@@ -7182,7 +7382,12 @@ Block(
                                                                                 Node {
                                                                                     comments: [
                                                                                         Comment {
+                                                                                            kind: LineComment,
                                                                                             content: "-- TODO: decide whether it's right to do this unconditionally like this\n",
+                                                                                            line_start: 313,
+                                                                                            line_end: 314,
+                                                                                            column_start: 7,
+                                                                                            column_end: 1,
                                                                                         },
                                                                                     ],
                                                                                     node: FunctionCallStatement {
@@ -7661,7 +7866,12 @@ Block(
                                                                                 Node {
                                                                                     comments: [
                                                                                         Comment {
+                                                                                            kind: LineComment,
                                                                                             content: "-- (just clearing previous would suffice)\n",
+                                                                                            line_start: 328,
+                                                                                            line_end: 329,
+                                                                                            column_start: 12,
+                                                                                            column_end: 1,
                                                                                         },
                                                                                     ],
                                                                                     node: FunctionCallStatement {
@@ -7767,7 +7977,12 @@ Block(
                                                                                             Node {
                                                                                                 comments: [
                                                                                                     Comment {
+                                                                                                        kind: LineComment,
                                                                                                         content: "-- line (0-indexed)\n",
+                                                                                                        line_start: 334,
+                                                                                                        line_end: 335,
+                                                                                                        column_start: 37,
+                                                                                                        column_end: 1,
                                                                                                     },
                                                                                                 ],
                                                                                                 node: Number(
@@ -7799,7 +8014,12 @@ Block(
                                                         Node {
                                                             comments: [
                                                                 Comment {
+                                                                    kind: LineComment,
                                                                     content: "-- col_end (end-of-line)\n",
+                                                                    line_start: 336,
+                                                                    line_end: 337,
+                                                                    column_start: 12,
+                                                                    column_end: 1,
                                                                 },
                                                             ],
                                                             node: FunctionCallStatement {
@@ -7981,7 +8201,12 @@ Block(
                                 Node {
                                     comments: [
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- List all documents in the corpus.\n",
+                                            line_start: 348,
+                                            line_end: 349,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                     ],
                                     node: Field {
@@ -8143,10 +8368,20 @@ Block(
                                                                             Node {
                                                                                 comments: [
                                                                                     Comment {
+                                                                                        kind: LineComment,
                                                                                         content: "-- Using util.run here just for consistency, although the truth is this\n",
+                                                                                        line_start: 359,
+                                                                                        line_end: 360,
+                                                                                        column_start: 7,
+                                                                                        column_end: 1,
                                                                                     },
                                                                                     Comment {
+                                                                                        kind: LineComment,
                                                                                         content: "-- one is not going to be a bottleneck.\n",
+                                                                                        line_start: 360,
+                                                                                        line_end: 361,
+                                                                                        column_start: 7,
+                                                                                        column_end: 1,
                                                                                     },
                                                                                 ],
                                                                                 node: LocalDeclaration {
@@ -8429,19 +8664,44 @@ Block(
                                                                                                                                                                 Node {
                                                                                                                                                                     comments: [
                                                                                                                                                                         Comment {
+                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                             content: "-- Take care to ensure we don't cut a filename in half given:\n",
+                                                                                                                                                                            line_start: 377,
+                                                                                                                                                                            line_end: 378,
+                                                                                                                                                                            column_start: 13,
+                                                                                                                                                                            column_end: 1,
                                                                                                                                                                         },
                                                                                                                                                                         Comment {
+                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                             content: "--\n",
+                                                                                                                                                                            line_start: 378,
+                                                                                                                                                                            line_end: 379,
+                                                                                                                                                                            column_start: 13,
+                                                                                                                                                                            column_end: 1,
                                                                                                                                                                         },
                                                                                                                                                                         Comment {
+                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                             content: "--    chunk[1]: first file name\\0second file\n",
+                                                                                                                                                                            line_start: 379,
+                                                                                                                                                                            line_end: 380,
+                                                                                                                                                                            column_start: 13,
+                                                                                                                                                                            column_end: 1,
                                                                                                                                                                         },
                                                                                                                                                                         Comment {
+                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                             content: "--    chunk[2]: name\\0third file name\\0\n",
+                                                                                                                                                                            line_start: 380,
+                                                                                                                                                                            line_end: 381,
+                                                                                                                                                                            column_start: 13,
+                                                                                                                                                                            column_end: 1,
                                                                                                                                                                         },
                                                                                                                                                                         Comment {
+                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                             content: "--\n",
+                                                                                                                                                                            line_start: 381,
+                                                                                                                                                                            line_end: 382,
+                                                                                                                                                                            column_start: 13,
+                                                                                                                                                                            column_end: 1,
                                                                                                                                                                         },
                                                                                                                                                                     ],
                                                                                                                                                                     node: LocalDeclaration {
@@ -8980,7 +9240,12 @@ Block(
                                                                                                         Node {
                                                                                                             comments: [
                                                                                                                 Comment {
+                                                                                                                    kind: LineComment,
                                                                                                                     content: "-- listed?\n",
+                                                                                                                    line_start: 410,
+                                                                                                                    line_end: 411,
+                                                                                                                    column_start: 16,
+                                                                                                                    column_end: 1,
                                                                                                                 },
                                                                                                             ],
                                                                                                             node: True,
@@ -9001,7 +9266,12 @@ Block(
                                                         Node {
                                                             comments: [
                                                                 Comment {
+                                                                    kind: LineComment,
                                                                     content: "-- scratch?\n",
+                                                                    line_start: 411,
+                                                                    line_end: 412,
+                                                                    column_start: 14,
+                                                                    column_end: 1,
                                                                 },
                                                             ],
                                                             node: LocalDeclaration {
@@ -9720,13 +9990,28 @@ Block(
                                                         Node {
                                                             comments: [
                                                                 Comment {
+                                                                    kind: LineComment,
                                                                     content: "-- maximum lines\n",
+                                                                    line_start: 453,
+                                                                    line_end: 454,
+                                                                    column_start: 15,
+                                                                    column_end: 1,
                                                                 },
                                                                 Comment {
+                                                                    kind: LineComment,
                                                                     content: "-- Pad buffer with blank lines to make foldcolumn extend all the way down.\n",
+                                                                    line_start: 456,
+                                                                    line_end: 457,
+                                                                    column_start: 5,
+                                                                    column_end: 1,
                                                                 },
                                                                 Comment {
+                                                                    kind: LineComment,
                                                                     content: "-- Subtract two for statusline and command line.\n",
+                                                                    line_start: 457,
+                                                                    line_end: 458,
+                                                                    column_start: 5,
+                                                                    column_end: 1,
                                                                 },
                                                             ],
                                                             node: LocalDeclaration {
@@ -9929,7 +10214,12 @@ Block(
                                                                                     Node {
                                                                                         comments: [
                                                                                             Comment {
+                                                                                                kind: LineComment,
                                                                                                 content: "-- end\n",
+                                                                                                line_start: 466,
+                                                                                                line_end: 467,
+                                                                                                column_start: 11,
+                                                                                                column_end: 1,
                                                                                             },
                                                                                         ],
                                                                                         node: False,
@@ -10501,7 +10791,12 @@ Block(
                                 Node {
                                     comments: [
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- TODO: DRY this up; it is very similar to preview_next\n",
+                                            line_start: 498,
+                                            line_end: 499,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                     ],
                                     node: Field {
@@ -11647,10 +11942,20 @@ Block(
                                                                                                                                                                 Node {
                                                                                                                                                                     comments: [
                                                                                                                                                                         Comment {
+                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                             content: "-- Just like in `corpus.list()`, beware of file names that are\n",
+                                                                                                                                                                            line_start: 561,
+                                                                                                                                                                            line_end: 562,
+                                                                                                                                                                            column_start: 13,
+                                                                                                                                                                            column_end: 1,
                                                                                                                                                                         },
                                                                                                                                                                         Comment {
+                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                             content: "-- split over two chunks.\n",
+                                                                                                                                                                            line_start: 562,
+                                                                                                                                                                            line_end: 563,
+                                                                                                                                                                            column_start: 13,
+                                                                                                                                                                            column_end: 1,
                                                                                                                                                                         },
                                                                                                                                                                     ],
                                                                                                                                                                     node: LocalDeclaration {
@@ -11858,31 +12163,76 @@ Block(
                                                                                                                                                                                                                         Node {
                                                                                                                                                                                                                             comments: [
                                                                                                                                                                                                                                 Comment {
+                                                                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                                                                     content: "-- Note Git Bug here: -z here doesn't always prevent stuff\n",
+                                                                                                                                                                                                                                    line_start: 570,
+                                                                                                                                                                                                                                    line_end: 571,
+                                                                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                                                                 },
                                                                                                                                                                                                                                 Comment {
+                                                                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                                                                     content: "-- from getting escaped; if in a subdirectory, `git grep` may\n",
+                                                                                                                                                                                                                                    line_start: 571,
+                                                                                                                                                                                                                                    line_end: 572,
+                                                                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                                                                 },
                                                                                                                                                                                                                                 Comment {
+                                                                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                                                                     content: "-- return results like:\n",
+                                                                                                                                                                                                                                    line_start: 572,
+                                                                                                                                                                                                                                    line_end: 573,
+                                                                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                                                                 },
                                                                                                                                                                                                                                 Comment {
+                                                                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                                                                     content: "--\n",
+                                                                                                                                                                                                                                    line_start: 573,
+                                                                                                                                                                                                                                    line_end: 574,
+                                                                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                                                                 },
                                                                                                                                                                                                                                 Comment {
+                                                                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                                                                     content: "--    \"\\\"HTML is probably what you want\\\".md\"\n",
+                                                                                                                                                                                                                                    line_start: 574,
+                                                                                                                                                                                                                                    line_end: 575,
+                                                                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                                                                 },
                                                                                                                                                                                                                                 Comment {
+                                                                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                                                                     content: "--    Akephalos.md\n",
+                                                                                                                                                                                                                                    line_start: 575,
+                                                                                                                                                                                                                                    line_end: 576,
+                                                                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                                                                 },
                                                                                                                                                                                                                                 Comment {
+                                                                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                                                                     content: "--    JavaScript loading.md\n",
+                                                                                                                                                                                                                                    line_start: 576,
+                                                                                                                                                                                                                                    line_end: 577,
+                                                                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                                                                 },
                                                                                                                                                                                                                                 Comment {
+                                                                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                                                                     content: "--\n",
+                                                                                                                                                                                                                                    line_start: 577,
+                                                                                                                                                                                                                                    line_end: 578,
+                                                                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                                                                 },
                                                                                                                                                                                                                                 Comment {
+                                                                                                                                                                                                                                    kind: LineComment,
                                                                                                                                                                                                                                     content: "-- See: https://public-inbox.org/git/CAOyLvt9=wRfpvGGJqLMi7=wLWu881pOur8c9qNEg+Xqhf8W2ww@mail.gmail.com/\n",
+                                                                                                                                                                                                                                    line_start: 578,
+                                                                                                                                                                                                                                    line_end: 579,
+                                                                                                                                                                                                                                    column_start: 19,
+                                                                                                                                                                                                                                    column_end: 1,
                                                                                                                                                                                                                                 },
                                                                                                                                                                                                                             ],
                                                                                                                                                                                                                             node: IfStatement {
@@ -12197,7 +12547,12 @@ Block(
                                                                                                                                                                 Node {
                                                                                                                                                                     comments: [
                                                                                                                                                                         Comment {
+                                                                                                                                                                            kind: LineComment,
                                                                                                                                                                             content: "-- No matches, but \"git grep\" itself was correctly invoked.\n",
+                                                                                                                                                                            line_start: 591,
+                                                                                                                                                                            line_end: 592,
+                                                                                                                                                                            column_start: 13,
+                                                                                                                                                                            column_end: 1,
                                                                                                                                                                         },
                                                                                                                                                                     ],
                                                                                                                                                                     node: FunctionCallStatement {
@@ -12257,7 +12612,12 @@ Block(
                                                                                                                                         Node {
                                                                                                                                             comments: [
                                                                                                                                                 Comment {
+                                                                                                                                                    kind: LineComment,
                                                                                                                                                     content: "-- Seems unlikely we'd get an `err` here, but...\n",
+                                                                                                                                                    line_start: 596,
+                                                                                                                                                    line_end: 597,
+                                                                                                                                                    column_start: 11,
+                                                                                                                                                    column_end: 1,
                                                                                                                                                 },
                                                                                                                                             ],
                                                                                                                                             node: IfStatement {
@@ -12353,10 +12713,20 @@ Block(
                                 Node {
                                     comments: [
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- Turns `afile` into a simplified absolute path with all symlinks resolved.\n",
+                                            line_start: 605,
+                                            line_end: 606,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- If `afile` corresponds to a directory any trailing slash will be removed.\n",
+                                            line_start: 606,
+                                            line_end: 607,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                     ],
                                     node: Field {
@@ -12824,10 +13194,20 @@ Block(
                                 Node {
                                     comments: [
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- TODO: better name for the param here (it's more than just args; it is\n",
+                                            line_start: 624,
+                                            line_end: 625,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- command plus args)\n",
+                                            line_start: 625,
+                                            line_end: 626,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                     ],
                                     node: Field {
@@ -13056,10 +13436,20 @@ Block(
                                 Node {
                                     comments: [
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- Like 'smartcase', will be case-insensitive unless argument contains an\n",
+                                            line_start: 633,
+                                            line_end: 634,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                         Comment {
+                                            kind: LineComment,
                                             content: "-- uppercase letter.\n",
+                                            line_start: 634,
+                                            line_end: 635,
+                                            column_start: 3,
+                                            column_end: 1,
                                         },
                                     ],
                                     node: Field {

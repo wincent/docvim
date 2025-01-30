@@ -16,13 +16,28 @@ Block(
         Node {
             comments: [
                 Comment {
+                    kind: BlockComment,
                     content: "--[[\n  A block comment.\n  More block comment.\n--]]",
+                    line_start: 1,
+                    line_end: 4,
+                    column_start: 1,
+                    column_end: 5,
                 },
                 Comment {
+                    kind: BlockComment,
                     content: "--[[ A block comment on one line. ]]",
+                    line_start: 6,
+                    line_end: 6,
+                    column_start: 1,
+                    column_end: 37,
                 },
                 Comment {
+                    kind: BlockComment,
                     content: "--[====[ With an arbitrary number of equals signs. ]====]",
+                    line_start: 8,
+                    line_end: 8,
+                    column_start: 1,
+                    column_end: 58,
                 },
             ],
             node: Return(
