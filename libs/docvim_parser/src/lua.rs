@@ -113,13 +113,18 @@ pub enum CommentKind {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Comment<'a> {
-    pub kind: CommentKind,
-    pub content: &'a str,
+pub struct Location {
     pub line_start: usize,
     pub line_end: usize,
     pub column_start: usize,
     pub column_end: usize,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Comment<'a> {
+    pub kind: CommentKind,
+    pub content: &'a str,
+    pub location: Location,
 }
 
 pub type Exp<'a> = Node<'a, ExpKind<'a>>;
@@ -563,10 +568,7 @@ impl<'a> Parser<'a> {
                     self.comments.push(Comment {
                         kind,
                         content,
-                        line_start,
-                        line_end,
-                        column_start,
-                        column_end,
+                        location: Location { line_start, line_end, column_start, column_end },
                     });
                     self.lexer.tokens.next();
                 }
@@ -816,10 +818,7 @@ impl<'a> Parser<'a> {
                     self.comments.push(Comment {
                         kind,
                         content,
-                        line_start,
-                        line_end,
-                        column_start,
-                        column_end,
+                        location: Location { line_start, line_end, column_start, column_end },
                     });
                     self.lexer.tokens.next();
                 }
@@ -1247,10 +1246,7 @@ impl<'a> Parser<'a> {
             self.comments.push(Comment {
                 kind,
                 content,
-                line_start,
-                line_end,
-                column_start,
-                column_end,
+                location: Location { line_start, line_end, column_start, column_end },
             });
             self.lexer.tokens.next();
         }
@@ -1445,10 +1441,12 @@ impl<'a> Parser<'a> {
                             self.comments.push(Comment {
                                 kind,
                                 content,
-                                line_start,
-                                line_end,
-                                column_start,
-                                column_end,
+                                location: Location {
+                                    line_start,
+                                    line_end,
+                                    column_start,
+                                    column_end,
+                                },
                             });
                             self.lexer.tokens.next();
                         }

@@ -15,10 +15,12 @@ Block(
                 Comment {
                     kind: LineComment,
                     content: "-- We can mix various kinds of prefixexps together.\n",
-                    line_start: 1,
-                    line_end: 2,
-                    column_start: 1,
-                    column_end: 1,
+                    location: Location {
+                        line_start: 1,
+                        line_end: 2,
+                        column_start: 1,
+                        column_end: 1,
+                    },
                 },
             ],
             node: FunctionCallStatement {
@@ -79,10 +81,12 @@ Block(
                 Comment {
                     kind: LineComment,
                     content: "-- Equivalent to (identical AST):\n",
-                    line_start: 5,
-                    line_end: 6,
-                    column_start: 1,
-                    column_end: 1,
+                    location: Location {
+                        line_start: 5,
+                        line_end: 6,
+                        column_start: 1,
+                        column_end: 1,
+                    },
                 },
             ],
             node: FunctionCallStatement {

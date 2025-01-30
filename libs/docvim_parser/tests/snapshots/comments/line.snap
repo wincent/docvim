@@ -11,10 +11,12 @@ Block(
                 Comment {
                     kind: LineComment,
                     content: "-- A line comment.\n",
-                    line_start: 1,
-                    line_end: 2,
-                    column_start: 1,
-                    column_end: 1,
+                    location: Location {
+                        line_start: 1,
+                        line_end: 2,
+                        column_start: 1,
+                        column_end: 1,
+                    },
                 },
             ],
             node: LocalDeclaration {
