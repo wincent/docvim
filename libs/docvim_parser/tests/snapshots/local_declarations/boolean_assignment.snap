@@ -1,0 +1,67 @@
+local bar = false
+
+local qux = true
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "bar",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: False,
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 13,
+                            column_end: 18,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 18,
+            },
+        },
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "qux",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: True,
+                        location: Location {
+                            line_start: 3,
+                            line_end: 3,
+                            column_start: 13,
+                            column_end: 17,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 3,
+                line_end: 3,
+                column_start: 1,
+                column_end: 17,
+            },
+        },
+    ],
+)

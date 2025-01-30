@@ -54,10 +54,22 @@ Block(
                             node: CookedStr(
                                 "We're done here",
                             ),
+                            location: Location {
+                                line_start: 10,
+                                line_end: 10,
+                                column_start: 8,
+                                column_end: 25,
+                            },
                         },
                     ],
                 ),
             ),
+            location: Location {
+                line_start: 10,
+                line_end: 10,
+                column_start: 1,
+                column_end: 25,
+            },
         },
     ],
 )

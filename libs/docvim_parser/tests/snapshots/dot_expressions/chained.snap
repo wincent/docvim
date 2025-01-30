@@ -24,13 +24,31 @@ Block(
                                         node: NamedVar(
                                             "foo",
                                         ),
+                                        location: Location {
+                                            line_start: 1,
+                                            line_end: 1,
+                                            column_start: 14,
+                                            column_end: 17,
+                                        },
                                     },
                                     kexp: Node {
                                         comments: [],
                                         node: RawStr(
                                             "bar",
                                         ),
+                                        location: Location {
+                                            line_start: 0,
+                                            line_end: 0,
+                                            column_start: 0,
+                                            column_end: 0,
+                                        },
                                     },
+                                },
+                                location: Location {
+                                    line_start: 1,
+                                    line_end: 0,
+                                    column_start: 14,
+                                    column_end: 0,
                                 },
                             },
                             kexp: Node {
@@ -38,10 +56,28 @@ Block(
                                 node: RawStr(
                                     "baz",
                                 ),
+                                location: Location {
+                                    line_start: 0,
+                                    line_end: 0,
+                                    column_start: 0,
+                                    column_end: 0,
+                                },
                             },
+                        },
+                        location: Location {
+                            line_start: 1,
+                            line_end: 0,
+                            column_start: 14,
+                            column_end: 0,
                         },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 0,
+                column_start: 1,
+                column_end: 0,
             },
         },
     ],

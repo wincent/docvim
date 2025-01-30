@@ -26,13 +26,31 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: NamedVar(
                                                 "one",
                                             ),
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 16,
+                                                column_end: 19,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 16,
+                                        column_end: 19,
                                     },
                                 },
                                 Node {
@@ -44,13 +62,31 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: CookedStr(
                                                 "two",
                                             ),
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 21,
+                                                column_end: 26,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 21,
+                                        column_end: 26,
                                     },
                                 },
                                 Node {
@@ -62,11 +98,29 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: True,
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 28,
+                                                column_end: 32,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 28,
+                                        column_end: 32,
                                     },
                                 },
                                 Node {
@@ -78,11 +132,29 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 34,
+                                                column_end: 37,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 34,
+                                        column_end: 37,
                                     },
                                 },
                                 Node {
@@ -94,19 +166,49 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: Number(
                                                 "5",
                                             ),
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 39,
+                                                column_end: 40,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 39,
+                                        column_end: 40,
                                     },
                                 },
                             ],
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 14,
+                            column_end: 42,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 42,
             },
         },
     ],

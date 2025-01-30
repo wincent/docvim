@@ -34,6 +34,12 @@ Block(
                                 node: NamedVar(
                                     "add",
                                 ),
+                                location: Location {
+                                    line_start: 3,
+                                    line_end: 3,
+                                    column_start: 16,
+                                    column_end: 19,
+                                },
                             },
                             args: [
                                 Node {
@@ -41,23 +47,53 @@ Block(
                                     node: Number(
                                         "1",
                                     ),
+                                    location: Location {
+                                        line_start: 3,
+                                        line_end: 3,
+                                        column_start: 20,
+                                        column_end: 21,
+                                    },
                                 },
                                 Node {
                                     comments: [],
                                     node: Number(
                                         "2",
                                     ),
+                                    location: Location {
+                                        line_start: 3,
+                                        line_end: 3,
+                                        column_start: 23,
+                                        column_end: 24,
+                                    },
                                 },
                                 Node {
                                     comments: [],
                                     node: CookedStr(
                                         "three",
                                     ),
+                                    location: Location {
+                                        line_start: 3,
+                                        line_end: 3,
+                                        column_start: 26,
+                                        column_end: 33,
+                                    },
                                 },
                             ],
                         },
+                        location: Location {
+                            line_start: 3,
+                            line_end: 3,
+                            column_start: 16,
+                            column_end: 34,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 3,
+                line_end: 3,
+                column_start: 1,
+                column_end: 34,
             },
         },
     ],

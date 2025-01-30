@@ -36,6 +36,12 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
@@ -52,14 +58,38 @@ Block(
                                                                     node: NamedVar(
                                                                         "setup",
                                                                     ),
+                                                                    location: Location {
+                                                                        line_start: 3,
+                                                                        line_end: 3,
+                                                                        column_start: 5,
+                                                                        column_end: 10,
+                                                                    },
                                                                 },
                                                                 args: [],
+                                                            },
+                                                            location: Location {
+                                                                line_start: 3,
+                                                                line_end: 3,
+                                                                column_start: 5,
+                                                                column_end: 12,
                                                             },
                                                         },
                                                     ],
                                                 ),
                                             },
+                                            location: Location {
+                                                line_start: 2,
+                                                line_end: 4,
+                                                column_start: 3,
+                                                column_end: 6,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 2,
+                                        line_end: 4,
+                                        column_start: 3,
+                                        column_end: 6,
                                     },
                                 },
                                 Node {
@@ -71,6 +101,12 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
@@ -87,14 +123,38 @@ Block(
                                                                     node: NamedVar(
                                                                         "notify",
                                                                     ),
+                                                                    location: Location {
+                                                                        line_start: 6,
+                                                                        line_end: 6,
+                                                                        column_start: 5,
+                                                                        column_end: 11,
+                                                                    },
                                                                 },
                                                                 args: [],
+                                                            },
+                                                            location: Location {
+                                                                line_start: 6,
+                                                                line_end: 6,
+                                                                column_start: 5,
+                                                                column_end: 13,
                                                             },
                                                         },
                                                     ],
                                                 ),
                                             },
+                                            location: Location {
+                                                line_start: 5,
+                                                line_end: 7,
+                                                column_start: 3,
+                                                column_end: 6,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 5,
+                                        line_end: 7,
+                                        column_start: 3,
+                                        column_end: 6,
                                     },
                                 },
                                 Node {
@@ -106,6 +166,12 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
@@ -122,20 +188,56 @@ Block(
                                                                     node: NamedVar(
                                                                         "cleanup",
                                                                     ),
+                                                                    location: Location {
+                                                                        line_start: 9,
+                                                                        line_end: 9,
+                                                                        column_start: 5,
+                                                                        column_end: 12,
+                                                                    },
                                                                 },
                                                                 args: [],
+                                                            },
+                                                            location: Location {
+                                                                line_start: 9,
+                                                                line_end: 9,
+                                                                column_start: 5,
+                                                                column_end: 14,
                                                             },
                                                         },
                                                     ],
                                                 ),
                                             },
+                                            location: Location {
+                                                line_start: 8,
+                                                line_end: 10,
+                                                column_start: 3,
+                                                column_end: 6,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 8,
+                                        line_end: 10,
+                                        column_start: 3,
+                                        column_end: 6,
                                     },
                                 },
                             ],
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 11,
+                            column_start: 19,
+                            column_end: 2,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 11,
+                column_start: 1,
+                column_end: 2,
             },
         },
     ],

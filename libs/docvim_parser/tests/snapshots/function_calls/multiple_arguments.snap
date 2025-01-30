@@ -12,6 +12,12 @@ Block(
                     node: NamedVar(
                         "add",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 4,
+                    },
                 },
                 args: [
                     Node {
@@ -19,20 +25,44 @@ Block(
                         node: Number(
                             "1",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 5,
+                            column_end: 6,
+                        },
                     },
                     Node {
                         comments: [],
                         node: Number(
                             "2",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 8,
+                            column_end: 9,
+                        },
                     },
                     Node {
                         comments: [],
                         node: CookedStr(
                             "three",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 11,
+                            column_end: 18,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 19,
             },
         },
     ],

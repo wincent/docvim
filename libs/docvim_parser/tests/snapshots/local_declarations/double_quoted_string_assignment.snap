@@ -1,0 +1,39 @@
+local y = "don't say \"hello\"!"
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "y",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: CookedStr(
+                            "don't say \"hello\"!",
+                        ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 11,
+                            column_end: 33,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 33,
+            },
+        },
+    ],
+)

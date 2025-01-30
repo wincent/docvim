@@ -12,6 +12,12 @@ Block(
                     node: NamedVar(
                         "bar",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 4,
+                    },
                 },
                 name: "baz",
                 args: [
@@ -20,14 +26,32 @@ Block(
                         node: CookedStr(
                             "hello",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 9,
+                            column_end: 16,
+                        },
                     },
                     Node {
                         comments: [],
                         node: CookedStr(
                             "world",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 18,
+                            column_end: 25,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 26,
             },
         },
     ],

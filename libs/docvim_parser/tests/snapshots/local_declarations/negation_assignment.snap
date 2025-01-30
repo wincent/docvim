@@ -1,0 +1,49 @@
+local neg = not true
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "neg",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: True,
+                                location: Location {
+                                    line_start: 1,
+                                    line_end: 1,
+                                    column_start: 17,
+                                    column_end: 21,
+                                },
+                            },
+                            op: Not,
+                        },
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 13,
+                            column_end: 21,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 21,
+            },
+        },
+    ],
+)

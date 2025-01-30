@@ -1,0 +1,51 @@
+local small = -1000
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "small",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: Number(
+                                    "1000",
+                                ),
+                                location: Location {
+                                    line_start: 1,
+                                    line_end: 1,
+                                    column_start: 16,
+                                    column_end: 20,
+                                },
+                            },
+                            op: Minus,
+                        },
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 15,
+                            column_end: 20,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 20,
+            },
+        },
+    ],
+)

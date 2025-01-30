@@ -21,12 +21,30 @@ Block(
                                     node: NamedVar(
                                         "a",
                                     ),
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 4,
+                                        column_end: 5,
+                                    },
                                 },
                                 op: Ne,
                                 rexp: Node {
                                     comments: [],
                                     node: Nil,
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 9,
+                                        column_end: 12,
+                                    },
                                 },
+                            },
+                            location: Location {
+                                line_start: 1,
+                                line_end: 1,
+                                column_start: 4,
+                                column_end: 12,
                             },
                         },
                         block: Block(
@@ -39,8 +57,20 @@ Block(
                                             node: NamedVar(
                                                 "a",
                                             ),
+                                            location: Location {
+                                                line_start: 2,
+                                                line_end: 2,
+                                                column_start: 3,
+                                                column_end: 4,
+                                            },
                                         },
                                         args: [],
+                                    },
+                                    location: Location {
+                                        line_start: 2,
+                                        line_end: 2,
+                                        column_start: 3,
+                                        column_end: 6,
                                     },
                                 },
                             ],
@@ -58,13 +88,31 @@ Block(
                                         node: NamedVar(
                                             "b",
                                         ),
+                                        location: Location {
+                                            line_start: 4,
+                                            line_end: 4,
+                                            column_start: 3,
+                                            column_end: 4,
+                                        },
                                     },
                                     args: [],
+                                },
+                                location: Location {
+                                    line_start: 4,
+                                    line_end: 4,
+                                    column_start: 3,
+                                    column_end: 6,
                                 },
                             },
                         ],
                     ),
                 ),
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 5,
+                column_start: 1,
+                column_end: 4,
             },
         },
     ],

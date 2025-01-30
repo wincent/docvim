@@ -12,6 +12,12 @@ Block(
                     node: NamedVar(
                         "bar",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 4,
+                    },
                 },
                 name: "baz",
                 args: [
@@ -28,17 +34,47 @@ Block(
                                             node: RawStr(
                                                 "force",
                                             ),
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: True,
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 19,
+                                                column_end: 23,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 0,
+                                        line_end: 1,
+                                        column_start: 0,
+                                        column_end: 23,
                                     },
                                 },
                             ],
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 9,
+                            column_end: 25,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 25,
             },
         },
     ],

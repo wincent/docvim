@@ -27,13 +27,31 @@ Block(
                                                 node: NamedVar(
                                                     "list",
                                                 ),
+                                                location: Location {
+                                                    line_start: 1,
+                                                    line_end: 1,
+                                                    column_start: 14,
+                                                    column_end: 18,
+                                                },
                                             },
                                             kexp: Node {
                                                 comments: [],
                                                 node: Number(
                                                     "100",
                                                 ),
+                                                location: Location {
+                                                    line_start: 1,
+                                                    line_end: 1,
+                                                    column_start: 19,
+                                                    column_end: 22,
+                                                },
                                             },
+                                        },
+                                        location: Location {
+                                            line_start: 1,
+                                            line_end: 1,
+                                            column_start: 18,
+                                            column_end: 23,
                                         },
                                     },
                                     kexp: Node {
@@ -41,7 +59,19 @@ Block(
                                         node: Number(
                                             "200",
                                         ),
+                                        location: Location {
+                                            line_start: 1,
+                                            line_end: 1,
+                                            column_start: 24,
+                                            column_end: 27,
+                                        },
                                     },
+                                },
+                                location: Location {
+                                    line_start: 1,
+                                    line_end: 1,
+                                    column_start: 23,
+                                    column_end: 28,
                                 },
                             },
                             kexp: Node {
@@ -49,10 +79,28 @@ Block(
                                 node: Number(
                                     "300",
                                 ),
+                                location: Location {
+                                    line_start: 1,
+                                    line_end: 1,
+                                    column_start: 29,
+                                    column_end: 32,
+                                },
                             },
+                        },
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 28,
+                            column_end: 33,
                         },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 33,
             },
         },
     ],

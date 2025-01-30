@@ -38,6 +38,12 @@ Block(
                                     node: NamedVar(
                                         "a",
                                     ),
+                                    location: Location {
+                                        line_start: 2,
+                                        line_end: 2,
+                                        column_start: 3,
+                                        column_end: 4,
+                                    },
                                 },
                                 args: [
                                     Node {
@@ -45,12 +51,30 @@ Block(
                                         node: NamedVar(
                                             "b",
                                         ),
+                                        location: Location {
+                                            line_start: 2,
+                                            line_end: 2,
+                                            column_start: 5,
+                                            column_end: 6,
+                                        },
                                     },
                                 ],
+                            },
+                            location: Location {
+                                line_start: 2,
+                                line_end: 2,
+                                column_start: 3,
+                                column_end: 7,
                             },
                         },
                     ],
                 ),
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 3,
+                column_start: 1,
+                column_end: 4,
             },
         },
     ],

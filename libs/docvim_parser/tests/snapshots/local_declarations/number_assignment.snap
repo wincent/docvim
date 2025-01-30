@@ -1,0 +1,39 @@
+local w = 1
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "w",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Number(
+                            "1",
+                        ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 11,
+                            column_end: 12,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 12,
+            },
+        },
+    ],
+)

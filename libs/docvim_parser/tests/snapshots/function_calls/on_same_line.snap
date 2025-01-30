@@ -12,6 +12,12 @@ Block(
                     node: NamedVar(
                         "print",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 6,
+                    },
                 },
                 args: [
                     Node {
@@ -19,8 +25,20 @@ Block(
                         node: Number(
                             "1",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 7,
+                            column_end: 8,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 9,
             },
         },
         Node {
@@ -31,6 +49,12 @@ Block(
                     node: NamedVar(
                         "print",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 10,
+                        column_end: 15,
+                    },
                 },
                 args: [
                     Node {
@@ -38,8 +62,20 @@ Block(
                         node: Number(
                             "2",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 16,
+                            column_end: 17,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 10,
+                column_end: 18,
             },
         },
         Node {
@@ -50,6 +86,12 @@ Block(
                     node: NamedVar(
                         "print",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 19,
+                        column_end: 24,
+                    },
                 },
                 args: [
                     Node {
@@ -57,8 +99,20 @@ Block(
                         node: Number(
                             "3",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 25,
+                            column_end: 26,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 19,
+                column_end: 27,
             },
         },
     ],

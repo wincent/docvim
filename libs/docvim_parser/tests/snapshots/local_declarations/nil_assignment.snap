@@ -1,0 +1,37 @@
+local baz = nil
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "baz",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Nil,
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 13,
+                            column_end: 16,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 16,
+            },
+        },
+    ],
+)

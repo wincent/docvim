@@ -1,0 +1,51 @@
+local len = #'sample'
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "len",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Unary {
+                            exp: Node {
+                                comments: [],
+                                node: CookedStr(
+                                    "sample",
+                                ),
+                                location: Location {
+                                    line_start: 1,
+                                    line_end: 1,
+                                    column_start: 14,
+                                    column_end: 22,
+                                },
+                            },
+                            op: Length,
+                        },
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 13,
+                            column_end: 22,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 22,
+            },
+        },
+    ],
+)

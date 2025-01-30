@@ -12,6 +12,12 @@ Block(
                     node: NamedVar(
                         "y",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 2,
+                    },
                 },
                 name: "z",
                 args: [
@@ -23,6 +29,12 @@ Block(
                                 node: NamedVar(
                                     "a",
                                 ),
+                                location: Location {
+                                    line_start: 1,
+                                    line_end: 1,
+                                    column_start: 5,
+                                    column_end: 6,
+                                },
                             },
                             name: "b",
                             args: [
@@ -31,11 +43,29 @@ Block(
                                     node: NamedVar(
                                         "c",
                                     ),
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 9,
+                                        column_end: 10,
+                                    },
                                 },
                             ],
                         },
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 5,
+                            column_end: 11,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 12,
             },
         },
     ],

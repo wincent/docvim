@@ -1,0 +1,39 @@
+local z = [[loooong]]
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "z",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: RawStr(
+                            "loooong",
+                        ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 11,
+                            column_end: 22,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 22,
+            },
+        },
+    ],
+)

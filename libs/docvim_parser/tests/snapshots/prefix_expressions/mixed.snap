@@ -35,8 +35,20 @@ Block(
                                     node: NamedVar(
                                         "a",
                                     ),
+                                    location: Location {
+                                        line_start: 3,
+                                        line_end: 3,
+                                        column_start: 1,
+                                        column_end: 2,
+                                    },
                                 },
                                 args: [],
+                            },
+                            location: Location {
+                                line_start: 3,
+                                line_end: 3,
+                                column_start: 1,
+                                column_end: 4,
                             },
                         },
                         args: [
@@ -53,17 +65,47 @@ Block(
                                                     node: RawStr(
                                                         "force",
                                                     ),
+                                                    location: Location {
+                                                        line_start: 0,
+                                                        line_end: 0,
+                                                        column_start: 0,
+                                                        column_end: 0,
+                                                    },
                                                 },
                                                 rexp: Node {
                                                     comments: [],
                                                     node: True,
+                                                    location: Location {
+                                                        line_start: 3,
+                                                        line_end: 3,
+                                                        column_start: 15,
+                                                        column_end: 19,
+                                                    },
                                                 },
+                                            },
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 3,
+                                                column_start: 0,
+                                                column_end: 19,
                                             },
                                         },
                                     ],
                                 ),
+                                location: Location {
+                                    line_start: 3,
+                                    line_end: 3,
+                                    column_start: 5,
+                                    column_end: 21,
+                                },
                             },
                         ],
+                    },
+                    location: Location {
+                        line_start: 3,
+                        line_end: 3,
+                        column_start: 1,
+                        column_end: 21,
                     },
                 },
                 args: [
@@ -72,8 +114,20 @@ Block(
                         node: CookedStr(
                             "boo!",
                         ),
+                        location: Location {
+                            line_start: 3,
+                            line_end: 3,
+                            column_start: 22,
+                            column_end: 28,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 3,
+                line_end: 3,
+                column_start: 1,
+                column_end: 28,
             },
         },
         Node {
@@ -101,8 +155,20 @@ Block(
                                     node: NamedVar(
                                         "a",
                                     ),
+                                    location: Location {
+                                        line_start: 7,
+                                        line_end: 7,
+                                        column_start: 1,
+                                        column_end: 2,
+                                    },
                                 },
                                 args: [],
+                            },
+                            location: Location {
+                                line_start: 7,
+                                line_end: 7,
+                                column_start: 1,
+                                column_end: 4,
                             },
                         },
                         args: [
@@ -119,17 +185,47 @@ Block(
                                                     node: RawStr(
                                                         "force",
                                                     ),
+                                                    location: Location {
+                                                        line_start: 0,
+                                                        line_end: 0,
+                                                        column_start: 0,
+                                                        column_end: 0,
+                                                    },
                                                 },
                                                 rexp: Node {
                                                     comments: [],
                                                     node: True,
+                                                    location: Location {
+                                                        line_start: 7,
+                                                        line_end: 7,
+                                                        column_start: 14,
+                                                        column_end: 18,
+                                                    },
                                                 },
+                                            },
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 7,
+                                                column_start: 0,
+                                                column_end: 18,
                                             },
                                         },
                                     ],
                                 ),
+                                location: Location {
+                                    line_start: 7,
+                                    line_end: 7,
+                                    column_start: 5,
+                                    column_end: 19,
+                                },
                             },
                         ],
+                    },
+                    location: Location {
+                        line_start: 7,
+                        line_end: 7,
+                        column_start: 1,
+                        column_end: 20,
                     },
                 },
                 args: [
@@ -138,8 +234,20 @@ Block(
                         node: CookedStr(
                             "boo!",
                         ),
+                        location: Location {
+                            line_start: 7,
+                            line_end: 7,
+                            column_start: 21,
+                            column_end: 27,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 7,
+                line_end: 7,
+                column_start: 1,
+                column_end: 28,
             },
         },
     ],

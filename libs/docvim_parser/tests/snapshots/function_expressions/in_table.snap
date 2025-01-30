@@ -33,6 +33,12 @@ Block(
                                             node: RawStr(
                                                 "onclick",
                                             ),
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
@@ -53,6 +59,12 @@ Block(
                                                                     node: NamedVar(
                                                                         "report",
                                                                     ),
+                                                                    location: Location {
+                                                                        line_start: 3,
+                                                                        line_end: 3,
+                                                                        column_start: 5,
+                                                                        column_end: 11,
+                                                                    },
                                                                 },
                                                                 args: [
                                                                     Node {
@@ -60,14 +72,38 @@ Block(
                                                                         node: NamedVar(
                                                                             "event",
                                                                         ),
+                                                                        location: Location {
+                                                                            line_start: 3,
+                                                                            line_end: 3,
+                                                                            column_start: 12,
+                                                                            column_end: 17,
+                                                                        },
                                                                     },
                                                                 ],
+                                                            },
+                                                            location: Location {
+                                                                line_start: 3,
+                                                                line_end: 3,
+                                                                column_start: 5,
+                                                                column_end: 18,
                                                             },
                                                         },
                                                     ],
                                                 ),
                                             },
+                                            location: Location {
+                                                line_start: 2,
+                                                line_end: 4,
+                                                column_start: 13,
+                                                column_end: 6,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 0,
+                                        line_end: 4,
+                                        column_start: 0,
+                                        column_end: 6,
                                     },
                                 },
                                 Node {
@@ -79,6 +115,12 @@ Block(
                                             node: RawStr(
                                                 "onkeydown",
                                             ),
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
@@ -99,6 +141,12 @@ Block(
                                                                     node: NamedVar(
                                                                         "report",
                                                                     ),
+                                                                    location: Location {
+                                                                        line_start: 6,
+                                                                        line_end: 6,
+                                                                        column_start: 5,
+                                                                        column_end: 11,
+                                                                    },
                                                                 },
                                                                 args: [
                                                                     Node {
@@ -106,20 +154,56 @@ Block(
                                                                         node: NamedVar(
                                                                             "event",
                                                                         ),
+                                                                        location: Location {
+                                                                            line_start: 6,
+                                                                            line_end: 6,
+                                                                            column_start: 12,
+                                                                            column_end: 17,
+                                                                        },
                                                                     },
                                                                 ],
+                                                            },
+                                                            location: Location {
+                                                                line_start: 6,
+                                                                line_end: 6,
+                                                                column_start: 5,
+                                                                column_end: 18,
                                                             },
                                                         },
                                                     ],
                                                 ),
                                             },
+                                            location: Location {
+                                                line_start: 5,
+                                                line_end: 7,
+                                                column_start: 15,
+                                                column_end: 6,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 0,
+                                        line_end: 7,
+                                        column_start: 0,
+                                        column_end: 6,
                                     },
                                 },
                             ],
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 8,
+                            column_start: 18,
+                            column_end: 2,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 8,
+                column_start: 1,
+                column_end: 2,
             },
         },
     ],

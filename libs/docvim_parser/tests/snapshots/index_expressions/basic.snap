@@ -71,16 +71,40 @@ Block(
                                 node: NamedVar(
                                     "list",
                                 ),
+                                location: Location {
+                                    line_start: 7,
+                                    line_end: 7,
+                                    column_start: 14,
+                                    column_end: 18,
+                                },
                             },
                             kexp: Node {
                                 comments: [],
                                 node: Number(
                                     "100",
                                 ),
+                                location: Location {
+                                    line_start: 7,
+                                    line_end: 7,
+                                    column_start: 19,
+                                    column_end: 22,
+                                },
                             },
+                        },
+                        location: Location {
+                            line_start: 7,
+                            line_end: 7,
+                            column_start: 18,
+                            column_end: 23,
                         },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 7,
+                line_end: 7,
+                column_start: 1,
+                column_end: 23,
             },
         },
     ],

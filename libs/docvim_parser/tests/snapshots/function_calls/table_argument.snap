@@ -12,6 +12,12 @@ Block(
                     node: NamedVar(
                         "compute",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 8,
+                    },
                 },
                 args: [
                     Node {
@@ -27,13 +33,31 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: NamedVar(
                                                 "a",
                                             ),
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 11,
+                                                column_end: 12,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 11,
+                                        column_end: 12,
                                     },
                                 },
                                 Node {
@@ -45,13 +69,31 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: NamedVar(
                                                 "b",
                                             ),
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 14,
+                                                column_end: 15,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 14,
+                                        column_end: 15,
                                     },
                                 },
                                 Node {
@@ -63,19 +105,49 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: NamedVar(
                                                 "c",
                                             ),
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 17,
+                                                column_end: 18,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 17,
+                                        column_end: 18,
                                     },
                                 },
                             ],
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 9,
+                            column_end: 19,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 19,
             },
         },
     ],

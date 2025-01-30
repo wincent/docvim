@@ -18,8 +18,20 @@ Block(
                         node: Number(
                             "100",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 15,
+                            column_end: 18,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 18,
             },
         },
     ],

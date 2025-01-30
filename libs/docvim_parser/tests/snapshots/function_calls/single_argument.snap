@@ -12,6 +12,12 @@ Block(
                     node: NamedVar(
                         "len",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 4,
+                    },
                 },
                 args: [
                     Node {
@@ -19,8 +25,20 @@ Block(
                         node: CookedStr(
                             "contents",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 5,
+                            column_end: 15,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 16,
             },
         },
     ],

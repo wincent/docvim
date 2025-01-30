@@ -28,21 +28,51 @@ Block(
                                                 node: NamedVar(
                                                     "foo",
                                                 ),
+                                                location: Location {
+                                                    line_start: 2,
+                                                    line_end: 2,
+                                                    column_start: 16,
+                                                    column_end: 19,
+                                                },
                                             },
                                             kexp: Node {
                                                 comments: [],
                                                 node: RawStr(
                                                     "bar",
                                                 ),
+                                                location: Location {
+                                                    line_start: 0,
+                                                    line_end: 0,
+                                                    column_start: 0,
+                                                    column_end: 0,
+                                                },
                                             },
+                                        },
+                                        location: Location {
+                                            line_start: 2,
+                                            line_end: 0,
+                                            column_start: 16,
+                                            column_end: 0,
                                         },
                                     },
                                 ],
+                            },
+                            location: Location {
+                                line_start: 2,
+                                line_end: 0,
+                                column_start: 3,
+                                column_end: 0,
                             },
                         },
                     ],
                 ),
             ),
+            location: Location {
+                line_start: 1,
+                line_end: 3,
+                column_start: 1,
+                column_end: 4,
+            },
         },
     ],
 )

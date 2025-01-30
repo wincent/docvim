@@ -89,15 +89,24 @@ pub enum BinOp {
     Star,
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Location {
+    pub line_start: usize,
+    pub line_end: usize,
+    pub column_start: usize,
+    pub column_end: usize,
+}
+
 #[derive(Debug, PartialEq)]
 pub struct Node<'a, T> {
     pub comments: Vec<Comment<'a>>,
     pub node: T,
+    pub location: Location,
 }
 
 macro_rules! node_without_comments {
     ($node:expr) => {
-        Node { comments: vec![], node: $node }
+        Node { comments: vec![], node: $node, location: Location::default() }
     };
 }
 
@@ -110,14 +119,6 @@ pub struct Block<'a>(Vec<Statement<'a>>);
 pub enum CommentKind {
     BlockComment,
     LineComment,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Location {
-    pub line_start: usize,
-    pub line_end: usize,
-    pub column_start: usize,
-    pub column_end: usize,
 }
 
 #[derive(Debug, PartialEq)]
@@ -437,12 +438,15 @@ impl<'a> Parser<'a> {
                     // prefixexp ::= var | functioncall | `(´ exp `)´
                     // functioncall ::=  prefixexp args | prefixexp `:´ Name args
                     let comments = std::mem::take(&mut self.comments);
-                    let pexp = self.parse_prefixexp()?;
-                    match pexp.node {
+                    let outer = self.parse_prefixexp()?;
+                    let line_start = outer.location.line_start;
+                    let column_start = outer.location.column_start;
+                    match outer.node {
                         ExpKind::FunctionCall { pexp, args } => {
                             block.0.push(Node {
                                 comments,
                                 node: StatementKind::FunctionCallStatement { pexp, args },
+                                location: outer.location,
                             });
                             self.slurp(PunctuatorToken(SemiToken));
                         }
@@ -450,6 +454,7 @@ impl<'a> Parser<'a> {
                             block.0.push(Node {
                                 comments,
                                 node: StatementKind::MethodCallStatement { pexp, name, args },
+                                location: outer.location,
                             });
                             self.slurp(PunctuatorToken(SemiToken));
                         }
@@ -457,18 +462,24 @@ impl<'a> Parser<'a> {
                             // varlist `=´ explist
                             // varlist ::= var {`,´ var}
                             // var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
-                            let mut varlist = vec![pexp];
+                            let mut varlist = vec![outer];
                             let mut allow_comma = true;
                             loop {
                                 match self.lexer.tokens.peek() {
                                     Some(&Ok(Token { kind: OpToken(AssignToken), .. })) => {
                                         self.lexer.tokens.next();
-                                        let explist = self.parse_explist()?;
+                                        let (explist, location) = self.parse_explist()?;
                                         block.0.push(Node {
                                             comments,
                                             node: StatementKind::VarlistDeclaration {
                                                 varlist,
                                                 explist,
+                                            },
+                                            location: Location {
+                                                line_start,
+                                                line_end: location.line_end,
+                                                column_start,
+                                                column_end: location.column_end,
                                             },
                                         });
                                         self.slurp(PunctuatorToken(SemiToken));
@@ -535,18 +546,51 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
-                Some(&Ok(Token { kind: NameToken(KeywordToken(BreakToken)), .. })) => {
+                Some(&Ok(Token {
+                    kind: NameToken(KeywordToken(BreakToken)),
+                    line_start,
+                    line_end,
+                    column_start,
+                    column_end,
+                    ..
+                })) => {
                     let comments = std::mem::take(&mut self.comments);
                     self.lexer.tokens.next();
-                    block.0.push(Node { comments, node: StatementKind::Break });
+                    block.0.push(Node {
+                        comments,
+                        node: StatementKind::Break,
+                        location: Location { line_start, line_end, column_start, column_end },
+                    });
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
-                Some(&Ok(Token { kind: NameToken(KeywordToken(ReturnToken)), .. })) => {
+                Some(&Ok(Token {
+                    kind: NameToken(KeywordToken(ReturnToken)),
+                    line_start,
+                    line_end,
+                    column_start,
+                    column_end,
+                    ..
+                })) => {
                     let comments = std::mem::take(&mut self.comments);
                     self.lexer.tokens.next();
-                    let explist = if self.peek_exp() { Some(self.parse_explist()?) } else { None };
-                    block.0.push(Node { comments, node: StatementKind::Return(explist) });
+                    let (optional_explist, end_location) = if self.peek_exp() {
+                        let (explist, location) = self.parse_explist()?;
+                        (Some(explist), location)
+                    } else {
+                        (None, Location { line_start, line_end, column_start, column_end })
+                    };
+                    //explist should be option of vec of exp
+                    block.0.push(Node {
+                        comments,
+                        node: StatementKind::Return(optional_explist),
+                        location: Location {
+                            line_start,
+                            line_end: end_location.line_end,
+                            column_start,
+                            column_end: end_location.column_end,
+                        },
+                    });
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
@@ -589,10 +633,19 @@ impl<'a> Parser<'a> {
 
     fn parse_do_block(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
-        self.consume(NameToken(KeywordToken(DoToken)))?;
+        let start_token = self.consume(NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block()?;
-        self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(Node { comments, node: StatementKind::DoBlock(block) })
+        let end_token = self.consume(NameToken(KeywordToken(EndToken)))?;
+        Ok(Node {
+            comments,
+            node: StatementKind::DoBlock(block),
+            location: Location {
+                line_start: start_token.line_start,
+                line_end: end_token.line_end,
+                column_start: start_token.column_start,
+                column_end: end_token.column_end,
+            },
+        })
     }
 
     fn parse_name(&mut self) -> Result<Name<'a>, ParserError> {
@@ -703,9 +756,13 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_namelist(&mut self) -> Result<Vec<Name<'a>>, ParserError> {
+    fn parse_namelist(&mut self) -> Result<(Vec<Name<'a>>, Location), ParserError> {
         let mut namelist = vec![];
         let mut expect_name = true;
+        let mut line_start = 0;
+        let mut line_end = 0;
+        let mut column_start = 0;
+        let mut column_end = 0;
         loop {
             match self.lexer.tokens.peek() {
                 Some(&Ok(token @ Token { kind: NameToken(IdentifierToken), .. })) => {
@@ -713,25 +770,33 @@ impl<'a> Parser<'a> {
                         self.lexer.tokens.next();
                         namelist.push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
                         expect_name = false;
+                        if line_start == 0 {
+                            // First time here.
+                            line_start = token.line_start;
+                            line_end = token.line_end;
+                            column_start = token.column_start;
+                            column_end = token.column_end;
+                        } else {
+                            // Been here before.
+                            line_end = token.line_end;
+                            column_end = token.column_end;
+                        }
                     } else {
                         break;
                     }
                 }
-                Some(&Ok(Token {
-                    kind: PunctuatorToken(CommaToken),
-                    line_start,
-                    column_start,
-                    ..
-                })) => {
+                Some(&Ok(token @ Token { kind: PunctuatorToken(CommaToken), .. })) => {
                     if expect_name {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedComma,
-                            line: line_start,
-                            column: column_start,
+                            line: token.line_start,
+                            column: token.column_start,
                         });
                     } else {
                         self.lexer.tokens.next();
                         expect_name = true;
+                        line_end = token.line_end;
+                        column_end = token.column_end;
                     }
                 }
                 Some(&Ok(Token { line_start, column_start, .. })) => {
@@ -755,12 +820,16 @@ impl<'a> Parser<'a> {
                 }
             }
         }
-        Ok(namelist)
+        Ok((namelist, Location { line_start, line_end, column_start, column_end }))
     }
 
-    fn parse_explist(&mut self) -> Result<Vec<Exp<'a>>, ParserError> {
+    fn parse_explist(&mut self) -> Result<(Vec<Exp<'a>>, Location), ParserError> {
         let mut explist = vec![];
         let mut allow_comma = false;
+        let mut line_start = 0;
+        let mut line_end = 0;
+        let mut column_start = 0;
+        let mut column_end = 0;
         loop {
             match self.lexer.tokens.peek() {
                 Some(&Ok(Token {
@@ -794,7 +863,18 @@ impl<'a> Parser<'a> {
                     ..
                 })) => {
                     if !allow_comma {
-                        explist.push(self.parse_exp(0)?);
+                        let exp = self.parse_exp(0)?;
+                        if line_start == 0 {
+                            // First expression in the list.
+                            line_start = exp.location.line_start;
+                            line_end = exp.location.line_end;
+                            column_start = exp.location.column_start;
+                            column_end = exp.location.column_end;
+                        } else {
+                            line_end = exp.location.line_end;
+                            column_end = exp.location.column_end;
+                        }
+                        explist.push(exp);
                         allow_comma = true;
                     } else {
                         break;
@@ -836,13 +916,13 @@ impl<'a> Parser<'a> {
             }
         }
 
-        Ok(explist)
+        Ok((explist, Location { line_start, line_end, column_start, column_end }))
     }
 
     fn parse_for(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
-        self.consume(NameToken(KeywordToken(ForToken)))?;
-        let mut namelist = self.parse_namelist()?;
+        let start_token = self.consume(NameToken(KeywordToken(ForToken)))?;
+        let (mut namelist, _location) = self.parse_namelist()?;
 
         if namelist.len() == 1 && self.slurp(OpToken(AssignToken)) {
             // Parse: for Name `=´ exp `,´ exp [`,´ exp] do block end
@@ -856,24 +936,40 @@ impl<'a> Parser<'a> {
                 None
             };
             let block = self.parse_block()?;
+            let end_location = block.0.last().map(|last| last.location).unwrap_or_default();
             Ok(Node {
                 comments,
                 node: StatementKind::For { name, startexp, endexp, stepexp, block },
+                location: Location {
+                    line_start: start_token.line_start,
+                    line_end: end_location.line_end,
+                    column_start: start_token.column_start,
+                    column_end: end_location.column_end,
+                },
             })
         } else {
             // Parse: for namelist in explist do block end
             self.consume(NameToken(KeywordToken(InToken)))?;
-            let explist = self.parse_explist()?;
+            let (explist, _location) = self.parse_explist()?;
             self.consume(NameToken(KeywordToken(DoToken)))?;
             let block = self.parse_block()?;
-            self.consume(NameToken(KeywordToken(EndToken)))?;
-            Ok(Node { comments, node: StatementKind::ForIn { namelist, explist, block } })
+            let end_token = self.consume(NameToken(KeywordToken(EndToken)))?;
+            Ok(Node {
+                comments,
+                node: StatementKind::ForIn { namelist, explist, block },
+                location: Location {
+                    line_start: start_token.line_start,
+                    line_end: end_token.line_end,
+                    column_start: start_token.column_start,
+                    column_end: end_token.column_end,
+                },
+            })
         }
     }
 
     fn parse_if(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
-        self.consume(NameToken(KeywordToken(IfToken)))?;
+        let start_token = self.consume(NameToken(KeywordToken(IfToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
         self.consume(NameToken(KeywordToken(ThenToken)))?;
         let block = self.parse_block()?;
@@ -891,32 +987,61 @@ impl<'a> Parser<'a> {
             false => None,
         };
 
-        self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(Node { comments, node: StatementKind::IfStatement { consequents, alternate } })
+        let end_token = self.consume(NameToken(KeywordToken(EndToken)))?;
+        Ok(Node {
+            comments,
+            node: StatementKind::IfStatement { consequents, alternate },
+            location: Location {
+                line_start: start_token.line_start,
+                line_end: end_token.line_end,
+                column_start: start_token.column_start,
+                column_end: end_token.column_end,
+            },
+        })
     }
 
     fn parse_repeat(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
-        self.consume(NameToken(KeywordToken(RepeatToken)))?;
+        let start_token = self.consume(NameToken(KeywordToken(RepeatToken)))?;
         let block = self.parse_block()?;
         self.consume(NameToken(KeywordToken(UntilToken)))?;
-        let cexp = Box::new(self.parse_exp(0)?);
-        Ok(Node { comments, node: StatementKind::Repeat { block, cexp } })
+        let cexp = self.parse_exp(0)?;
+        let line_end = cexp.location.line_end;
+        let column_end = cexp.location.column_end;
+        Ok(Node {
+            comments,
+            node: StatementKind::Repeat { block, cexp: Box::new(cexp) },
+            location: Location {
+                line_start: start_token.line_start,
+                line_end,
+                column_start: start_token.column_start,
+                column_end,
+            },
+        })
     }
 
     fn parse_while(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
-        self.consume(NameToken(KeywordToken(WhileToken)))?;
+        let start_token = self.consume(NameToken(KeywordToken(WhileToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
         self.consume(NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block()?;
-        self.consume(NameToken(KeywordToken(EndToken)))?;
-        Ok(Node { comments, node: StatementKind::While { cexp, block } })
+        let end_token = self.consume(NameToken(KeywordToken(EndToken)))?;
+        Ok(Node {
+            comments,
+            node: StatementKind::While { cexp, block },
+            location: Location {
+                line_start: start_token.line_start,
+                line_end: end_token.line_end,
+                column_start: start_token.column_start,
+                column_end: end_token.column_end,
+            },
+        })
     }
 
     fn parse_function(&mut self) -> Result<Statement<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
-        self.consume(NameToken(KeywordToken(FunctionToken)))?;
+        let start_token = self.consume(NameToken(KeywordToken(FunctionToken)))?;
         let mut name = vec![self.parse_name()?];
         while self.slurp(PunctuatorToken(DotToken)) {
             name.push(self.parse_name()?);
@@ -925,10 +1050,16 @@ impl<'a> Parser<'a> {
             if self.slurp(PunctuatorToken(ColonToken)) { Some(self.parse_name()?) } else { None };
         let (parlist, varargs) = self.parse_parlist()?;
         let block = self.parse_block()?;
-        self.consume(NameToken(KeywordToken(EndToken)))?;
+        let end_token = self.consume(NameToken(KeywordToken(EndToken)))?;
         Ok(Node {
             comments,
             node: StatementKind::FunctionDeclaration { name, method, parlist, varargs, block },
+            location: Location {
+                line_start: start_token.line_start,
+                line_end: end_token.line_end,
+                column_start: start_token.column_start,
+                column_end: end_token.column_end,
+            },
         })
     }
 
@@ -940,21 +1071,47 @@ impl<'a> Parser<'a> {
         // local x, y = 10, 20
         // local function Name funcbody
         let comments = std::mem::take(&mut self.comments);
-        self.consume(NameToken(KeywordToken(LocalToken)))?;
+        let start_token = self.consume(NameToken(KeywordToken(LocalToken)))?;
         if self.slurp(NameToken(KeywordToken(FunctionToken))) {
             let name = self.parse_name()?;
             let (parlist, varargs) = self.parse_parlist()?;
             let block = self.parse_block()?;
-            self.consume(NameToken(KeywordToken(EndToken)))?;
+            let end_token = self.consume(NameToken(KeywordToken(EndToken)))?;
             Ok(Node {
                 comments,
                 node: StatementKind::LocalFunctionDeclaration { name, parlist, varargs, block },
+                location: Location {
+                    line_start: start_token.line_start,
+                    line_end: end_token.line_end,
+                    column_start: start_token.column_start,
+                    column_end: end_token.column_end,
+                },
             })
         } else {
-            let namelist = self.parse_namelist()?;
-            let explist =
-                if self.slurp(OpToken(AssignToken)) { self.parse_explist()? } else { vec![] };
-            Ok(Node { comments, node: StatementKind::LocalDeclaration { explist, namelist } })
+            let (namelist, end_namelist) = self.parse_namelist()?;
+            let (explist, end_location) = if self.slurp(OpToken(AssignToken)) {
+                self.parse_explist()?
+            } else {
+                (
+                    vec![],
+                    Location {
+                        line_start: start_token.line_start, // Not used.
+                        line_end: end_namelist.line_end,
+                        column_start: start_token.column_start, // Not used.
+                        column_end: end_namelist.column_end,
+                    },
+                )
+            };
+            Ok(Node {
+                comments,
+                node: StatementKind::LocalDeclaration { explist, namelist },
+                location: Location {
+                    line_start: start_token.line_start,
+                    line_end: end_location.line_end,
+                    column_start: start_token.column_start,
+                    column_end: end_location.column_end,
+                },
+            })
         }
     }
 
@@ -1056,29 +1213,57 @@ impl<'a> Parser<'a> {
         Ok(ExpKind::CookedStr(Box::new(unescaped)))
     }
 
-    fn parse_unop_exp(&mut self, op: UnOp) -> Result<Exp<'a>, ParserError> {
+    fn parse_unop_exp(
+        &mut self,
+        op: UnOp,
+        line_start: usize,
+        column_start: usize,
+    ) -> Result<Exp<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         let bp = unop_binding(op);
         let rhs = self.parse_exp(bp)?;
-        Ok(Node { comments, node: ExpKind::Unary { exp: Box::new(rhs), op } })
+        let line_end = rhs.location.line_end;
+        let column_end = rhs.location.column_end;
+        Ok(Node {
+            comments,
+            node: ExpKind::Unary { exp: Box::new(rhs), op },
+            location: Location { line_start, line_end, column_start, column_end },
+        })
     }
 
     /// args ::=  `(´ [explist] `)´ | tableconstructor | String
-    fn parse_args(&mut self) -> Result<Vec<Exp<'a>>, ParserError> {
+    fn parse_args(&mut self) -> Result<(Vec<Exp<'a>>, Location), ParserError> {
         match self.lexer.tokens.peek() {
-            Some(&Ok(Token { kind: PunctuatorToken(LparenToken), .. })) => {
+            Some(&Ok(Token {
+                kind: PunctuatorToken(LparenToken),
+                line_start,
+                column_start,
+                ..
+            })) => {
                 self.lexer.tokens.next();
-                let args = self.parse_explist()?;
-                self.consume(PunctuatorToken(RparenToken))?;
-                Ok(args)
+                let (args, _location) = self.parse_explist()?;
+                let end_token = self.consume(PunctuatorToken(RparenToken))?;
+                Ok((
+                    args,
+                    Location {
+                        line_start,
+                        line_end: end_token.line_end,
+                        column_start,
+                        column_end: end_token.column_end,
+                    },
+                ))
             }
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
-                Ok(vec![self.parse_table_constructor()?])
+                let table = self.parse_table_constructor()?;
+                let location = table.location;
+                Ok((vec![table], location))
             }
             Some(&Ok(Token { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
             | Some(&Ok(Token { kind: LiteralToken(StrToken(SingleQuotedToken)), .. }))
             | Some(&Ok(Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
-                Ok(vec![self.parse_exp(0)?])
+                let exp = self.parse_exp(0)?;
+                let location = exp.location;
+                Ok((vec![exp], location))
             }
             // TODO: probably need to skip comments here too
             // Some(&Ok(Token { kind: CommentToken(_) .. })) => {
@@ -1123,9 +1308,22 @@ impl<'a> Parser<'a> {
                     None => return Err(self.unexpected_end_of_input()),
                 }
             }
-            Some(Ok(Token { kind: NameToken(IdentifierToken), byte_start, byte_end, .. })) => {
+            Some(Ok(Token {
+                kind: NameToken(IdentifierToken),
+                byte_start,
+                byte_end,
+                line_start,
+                line_end,
+                column_start,
+                column_end,
+                ..
+            })) => {
                 let comments = std::mem::take(&mut self.comments);
-                Node { comments, node: ExpKind::NamedVar(&self.lexer.input[byte_start..byte_end]) }
+                Node {
+                    comments,
+                    node: ExpKind::NamedVar(&self.lexer.input[byte_start..byte_end]),
+                    location: Location { line_start, line_end, column_start, column_end },
+                }
             }
             Some(Ok(Token { line_start, column_start, .. })) => {
                 return Err(ParserError {
@@ -1160,10 +1358,18 @@ impl<'a> Parser<'a> {
                         None => return Err(self.unexpected_end_of_input()),
                     };
                     let comments = std::mem::take(&mut pexp.comments);
-                    let args = self.parse_args()?;
+                    let (args, location) = self.parse_args()?;
+                    let line_start = pexp.location.line_start;
+                    let column_start = pexp.location.column_start;
                     pexp = Node {
                         comments,
                         node: ExpKind::MethodCall { pexp: Box::new(pexp), name: method_name, args },
+                        location: Location {
+                            line_start,
+                            line_end: location.line_end,
+                            column_start,
+                            column_end: location.column_end,
+                        },
                     };
                 }
                 Some(&Ok(Token { kind: PunctuatorToken(DotToken), .. })) => {
@@ -1190,20 +1396,36 @@ impl<'a> Parser<'a> {
                         None => return Err(self.unexpected_end_of_input()),
                     };
                     let comments = std::mem::take(&mut pexp.comments);
+                    let line_start = pexp.location.line_start;
+                    let line_end = kexp.location.line_end;
+                    let column_start = pexp.location.column_start;
+                    let column_end = kexp.location.column_end;
                     pexp = Node {
                         comments,
                         node: ExpKind::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) },
+                        location: Location { line_start, line_end, column_start, column_end },
                     };
                 }
-                Some(&Ok(Token { kind: PunctuatorToken(LbracketToken), .. })) => {
+                Some(&Ok(Token {
+                    kind: PunctuatorToken(LbracketToken),
+                    line_start,
+                    column_start,
+                    ..
+                })) => {
                     // ie. `foo[bar]`
                     let comments = std::mem::take(&mut pexp.comments);
                     self.lexer.tokens.next();
                     let kexp = self.parse_exp(0)?;
-                    self.consume(PunctuatorToken(RbracketToken))?;
+                    let end_token = self.consume(PunctuatorToken(RbracketToken))?;
                     pexp = Node {
                         comments,
                         node: ExpKind::Index { pexp: Box::new(pexp), kexp: Box::new(kexp) },
+                        location: Location {
+                            line_start,
+                            line_end: end_token.line_end,
+                            column_start,
+                            column_end: end_token.column_end,
+                        },
                     };
                 }
                 Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken | LparenToken), .. }))
@@ -1213,10 +1435,18 @@ impl<'a> Parser<'a> {
                 }))
                 | Some(&Ok(Token { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
                     let comments = std::mem::take(&mut pexp.comments);
-                    let args = self.parse_args()?;
+                    let (args, location) = self.parse_args()?;
+                    let line_start = pexp.location.line_start;
+                    let column_start = pexp.location.column_start;
                     pexp = Node {
                         comments,
                         node: ExpKind::FunctionCall { pexp: Box::new(pexp), args },
+                        location: Location {
+                            line_start,
+                            line_end: location.line_end,
+                            column_start,
+                            column_end: location.column_end,
+                        },
                     };
                 }
                 _ => break,
@@ -1255,61 +1485,145 @@ impl<'a> Parser<'a> {
             //
             // Primaries (literals etc).
             //
-            Some(&Ok(Token { kind: NameToken(KeywordToken(FalseToken)), .. })) => {
-                self.lexer.tokens.next();
-                Node { comments, node: ExpKind::False }
-            }
-            Some(&Ok(Token { kind: NameToken(KeywordToken(NilToken)), .. })) => {
-                self.lexer.tokens.next();
-                Node { comments, node: ExpKind::Nil }
-            }
-            Some(&Ok(token @ Token { kind: LiteralToken(NumberToken), .. })) => {
+            Some(&Ok(Token {
+                kind: NameToken(KeywordToken(FalseToken)),
+                line_start,
+                line_end,
+                column_start,
+                column_end,
+                ..
+            })) => {
                 self.lexer.tokens.next();
                 Node {
                     comments,
-                    node: ExpKind::Number(&self.lexer.input[token.byte_start..token.byte_end]),
+                    node: ExpKind::False,
+                    location: Location { line_start, line_end, column_start, column_end },
+                }
+            }
+            Some(&Ok(Token {
+                kind: NameToken(KeywordToken(NilToken)),
+                line_start,
+                line_end,
+                column_start,
+                column_end,
+                ..
+            })) => {
+                self.lexer.tokens.next();
+                Node {
+                    comments,
+                    node: ExpKind::Nil,
+                    location: Location { line_start, line_end, column_start, column_end },
+                }
+            }
+            Some(&Ok(Token {
+                kind: LiteralToken(NumberToken),
+                byte_start,
+                byte_end,
+                line_start,
+                line_end,
+                column_start,
+                column_end,
+                ..
+            })) => {
+                self.lexer.tokens.next();
+                Node {
+                    comments,
+                    node: ExpKind::Number(&self.lexer.input[byte_start..byte_end]),
+                    location: Location { line_start, line_end, column_start, column_end },
                 }
             }
             Some(&Ok(
                 token @ Token {
                     kind: LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken)),
+                    line_start,
+                    line_end,
+                    column_start,
+                    column_end,
                     ..
                 },
             )) => {
                 self.lexer.tokens.next();
-                Node { comments, node: self.cook_str(token)? }
+                Node {
+                    comments,
+                    node: self.cook_str(token)?,
+                    location: Location { line_start, line_end, column_start, column_end },
+                }
             }
-            Some(&Ok(token @ Token { kind: LiteralToken(StrToken(LongToken { level })), .. })) => {
+            Some(&Ok(Token {
+                kind: LiteralToken(StrToken(LongToken { level })),
+                byte_start,
+                byte_end,
+                line_start,
+                line_end,
+                column_start,
+                column_end,
+                ..
+            })) => {
                 self.lexer.tokens.next();
 
                 // As a convenience, Lua omits any newline at position 0 in a long format string.
-                let first = self.lexer.input.as_bytes()[token.byte_start + 2 + level];
+                let first = self.lexer.input.as_bytes()[byte_start + 2 + level];
                 let start = if first == ('\n' as u8) {
-                    token.byte_start + 2 + level + 1
+                    byte_start + 2 + level + 1
                 } else {
-                    token.byte_start + 2 + level
+                    byte_start + 2 + level
                 };
-                let end = token.byte_end - 2 - level;
-                Node { comments, node: ExpKind::RawStr(&self.lexer.input[start..end]) }
+                let end = byte_end - 2 - level;
+                Node {
+                    comments,
+                    node: ExpKind::RawStr(&self.lexer.input[start..end]),
+                    location: Location { line_start, line_end, column_start, column_end },
+                }
             }
-            Some(&Ok(Token { kind: NameToken(KeywordToken(TrueToken)), .. })) => {
+            Some(&Ok(Token {
+                kind: NameToken(KeywordToken(TrueToken)),
+                line_start,
+                line_end,
+                column_start,
+                column_end,
+                ..
+            })) => {
                 self.lexer.tokens.next();
-                Node { comments, node: ExpKind::True }
+                Node {
+                    comments,
+                    node: ExpKind::True,
+                    location: Location { line_start, line_end, column_start, column_end },
+                }
             }
-            Some(&Ok(Token { kind: OpToken(VarargToken), .. })) => {
+            Some(&Ok(Token {
+                kind: OpToken(VarargToken),
+                line_start,
+                line_end,
+                column_start,
+                column_end,
+                ..
+            })) => {
                 self.lexer.tokens.next();
-                Node { comments, node: ExpKind::Varargs }
+                Node {
+                    comments,
+                    node: ExpKind::Varargs,
+                    location: Location { line_start, line_end, column_start, column_end },
+                }
             }
             Some(&Ok(Token {
                 kind: NameToken(IdentifierToken) | PunctuatorToken(LparenToken),
                 ..
             })) => self.parse_prefixexp()?,
             Some(&Ok(Token { kind: NameToken(KeywordToken(FunctionToken)), .. })) => {
-                self.consume(NameToken(KeywordToken(FunctionToken)))?;
+                let start_token = self.consume(NameToken(KeywordToken(FunctionToken)))?;
                 let (parlist, varargs) = self.parse_parlist()?;
                 let block = self.parse_block()?;
-                self.consume(NameToken(KeywordToken(EndToken)))?;
-                Node { comments, node: ExpKind::Function { parlist, varargs, block } }
+                let end_token = self.consume(NameToken(KeywordToken(EndToken)))?;
+                Node {
+                    comments,
+                    node: ExpKind::Function { parlist, varargs, block },
+                    location: Location {
+                        line_start: start_token.line_start,
+                        line_end: end_token.line_end,
+                        column_start: start_token.column_start,
+                        column_end: end_token.column_end,
+                    },
+                }
             }
             Some(&Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 self.parse_table_constructor()?
@@ -1318,17 +1632,22 @@ impl<'a> Parser<'a> {
             //
             // Unary operators.
             //
-            Some(&Ok(Token { kind: NameToken(KeywordToken(NotToken)), .. })) => {
+            Some(&Ok(Token {
+                kind: NameToken(KeywordToken(NotToken)),
+                line_start,
+                column_start,
+                ..
+            })) => {
                 self.lexer.tokens.next();
-                self.parse_unop_exp(UnOp::Not)?
+                self.parse_unop_exp(UnOp::Not, line_start, column_start)?
             }
-            Some(&Ok(Token { kind: OpToken(HashToken), .. })) => {
+            Some(&Ok(Token { kind: OpToken(HashToken), line_start, column_start, .. })) => {
                 self.lexer.tokens.next();
-                self.parse_unop_exp(UnOp::Length)?
+                self.parse_unop_exp(UnOp::Length, line_start, column_start)?
             }
-            Some(&Ok(Token { kind: OpToken(MinusToken), .. })) => {
+            Some(&Ok(Token { kind: OpToken(MinusToken), line_start, column_start, .. })) => {
                 self.lexer.tokens.next();
-                self.parse_unop_exp(UnOp::Minus)?
+                self.parse_unop_exp(UnOp::Minus, line_start, column_start)?
             }
 
             Some(&Ok(token)) => {
@@ -1377,9 +1696,14 @@ impl<'a> Parser<'a> {
                     self.lexer.tokens.next();
                     let rhs = self.parse_exp(right_bp)?;
                     let comments = std::mem::take(&mut lhs.comments);
+                    let line_start = lhs.location.line_start;
+                    let line_end = rhs.location.line_end;
+                    let column_start = lhs.location.column_start;
+                    let column_end = rhs.location.column_end;
                     lhs = Node {
                         comments,
                         node: ExpKind::Binary { lexp: Box::new(lhs), op, rexp: Box::new(rhs) },
+                        location: Location { line_start, line_end, column_start, column_end },
                     };
                 }
             } else {
@@ -1395,16 +1719,35 @@ impl<'a> Parser<'a> {
     fn parse_table_constructor(&mut self) -> Result<Exp<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         match self.lexer.tokens.next() {
-            Some(Ok(Token { kind: PunctuatorToken(LcurlyToken), .. })) => {
+            Some(Ok(Token {
+                kind: PunctuatorToken(LcurlyToken),
+                line_start,
+                column_start,
+                ..
+            })) => {
                 let mut fieldsep_allowed = false;
                 let mut fields = vec![];
                 let mut index = 1;
                 loop {
                     let token = self.lexer.tokens.peek();
                     match token {
-                        Some(&Ok(Token { kind: PunctuatorToken(RcurlyToken), .. })) => {
+                        Some(&Ok(Token {
+                            kind: PunctuatorToken(RcurlyToken),
+                            line_end,
+                            column_end,
+                            ..
+                        })) => {
                             self.lexer.tokens.next();
-                            return Ok(Node { comments, node: ExpKind::Table(fields) });
+                            return Ok(Node {
+                                comments,
+                                node: ExpKind::Table(fields),
+                                location: Location {
+                                    line_start,
+                                    line_end,
+                                    column_start,
+                                    column_end,
+                                },
+                            });
                         }
                         Some(&Ok(Token {
                             kind: PunctuatorToken(CommaToken | SemiToken),
@@ -1540,16 +1883,23 @@ impl<'a> Parser<'a> {
                     // Name = exp
                     if self.slurp(OpToken(AssignToken)) {
                         // `name = exp`; equivalent to `["name"] = exp`.
+                        let lexp = node_without_comments!(ExpKind::RawStr(name));
+                        let rexp = self.parse_exp(0)?;
+                        let line_start = lexp.location.line_start;
+                        let line_end = rexp.location.line_end;
+                        let column_start = lexp.location.column_start;
+                        let column_end = rexp.location.column_end;
                         Ok(Node {
                             comments,
-                            node: Field {
-                                index: None,
-                                lexp: Box::new(node_without_comments!(ExpKind::RawStr(name))),
-                                rexp: Box::new(self.parse_exp(0)?),
-                            },
+                            node: Field { index: None, lexp: Box::new(lexp), rexp: Box::new(rexp) },
+                            location: Location { line_start, line_end, column_start, column_end },
                         })
                     } else {
                         // `exp`; syntactic sugar for `[index] = exp`
+                        let line_start = lexp.location.line_start;
+                        let line_end = lexp.location.line_end;
+                        let column_start = lexp.location.column_start;
+                        let column_end = lexp.location.column_end;
                         Ok(Node {
                             comments,
                             node: Field {
@@ -1557,10 +1907,15 @@ impl<'a> Parser<'a> {
                                 lexp: Box::new(node_without_comments!(ExpKind::Nil)),
                                 rexp: Box::new(lexp),
                             },
+                            location: Location { line_start, line_end, column_start, column_end },
                         })
                     }
                 } else {
                     // exp; syntactic sugar for `[index] = exp`
+                    let line_start = lexp.location.line_start;
+                    let line_end = lexp.location.line_end;
+                    let column_start = lexp.location.column_start;
+                    let column_end = lexp.location.column_end;
                     Ok(Node {
                         comments,
                         node: Field {
@@ -1568,6 +1923,7 @@ impl<'a> Parser<'a> {
                             lexp: Box::new(node_without_comments!(ExpKind::Nil)),
                             rexp: Box::new(lexp),
                         },
+                        location: Location { line_start, line_end, column_start, column_end },
                     })
                 }
             }
@@ -1578,14 +1934,23 @@ impl<'a> Parser<'a> {
                 self.consume(PunctuatorToken(RbracketToken))?;
                 self.consume(OpToken(AssignToken))?;
                 let rexp = self.parse_exp(0)?; // TODO: confirm binding power of 0 is appropriate here
+                let line_start = lexp.location.line_start;
+                let line_end = rexp.location.line_end;
+                let column_start = lexp.location.column_start;
+                let column_end = rexp.location.column_end;
                 Ok(Node {
                     comments,
                     node: Field { index: None, lexp: Box::new(lexp), rexp: Box::new(rexp) },
+                    location: Location { line_start, line_end, column_start, column_end },
                 })
             }
             Some(&Ok(Token { .. })) => {
                 // `exp`; syntactic sugar for `[index] = exp`
                 let exp = self.parse_exp(0)?; // TODO: confirm binding power of 0 is appropriate here
+                let line_start = exp.location.line_start;
+                let line_end = exp.location.line_end;
+                let column_start = exp.location.column_start;
+                let column_end = exp.location.column_end;
                 Ok(Node {
                     comments,
                     node: Field {
@@ -1593,6 +1958,7 @@ impl<'a> Parser<'a> {
                         lexp: Box::new(node_without_comments!(ExpKind::Nil)), // A hack because we can't create an Exp::Number here without upsetting the borrow checker.
                         rexp: Box::new(exp),
                     },
+                    location: Location { line_start, line_end, column_start, column_end },
                 })
                 // TODO: implement this:
                 // "If the last field in the list has the form exp and the expression is a function
@@ -1610,254 +1976,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_local_declarations() {
-        let mut parser = Parser::new("local foo");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("foo")],
-                explist: vec![]
-            })])
-        );
-
-        let mut parser = Parser::new("local bar = false");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("bar")],
-                explist: vec![node_without_comments!(ExpKind::False)],
-            })])
-        );
-
-        let mut parser = Parser::new("local baz = nil");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("baz")],
-                explist: vec![node_without_comments!(ExpKind::Nil)],
-            })])
-        );
-
-        let mut parser = Parser::new("local w = 1");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("w")],
-                explist: vec![node_without_comments!(ExpKind::Number("1"))],
-            })])
-        );
-
-        let mut parser = Parser::new("local x = 'wat'");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("x")],
-                explist: vec![node_without_comments!(ExpKind::CookedStr(Box::new(String::from(
-                    "wat"
-                ))))],
-            })])
-        );
-
-        let mut parser = Parser::new("local y = \"don't say \\\"hello\\\"!\"");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("y")],
-                explist: vec![node_without_comments!(ExpKind::CookedStr(Box::new(String::from(
-                    "don't say \"hello\"!"
-                ))))],
-            })])
-        );
-
-        let mut parser = Parser::new("local z = [[loooong]]");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("z")],
-                explist: vec![node_without_comments!(ExpKind::RawStr("loooong"))],
-            })])
-        );
-
-        let mut parser = Parser::new("local qux = true");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("qux")],
-                explist: vec![node_without_comments!(ExpKind::True)],
-            })])
-        );
-
-        let mut parser = Parser::new("local neg = not true");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("neg")],
-                explist: vec![node_without_comments!(ExpKind::Unary {
-                    exp: Box::new(node_without_comments!(ExpKind::True)),
-                    op: UnOp::Not
-                })],
-            })])
-        );
-
-        let mut parser = Parser::new("local len = #'sample'");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("len")],
-                explist: vec![node_without_comments!(ExpKind::Unary {
-                    exp: Box::new(node_without_comments!(ExpKind::CookedStr(Box::new(
-                        String::from("sample")
-                    )))),
-                    op: UnOp::Length,
-                })],
-            })])
-        );
-
-        let mut parser = Parser::new("local small = -1000");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("small")],
-                explist: vec![node_without_comments!(ExpKind::Unary {
-                    exp: Box::new(node_without_comments!(ExpKind::Number("1000"))),
-                    op: UnOp::Minus
-                })],
-            })])
-        );
-
-        let mut parser = Parser::new("local sum = 7 + 8");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("sum")],
-                explist: vec![node_without_comments!(ExpKind::Binary {
-                    lexp: Box::new(node_without_comments!(ExpKind::Number("7"))),
-                    op: BinOp::Plus,
-                    rexp: Box::new(node_without_comments!(ExpKind::Number("8")))
-                })],
-            })])
-        );
-
-        // Based on the example from doc/lua.md plus some extra parens and a "not" thrown in for
-        // good measure:
-        //
-        //      not (1 * 2 + 3 - 4 / 5 ^ -6 > -7 ^ 8 + (9 - 10) * 11)
-        //
-        // equivalent to:
-        //
-        //      not (((1 * 2) + (3 - (4 / (5 ^ (-6))))) > (-(7 ^ 8) + ((9 - 10) * 11)))
-        //
-        let mut parser =
-            Parser::new("local demo =  not (1 * 2 + 3 - 4 / 5 ^ -6 > -7 ^ 8 + (9 - 10) * 11)");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("demo")],
-                explist: vec![node_without_comments!(ExpKind::Unary {
-                    exp: Box::new(node_without_comments!(ExpKind::Binary {
-                        lexp: Box::new(node_without_comments!(ExpKind::Binary {
-                            lexp: Box::new(node_without_comments!(ExpKind::Binary {
-                                lexp: Box::new(node_without_comments!(ExpKind::Number("1"))),
-                                op: BinOp::Star,
-                                rexp: Box::new(node_without_comments!(ExpKind::Number("2"))),
-                            })),
-                            op: BinOp::Plus,
-                            rexp: Box::new(node_without_comments!(ExpKind::Binary {
-                                lexp: Box::new(node_without_comments!(ExpKind::Number("3"))),
-                                op: BinOp::Minus,
-                                rexp: Box::new(node_without_comments!(ExpKind::Binary {
-                                    lexp: Box::new(node_without_comments!(ExpKind::Number("4"))),
-                                    op: BinOp::Slash,
-                                    rexp: Box::new(node_without_comments!(ExpKind::Binary {
-                                        lexp: Box::new(node_without_comments!(ExpKind::Number(
-                                            "5"
-                                        ))),
-                                        op: BinOp::Caret,
-                                        rexp: Box::new(node_without_comments!(ExpKind::Unary {
-                                            exp: Box::new(node_without_comments!(ExpKind::Number(
-                                                "6"
-                                            ))),
-                                            op: UnOp::Minus,
-                                        }))
-                                    }))
-                                }))
-                            }))
-                        })),
-                        op: BinOp::Gt,
-                        rexp: Box::new(node_without_comments!(ExpKind::Binary {
-                            lexp: Box::new(node_without_comments!(ExpKind::Unary {
-                                exp: Box::new(node_without_comments!(ExpKind::Binary {
-                                    lexp: Box::new(node_without_comments!(ExpKind::Number("7"))),
-                                    op: BinOp::Caret,
-                                    rexp: Box::new(node_without_comments!(ExpKind::Number("8"))),
-                                })),
-                                op: UnOp::Minus,
-                            })),
-                            op: BinOp::Plus,
-                            rexp: Box::new(node_without_comments!(ExpKind::Binary {
-                                lexp: Box::new(node_without_comments!(ExpKind::Binary {
-                                    lexp: Box::new(node_without_comments!(ExpKind::Number("9"))),
-                                    op: BinOp::Minus,
-                                    rexp: Box::new(node_without_comments!(ExpKind::Number("10"))),
-                                })),
-                                op: BinOp::Star,
-                                rexp: Box::new(node_without_comments!(ExpKind::Number("11")))
-                            }))
-                        }))
-                    })),
-                    op: UnOp::Not
-                })]
-            })])
-        );
-    }
-
-    #[test]
-    fn parses_unary_not_with_name() {
-        let mut parser = Parser::new("local foo = not bar");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("foo")],
-                explist: vec![node_without_comments!(ExpKind::Unary {
-                    exp: Box::new(node_without_comments!(ExpKind::NamedVar("bar"))),
-                    op: UnOp::Not
-                })],
-            })])
-        );
-    }
-
-    #[test]
-    fn parses_table_constructor() {
-        let mut parser = Parser::new("local stuff = { [\"foo\"] = bar }");
-        let ast = parser.parse();
-        assert_eq!(
-            ast.unwrap(),
-            Block(vec![node_without_comments!(StatementKind::LocalDeclaration {
-                namelist: vec![Name("stuff")],
-                explist: vec![node_without_comments!(ExpKind::Table(vec![
-                    node_without_comments!(Field {
-                        index: None,
-                        lexp: Box::new(node_without_comments!(ExpKind::CookedStr(Box::new(
-                            String::from("foo")
-                        )))),
-                        rexp: Box::new(node_without_comments!(ExpKind::NamedVar("bar")))
-                    })
-                ]))]
-            })])
-        );
+    fn unexpected_end_of_input() {
+        let mut parser = Parser::new("local list = {");
+        let result = parser.parse();
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(matches!(err.kind, ParserErrorKind::UnexpectedEndOfInput));
+        assert_eq!(err.line, 1);
+        assert_eq!(err.column, 15);
     }
 }

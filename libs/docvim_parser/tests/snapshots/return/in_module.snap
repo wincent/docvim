@@ -14,6 +14,12 @@ Block(
                     node: NamedVar(
                         "print",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 6,
+                    },
                 },
                 args: [
                     Node {
@@ -21,8 +27,20 @@ Block(
                         node: CookedStr(
                             "in a module",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 7,
+                            column_end: 20,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 21,
             },
         },
         Node {
@@ -33,10 +51,22 @@ Block(
                         Node {
                             comments: [],
                             node: True,
+                            location: Location {
+                                line_start: 3,
+                                line_end: 3,
+                                column_start: 8,
+                                column_end: 12,
+                            },
                         },
                     ],
                 ),
             ),
+            location: Location {
+                line_start: 3,
+                line_end: 3,
+                column_start: 1,
+                column_end: 12,
+            },
         },
     ],
 )

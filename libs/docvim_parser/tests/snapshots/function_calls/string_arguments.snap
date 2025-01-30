@@ -14,6 +14,12 @@ Block(
                     node: NamedVar(
                         "foo",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 4,
+                    },
                 },
                 args: [
                     Node {
@@ -21,8 +27,20 @@ Block(
                         node: CookedStr(
                             "single",
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 5,
+                            column_end: 13,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 13,
             },
         },
         Node {
@@ -33,6 +51,12 @@ Block(
                     node: NamedVar(
                         "bar",
                     ),
+                    location: Location {
+                        line_start: 2,
+                        line_end: 2,
+                        column_start: 1,
+                        column_end: 4,
+                    },
                 },
                 args: [
                     Node {
@@ -40,8 +64,20 @@ Block(
                         node: CookedStr(
                             "double",
                         ),
+                        location: Location {
+                            line_start: 2,
+                            line_end: 2,
+                            column_start: 5,
+                            column_end: 13,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 2,
+                line_end: 2,
+                column_start: 1,
+                column_end: 13,
             },
         },
         Node {
@@ -52,6 +88,12 @@ Block(
                     node: NamedVar(
                         "baz",
                     ),
+                    location: Location {
+                        line_start: 3,
+                        line_end: 3,
+                        column_start: 1,
+                        column_end: 4,
+                    },
                 },
                 args: [
                     Node {
@@ -59,8 +101,20 @@ Block(
                         node: RawStr(
                             "long",
                         ),
+                        location: Location {
+                            line_start: 3,
+                            line_end: 3,
+                            column_start: 5,
+                            column_end: 13,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 3,
+                line_end: 3,
+                column_start: 1,
+                column_end: 13,
             },
         },
     ],

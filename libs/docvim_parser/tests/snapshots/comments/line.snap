@@ -29,8 +29,20 @@ Block(
                     Node {
                         comments: [],
                         node: True,
+                        location: Location {
+                            line_start: 3,
+                            line_end: 3,
+                            column_start: 15,
+                            column_end: 19,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 3,
+                line_end: 3,
+                column_start: 1,
+                column_end: 19,
             },
         },
     ],

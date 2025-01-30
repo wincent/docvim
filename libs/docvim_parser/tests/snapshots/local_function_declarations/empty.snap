@@ -17,6 +17,12 @@ Block(
                     [],
                 ),
             },
+            location: Location {
+                line_start: 1,
+                line_end: 2,
+                column_start: 1,
+                column_end: 4,
+            },
         },
     ],
 )

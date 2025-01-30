@@ -12,14 +12,32 @@ Block(
                     node: NamedVar(
                         "bar",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 4,
+                    },
                 },
                 name: "baz",
                 args: [
                     Node {
                         comments: [],
                         node: Nil,
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 9,
+                            column_end: 12,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 13,
             },
         },
     ],

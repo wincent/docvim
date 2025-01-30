@@ -26,8 +26,20 @@ Block(
                                         node: CookedStr(
                                             "foo",
                                         ),
+                                        location: Location {
+                                            line_start: 2,
+                                            line_end: 2,
+                                            column_start: 15,
+                                            column_end: 20,
+                                        },
                                     },
                                 ],
+                            },
+                            location: Location {
+                                line_start: 2,
+                                line_end: 2,
+                                column_start: 3,
+                                column_end: 20,
                             },
                         },
                         Node {
@@ -44,13 +56,31 @@ Block(
                                         node: CookedStr(
                                             "bar",
                                         ),
+                                        location: Location {
+                                            line_start: 3,
+                                            line_end: 3,
+                                            column_start: 15,
+                                            column_end: 20,
+                                        },
                                     },
                                 ],
+                            },
+                            location: Location {
+                                line_start: 3,
+                                line_end: 3,
+                                column_start: 3,
+                                column_end: 20,
                             },
                         },
                     ],
                 ),
             ),
+            location: Location {
+                line_start: 1,
+                line_end: 4,
+                column_start: 1,
+                column_end: 4,
+            },
         },
     ],
 )

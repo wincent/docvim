@@ -12,8 +12,20 @@ Block(
                     node: NamedVar(
                         "calculate",
                     ),
+                    location: Location {
+                        line_start: 1,
+                        line_end: 1,
+                        column_start: 1,
+                        column_end: 10,
+                    },
                 },
                 args: [],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 12,
             },
         },
     ],

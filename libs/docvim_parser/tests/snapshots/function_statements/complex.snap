@@ -47,6 +47,12 @@ Block(
                                             node: NamedVar(
                                                 "e",
                                             ),
+                                            location: Location {
+                                                line_start: 2,
+                                                line_end: 2,
+                                                column_start: 3,
+                                                column_end: 4,
+                                            },
                                         },
                                         args: [
                                             Node {
@@ -54,20 +60,50 @@ Block(
                                                 node: NamedVar(
                                                     "f",
                                                 ),
+                                                location: Location {
+                                                    line_start: 2,
+                                                    line_end: 2,
+                                                    column_start: 5,
+                                                    column_end: 6,
+                                                },
                                             },
                                         ],
+                                    },
+                                    location: Location {
+                                        line_start: 2,
+                                        line_end: 2,
+                                        column_start: 3,
+                                        column_end: 7,
                                     },
                                 },
                                 args: [
                                     Node {
                                         comments: [],
                                         node: Varargs,
+                                        location: Location {
+                                            line_start: 2,
+                                            line_end: 2,
+                                            column_start: 8,
+                                            column_end: 11,
+                                        },
                                     },
                                 ],
+                            },
+                            location: Location {
+                                line_start: 2,
+                                line_end: 2,
+                                column_start: 3,
+                                column_end: 12,
                             },
                         },
                     ],
                 ),
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 3,
+                column_start: 1,
+                column_end: 4,
             },
         },
     ],

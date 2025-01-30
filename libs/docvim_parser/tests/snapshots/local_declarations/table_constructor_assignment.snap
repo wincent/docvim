@@ -1,0 +1,76 @@
+local stuff = { ["foo"] = bar }
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "stuff",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Table(
+                            [
+                                Node {
+                                    comments: [],
+                                    node: Field {
+                                        index: None,
+                                        lexp: Node {
+                                            comments: [],
+                                            node: CookedStr(
+                                                "foo",
+                                            ),
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 18,
+                                                column_end: 23,
+                                            },
+                                        },
+                                        rexp: Node {
+                                            comments: [],
+                                            node: NamedVar(
+                                                "bar",
+                                            ),
+                                            location: Location {
+                                                line_start: 1,
+                                                line_end: 1,
+                                                column_start: 27,
+                                                column_end: 30,
+                                            },
+                                        },
+                                    },
+                                    location: Location {
+                                        line_start: 1,
+                                        line_end: 1,
+                                        column_start: 18,
+                                        column_end: 30,
+                                    },
+                                },
+                            ],
+                        ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 15,
+                            column_end: 32,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 32,
+            },
+        },
+    ],
+)

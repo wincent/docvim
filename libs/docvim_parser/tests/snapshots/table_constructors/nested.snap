@@ -31,13 +31,31 @@ Block(
                                         lexp: Node {
                                             comments: [],
                                             node: Nil,
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
                                             node: NamedVar(
                                                 "one",
                                             ),
+                                            location: Location {
+                                                line_start: 2,
+                                                line_end: 2,
+                                                column_start: 3,
+                                                column_end: 6,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 2,
+                                        line_end: 2,
+                                        column_start: 3,
+                                        column_end: 6,
                                     },
                                 },
                                 Node {
@@ -49,6 +67,12 @@ Block(
                                             node: RawStr(
                                                 "nested",
                                             ),
+                                            location: Location {
+                                                line_start: 0,
+                                                line_end: 0,
+                                                column_start: 0,
+                                                column_end: 0,
+                                            },
                                         },
                                         rexp: Node {
                                             comments: [],
@@ -63,24 +87,66 @@ Block(
                                                                 node: CookedStr(
                                                                     "two",
                                                                 ),
+                                                                location: Location {
+                                                                    line_start: 4,
+                                                                    line_end: 4,
+                                                                    column_start: 6,
+                                                                    column_end: 11,
+                                                                },
                                                             },
                                                             rexp: Node {
                                                                 comments: [],
                                                                 node: Number(
                                                                     "2",
                                                                 ),
+                                                                location: Location {
+                                                                    line_start: 4,
+                                                                    line_end: 4,
+                                                                    column_start: 15,
+                                                                    column_end: 16,
+                                                                },
                                                             },
+                                                        },
+                                                        location: Location {
+                                                            line_start: 4,
+                                                            line_end: 4,
+                                                            column_start: 6,
+                                                            column_end: 16,
                                                         },
                                                     },
                                                 ],
                                             ),
+                                            location: Location {
+                                                line_start: 3,
+                                                line_end: 5,
+                                                column_start: 12,
+                                                column_end: 4,
+                                            },
                                         },
+                                    },
+                                    location: Location {
+                                        line_start: 0,
+                                        line_end: 5,
+                                        column_start: 0,
+                                        column_end: 4,
                                     },
                                 },
                             ],
                         ),
+                        location: Location {
+                            line_start: 1,
+                            line_end: 6,
+                            column_start: 14,
+                            column_end: 2,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 6,
+                column_start: 1,
+                column_end: 2,
             },
         },
     ],

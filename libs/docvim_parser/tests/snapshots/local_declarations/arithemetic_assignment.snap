@@ -1,0 +1,63 @@
+local sum = 7 + 8
+
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Block(
+    [
+        Node {
+            comments: [],
+            node: LocalDeclaration {
+                namelist: [
+                    Name(
+                        "sum",
+                    ),
+                ],
+                explist: [
+                    Node {
+                        comments: [],
+                        node: Binary {
+                            lexp: Node {
+                                comments: [],
+                                node: Number(
+                                    "7",
+                                ),
+                                location: Location {
+                                    line_start: 1,
+                                    line_end: 1,
+                                    column_start: 13,
+                                    column_end: 14,
+                                },
+                            },
+                            op: Plus,
+                            rexp: Node {
+                                comments: [],
+                                node: Number(
+                                    "8",
+                                ),
+                                location: Location {
+                                    line_start: 1,
+                                    line_end: 1,
+                                    column_start: 17,
+                                    column_end: 18,
+                                },
+                            },
+                        },
+                        location: Location {
+                            line_start: 1,
+                            line_end: 1,
+                            column_start: 13,
+                            column_end: 18,
+                        },
+                    },
+                ],
+            },
+            location: Location {
+                line_start: 1,
+                line_end: 1,
+                column_start: 1,
+                column_end: 18,
+            },
+        },
+    ],
+)

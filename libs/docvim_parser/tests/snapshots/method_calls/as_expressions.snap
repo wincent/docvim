@@ -34,6 +34,12 @@ Block(
                                 node: NamedVar(
                                     "bar",
                                 ),
+                                location: Location {
+                                    line_start: 3,
+                                    line_end: 3,
+                                    column_start: 13,
+                                    column_end: 16,
+                                },
                             },
                             name: "baz",
                             args: [
@@ -42,17 +48,41 @@ Block(
                                     node: CookedStr(
                                         "hello",
                                     ),
+                                    location: Location {
+                                        line_start: 3,
+                                        line_end: 3,
+                                        column_start: 21,
+                                        column_end: 28,
+                                    },
                                 },
                                 Node {
                                     comments: [],
                                     node: CookedStr(
                                         "world",
                                     ),
+                                    location: Location {
+                                        line_start: 3,
+                                        line_end: 3,
+                                        column_start: 30,
+                                        column_end: 37,
+                                    },
                                 },
                             ],
                         },
+                        location: Location {
+                            line_start: 3,
+                            line_end: 3,
+                            column_start: 13,
+                            column_end: 38,
+                        },
                     },
                 ],
+            },
+            location: Location {
+                line_start: 3,
+                line_end: 3,
+                column_start: 1,
+                column_end: 38,
             },
         },
     ],
