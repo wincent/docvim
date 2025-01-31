@@ -1,5 +1,6 @@
 pub mod error;
 pub mod lua;
+pub mod token;
 
 mod peekable;
 
