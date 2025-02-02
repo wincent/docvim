@@ -1,6 +1,7 @@
 use std::error;
 use std::fmt;
 
+// TODO: make different error types for Lua and Markdown
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum LexerErrorKind {
     InvalidEscapeSequence,
