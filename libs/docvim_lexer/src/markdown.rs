@@ -4,15 +4,15 @@ use crate::peekable::*;
 use crate::token::*;
 
 use self::HeadingKind::*;
-use self::TokenKind::*;
-
-pub type MarkdownToken = Token<TokenKind>;
+use self::MarkdownToken::*;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum TokenKind {
+pub enum MarkdownToken {
     Heading(HeadingKind),
     Unknown,
 }
+
+impl TokenKind for MarkdownToken {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum HeadingKind {
@@ -92,19 +92,19 @@ impl<'a> Tokens<'a> {
         }
     }
 
-    fn scan_subheading(&self) -> Option<Result<MarkdownToken, LexerError>> {
+    fn scan_subheading(&self) -> Option<Result<Token<MarkdownToken>, LexerError>> {
         make_token!(self, Heading(Heading2))
     }
 
-    fn scan_heading(&self) -> Option<Result<MarkdownToken, LexerError>> {
+    fn scan_heading(&self) -> Option<Result<Token<MarkdownToken>, LexerError>> {
         make_token!(self, Heading(Heading1))
     }
 }
 
 impl<'a> Iterator for Tokens<'a> {
-    type Item = Result<MarkdownToken, LexerError>;
+    type Item = Result<Token<MarkdownToken>, LexerError>;
 
-    fn next(&mut self) -> Option<Result<MarkdownToken, LexerError>> {
+    fn next(&mut self) -> Option<Result<Token<MarkdownToken>, LexerError>> {
         self.skip_whitespace();
         self.char_start = self.iter.char_idx;
         self.byte_start = self.iter.byte_idx;
@@ -144,7 +144,7 @@ mod tests {
                 Lexer::new(&$input)
                     .tokens
                     .map(|token| token.unwrap())
-                    .collect::<Vec<MarkdownToken>>(),
+                    .collect::<Vec<Token<MarkdownToken>>>(),
                 $expected
             )
         };

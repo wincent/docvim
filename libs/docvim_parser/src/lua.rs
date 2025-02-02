@@ -27,6 +27,11 @@ use docvim_lexer::lua::KeywordKind::Until as UntilToken;
 use docvim_lexer::lua::KeywordKind::While as WhileToken;
 use docvim_lexer::lua::LiteralKind::Number as NumberToken;
 use docvim_lexer::lua::LiteralKind::Str as StrToken;
+use docvim_lexer::lua::LuaToken::Comment as CommentToken;
+use docvim_lexer::lua::LuaToken::Literal as LiteralToken;
+use docvim_lexer::lua::LuaToken::Name as NameToken;
+use docvim_lexer::lua::LuaToken::Op as OpToken;
+use docvim_lexer::lua::LuaToken::Punctuator as PunctuatorToken;
 use docvim_lexer::lua::NameKind::Identifier as IdentifierToken;
 use docvim_lexer::lua::NameKind::Keyword as KeywordToken;
 use docvim_lexer::lua::OpKind::Assign as AssignToken;
@@ -58,12 +63,8 @@ use docvim_lexer::lua::PunctuatorKind::Semi as SemiToken;
 use docvim_lexer::lua::StrKind::DoubleQuoted as DoubleQuotedToken;
 use docvim_lexer::lua::StrKind::Long as LongToken;
 use docvim_lexer::lua::StrKind::SingleQuoted as SingleQuotedToken;
-use docvim_lexer::lua::TokenKind::Comment as CommentToken;
-use docvim_lexer::lua::TokenKind::Literal as LiteralToken;
-use docvim_lexer::lua::TokenKind::Name as NameToken;
-use docvim_lexer::lua::TokenKind::Op as OpToken;
-use docvim_lexer::lua::TokenKind::Punctuator as PunctuatorToken;
 use docvim_lexer::lua::{Lexer, LuaToken};
+use docvim_lexer::token::Token;
 
 // TODO these node types will eventually wind up in another file, and end up referring specifically
 // to Lua, but for now developing them "in situ".
@@ -400,41 +401,52 @@ impl<'a> Parser<'a> {
         let mut block = Block(vec![]);
         loop {
             match self.lexer.tokens.peek() {
-                Some(&Ok(LuaToken { kind: NameToken(KeywordToken(DoToken)), .. })) => {
+                Some(&Ok(Token::<LuaToken> { kind: NameToken(KeywordToken(DoToken)), .. })) => {
                     block.0.push(self.parse_do_block()?);
                     self.slurp(PunctuatorToken(SemiToken));
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: NameToken(KeywordToken(ElseToken | ElseifToken | EndToken | UntilToken)),
                     ..
                 })) => {
                     break;
                 }
-                Some(&Ok(LuaToken { kind: NameToken(KeywordToken(ForToken)), .. })) => {
+                Some(&Ok(Token::<LuaToken> {
+                    kind: NameToken(KeywordToken(ForToken)), ..
+                })) => {
                     block.0.push(self.parse_for()?);
                     self.slurp(PunctuatorToken(SemiToken));
                 }
-                Some(&Ok(LuaToken { kind: NameToken(KeywordToken(FunctionToken)), .. })) => {
+                Some(&Ok(Token::<LuaToken> {
+                    kind: NameToken(KeywordToken(FunctionToken)),
+                    ..
+                })) => {
                     block.0.push(self.parse_function()?);
                     self.slurp(PunctuatorToken(SemiToken));
                 }
-                Some(&Ok(LuaToken { kind: NameToken(KeywordToken(IfToken)), .. })) => {
+                Some(&Ok(Token::<LuaToken> { kind: NameToken(KeywordToken(IfToken)), .. })) => {
                     block.0.push(self.parse_if()?);
                     self.slurp(PunctuatorToken(SemiToken));
                 }
-                Some(&Ok(LuaToken { kind: NameToken(KeywordToken(LocalToken)), .. })) => {
+                Some(&Ok(Token::<LuaToken> {
+                    kind: NameToken(KeywordToken(LocalToken)), ..
+                })) => {
                     block.0.push(self.parse_local()?);
                     self.slurp(PunctuatorToken(SemiToken));
                 }
-                Some(&Ok(LuaToken { kind: NameToken(KeywordToken(RepeatToken)), .. })) => {
+                Some(&Ok(Token::<LuaToken> {
+                    kind: NameToken(KeywordToken(RepeatToken)), ..
+                })) => {
                     block.0.push(self.parse_repeat()?);
                     self.slurp(PunctuatorToken(SemiToken));
                 }
-                Some(&Ok(LuaToken { kind: NameToken(KeywordToken(WhileToken)), .. })) => {
+                Some(&Ok(Token::<LuaToken> {
+                    kind: NameToken(KeywordToken(WhileToken)), ..
+                })) => {
                     block.0.push(self.parse_while()?);
                     self.slurp(PunctuatorToken(SemiToken));
                 }
-                Some(&Ok(token @ LuaToken { kind: NameToken(IdentifierToken), .. })) => {
+                Some(&Ok(token @ Token::<LuaToken> { kind: NameToken(IdentifierToken), .. })) => {
                     // prefixexp ::= var | functioncall | `(´ exp `)´
                     // functioncall ::=  prefixexp args | prefixexp `:´ Name args
                     let comments = std::mem::take(&mut self.comments);
@@ -466,7 +478,10 @@ impl<'a> Parser<'a> {
                             let mut allow_comma = true;
                             loop {
                                 match self.lexer.tokens.peek() {
-                                    Some(&Ok(LuaToken { kind: OpToken(AssignToken), .. })) => {
+                                    Some(&Ok(Token::<LuaToken> {
+                                        kind: OpToken(AssignToken),
+                                        ..
+                                    })) => {
                                         self.lexer.tokens.next();
                                         let (explist, location) = self.parse_explist()?;
                                         block.0.push(Node {
@@ -485,7 +500,7 @@ impl<'a> Parser<'a> {
                                         self.slurp(PunctuatorToken(SemiToken));
                                         break;
                                     }
-                                    Some(&Ok(LuaToken {
+                                    Some(&Ok(Token::<LuaToken> {
                                         kind: PunctuatorToken(CommaToken),
                                         line_start,
                                         column_start,
@@ -502,7 +517,7 @@ impl<'a> Parser<'a> {
                                             });
                                         }
                                     }
-                                    Some(&Ok(LuaToken {
+                                    Some(&Ok(Token::<LuaToken> {
                                         kind: PunctuatorToken(SemiToken),
                                         line_start,
                                         column_start,
@@ -514,7 +529,11 @@ impl<'a> Parser<'a> {
                                             column: column_start,
                                         });
                                     }
-                                    Some(&Ok(LuaToken { line_start, column_start, .. })) => {
+                                    Some(&Ok(Token::<LuaToken> {
+                                        line_start,
+                                        column_start,
+                                        ..
+                                    })) => {
                                         let pexp = self.parse_prefixexp()?;
                                         match pexp.node {
                                             ExpKind::NamedVar(_) | ExpKind::Index { .. } => {
@@ -546,7 +565,7 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: NameToken(KeywordToken(BreakToken)),
                     line_start,
                     line_end,
@@ -564,7 +583,7 @@ impl<'a> Parser<'a> {
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: NameToken(KeywordToken(ReturnToken)),
                     line_start,
                     line_end,
@@ -594,7 +613,7 @@ impl<'a> Parser<'a> {
                     self.slurp(PunctuatorToken(SemiToken));
                     break;
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: CommentToken(token_kind),
                     byte_start,
                     byte_end,
@@ -616,7 +635,7 @@ impl<'a> Parser<'a> {
                     });
                     self.lexer.tokens.next();
                 }
-                Some(&Ok(token @ LuaToken { .. })) => {
+                Some(&Ok(token @ Token::<LuaToken> { .. })) => {
                     // TODO: include token UnexpectedToken error message
                     return Err(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
@@ -650,10 +669,10 @@ impl<'a> Parser<'a> {
 
     fn parse_name(&mut self) -> Result<Name<'a>, ParserError> {
         match self.lexer.tokens.next() {
-            Some(Ok(token @ LuaToken { kind: NameToken(IdentifierToken), .. })) => {
+            Some(Ok(token @ Token::<LuaToken> { kind: NameToken(IdentifierToken), .. })) => {
                 Ok(Name(&self.lexer.input[token.byte_start..token.byte_end]))
             }
-            Some(Ok(LuaToken { line_start, column_start, .. })) => Err(ParserError {
+            Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => Err(ParserError {
                 kind: ParserErrorKind::UnexpectedToken,
                 line: line_start,
                 column: column_start,
@@ -674,7 +693,7 @@ impl<'a> Parser<'a> {
         let mut expect_name = true;
         loop {
             match self.lexer.tokens.peek() {
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: NameToken(IdentifierToken),
                     byte_start,
                     byte_end,
@@ -694,7 +713,7 @@ impl<'a> Parser<'a> {
                         });
                     }
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: PunctuatorToken(CommaToken),
                     line_start,
                     column_start,
@@ -711,7 +730,7 @@ impl<'a> Parser<'a> {
                         expect_name = true;
                     }
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: PunctuatorToken(RparenToken),
                     line_start,
                     column_start,
@@ -728,7 +747,7 @@ impl<'a> Parser<'a> {
                         return Ok((namelist, false));
                     }
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: OpToken(VarargToken),
                     line_start,
                     column_start,
@@ -746,7 +765,7 @@ impl<'a> Parser<'a> {
                         });
                     }
                 }
-                Some(&Ok(LuaToken { line_start, column_start, .. })) => {
+                Some(&Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                     return Err(ParserError {
                         kind: ParserErrorKind::UnexpectedToken,
                         line: line_start,
@@ -768,7 +787,7 @@ impl<'a> Parser<'a> {
         let mut column_end = 0;
         loop {
             match self.lexer.tokens.peek() {
-                Some(&Ok(token @ LuaToken { kind: NameToken(IdentifierToken), .. })) => {
+                Some(&Ok(token @ Token::<LuaToken> { kind: NameToken(IdentifierToken), .. })) => {
                     if expect_name {
                         self.lexer.tokens.next();
                         namelist.push(Name(&self.lexer.input[token.byte_start..token.byte_end]));
@@ -788,7 +807,7 @@ impl<'a> Parser<'a> {
                         break;
                     }
                 }
-                Some(&Ok(token @ LuaToken { kind: PunctuatorToken(CommaToken), .. })) => {
+                Some(&Ok(token @ Token::<LuaToken> { kind: PunctuatorToken(CommaToken), .. })) => {
                     if expect_name {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedComma,
@@ -802,7 +821,7 @@ impl<'a> Parser<'a> {
                         column_end = token.column_end;
                     }
                 }
-                Some(&Ok(LuaToken { line_start, column_start, .. })) => {
+                Some(&Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                     if expect_name {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
@@ -835,7 +854,7 @@ impl<'a> Parser<'a> {
         let mut column_end = 0;
         loop {
             match self.lexer.tokens.peek() {
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: PunctuatorToken(CommaToken),
                     line_start,
                     column_start,
@@ -852,7 +871,7 @@ impl<'a> Parser<'a> {
                         });
                     }
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind:
                         LiteralToken(NumberToken)
                         | LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken))
@@ -883,7 +902,7 @@ impl<'a> Parser<'a> {
                         break;
                     }
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: CommentToken(token_kind),
                     byte_start,
                     byte_end,
@@ -1122,7 +1141,7 @@ impl<'a> Parser<'a> {
     /// bytes. For example, the sequence "\n" is replaced with an actual newline, and so on.
     ///
     /// In contrast, a "raw" string preserves the exact form it had in the original source.
-    fn cook_str(&self, token: LuaToken) -> Result<ExpKind<'a>, ParserError> {
+    fn cook_str(&self, token: Token<LuaToken>) -> Result<ExpKind<'a>, ParserError> {
         let byte_start = token.byte_start + 1;
         let byte_end = token.byte_end - 1;
         let mut line_idx = token.line_start;
@@ -1237,7 +1256,7 @@ impl<'a> Parser<'a> {
     /// args ::=  `(´ [explist] `)´ | tableconstructor | String
     fn parse_args(&mut self) -> Result<(Vec<Exp<'a>>, Location), ParserError> {
         match self.lexer.tokens.peek() {
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind: PunctuatorToken(LparenToken),
                 line_start,
                 column_start,
@@ -1256,22 +1275,30 @@ impl<'a> Parser<'a> {
                     },
                 ))
             }
-            Some(&Ok(LuaToken { kind: PunctuatorToken(LcurlyToken), .. })) => {
+            Some(&Ok(Token::<LuaToken> { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 let table = self.parse_table_constructor()?;
                 let location = table.location;
                 Ok((vec![table], location))
             }
-            Some(&Ok(LuaToken { kind: LiteralToken(StrToken(DoubleQuotedToken)), .. }))
-            | Some(&Ok(LuaToken { kind: LiteralToken(StrToken(SingleQuotedToken)), .. }))
-            | Some(&Ok(LuaToken { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
+            Some(&Ok(Token::<LuaToken> {
+                kind: LiteralToken(StrToken(DoubleQuotedToken)),
+                ..
+            }))
+            | Some(&Ok(Token::<LuaToken> {
+                kind: LiteralToken(StrToken(SingleQuotedToken)),
+                ..
+            }))
+            | Some(&Ok(Token::<LuaToken> {
+                kind: LiteralToken(StrToken(LongToken { .. })), ..
+            })) => {
                 let exp = self.parse_exp(0)?;
                 let location = exp.location;
                 Ok((vec![exp], location))
             }
             // TODO: probably need to skip comments here too
-            // Some(&Ok(LuaToken { kind: CommentToken(_) .. })) => {
+            // Some(&Ok(Token::<LuaToken> { kind: CommentToken(_) .. })) => {
             // }
-            Some(&Ok(LuaToken { line_start, column_start, .. })) => Err(ParserError {
+            Some(&Ok(Token::<LuaToken> { line_start, column_start, .. })) => Err(ParserError {
                 kind: ParserErrorKind::UnexpectedToken,
                 line: line_start,
                 column: column_start,
@@ -1295,11 +1322,11 @@ impl<'a> Parser<'a> {
     /// ```
     fn parse_prefixexp(&mut self) -> Result<Exp<'a>, ParserError> {
         let mut pexp = match self.lexer.tokens.next() {
-            Some(Ok(LuaToken { kind: PunctuatorToken(LparenToken), .. })) => {
+            Some(Ok(Token::<LuaToken> { kind: PunctuatorToken(LparenToken), .. })) => {
                 let lhs = self.parse_exp(0)?;
                 let token = self.lexer.tokens.next();
                 match token {
-                    Some(Ok(LuaToken { kind: PunctuatorToken(RparenToken), .. })) => lhs,
+                    Some(Ok(Token::<LuaToken> { kind: PunctuatorToken(RparenToken), .. })) => lhs,
                     Some(Ok(token)) => {
                         return Err(ParserError {
                             kind: ParserErrorKind::UnexpectedToken,
@@ -1311,7 +1338,7 @@ impl<'a> Parser<'a> {
                     None => return Err(self.unexpected_end_of_input()),
                 }
             }
-            Some(Ok(LuaToken {
+            Some(Ok(Token::<LuaToken> {
                 kind: NameToken(IdentifierToken),
                 byte_start,
                 byte_end,
@@ -1328,7 +1355,7 @@ impl<'a> Parser<'a> {
                     location: Location { line_start, line_end, column_start, column_end },
                 }
             }
-            Some(Ok(LuaToken { line_start, column_start, .. })) => {
+            Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                 return Err(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
                     line: line_start,
@@ -1340,17 +1367,17 @@ impl<'a> Parser<'a> {
         };
         loop {
             match self.lexer.tokens.peek() {
-                Some(&Ok(LuaToken { kind: PunctuatorToken(ColonToken), .. })) => {
+                Some(&Ok(Token::<LuaToken> { kind: PunctuatorToken(ColonToken), .. })) => {
                     // `prefixexp : Name args`
                     self.lexer.tokens.next();
                     let method_name = match self.lexer.tokens.next() {
-                        Some(Ok(LuaToken {
+                        Some(Ok(Token::<LuaToken> {
                             kind: NameToken(IdentifierToken),
                             byte_start,
                             byte_end,
                             ..
                         })) => &self.lexer.input[byte_start..byte_end],
-                        Some(Ok(LuaToken { line_start, column_start, .. })) => {
+                        Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                             return Err(ParserError {
                                 kind: ParserErrorKind::UnexpectedToken,
                                 line: line_start,
@@ -1375,11 +1402,11 @@ impl<'a> Parser<'a> {
                         },
                     };
                 }
-                Some(&Ok(LuaToken { kind: PunctuatorToken(DotToken), .. })) => {
+                Some(&Ok(Token::<LuaToken> { kind: PunctuatorToken(DotToken), .. })) => {
                     // ie. `foo.bar`, which is syntactic sugar for `foo['bar']`
                     self.lexer.tokens.next();
                     let kexp = match self.lexer.tokens.next() {
-                        Some(Ok(LuaToken {
+                        Some(Ok(Token::<LuaToken> {
                             kind: NameToken(IdentifierToken),
                             byte_start,
                             byte_end,
@@ -1388,7 +1415,7 @@ impl<'a> Parser<'a> {
                             let name = &self.lexer.input[byte_start..byte_end];
                             node_without_comments!(ExpKind::RawStr(name))
                         }
-                        Some(Ok(LuaToken { line_start, column_start, .. })) => {
+                        Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                             return Err(ParserError {
                                 kind: ParserErrorKind::UnexpectedToken,
                                 line: line_start,
@@ -1409,7 +1436,7 @@ impl<'a> Parser<'a> {
                         location: Location { line_start, line_end, column_start, column_end },
                     };
                 }
-                Some(&Ok(LuaToken {
+                Some(&Ok(Token::<LuaToken> {
                     kind: PunctuatorToken(LbracketToken),
                     line_start,
                     column_start,
@@ -1431,14 +1458,18 @@ impl<'a> Parser<'a> {
                         },
                     };
                 }
-                Some(&Ok(LuaToken {
-                    kind: PunctuatorToken(LcurlyToken | LparenToken), ..
+                Some(&Ok(Token::<LuaToken> {
+                    kind: PunctuatorToken(LcurlyToken | LparenToken),
+                    ..
                 }))
-                | Some(&Ok(LuaToken {
+                | Some(&Ok(Token::<LuaToken> {
                     kind: LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken)),
                     ..
                 }))
-                | Some(&Ok(LuaToken { kind: LiteralToken(StrToken(LongToken { .. })), .. })) => {
+                | Some(&Ok(Token::<LuaToken> {
+                    kind: LiteralToken(StrToken(LongToken { .. })),
+                    ..
+                })) => {
                     let comments = std::mem::take(&mut pexp.comments);
                     let (args, location) = self.parse_args()?;
                     let line_start = pexp.location.line_start;
@@ -1462,7 +1493,7 @@ impl<'a> Parser<'a> {
 
     /// See doc/lua.md for an explanation of `minimum_bp`.
     fn parse_exp(&mut self, minimum_bp: u8) -> Result<Exp<'a>, ParserError> {
-        while let Some(&Ok(LuaToken {
+        while let Some(&Ok(Token::<LuaToken> {
             kind: CommentToken(token_kind),
             byte_start,
             byte_end,
@@ -1490,7 +1521,7 @@ impl<'a> Parser<'a> {
             //
             // Primaries (literals etc).
             //
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind: NameToken(KeywordToken(FalseToken)),
                 line_start,
                 line_end,
@@ -1505,7 +1536,7 @@ impl<'a> Parser<'a> {
                     location: Location { line_start, line_end, column_start, column_end },
                 }
             }
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind: NameToken(KeywordToken(NilToken)),
                 line_start,
                 line_end,
@@ -1520,7 +1551,7 @@ impl<'a> Parser<'a> {
                     location: Location { line_start, line_end, column_start, column_end },
                 }
             }
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind: LiteralToken(NumberToken),
                 byte_start,
                 byte_end,
@@ -1538,7 +1569,7 @@ impl<'a> Parser<'a> {
                 }
             }
             Some(&Ok(
-                token @ LuaToken {
+                token @ Token::<LuaToken> {
                     kind: LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken)),
                     line_start,
                     line_end,
@@ -1554,7 +1585,7 @@ impl<'a> Parser<'a> {
                     location: Location { line_start, line_end, column_start, column_end },
                 }
             }
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind: LiteralToken(StrToken(LongToken { level })),
                 byte_start,
                 byte_end,
@@ -1580,7 +1611,7 @@ impl<'a> Parser<'a> {
                     location: Location { line_start, line_end, column_start, column_end },
                 }
             }
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind: NameToken(KeywordToken(TrueToken)),
                 line_start,
                 line_end,
@@ -1595,7 +1626,7 @@ impl<'a> Parser<'a> {
                     location: Location { line_start, line_end, column_start, column_end },
                 }
             }
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind: OpToken(VarargToken),
                 line_start,
                 line_end,
@@ -1610,11 +1641,13 @@ impl<'a> Parser<'a> {
                     location: Location { line_start, line_end, column_start, column_end },
                 }
             }
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind: NameToken(IdentifierToken) | PunctuatorToken(LparenToken),
                 ..
             })) => self.parse_prefixexp()?,
-            Some(&Ok(LuaToken { kind: NameToken(KeywordToken(FunctionToken)), .. })) => {
+            Some(&Ok(Token::<LuaToken> {
+                kind: NameToken(KeywordToken(FunctionToken)), ..
+            })) => {
                 let start_token = self.consume(NameToken(KeywordToken(FunctionToken)))?;
                 let (parlist, varargs) = self.parse_parlist()?;
                 let block = self.parse_block()?;
@@ -1630,14 +1663,14 @@ impl<'a> Parser<'a> {
                     },
                 }
             }
-            Some(&Ok(LuaToken { kind: PunctuatorToken(LcurlyToken), .. })) => {
+            Some(&Ok(Token::<LuaToken> { kind: PunctuatorToken(LcurlyToken), .. })) => {
                 self.parse_table_constructor()?
             }
 
             //
             // Unary operators.
             //
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind: NameToken(KeywordToken(NotToken)),
                 line_start,
                 column_start,
@@ -1646,11 +1679,21 @@ impl<'a> Parser<'a> {
                 self.lexer.tokens.next();
                 self.parse_unop_exp(UnOp::Not, line_start, column_start)?
             }
-            Some(&Ok(LuaToken { kind: OpToken(HashToken), line_start, column_start, .. })) => {
+            Some(&Ok(Token::<LuaToken> {
+                kind: OpToken(HashToken),
+                line_start,
+                column_start,
+                ..
+            })) => {
                 self.lexer.tokens.next();
                 self.parse_unop_exp(UnOp::Length, line_start, column_start)?
             }
-            Some(&Ok(LuaToken { kind: OpToken(MinusToken), line_start, column_start, .. })) => {
+            Some(&Ok(Token::<LuaToken> {
+                kind: OpToken(MinusToken),
+                line_start,
+                column_start,
+                ..
+            })) => {
                 self.lexer.tokens.next();
                 self.parse_unop_exp(UnOp::Minus, line_start, column_start)?
             }
@@ -1671,25 +1714,35 @@ impl<'a> Parser<'a> {
         loop {
             let token = self.lexer.tokens.peek();
             let op = match token {
-                Some(&Ok(LuaToken { kind: NameToken(KeywordToken(AndToken)), .. })) => {
-                    Some(BinOp::And)
-                }
-                Some(&Ok(LuaToken { kind: NameToken(KeywordToken(OrToken)), .. })) => {
+                Some(&Ok(Token::<LuaToken> {
+                    kind: NameToken(KeywordToken(AndToken)), ..
+                })) => Some(BinOp::And),
+                Some(&Ok(Token::<LuaToken> { kind: NameToken(KeywordToken(OrToken)), .. })) => {
                     Some(BinOp::Or)
                 }
-                Some(&Ok(LuaToken { kind: OpToken(CaretToken), .. })) => Some(BinOp::Caret),
-                Some(&Ok(LuaToken { kind: OpToken(ConcatToken), .. })) => Some(BinOp::Concat),
-                Some(&Ok(LuaToken { kind: OpToken(EqToken), .. })) => Some(BinOp::Eq),
-                Some(&Ok(LuaToken { kind: OpToken(GtToken), .. })) => Some(BinOp::Gt),
-                Some(&Ok(LuaToken { kind: OpToken(GteToken), .. })) => Some(BinOp::Gte),
-                Some(&Ok(LuaToken { kind: OpToken(LtToken), .. })) => Some(BinOp::Lt),
-                Some(&Ok(LuaToken { kind: OpToken(LteToken), .. })) => Some(BinOp::Lte),
-                Some(&Ok(LuaToken { kind: OpToken(MinusToken), .. })) => Some(BinOp::Minus),
-                Some(&Ok(LuaToken { kind: OpToken(NeToken), .. })) => Some(BinOp::Ne),
-                Some(&Ok(LuaToken { kind: OpToken(PercentToken), .. })) => Some(BinOp::Percent),
-                Some(&Ok(LuaToken { kind: OpToken(PlusToken), .. })) => Some(BinOp::Plus),
-                Some(&Ok(LuaToken { kind: OpToken(SlashToken), .. })) => Some(BinOp::Slash),
-                Some(&Ok(LuaToken { kind: OpToken(StarToken), .. })) => Some(BinOp::Star),
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(CaretToken), .. })) => {
+                    Some(BinOp::Caret)
+                }
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(ConcatToken), .. })) => {
+                    Some(BinOp::Concat)
+                }
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(EqToken), .. })) => Some(BinOp::Eq),
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(GtToken), .. })) => Some(BinOp::Gt),
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(GteToken), .. })) => Some(BinOp::Gte),
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(LtToken), .. })) => Some(BinOp::Lt),
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(LteToken), .. })) => Some(BinOp::Lte),
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(MinusToken), .. })) => {
+                    Some(BinOp::Minus)
+                }
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(NeToken), .. })) => Some(BinOp::Ne),
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(PercentToken), .. })) => {
+                    Some(BinOp::Percent)
+                }
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(PlusToken), .. })) => Some(BinOp::Plus),
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(SlashToken), .. })) => {
+                    Some(BinOp::Slash)
+                }
+                Some(&Ok(Token::<LuaToken> { kind: OpToken(StarToken), .. })) => Some(BinOp::Star),
                 Some(&Ok(_)) => None, // No operator, we're done, will return lhs.
                 Some(&Err(err)) => return Err(ParserError::from(err)),
                 None => None, // End of input, will return lhs.
@@ -1726,7 +1779,7 @@ impl<'a> Parser<'a> {
     fn parse_table_constructor(&mut self) -> Result<Exp<'a>, ParserError> {
         let comments = std::mem::take(&mut self.comments);
         match self.lexer.tokens.next() {
-            Some(Ok(LuaToken {
+            Some(Ok(Token::<LuaToken> {
                 kind: PunctuatorToken(LcurlyToken),
                 line_start,
                 column_start,
@@ -1738,7 +1791,7 @@ impl<'a> Parser<'a> {
                 loop {
                     let token = self.lexer.tokens.peek();
                     match token {
-                        Some(&Ok(LuaToken {
+                        Some(&Ok(Token::<LuaToken> {
                             kind: PunctuatorToken(RcurlyToken),
                             line_end,
                             column_end,
@@ -1756,7 +1809,7 @@ impl<'a> Parser<'a> {
                                 },
                             });
                         }
-                        Some(&Ok(LuaToken {
+                        Some(&Ok(Token::<LuaToken> {
                             kind: PunctuatorToken(CommaToken | SemiToken),
                             line_start,
                             column_start,
@@ -1773,7 +1826,7 @@ impl<'a> Parser<'a> {
                                 });
                             }
                         }
-                        Some(&Ok(LuaToken {
+                        Some(&Ok(Token::<LuaToken> {
                             kind: CommentToken(token_kind),
                             byte_start,
                             byte_end,
@@ -1800,7 +1853,7 @@ impl<'a> Parser<'a> {
                             });
                             self.lexer.tokens.next();
                         }
-                        Some(&Ok(LuaToken { .. })) => {
+                        Some(&Ok(Token::<LuaToken> { .. })) => {
                             let field = self.parse_table_field(index)?;
                             if matches!(field.node, Field { index: Some(_), .. }) {
                                 index += 1;
@@ -1813,7 +1866,7 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
-            Some(Ok(LuaToken { line_start, column_start, .. })) => {
+            Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                 return Err(ParserError {
                     kind: ParserErrorKind::UnexpectedToken,
                     line: line_start,
@@ -1825,12 +1878,12 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Consume the specified TokenKind, returning an Err if not found.
+    /// Consume the specified Token, returning an Err if not found.
     ///
     /// Contrast with `slurp()`, which will consume a token if it is present, but does not error.
-    fn consume(&mut self, kind: docvim_lexer::lua::TokenKind) -> Result<LuaToken, ParserError> {
+    fn consume(&mut self, kind: LuaToken) -> Result<Token<LuaToken>, ParserError> {
         match self.lexer.tokens.next() {
-            Some(Ok(token @ LuaToken { .. })) => {
+            Some(Ok(token @ Token::<LuaToken> { .. })) => {
                 if token.kind == kind {
                     Ok(token)
                 } else {
@@ -1849,7 +1902,7 @@ impl<'a> Parser<'a> {
     /// Returns true if the next token starts an expression.
     fn peek_exp(&mut self) -> bool {
         match self.lexer.tokens.peek() {
-            Some(&Ok(LuaToken {
+            Some(&Ok(Token::<LuaToken> {
                 kind:
                     LiteralToken(NumberToken)
                     | LiteralToken(StrToken(DoubleQuotedToken | SingleQuotedToken))
@@ -1869,8 +1922,8 @@ impl<'a> Parser<'a> {
     /// Consumes the specified TokenKind, if present.
     ///
     /// Returns `true`/`false` to indicate whether a token was slurped.
-    fn slurp(&mut self, kind: docvim_lexer::lua::TokenKind) -> bool {
-        if let Some(&Ok(token @ LuaToken { .. })) = self.lexer.tokens.peek() {
+    fn slurp(&mut self, kind: LuaToken) -> bool {
+        if let Some(&Ok(token @ Token::<LuaToken> { .. })) = self.lexer.tokens.peek() {
             if token.kind == kind {
                 self.consume(kind).expect("Failed to consume token");
                 return true;
@@ -1884,7 +1937,7 @@ impl<'a> Parser<'a> {
         let comments = std::mem::take(&mut self.comments);
         let token = self.lexer.tokens.peek();
         match token {
-            Some(&Ok(LuaToken { kind: NameToken(IdentifierToken), .. })) => {
+            Some(&Ok(Token::<LuaToken> { kind: NameToken(IdentifierToken), .. })) => {
                 let lexp = self.parse_exp(0)?;
                 if let ExpKind::NamedVar(name) = lexp.node {
                     // Name = exp
@@ -1934,7 +1987,7 @@ impl<'a> Parser<'a> {
                     })
                 }
             }
-            Some(&Ok(LuaToken { kind: PunctuatorToken(LbracketToken), .. })) => {
+            Some(&Ok(Token::<LuaToken> { kind: PunctuatorToken(LbracketToken), .. })) => {
                 // `[exp] = exp`
                 self.lexer.tokens.next();
                 let lexp = self.parse_exp(0)?;
@@ -1951,7 +2004,7 @@ impl<'a> Parser<'a> {
                     location: Location { line_start, line_end, column_start, column_end },
                 })
             }
-            Some(&Ok(LuaToken { .. })) => {
+            Some(&Ok(Token::<LuaToken> { .. })) => {
                 // `exp`; syntactic sugar for `[index] = exp`
                 let exp = self.parse_exp(0)?; // TODO: confirm binding power of 0 is appropriate here
                 let line_start = exp.location.line_start;

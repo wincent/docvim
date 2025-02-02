@@ -6,13 +6,11 @@ use crate::token::*;
 use self::CommentKind::*;
 use self::KeywordKind::*;
 use self::LiteralKind::*;
+use self::LuaToken::*;
 use self::NameKind::*;
 use self::OpKind::*;
 use self::PunctuatorKind::*;
 use self::StrKind::*;
-use self::TokenKind::*;
-
-pub type LuaToken = Token<TokenKind>;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CommentKind {
@@ -101,7 +99,7 @@ pub enum StrKind {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum TokenKind {
+pub enum LuaToken {
     Op(OpKind),
     Comment(CommentKind),
     Literal(LiteralKind),
@@ -109,6 +107,8 @@ pub enum TokenKind {
     Punctuator(PunctuatorKind),
     Unknown,
 }
+
+impl TokenKind for LuaToken {}
 
 pub struct Lexer<'a> {
     pub input: &'a str,
@@ -169,7 +169,7 @@ impl<'a> Tokens<'a> {
         }
     }
 
-    fn scan_comment(&mut self) -> Option<Result<LuaToken, LexerError>> {
+    fn scan_comment(&mut self) -> Option<Result<Token<LuaToken>, LexerError>> {
         self.char_start = self.iter.char_idx - 2; // Subtract length of "--" prefix.
         self.byte_start = self.iter.byte_idx - 2;
         if self.consume_char('[') {
@@ -189,7 +189,7 @@ impl<'a> Tokens<'a> {
     }
 
     /// Scans until seeing "]]" (or "]=]", or "]==]" etc).
-    fn scan_block_comment(&mut self, eq_count: i32) -> Option<Result<LuaToken, LexerError>> {
+    fn scan_block_comment(&mut self, eq_count: i32) -> Option<Result<Token<LuaToken>, LexerError>> {
         loop {
             let ch = self.iter.next();
             match ch {
@@ -219,7 +219,7 @@ impl<'a> Tokens<'a> {
     }
 
     /// Scans until end of line, or end of input.
-    fn scan_line_comment(&mut self) -> Option<Result<LuaToken, LexerError>> {
+    fn scan_line_comment(&mut self) -> Option<Result<Token<LuaToken>, LexerError>> {
         loop {
             let ch = self.iter.next();
             match ch {
@@ -235,7 +235,7 @@ impl<'a> Tokens<'a> {
     // considered alphabetic by the current locale can be used in an identifier", so the below
     // could use a bit of work...
     // See: https://stackoverflow.com/a/4843653/2103996
-    fn scan_name(&mut self) -> Result<LuaToken, LexerError> {
+    fn scan_name(&mut self) -> Result<Token<LuaToken>, LexerError> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
         let column_start = self.iter.column_idx;
@@ -289,7 +289,7 @@ impl<'a> Tokens<'a> {
         ))
     }
 
-    fn scan_number(&mut self) -> Result<LuaToken, LexerError> {
+    fn scan_number(&mut self) -> Result<Token<LuaToken>, LexerError> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
         let column_start = self.iter.column_idx;
@@ -420,7 +420,7 @@ impl<'a> Tokens<'a> {
         ))
     }
 
-    fn scan_string(&mut self) -> Result<LuaToken, LexerError> {
+    fn scan_string(&mut self) -> Result<Token<LuaToken>, LexerError> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
         let column_start = self.iter.column_idx;
@@ -522,7 +522,7 @@ impl<'a> Tokens<'a> {
     /// - [=[a level 1 string]=]
     /// - [==[a level 2 string]==]
     ///
-    fn scan_long_string(&mut self, level: usize) -> Result<LuaToken, LexerError> {
+    fn scan_long_string(&mut self, level: usize) -> Result<Token<LuaToken>, LexerError> {
         let byte_start = self.iter.byte_idx - level - 2;
         let char_start = self.iter.char_idx - level - 2;
         let column_start = self.iter.column_idx - level - 2;
@@ -574,9 +574,9 @@ impl<'a> Tokens<'a> {
 }
 
 impl<'a> Iterator for Tokens<'a> {
-    type Item = Result<LuaToken, LexerError>;
+    type Item = Result<Token<LuaToken>, LexerError>;
 
-    fn next(&mut self) -> Option<Result<LuaToken, LexerError>> {
+    fn next(&mut self) -> Option<Result<Token<LuaToken>, LexerError>> {
         self.skip_whitespace();
         self.char_start = self.iter.char_idx;
         self.byte_start = self.iter.byte_idx;
@@ -763,7 +763,10 @@ mod tests {
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
             assert_eq!(
-                Lexer::new(&$input).tokens.map(|token| token.unwrap()).collect::<Vec<LuaToken>>(),
+                Lexer::new(&$input)
+                    .tokens
+                    .map(|token| token.unwrap())
+                    .collect::<Vec<Token<LuaToken>>>(),
                 $expected
             )
         };

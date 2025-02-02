@@ -1,5 +1,9 @@
+use std::fmt::Debug;
+
+pub trait TokenKind: Clone + Copy + Debug + Eq + PartialEq {}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct Token<T> {
+pub struct Token<T: TokenKind> {
     pub kind: T,
     pub char_start: usize,
     pub char_end: usize,
@@ -13,7 +17,7 @@ pub struct Token<T> {
     pub line_end: usize,
 }
 
-impl<T> Token<T> {
+impl<T: TokenKind> Token<T> {
     pub fn new(
         kind: T,
         char_start: usize,

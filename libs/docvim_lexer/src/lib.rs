@@ -1,4 +1,5 @@
 pub mod error;
+pub mod lexer;
 pub mod lua;
 pub mod markdown;
 pub mod token;
