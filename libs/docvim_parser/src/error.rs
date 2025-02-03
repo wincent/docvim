@@ -1,7 +1,8 @@
 use std::error::Error;
 use std::fmt;
 
-use docvim_lexer::error::{LexerError, LexerErrorKind};
+use docvim_lexer::error::LexerError;
+use docvim_lexer::lua::LuaLexerError;
 
 #[derive(Debug)]
 pub struct ParserError {
@@ -18,28 +19,28 @@ impl fmt::Display for ParserError {
 
 impl Error for ParserError {}
 
-impl From<LexerError> for ParserError {
-    fn from(error: LexerError) -> Self {
+impl From<LexerError<LuaLexerError>> for ParserError {
+    fn from(error: LexerError<LuaLexerError>) -> Self {
         let kind = error.kind;
         let line = error.line;
         let column = error.column;
         match kind {
-            LexerErrorKind::InvalidEscapeSequence => {
+            LuaLexerError::InvalidEscapeSequence => {
                 ParserError { kind: ParserErrorKind::InvalidEscapeSequence, line, column }
             }
-            LexerErrorKind::InvalidNumberLiteral => {
+            LuaLexerError::InvalidNumberLiteral => {
                 ParserError { kind: ParserErrorKind::InvalidNumberLiteral, line, column }
             }
-            LexerErrorKind::InvalidOperator => {
+            LuaLexerError::InvalidOperator => {
                 ParserError { kind: ParserErrorKind::InvalidOperator, line, column }
             }
-            LexerErrorKind::UnterminatedBlockComment => {
+            LuaLexerError::UnterminatedBlockComment => {
                 ParserError { kind: ParserErrorKind::UnterminatedBlockComment, line, column }
             }
-            LexerErrorKind::UnterminatedEscapeSequence => {
+            LuaLexerError::UnterminatedEscapeSequence => {
                 ParserError { kind: ParserErrorKind::UnterminatedEscapeSequence, line, column }
             }
-            LexerErrorKind::UnterminatedStringLiteral => {
+            LuaLexerError::UnterminatedStringLiteral => {
                 ParserError { kind: ParserErrorKind::UnterminatedStringLiteral, line, column }
             }
         }

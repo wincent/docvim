@@ -1,3 +1,6 @@
+use std::fmt;
+use std::fmt::Display;
+
 use crate::error::*;
 use crate::make_token;
 use crate::peekable::*;
@@ -5,6 +8,22 @@ use crate::token::*;
 
 use self::HeadingKind::*;
 use self::MarkdownToken::*;
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum MarkdownLexerError {
+    InvalidHeading,
+}
+
+impl Display for MarkdownLexerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let description = match *self {
+            MarkdownLexerError::InvalidHeading => "invalid heading",
+        };
+        write!(f, "{}", description)
+    }
+}
+
+impl LexerErrorKind for MarkdownLexerError {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MarkdownToken {
@@ -40,10 +59,10 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
+    /// Consumes the lexer's input and returns `Some(LexerError<MarkdownLexerError>)` on encountering an error, or
     /// `None` if the input is valid.
     #[cfg(test)]
-    fn validate(&mut self) -> Option<LexerError> {
+    fn validate(&mut self) -> Option<LexerError<MarkdownLexerError>> {
         loop {
             match self.tokens.next() {
                 Some(Err(e)) => {
@@ -92,19 +111,21 @@ impl<'a> Tokens<'a> {
         }
     }
 
-    fn scan_subheading(&self) -> Option<Result<Token<MarkdownToken>, LexerError>> {
+    fn scan_subheading(
+        &self,
+    ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
         make_token!(self, Heading(Heading2))
     }
 
-    fn scan_heading(&self) -> Option<Result<Token<MarkdownToken>, LexerError>> {
+    fn scan_heading(&self) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
         make_token!(self, Heading(Heading1))
     }
 }
 
 impl<'a> Iterator for Tokens<'a> {
-    type Item = Result<Token<MarkdownToken>, LexerError>;
+    type Item = Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>;
 
-    fn next(&mut self) -> Option<Result<Token<MarkdownToken>, LexerError>> {
+    fn next(&mut self) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
         self.skip_whitespace();
         self.char_start = self.iter.char_idx;
         self.byte_start = self.iter.byte_idx;

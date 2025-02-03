@@ -1,3 +1,6 @@
+use std::fmt;
+use std::fmt::Display;
+
 use crate::error::*;
 use crate::make_token;
 use crate::peekable::*;
@@ -11,6 +14,32 @@ use self::NameKind::*;
 use self::OpKind::*;
 use self::PunctuatorKind::*;
 use self::StrKind::*;
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum LuaLexerError {
+    InvalidEscapeSequence,
+    InvalidOperator,
+    InvalidNumberLiteral,
+    UnterminatedBlockComment,
+    UnterminatedEscapeSequence,
+    UnterminatedStringLiteral,
+}
+
+impl Display for LuaLexerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let description = match *self {
+            LuaLexerError::InvalidEscapeSequence => "invalid escape sequence",
+            LuaLexerError::InvalidNumberLiteral => "invalid number literal",
+            LuaLexerError::InvalidOperator => "invalid operator",
+            LuaLexerError::UnterminatedBlockComment => "unterminated block comment",
+            LuaLexerError::UnterminatedEscapeSequence => "unterminated escape sequence",
+            LuaLexerError::UnterminatedStringLiteral => "unterminated string literal",
+        };
+        write!(f, "{}", description)
+    }
+}
+
+impl LexerErrorKind for LuaLexerError {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CommentKind {
@@ -133,7 +162,7 @@ impl<'a> Lexer<'a> {
     /// Consumes the lexer's input and returns `Some(LexerError)` on encountering an error, or
     /// `None` if the input is valid.
     #[cfg(test)]
-    fn validate(&mut self) -> Option<LexerError> {
+    fn validate(&mut self) -> Option<LexerError<LuaLexerError>> {
         loop {
             match self.tokens.next() {
                 Some(Err(e)) => {
@@ -169,7 +198,7 @@ impl<'a> Tokens<'a> {
         }
     }
 
-    fn scan_comment(&mut self) -> Option<Result<Token<LuaToken>, LexerError>> {
+    fn scan_comment(&mut self) -> Option<Result<Token<LuaToken>, LexerError<LuaLexerError>>> {
         self.char_start = self.iter.char_idx - 2; // Subtract length of "--" prefix.
         self.byte_start = self.iter.byte_idx - 2;
         if self.consume_char('[') {
@@ -189,7 +218,10 @@ impl<'a> Tokens<'a> {
     }
 
     /// Scans until seeing "]]" (or "]=]", or "]==]" etc).
-    fn scan_block_comment(&mut self, eq_count: i32) -> Option<Result<Token<LuaToken>, LexerError>> {
+    fn scan_block_comment(
+        &mut self,
+        eq_count: i32,
+    ) -> Option<Result<Token<LuaToken>, LexerError<LuaLexerError>>> {
         loop {
             let ch = self.iter.next();
             match ch {
@@ -208,7 +240,7 @@ impl<'a> Tokens<'a> {
                 }
                 None => {
                     return Some(Err(LexerError {
-                        kind: LexerErrorKind::UnterminatedBlockComment,
+                        kind: LuaLexerError::UnterminatedBlockComment,
                         line: self.iter.line_idx,
                         column: self.iter.column_idx,
                     }));
@@ -219,7 +251,7 @@ impl<'a> Tokens<'a> {
     }
 
     /// Scans until end of line, or end of input.
-    fn scan_line_comment(&mut self) -> Option<Result<Token<LuaToken>, LexerError>> {
+    fn scan_line_comment(&mut self) -> Option<Result<Token<LuaToken>, LexerError<LuaLexerError>>> {
         loop {
             let ch = self.iter.next();
             match ch {
@@ -235,7 +267,7 @@ impl<'a> Tokens<'a> {
     // considered alphabetic by the current locale can be used in an identifier", so the below
     // could use a bit of work...
     // See: https://stackoverflow.com/a/4843653/2103996
-    fn scan_name(&mut self) -> Result<Token<LuaToken>, LexerError> {
+    fn scan_name(&mut self) -> Result<Token<LuaToken>, LexerError<LuaLexerError>> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
         let column_start = self.iter.column_idx;
@@ -289,7 +321,7 @@ impl<'a> Tokens<'a> {
         ))
     }
 
-    fn scan_number(&mut self) -> Result<Token<LuaToken>, LexerError> {
+    fn scan_number(&mut self) -> Result<Token<LuaToken>, LexerError<LuaLexerError>> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
         let column_start = self.iter.column_idx;
@@ -305,7 +337,7 @@ impl<'a> Tokens<'a> {
                     '.' => {
                         if seen_separator {
                             return Err(LexerError {
-                                kind: LexerErrorKind::InvalidNumberLiteral,
+                                kind: LuaLexerError::InvalidNumberLiteral,
                                 line: self.iter.line_idx, column: self.iter.column_idx,
                             });
                         } else {
@@ -321,7 +353,7 @@ impl<'a> Tokens<'a> {
                     }
                     _ => {
                         return Err(LexerError {
-                            kind: LexerErrorKind::InvalidNumberLiteral,
+                            kind: LuaLexerError::InvalidNumberLiteral,
                             line: self.iter.line_idx, column: self.iter.column_idx,
                         });
                     }
@@ -348,7 +380,7 @@ impl<'a> Tokens<'a> {
                     '.' => {
                         if seen_separator {
                             return Err(LexerError {
-                                kind: LexerErrorKind::InvalidNumberLiteral,
+                                kind: LuaLexerError::InvalidNumberLiteral,
                                 line: self.iter.line_idx,
                                 column: self.iter.column_idx,
                             });
@@ -375,7 +407,7 @@ impl<'a> Tokens<'a> {
                                 }
                                 _ => {
                                     return Err(LexerError {
-                                        kind: LexerErrorKind::InvalidNumberLiteral,
+                                        kind: LuaLexerError::InvalidNumberLiteral,
                                         line: self.iter.line_idx, column: self.iter.column_idx,
                                     });
                                 }
@@ -395,7 +427,7 @@ impl<'a> Tokens<'a> {
                             ));
                         } else {
                             return Err(LexerError {
-                                kind: LexerErrorKind::InvalidNumberLiteral,
+                                kind: LuaLexerError::InvalidNumberLiteral,
                                 line: self.iter.line_idx,
                                 column: self.iter.column_idx,
                             });
@@ -420,7 +452,7 @@ impl<'a> Tokens<'a> {
         ))
     }
 
-    fn scan_string(&mut self) -> Result<Token<LuaToken>, LexerError> {
+    fn scan_string(&mut self) -> Result<Token<LuaToken>, LexerError<LuaLexerError>> {
         let byte_start = self.iter.byte_idx;
         let char_start = self.iter.char_idx;
         let column_start = self.iter.column_idx;
@@ -491,14 +523,14 @@ impl<'a> Tokens<'a> {
                             },
                             _ => {
                                 return Err(LexerError {
-                                    kind: LexerErrorKind::InvalidEscapeSequence,
+                                    kind: LuaLexerError::InvalidEscapeSequence,
                                     line: self.iter.line_idx, column: self.iter.column_idx,
                                 });
                             }
                         }
                     } else {
                         return Err(LexerError {
-                            kind: LexerErrorKind::UnterminatedEscapeSequence,
+                            kind: LuaLexerError::UnterminatedEscapeSequence,
                             line: self.iter.line_idx,
                             column: self.iter.column_idx,
                         });
@@ -508,7 +540,7 @@ impl<'a> Tokens<'a> {
             }
         }
         Err(LexerError {
-            kind: LexerErrorKind::UnterminatedStringLiteral,
+            kind: LuaLexerError::UnterminatedStringLiteral,
             line: self.iter.line_idx,
             column: self.iter.column_idx,
         })
@@ -522,7 +554,10 @@ impl<'a> Tokens<'a> {
     /// - [=[a level 1 string]=]
     /// - [==[a level 2 string]==]
     ///
-    fn scan_long_string(&mut self, level: usize) -> Result<Token<LuaToken>, LexerError> {
+    fn scan_long_string(
+        &mut self,
+        level: usize,
+    ) -> Result<Token<LuaToken>, LexerError<LuaLexerError>> {
         let byte_start = self.iter.byte_idx - level - 2;
         let char_start = self.iter.char_idx - level - 2;
         let column_start = self.iter.column_idx - level - 2;
@@ -553,7 +588,7 @@ impl<'a> Tokens<'a> {
             }
         }
         Err(LexerError {
-            kind: LexerErrorKind::UnterminatedStringLiteral,
+            kind: LuaLexerError::UnterminatedStringLiteral,
             line: self.iter.line_idx,
             column: self.iter.column_idx,
         })
@@ -574,9 +609,9 @@ impl<'a> Tokens<'a> {
 }
 
 impl<'a> Iterator for Tokens<'a> {
-    type Item = Result<Token<LuaToken>, LexerError>;
+    type Item = Result<Token<LuaToken>, LexerError<LuaLexerError>>;
 
-    fn next(&mut self) -> Option<Result<Token<LuaToken>, LexerError>> {
+    fn next(&mut self) -> Option<Result<Token<LuaToken>, LexerError<LuaLexerError>>> {
         self.skip_whitespace();
         self.char_start = self.iter.char_idx;
         self.byte_start = self.iter.byte_idx;
@@ -627,7 +662,7 @@ impl<'a> Iterator for Tokens<'a> {
                         1 => make_token!(self, Op(Assign)),
                         2 => make_token!(self, Op(Eq)),
                         _ => Some(Err(LexerError {
-                            kind: LexerErrorKind::InvalidOperator,
+                            kind: LuaLexerError::InvalidOperator,
                             line: self.line_start,
                             column: self.column_start,
                         })),
@@ -644,7 +679,7 @@ impl<'a> Iterator for Tokens<'a> {
                         make_token!(self, Op(Ne))
                     } else {
                         Some(Err(LexerError {
-                            kind: LexerErrorKind::InvalidOperator,
+                            kind: LuaLexerError::InvalidOperator,
                             line: self.line_start,
                             column: self.column_start,
                         }))
@@ -696,7 +731,7 @@ impl<'a> Iterator for Tokens<'a> {
                                 Some(self.scan_long_string(eq_count))
                             } else {
                                 Some(Err(LexerError {
-                                    kind: LexerErrorKind::InvalidOperator,
+                                    kind: LuaLexerError::InvalidOperator,
                                     line: self.iter.line_idx,
                                     column: self.iter.column_idx,
                                 }))
@@ -732,7 +767,7 @@ impl<'a> Iterator for Tokens<'a> {
                         2 => make_token!(self, Op(Concat)),
                         3 => make_token!(self, Op(Vararg)),
                         _ => Some(Err(LexerError {
-                            kind: LexerErrorKind::InvalidOperator,
+                            kind: LuaLexerError::InvalidOperator,
                             line: self.line_start,
                             column: self.column_start,
                         })),
@@ -758,7 +793,7 @@ impl<'a> Iterator for Tokens<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use LexerErrorKind;
+    use LuaLexerError;
 
     macro_rules! assert_lexes {
         ($input:expr, $expected:expr) => {
@@ -1098,19 +1133,19 @@ mod tests {
     fn rejects_invalid_numbers() {
         assert_eq!(
             Lexer::new("3.0.1").validate(),
-            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, line: 1, column: 4 })
+            Some(LexerError { kind: LuaLexerError::InvalidNumberLiteral, line: 1, column: 4 })
         );
         assert_eq!(
             Lexer::new("3e-2.1").validate(),
-            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, line: 1, column: 5 })
+            Some(LexerError { kind: LuaLexerError::InvalidNumberLiteral, line: 1, column: 5 })
         );
         assert_eq!(
             Lexer::new("0xffx").validate(),
-            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, line: 1, column: 5 })
+            Some(LexerError { kind: LuaLexerError::InvalidNumberLiteral, line: 1, column: 5 })
         );
         assert_eq!(
             Lexer::new("0xff.0xff").validate(),
-            Some(LexerError { kind: LexerErrorKind::InvalidNumberLiteral, line: 1, column: 7 })
+            Some(LexerError { kind: LuaLexerError::InvalidNumberLiteral, line: 1, column: 7 })
         );
     }
 

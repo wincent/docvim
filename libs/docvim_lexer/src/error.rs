@@ -1,47 +1,27 @@
 use std::error;
 use std::fmt;
+use std::fmt::Debug;
+use std::fmt::Display;
 
-// TODO: make different error types for Lua and Markdown
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum LexerErrorKind {
-    InvalidEscapeSequence,
-    InvalidOperator,
-    InvalidNumberLiteral,
-    UnterminatedBlockComment,
-    UnterminatedEscapeSequence,
-    UnterminatedStringLiteral,
-}
-
-impl LexerErrorKind {
-    fn to_str(&self) -> &'static str {
-        match *self {
-            LexerErrorKind::InvalidEscapeSequence => "invalid escape sequence",
-            LexerErrorKind::InvalidNumberLiteral => "invalid number literal",
-            LexerErrorKind::InvalidOperator => "invalid operator",
-            LexerErrorKind::UnterminatedBlockComment => "unterminated block comment",
-            LexerErrorKind::UnterminatedEscapeSequence => "unterminated escape sequence",
-            LexerErrorKind::UnterminatedStringLiteral => "unterminated string literal",
-        }
-    }
-}
+pub trait LexerErrorKind: Clone + Copy + Debug + Display + Eq + PartialEq {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct LexerError {
-    pub kind: LexerErrorKind,
+pub struct LexerError<T: LexerErrorKind> {
+    pub kind: T,
     pub line: usize,
     pub column: usize,
 }
 
-impl LexerError {
-    pub fn new(kind: LexerErrorKind, line: usize, column: usize) -> LexerError {
+impl<T: LexerErrorKind> LexerError<T> {
+    pub fn new(kind: T, line: usize, column: usize) -> Self {
         Self { kind, line, column }
     }
 }
 
-impl fmt::Display for LexerError {
+impl<T: LexerErrorKind> fmt::Display for LexerError<T> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(fmt, "{} (line {}, column {})", self.kind.to_str(), self.line, self.column)
+        write!(fmt, "{} (line {}, column {})", self.kind, self.line, self.column)
     }
 }
 
-impl error::Error for LexerError {}
+impl<T: LexerErrorKind> error::Error for LexerError<T> {}
