@@ -267,11 +267,11 @@ impl<'a> Tokens<'a> {
     // considered alphabetic by the current locale can be used in an identifier", so the below
     // could use a bit of work...
     // See: https://stackoverflow.com/a/4843653/2103996
-    fn scan_name(&mut self) -> Result<Token<LuaToken>, LexerError<LuaLexerError>> {
-        let byte_start = self.iter.byte_idx;
-        let char_start = self.iter.char_idx;
-        let column_start = self.iter.column_idx;
-        let line_start = self.iter.line_idx;
+    fn scan_name(&mut self) -> Option<Result<Token<LuaToken>, LexerError<LuaLexerError>>> {
+        self.byte_start = self.iter.byte_idx;
+        self.char_start = self.iter.char_idx;
+        self.column_start = self.iter.column_idx;
+        self.line_start = self.iter.line_idx;
         let mut name = Vec::new();
         while let Some(&c) = self.iter.peek() {
             match c {
@@ -308,24 +308,14 @@ impl<'a> Tokens<'a> {
             "while" => Name(Keyword(While)),
             _ => Name(Identifier),
         };
-        Ok(Token::new(
-            kind,
-            char_start,
-            self.iter.char_idx,
-            byte_start,
-            self.iter.byte_idx,
-            column_start,
-            self.iter.column_idx,
-            line_start,
-            self.iter.line_idx,
-        ))
+        make_token!(self, kind)
     }
 
-    fn scan_number(&mut self) -> Result<Token<LuaToken>, LexerError<LuaLexerError>> {
-        let byte_start = self.iter.byte_idx;
-        let char_start = self.iter.char_idx;
-        let column_start = self.iter.column_idx;
-        let line_start = self.iter.line_idx;
+    fn scan_number(&mut self) -> Option<Result<Token<LuaToken>, LexerError<LuaLexerError>>> {
+        self.byte_start = self.iter.byte_idx;
+        self.char_start = self.iter.char_idx;
+        self.column_start = self.iter.column_idx;
+        self.line_start = self.iter.line_idx;
         let ch = self.iter.next().unwrap();
         if ch == '0' && self.consume_char('x') {
             let mut seen_separator = false;
@@ -336,10 +326,10 @@ impl<'a> Tokens<'a> {
                     }
                     '.' => {
                         if seen_separator {
-                            return Err(LexerError {
+                            return Some(Err(LexerError {
                                 kind: LuaLexerError::InvalidNumberLiteral,
                                 line: self.iter.line_idx, column: self.iter.column_idx,
-                            });
+                            }));
                         } else {
                             seen_separator = true;
                             self.iter.next();
@@ -352,24 +342,14 @@ impl<'a> Tokens<'a> {
                         break;
                     }
                     _ => {
-                        return Err(LexerError {
+                        return Some(Err(LexerError {
                             kind: LuaLexerError::InvalidNumberLiteral,
                             line: self.iter.line_idx, column: self.iter.column_idx,
-                        });
+                        }));
                     }
                 }
             }
-            return Ok(Token::new(
-                Literal(Number),
-                char_start,
-                self.iter.char_idx,
-                byte_start,
-                self.iter.byte_idx,
-                column_start,
-                self.iter.column_idx,
-                line_start,
-                self.iter.line_idx,
-            ));
+            return make_token!(self, Literal(Number));
         } else {
             let mut seen_separator = false;
             while let Some(&next) = self.iter.peek() {
@@ -379,11 +359,11 @@ impl<'a> Tokens<'a> {
                     }
                     '.' => {
                         if seen_separator {
-                            return Err(LexerError {
+                            return Some(Err(LexerError {
                                 kind: LuaLexerError::InvalidNumberLiteral,
                                 line: self.iter.line_idx,
                                 column: self.iter.column_idx,
-                            });
+                            }));
                         } else {
                             seen_separator = true;
                             self.iter.next();
@@ -406,31 +386,21 @@ impl<'a> Tokens<'a> {
                                     break;
                                 }
                                 _ => {
-                                    return Err(LexerError {
+                                    return Some(Err(LexerError {
                                         kind: LuaLexerError::InvalidNumberLiteral,
                                         line: self.iter.line_idx, column: self.iter.column_idx,
-                                    });
+                                    }));
                                 }
                             }
                         }
                         if exp_digits_count > 0 {
-                            return Ok(Token::new(
-                                Literal(Number),
-                                char_start,
-                                self.iter.char_idx,
-                                byte_start,
-                                self.iter.byte_idx,
-                                column_start,
-                                self.iter.column_idx,
-                                line_start,
-                                self.iter.line_idx,
-                            ));
+                            return make_token!(self, Literal(Number));
                         } else {
-                            return Err(LexerError {
+                            return Some(Err(LexerError {
                                 kind: LuaLexerError::InvalidNumberLiteral,
                                 line: self.iter.line_idx,
                                 column: self.iter.column_idx,
-                            });
+                            }));
                         }
                     }
                     _ => {
@@ -439,51 +409,21 @@ impl<'a> Tokens<'a> {
                 }
             }
         }
-        Ok(Token::new(
-            Literal(Number),
-            char_start,
-            self.iter.char_idx,
-            byte_start,
-            self.iter.byte_idx,
-            column_start,
-            self.iter.column_idx,
-            line_start,
-            self.iter.line_idx,
-        ))
+        make_token!(self, Literal(Number))
     }
 
-    fn scan_string(&mut self) -> Result<Token<LuaToken>, LexerError<LuaLexerError>> {
-        let byte_start = self.iter.byte_idx;
-        let char_start = self.iter.char_idx;
-        let column_start = self.iter.column_idx;
-        let line_start = self.iter.line_idx;
+    fn scan_string(&mut self) -> Option<Result<Token<LuaToken>, LexerError<LuaLexerError>>> {
+        self.byte_start = self.iter.byte_idx;
+        self.char_start = self.iter.char_idx;
+        self.column_start = self.iter.column_idx;
+        self.line_start = self.iter.line_idx;
         let quote = self.iter.next().unwrap();
         while let Some(c) = self.iter.next() {
             if c == quote {
                 if quote == '"' {
-                    return Ok(Token::new(
-                        Literal(Str(DoubleQuoted)),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                        column_start,
-                        self.iter.column_idx,
-                        line_start,
-                        self.iter.line_idx,
-                    ));
+                    return make_token!(self, Literal(Str(DoubleQuoted)));
                 } else {
-                    return Ok(Token::new(
-                        Literal(Str(SingleQuoted)),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                        column_start,
-                        self.iter.column_idx,
-                        line_start,
-                        self.iter.line_idx,
-                    ));
+                    return make_token!(self, Literal(Str(SingleQuoted)));
                 }
             }
             match c {
@@ -522,28 +462,28 @@ impl<'a> Tokens<'a> {
                                 }
                             },
                             _ => {
-                                return Err(LexerError {
+                                return Some(Err(LexerError {
                                     kind: LuaLexerError::InvalidEscapeSequence,
                                     line: self.iter.line_idx, column: self.iter.column_idx,
-                                });
+                                }));
                             }
                         }
                     } else {
-                        return Err(LexerError {
+                        return Some(Err(LexerError {
                             kind: LuaLexerError::UnterminatedEscapeSequence,
                             line: self.iter.line_idx,
                             column: self.iter.column_idx,
-                        });
+                        }));
                     }
                 }
                 _ => (), // Non-escaped string contents.
             }
         }
-        Err(LexerError {
+        Some(Err(LexerError {
             kind: LuaLexerError::UnterminatedStringLiteral,
             line: self.iter.line_idx,
             column: self.iter.column_idx,
-        })
+        }))
     }
 
     /// Long format strings do not interpret escape sequences.
@@ -557,11 +497,11 @@ impl<'a> Tokens<'a> {
     fn scan_long_string(
         &mut self,
         level: usize,
-    ) -> Result<Token<LuaToken>, LexerError<LuaLexerError>> {
-        let byte_start = self.iter.byte_idx - level - 2;
-        let char_start = self.iter.char_idx - level - 2;
-        let column_start = self.iter.column_idx - level - 2;
-        let line_start = self.iter.line_idx;
+    ) -> Option<Result<Token<LuaToken>, LexerError<LuaLexerError>>> {
+        self.byte_start = self.iter.byte_idx - level - 2;
+        self.char_start = self.iter.char_idx - level - 2;
+        self.column_start = self.iter.column_idx - level - 2;
+        self.line_start = self.iter.line_idx;
         while let Some(c) = self.iter.next() {
             if c == ']' {
                 let mut eq_count = 0;
@@ -573,25 +513,15 @@ impl<'a> Tokens<'a> {
                     }
                 }
                 if eq_count == level && self.consume_char(']') {
-                    return Ok(Token::new(
-                        Literal(Str(Long { level })),
-                        char_start,
-                        self.iter.char_idx,
-                        byte_start,
-                        self.iter.byte_idx,
-                        column_start,
-                        self.iter.column_idx,
-                        line_start,
-                        self.iter.line_idx,
-                    ));
+                    return make_token!(self, Literal(Str(Long { level })));
                 }
             }
         }
-        Err(LexerError {
+        Some(Err(LexerError {
             kind: LuaLexerError::UnterminatedStringLiteral,
             line: self.iter.line_idx,
             column: self.iter.column_idx,
-        })
+        }))
     }
 
     fn skip_whitespace(&mut self) {
@@ -720,7 +650,7 @@ impl<'a> Iterator for Tokens<'a> {
                 '[' => {
                     self.iter.next();
                     if self.consume_char('[') {
-                        Some(self.scan_long_string(0))
+                        self.scan_long_string(0)
                     } else {
                         let mut eq_count = 0;
                         while self.consume_char('=') {
@@ -728,7 +658,7 @@ impl<'a> Iterator for Tokens<'a> {
                         }
                         if eq_count > 0 {
                             if self.consume_char('[') {
-                                Some(self.scan_long_string(eq_count))
+                                self.scan_long_string(eq_count)
                             } else {
                                 Some(Err(LexerError {
                                     kind: LuaLexerError::InvalidOperator,
@@ -773,9 +703,9 @@ impl<'a> Iterator for Tokens<'a> {
                         })),
                     }
                 }
-                '\'' | '"' => Some(self.scan_string()),
-                '0'..='9' => Some(self.scan_number()),
-                'A'..='Z' | 'a'..='z' | '_' => Some(self.scan_name()),
+                '\'' | '"' => self.scan_string(),
+                '0'..='9' => self.scan_number(),
+                'A'..='Z' | 'a'..='z' | '_' => self.scan_name(),
                 _ => {
                     // For docvim's purposes it is better to fail gracefully and emit some
                     // "Unknown" tokens for stuff we don't recognize, so that it can at least take
