@@ -29,6 +29,7 @@ impl LexerErrorKind for MarkdownLexerError {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MarkdownToken {
+    BlockQuote,
     Heading(HeadingKind),
     HorizontalRule,
     Unknown,
@@ -122,6 +123,12 @@ impl<'a> Tokens<'a> {
         }
     }
 
+    fn scan_block_quote(
+        &self,
+    ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
+        make_token!(self, BlockQuote)
+    }
+
     fn scan_horizontal_rule(
         &self,
     ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
@@ -157,6 +164,10 @@ impl<'a> Iterator for Tokens<'a> {
                     } else {
                         self.scan_heading()
                     }
+                }
+                '>' => {
+                    self.iter.next();
+                    self.scan_block_quote()
                 }
                 '-' => {
                     self.iter.next();
@@ -240,6 +251,24 @@ mod tests {
                 line_start: 1,
                 line_end: 1,
                 kind: HorizontalRule,
+            }]
+        );
+    }
+
+    #[test]
+    fn lexes_a_block_quote() {
+        assert_lexes!(
+            ">",
+            vec![Token {
+                byte_end: 1,
+                byte_start: 0,
+                char_end: 1,
+                char_start: 0,
+                column_start: 1,
+                column_end: 2,
+                line_start: 1,
+                line_end: 1,
+                kind: BlockQuote,
             }]
         );
     }
