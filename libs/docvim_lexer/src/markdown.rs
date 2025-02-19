@@ -12,12 +12,14 @@ use self::MarkdownToken::*;
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum MarkdownLexerError {
     InvalidHeading,
+    UnterminatedHorizontalRule,
 }
 
 impl Display for MarkdownLexerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let description = match *self {
             MarkdownLexerError::InvalidHeading => "invalid heading",
+            MarkdownLexerError::UnterminatedHorizontalRule => "unterminated horizontal rule",
         };
         write!(f, "{}", description)
     }
@@ -28,6 +30,7 @@ impl LexerErrorKind for MarkdownLexerError {}
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MarkdownToken {
     Heading(HeadingKind),
+    HorizontalRule,
     Unknown,
 }
 
@@ -98,6 +101,14 @@ impl<'a> Tokens<'a> {
         }
     }
 
+    // TODO: consider whether the Lua lexer should also have something like this.
+    fn peek_char(&mut self, ch: char) -> bool {
+        match self.iter.peek() {
+            Some(&seen) if seen == ch => true,
+            _ => false,
+        }
+    }
+
     fn skip_whitespace(&mut self) {
         while let Some(&c) = self.iter.peek() {
             match c {
@@ -109,6 +120,12 @@ impl<'a> Tokens<'a> {
                 }
             }
         }
+    }
+
+    fn scan_horizontal_rule(
+        &self,
+    ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
+        make_token!(self, HorizontalRule)
     }
 
     fn scan_subheading(
@@ -139,6 +156,25 @@ impl<'a> Iterator for Tokens<'a> {
                         self.scan_subheading()
                     } else {
                         self.scan_heading()
+                    }
+                }
+                '-' => {
+                    self.iter.next();
+                    if self.consume_char('-') {
+                        if self.consume_char('-') {
+                            self.scan_horizontal_rule()
+                        } else {
+                            Some(Err(LexerError {
+                                kind: MarkdownLexerError::UnterminatedHorizontalRule,
+                                line: self.iter.line_idx,
+                                column: self.iter.column_idx,
+                            }))
+                        }
+                    } else if self.consume_char(' ') {
+                        // TODO: scan list item
+                        make_token!(self, Unknown)
+                    } else {
+                        make_token!(self, Unknown)
                     }
                 }
                 _ => {
@@ -172,7 +208,8 @@ mod tests {
     }
 
     #[test]
-    fn lexes_something() {
+    fn lexes_a_heading() {
+        // TODO: more
         assert_lexes!(
             "##",
             vec![Token {
@@ -185,6 +222,24 @@ mod tests {
                 line_start: 1,
                 line_end: 1,
                 kind: Heading(Heading2),
+            }]
+        );
+    }
+
+    #[test]
+    fn lexes_a_horizontal_rule() {
+        assert_lexes!(
+            "---",
+            vec![Token {
+                byte_end: 3,
+                byte_start: 0,
+                char_end: 3,
+                char_start: 0,
+                column_start: 1,
+                column_end: 4,
+                line_start: 1,
+                line_end: 1,
+                kind: HorizontalRule,
             }]
         );
     }
