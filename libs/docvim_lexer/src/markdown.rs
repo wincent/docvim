@@ -12,6 +12,7 @@ use self::MarkdownToken::*;
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum MarkdownLexerError {
     InvalidHeading,
+    UnterminatedCodeFence,
     UnterminatedHorizontalRule,
 }
 
@@ -19,6 +20,7 @@ impl Display for MarkdownLexerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let description = match *self {
             MarkdownLexerError::InvalidHeading => "invalid heading",
+            MarkdownLexerError::UnterminatedCodeFence => "unterminated code fence",
             MarkdownLexerError::UnterminatedHorizontalRule => "unterminated horizontal rule",
         };
         write!(f, "{}", description)
@@ -30,6 +32,7 @@ impl LexerErrorKind for MarkdownLexerError {}
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MarkdownToken {
     BlockQuote,
+    CodeFence,
     Heading(HeadingKind),
     HorizontalRule,
     Unknown,
@@ -129,6 +132,12 @@ impl<'a> Tokens<'a> {
         make_token!(self, BlockQuote)
     }
 
+    fn scan_code_fence(
+        &self,
+    ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
+        make_token!(self, CodeFence)
+    }
+
     fn scan_horizontal_rule(
         &self,
     ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
@@ -168,6 +177,23 @@ impl<'a> Iterator for Tokens<'a> {
                 '>' => {
                     self.iter.next();
                     self.scan_block_quote()
+                }
+                '`' => {
+                    self.iter.next();
+                    if self.consume_char('`') {
+                        if self.consume_char('`') {
+                            self.scan_code_fence()
+                        } else {
+                            Some(Err(LexerError {
+                                kind: MarkdownLexerError::UnterminatedCodeFence,
+                                line: self.iter.line_idx,
+                                column: self.iter.column_idx,
+                            }))
+                        }
+                    } else {
+                        // TODO: scan backticks
+                        make_token!(self, Unknown)
+                    }
                 }
                 '-' => {
                     self.iter.next();
@@ -269,6 +295,24 @@ mod tests {
                 line_start: 1,
                 line_end: 1,
                 kind: BlockQuote,
+            }]
+        );
+    }
+
+    #[test]
+    fn lexes_a_fenced_code_marker() {
+        assert_lexes!(
+            "```",
+            vec![Token {
+                byte_end: 3,
+                byte_start: 0,
+                char_end: 3,
+                char_start: 0,
+                column_start: 1,
+                column_end: 4,
+                line_start: 1,
+                line_end: 1,
+                kind: CodeFence,
             }]
         );
     }
