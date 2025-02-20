@@ -31,11 +31,20 @@ impl LexerErrorKind for MarkdownLexerError {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MarkdownToken {
+    Backtick,
+    Bang,
     BlockQuote,
     CodeFence,
     Heading(HeadingKind),
     HorizontalRule,
-    Unknown,
+    Hyphen,
+    Lbracket,
+    Lparen,
+    Newline,
+    Rbracket,
+    Rparen,
+    Space,
+    Text,
 }
 
 impl TokenKind for MarkdownToken {}
@@ -104,85 +113,83 @@ impl<'a> Tokens<'a> {
             _ => false,
         }
     }
-
-    // TODO: consider whether the Lua lexer should also have something like this.
-    fn peek_char(&mut self, ch: char) -> bool {
-        match self.iter.peek() {
-            Some(&seen) if seen == ch => true,
-            _ => false,
-        }
-    }
-
-    fn skip_whitespace(&mut self) {
-        while let Some(&c) = self.iter.peek() {
-            match c {
-                ' ' | '\n' | '\r' | '\t' => {
-                    self.iter.next();
-                }
-                _ => {
-                    break;
-                }
-            }
-        }
-    }
-
-    fn scan_block_quote(
-        &self,
-    ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
-        make_token!(self, BlockQuote)
-    }
-
-    fn scan_code_fence(
-        &self,
-    ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
-        make_token!(self, CodeFence)
-    }
-
-    fn scan_horizontal_rule(
-        &self,
-    ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
-        make_token!(self, HorizontalRule)
-    }
-
-    fn scan_subheading(
-        &self,
-    ) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
-        make_token!(self, Heading(Heading2))
-    }
-
-    fn scan_heading(&self) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
-        make_token!(self, Heading(Heading1))
-    }
 }
 
 impl<'a> Iterator for Tokens<'a> {
     type Item = Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>;
 
     fn next(&mut self) -> Option<Result<Token<MarkdownToken>, LexerError<MarkdownLexerError>>> {
-        self.skip_whitespace();
         self.char_start = self.iter.char_idx;
         self.byte_start = self.iter.byte_idx;
         self.column_start = self.iter.column_idx;
         self.line_start = self.iter.line_idx;
         if let Some(&c) = self.iter.peek() {
             match c {
-                '#' => {
+                ' ' | '\t' => {
                     self.iter.next();
-                    if self.consume_char('#') {
-                        self.scan_subheading()
-                    } else {
-                        self.scan_heading()
+                    while let Some(&next) = self.iter.peek() {
+                        if !matches!(next, ' ' | '\t') {
+                            break;
+                        }
+                        self.iter.next();
                     }
+                    make_token!(self, Space)
+                }
+                '\r' => {
+                    // Both "\r\n" and "\r" produce a `Newline` token.
+                    self.iter.next();
+                    self.consume_char('\n');
+                    make_token!(self, Newline)
+                }
+                '\n' => {
+                    self.iter.next();
+                    make_token!(self, Newline)
+                }
+                '!' => {
+                    self.iter.next();
+                    make_token!(self, Bang)
                 }
                 '>' => {
                     self.iter.next();
-                    self.scan_block_quote()
+                    make_token!(self, BlockQuote)
+                }
+                '[' => {
+                    self.iter.next();
+                    make_token!(self, Lbracket)
+                }
+                ']' => {
+                    self.iter.next();
+                    make_token!(self, Rbracket)
+                }
+                '(' => {
+                    self.iter.next();
+                    make_token!(self, Lparen)
+                }
+                ')' => {
+                    self.iter.next();
+                    make_token!(self, Rparen)
+                }
+                '#' => {
+                    self.iter.next();
+                    if self.consume_char('#') {
+                        if self.consume_char('#') {
+                            Some(Err(LexerError {
+                                kind: MarkdownLexerError::InvalidHeading,
+                                line: self.iter.line_idx,
+                                column: self.iter.column_idx - 3,
+                            }))
+                        } else {
+                            make_token!(self, Heading(Heading2))
+                        }
+                    } else {
+                        make_token!(self, Heading(Heading1))
+                    }
                 }
                 '`' => {
                     self.iter.next();
                     if self.consume_char('`') {
                         if self.consume_char('`') {
-                            self.scan_code_fence()
+                            make_token!(self, CodeFence)
                         } else {
                             Some(Err(LexerError {
                                 kind: MarkdownLexerError::UnterminatedCodeFence,
@@ -191,15 +198,14 @@ impl<'a> Iterator for Tokens<'a> {
                             }))
                         }
                     } else {
-                        // TODO: scan backticks
-                        make_token!(self, Unknown)
+                        make_token!(self, Backtick)
                     }
                 }
                 '-' => {
                     self.iter.next();
                     if self.consume_char('-') {
                         if self.consume_char('-') {
-                            self.scan_horizontal_rule()
+                            make_token!(self, HorizontalRule)
                         } else {
                             Some(Err(LexerError {
                                 kind: MarkdownLexerError::UnterminatedHorizontalRule,
@@ -207,19 +213,33 @@ impl<'a> Iterator for Tokens<'a> {
                                 column: self.iter.column_idx,
                             }))
                         }
-                    } else if self.consume_char(' ') {
-                        // TODO: scan list item
-                        make_token!(self, Unknown)
                     } else {
-                        make_token!(self, Unknown)
+                        make_token!(self, Hyphen)
                     }
                 }
                 _ => {
-                    // TODO: Be less lenient in Markdown parser than in Lua parser (want to alert
-                    // users of mistakes in the way they authored their Markdown, but not bother
-                    // users if we can't fully grok their Lua code).
                     self.iter.next();
-                    make_token!(self, Unknown)
+                    while let Some(&next) = self.iter.peek() {
+                        if matches!(
+                            next,
+                            ' ' | '\t'
+                                | '\n'
+                                | '\r'
+                                | '!'
+                                | '>'
+                                | '['
+                                | ']'
+                                | '('
+                                | ')'
+                                | '#'
+                                | '`'
+                                | '-'
+                        ) {
+                            break;
+                        }
+                        self.iter.next();
+                    }
+                    make_token!(self, Text)
                 }
             }
         } else {
@@ -314,6 +334,38 @@ mod tests {
                 line_end: 1,
                 kind: CodeFence,
             }]
+        );
+    }
+
+    #[test]
+    fn rejects_bad_code_fence_markers() {
+        assert_eq!(
+            Lexer::new("foo``bar").validate(),
+            Some(LexerError {
+                kind: MarkdownLexerError::UnterminatedCodeFence,
+                line: 1,
+                column: 6
+            })
+        );
+    }
+
+    #[test]
+    fn rejects_bad_horizontal_rules() {
+        assert_eq!(
+            Lexer::new("foo--bar").validate(),
+            Some(LexerError {
+                kind: MarkdownLexerError::UnterminatedHorizontalRule,
+                line: 1,
+                column: 6
+            })
+        );
+    }
+
+    #[test]
+    fn rejects_bad_headings() {
+        assert_eq!(
+            Lexer::new("\n\n###").validate(),
+            Some(LexerError { kind: MarkdownLexerError::InvalidHeading, line: 3, column: 1 })
         );
     }
 }
