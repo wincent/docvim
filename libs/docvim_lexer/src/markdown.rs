@@ -52,7 +52,6 @@ pub enum MarkdownToken {
     At,
     Bar,
     Star,
-
 }
 
 impl TokenKind for MarkdownToken {}
@@ -143,21 +142,21 @@ impl<'a> Iterator for Tokens<'a> {
                         }
                         self.iter.next();
                         break make_token!(self, At);
-                    },
+                    }
                     '|' => {
                         if pending() {
                             break make_token!(self, Text);
                         }
                         self.iter.next();
                         break make_token!(self, Bar);
-                    },
+                    }
                     '*' => {
                         if pending() {
                             break make_token!(self, Text);
                         }
                         self.iter.next();
                         break make_token!(self, Star);
-                    },
+                    }
                     ' ' | '\t' => {
                         if pending() {
                             break make_token!(self, Text);
