@@ -31,6 +31,7 @@ impl LexerErrorKind for MarkdownLexerError {}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum MarkdownToken {
+    // Standard Markdown.
     Backtick,
     Bang,
     Break,
@@ -46,6 +47,12 @@ pub enum MarkdownToken {
     Rparen,
     Space,
     Text,
+
+    // Docvim-flavored Markdown.
+    At,
+    Bar,
+    Star,
+
 }
 
 impl TokenKind for MarkdownToken {}
@@ -130,6 +137,27 @@ impl<'a> Iterator for Tokens<'a> {
                     self.iter.line_idx > self.line_start || self.iter.column_idx > self.column_start
                 };
                 match c {
+                    '@' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, At);
+                    },
+                    '|' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, Bar);
+                    },
+                    '*' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, Star);
+                    },
                     ' ' | '\t' => {
                         if pending() {
                             break make_token!(self, Text);
@@ -291,6 +319,9 @@ impl<'a> Iterator for Tokens<'a> {
                                 ' ' | '\t'
                                     | '\n'
                                     | '\r'
+                                    | '@'
+                                    | '|'
+                                    | '*'
                                     | '!'
                                     | '<'
                                     | '>'
