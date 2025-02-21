@@ -1,0 +1,13 @@
+Here is an unterminated <br /token.
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Token { kind: Text, char_start: 0, char_end: 4, byte_start: 0, byte_end: 4, column_start: 1, column_end: 5, line_start: 1, line_end: 1 }: Here
+Token { kind: Space, char_start: 4, char_end: 5, byte_start: 4, byte_end: 5, column_start: 5, column_end: 6, line_start: 1, line_end: 1 }: " "
+Token { kind: Text, char_start: 5, char_end: 7, byte_start: 5, byte_end: 7, column_start: 6, column_end: 8, line_start: 1, line_end: 1 }: is
+Token { kind: Space, char_start: 7, char_end: 8, byte_start: 7, byte_end: 8, column_start: 8, column_end: 9, line_start: 1, line_end: 1 }: " "
+Token { kind: Text, char_start: 8, char_end: 10, byte_start: 8, byte_end: 10, column_start: 9, column_end: 11, line_start: 1, line_end: 1 }: an
+Token { kind: Space, char_start: 10, char_end: 11, byte_start: 10, byte_end: 11, column_start: 11, column_end: 12, line_start: 1, line_end: 1 }: " "
+Token { kind: Text, char_start: 11, char_end: 23, byte_start: 11, byte_end: 23, column_start: 12, column_end: 24, line_start: 1, line_end: 1 }: unterminated
+Token { kind: Space, char_start: 23, char_end: 24, byte_start: 23, byte_end: 24, column_start: 24, column_end: 25, line_start: 1, line_end: 1 }: " "
+Token { kind: Text, char_start: 24, char_end: 35, byte_start: 24, byte_end: 35, column_start: 25, column_end: 36, line_start: 1, line_end: 1 }: <br /token.
