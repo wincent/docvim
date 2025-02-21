@@ -7,7 +7,16 @@ fn transform(input: &str) -> String {
     for result in Lexer::new(input).tokens {
         output.push(match result {
             Ok(token) => {
-                format!("{:?}: {}", token, &input[token.byte_start..token.byte_end])
+                let text = &input[token.byte_start..token.byte_end];
+
+                // Special case whitespace-only tokens to make them more readable.
+                let display_text = if text.trim().is_empty() {
+                    format!("\"{}\"", text.escape_default())
+                } else {
+                    text.to_string()
+                };
+
+                format!("{:?}: {}", token, display_text)
             }
 
             // Note we stringify errors too, so that we can test bad inputs.
