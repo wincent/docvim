@@ -1,0 +1,43 @@
+"docvim-flavored Markdown" tokens:
+
+Links: |something()|
+
+Link targets: *something-here*
+
+Annotations: @mappings
+
+↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
+Token { kind: Text, char_start: 0, char_end: 7, byte_start: 0, byte_end: 7, column_start: 1, column_end: 8, line_start: 1, line_end: 1 }: "docvim
+Token { kind: Hyphen, char_start: 7, char_end: 8, byte_start: 7, byte_end: 8, column_start: 8, column_end: 9, line_start: 1, line_end: 1 }: -
+Token { kind: Text, char_start: 8, char_end: 16, byte_start: 8, byte_end: 16, column_start: 9, column_end: 17, line_start: 1, line_end: 1 }: flavored
+Token { kind: Space, char_start: 16, char_end: 17, byte_start: 16, byte_end: 17, column_start: 17, column_end: 18, line_start: 1, line_end: 1 }: " "
+Token { kind: Text, char_start: 17, char_end: 26, byte_start: 17, byte_end: 26, column_start: 18, column_end: 27, line_start: 1, line_end: 1 }: Markdown"
+Token { kind: Space, char_start: 26, char_end: 27, byte_start: 26, byte_end: 27, column_start: 27, column_end: 28, line_start: 1, line_end: 1 }: " "
+Token { kind: Text, char_start: 27, char_end: 34, byte_start: 27, byte_end: 34, column_start: 28, column_end: 35, line_start: 1, line_end: 1 }: tokens:
+Token { kind: Newline, char_start: 34, char_end: 35, byte_start: 34, byte_end: 35, column_start: 35, column_end: 1, line_start: 1, line_end: 2 }: "\n"
+Token { kind: Newline, char_start: 35, char_end: 36, byte_start: 35, byte_end: 36, column_start: 1, column_end: 1, line_start: 2, line_end: 3 }: "\n"
+Token { kind: Text, char_start: 36, char_end: 42, byte_start: 36, byte_end: 42, column_start: 1, column_end: 7, line_start: 3, line_end: 3 }: Links:
+Token { kind: Space, char_start: 42, char_end: 43, byte_start: 42, byte_end: 43, column_start: 7, column_end: 8, line_start: 3, line_end: 3 }: " "
+Token { kind: Bar, char_start: 43, char_end: 44, byte_start: 43, byte_end: 44, column_start: 8, column_end: 9, line_start: 3, line_end: 3 }: |
+Token { kind: Text, char_start: 44, char_end: 53, byte_start: 44, byte_end: 53, column_start: 9, column_end: 18, line_start: 3, line_end: 3 }: something
+Token { kind: Lparen, char_start: 53, char_end: 54, byte_start: 53, byte_end: 54, column_start: 18, column_end: 19, line_start: 3, line_end: 3 }: (
+Token { kind: Rparen, char_start: 54, char_end: 55, byte_start: 54, byte_end: 55, column_start: 19, column_end: 20, line_start: 3, line_end: 3 }: )
+Token { kind: Bar, char_start: 55, char_end: 56, byte_start: 55, byte_end: 56, column_start: 20, column_end: 21, line_start: 3, line_end: 3 }: |
+Token { kind: Newline, char_start: 56, char_end: 57, byte_start: 56, byte_end: 57, column_start: 21, column_end: 1, line_start: 3, line_end: 4 }: "\n"
+Token { kind: Newline, char_start: 57, char_end: 58, byte_start: 57, byte_end: 58, column_start: 1, column_end: 1, line_start: 4, line_end: 5 }: "\n"
+Token { kind: Text, char_start: 58, char_end: 62, byte_start: 58, byte_end: 62, column_start: 1, column_end: 5, line_start: 5, line_end: 5 }: Link
+Token { kind: Space, char_start: 62, char_end: 63, byte_start: 62, byte_end: 63, column_start: 5, column_end: 6, line_start: 5, line_end: 5 }: " "
+Token { kind: Text, char_start: 63, char_end: 71, byte_start: 63, byte_end: 71, column_start: 6, column_end: 14, line_start: 5, line_end: 5 }: targets:
+Token { kind: Space, char_start: 71, char_end: 72, byte_start: 71, byte_end: 72, column_start: 14, column_end: 15, line_start: 5, line_end: 5 }: " "
+Token { kind: Star, char_start: 72, char_end: 73, byte_start: 72, byte_end: 73, column_start: 15, column_end: 16, line_start: 5, line_end: 5 }: *
+Token { kind: Text, char_start: 73, char_end: 82, byte_start: 73, byte_end: 82, column_start: 16, column_end: 25, line_start: 5, line_end: 5 }: something
+Token { kind: Hyphen, char_start: 82, char_end: 83, byte_start: 82, byte_end: 83, column_start: 25, column_end: 26, line_start: 5, line_end: 5 }: -
+Token { kind: Text, char_start: 83, char_end: 87, byte_start: 83, byte_end: 87, column_start: 26, column_end: 30, line_start: 5, line_end: 5 }: here
+Token { kind: Star, char_start: 87, char_end: 88, byte_start: 87, byte_end: 88, column_start: 30, column_end: 31, line_start: 5, line_end: 5 }: *
+Token { kind: Newline, char_start: 88, char_end: 89, byte_start: 88, byte_end: 89, column_start: 31, column_end: 1, line_start: 5, line_end: 6 }: "\n"
+Token { kind: Newline, char_start: 89, char_end: 90, byte_start: 89, byte_end: 90, column_start: 1, column_end: 1, line_start: 6, line_end: 7 }: "\n"
+Token { kind: Text, char_start: 90, char_end: 102, byte_start: 90, byte_end: 102, column_start: 1, column_end: 13, line_start: 7, line_end: 7 }: Annotations:
+Token { kind: Space, char_start: 102, char_end: 103, byte_start: 102, byte_end: 103, column_start: 13, column_end: 14, line_start: 7, line_end: 7 }: " "
+Token { kind: At, char_start: 103, char_end: 104, byte_start: 103, byte_end: 104, column_start: 14, column_end: 15, line_start: 7, line_end: 7 }: @
+Token { kind: Text, char_start: 104, char_end: 112, byte_start: 104, byte_end: 112, column_start: 15, column_end: 23, line_start: 7, line_end: 7 }: mappings
