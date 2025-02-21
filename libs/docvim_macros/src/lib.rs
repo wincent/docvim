@@ -18,7 +18,9 @@ use std::str::FromStr;
 #[proc_macro_attribute]
 pub fn check_snapshots(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut base = std::env::current_dir().expect("Could not get current directory");
-    base.push(attr.to_string());
+    let path = attr.to_string();
+    let path = path.trim_start_matches('"').trim_end_matches('"');
+    base.push(path);
 
     let mut tests = item.to_string();
 
