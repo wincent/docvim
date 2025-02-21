@@ -8,7 +8,7 @@ use std::str::FromStr;
 /// Brittle assumptions:
 ///
 /// - Every usage of the macro contains a root-relative path attribute to find the snapshots
-///   (eg. `#[check_snapshots(libs/docvim_parser/tests/snapshots)]`).
+///   (eg. `#[check_snapshots("libs/docvim_parser/tests/snapshots")]`).
 /// - Every usage of the macro is attached to a function named `transform`.
 /// - Snapshots live in the specified directory or its subdirectories.
 /// - There are no symlinks under this directory.
