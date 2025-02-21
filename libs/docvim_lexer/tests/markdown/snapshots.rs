@@ -1,7 +1,7 @@
-use docvim_lexer::lua::Lexer;
+use docvim_lexer::markdown::Lexer;
 use docvim_macros::check_snapshots;
 
-#[check_snapshots(docvim_lexer)]
+#[check_snapshots(libs/docvim_lexer/tests/markdown/snapshots)]
 fn transform(input: &str) -> String {
     let mut output = vec![];
     for result in Lexer::new(input).tokens {

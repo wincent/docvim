@@ -7,19 +7,18 @@ use std::str::FromStr;
 ///
 /// Brittle assumptions:
 ///
-/// - Every usage of the macro contains a package name attribute (eg. `#[check_snapshots(docvim_parser)]`).
+/// - Every usage of the macro contains a root-relative path attribute to find the snapshots
+///   (eg. `#[check_snapshots(libs/docvim_parser/tests/snapshots)]`).
 /// - Every usage of the macro is attached to a function named `transform`.
-/// - Snapshots live at "test/snapshots" or its subdirectories.
-/// - There are no symlinks under "test/snapshots".
+/// - Snapshots live in the specified directory or its subdirectories.
+/// - There are no symlinks under this directory.
 /// - Snapshots are named "$something.snap".
 /// - File and directory names are well-formed (eg. valid Unicode) with no spaces(!!!).
 ///
 #[proc_macro_attribute]
 pub fn check_snapshots(attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut base = std::env::current_dir().expect("Could not get current directory");
-    base.push("libs");
     base.push(attr.to_string());
-    base.push("tests/snapshots");
 
     let mut tests = item.to_string();
 
