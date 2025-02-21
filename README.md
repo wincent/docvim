@@ -83,6 +83,11 @@ cabal install
 
     - Lists.
 
+    Line breaks:
+    <br>
+    <br/>
+    <br />
+
 ### Unsupported Markdown syntax
 
 ```

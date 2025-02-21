@@ -33,6 +33,7 @@ impl LexerErrorKind for MarkdownLexerError {}
 pub enum MarkdownToken {
     Backtick,
     Bang,
+    Break,
     BlockQuote,
     CodeFence,
     Heading(HeadingKind),
@@ -123,127 +124,200 @@ impl<'a> Iterator for Tokens<'a> {
         self.byte_start = self.iter.byte_idx;
         self.column_start = self.iter.column_idx;
         self.line_start = self.iter.line_idx;
-        if let Some(&c) = self.iter.peek() {
-            match c {
-                ' ' | '\t' => {
-                    self.iter.next();
-                    while let Some(&next) = self.iter.peek() {
-                        if !matches!(next, ' ' | '\t') {
-                            break;
+        loop {
+            if let Some(&c) = self.iter.peek() {
+                let pending = || {
+                    self.iter.line_idx > self.line_start || self.iter.column_idx > self.column_start
+                };
+                match c {
+                    ' ' | '\t' => {
+                        if pending() {
+                            break make_token!(self, Text);
                         }
                         self.iter.next();
+                        while let Some(&next) = self.iter.peek() {
+                            if !matches!(next, ' ' | '\t') {
+                                break;
+                            }
+                            self.iter.next();
+                        }
+                        break make_token!(self, Space);
                     }
-                    make_token!(self, Space)
-                }
-                '\r' => {
-                    // Both "\r\n" and "\r" produce a `Newline` token.
-                    self.iter.next();
-                    self.consume_char('\n');
-                    make_token!(self, Newline)
-                }
-                '\n' => {
-                    self.iter.next();
-                    make_token!(self, Newline)
-                }
-                '!' => {
-                    self.iter.next();
-                    make_token!(self, Bang)
-                }
-                '>' => {
-                    self.iter.next();
-                    make_token!(self, BlockQuote)
-                }
-                '[' => {
-                    self.iter.next();
-                    make_token!(self, Lbracket)
-                }
-                ']' => {
-                    self.iter.next();
-                    make_token!(self, Rbracket)
-                }
-                '(' => {
-                    self.iter.next();
-                    make_token!(self, Lparen)
-                }
-                ')' => {
-                    self.iter.next();
-                    make_token!(self, Rparen)
-                }
-                '#' => {
-                    self.iter.next();
-                    if self.consume_char('#') {
+                    '\r' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+
+                        // Both "\r\n" and "\r" produce a `Newline` token.
+                        self.iter.next();
+                        self.consume_char('\n');
+                        break make_token!(self, Newline);
+                    }
+                    '\n' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, Newline);
+                    }
+                    '!' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, Bang);
+                    }
+                    '<' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        if self.consume_char('b') && self.consume_char('r') {
+                            // Consume optional whitespace.
+                            while let Some(&next) = self.iter.peek() {
+                                if next != ' ' && next != '\t' {
+                                    break;
+                                }
+                                self.iter.next();
+                            }
+                            if self.consume_char('>') {
+                                break make_token!(self, Break);
+                            } else if self.consume_char('/') && self.consume_char('>') {
+                                break make_token!(self, Break);
+                            } else {
+                                continue;
+                            }
+                        }
+                        break make_token!(self, BlockQuote);
+                    }
+                    '>' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, BlockQuote);
+                    }
+                    '[' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, Lbracket);
+                    }
+                    ']' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, Rbracket);
+                    }
+                    '(' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, Lparen);
+                    }
+                    ')' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        break make_token!(self, Rparen);
+                    }
+                    '#' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
                         if self.consume_char('#') {
-                            Some(Err(LexerError {
-                                kind: MarkdownLexerError::InvalidHeading,
-                                line: self.iter.line_idx,
-                                column: self.iter.column_idx - 3,
-                            }))
+                            if self.consume_char('#') {
+                                break Some(Err(LexerError {
+                                    kind: MarkdownLexerError::InvalidHeading,
+                                    line: self.iter.line_idx,
+                                    column: self.iter.column_idx - 3,
+                                }));
+                            } else {
+                                break make_token!(self, Heading(Heading2));
+                            }
                         } else {
-                            make_token!(self, Heading(Heading2))
+                            break make_token!(self, Heading(Heading1));
                         }
-                    } else {
-                        make_token!(self, Heading(Heading1))
                     }
-                }
-                '`' => {
-                    self.iter.next();
-                    if self.consume_char('`') {
-                        if self.consume_char('`') {
-                            make_token!(self, CodeFence)
-                        } else {
-                            Some(Err(LexerError {
-                                kind: MarkdownLexerError::UnterminatedCodeFence,
-                                line: self.iter.line_idx,
-                                column: self.iter.column_idx,
-                            }))
-                        }
-                    } else {
-                        make_token!(self, Backtick)
-                    }
-                }
-                '-' => {
-                    self.iter.next();
-                    if self.consume_char('-') {
-                        if self.consume_char('-') {
-                            make_token!(self, HorizontalRule)
-                        } else {
-                            Some(Err(LexerError {
-                                kind: MarkdownLexerError::UnterminatedHorizontalRule,
-                                line: self.iter.line_idx,
-                                column: self.iter.column_idx,
-                            }))
-                        }
-                    } else {
-                        make_token!(self, Hyphen)
-                    }
-                }
-                _ => {
-                    self.iter.next();
-                    while let Some(&next) = self.iter.peek() {
-                        if matches!(
-                            next,
-                            ' ' | '\t'
-                                | '\n'
-                                | '\r'
-                                | '!'
-                                | '>'
-                                | '['
-                                | ']'
-                                | '('
-                                | ')'
-                                | '#'
-                                | '`'
-                                | '-'
-                        ) {
-                            break;
+                    '`' => {
+                        if pending() {
+                            break make_token!(self, Text);
                         }
                         self.iter.next();
+                        if self.consume_char('`') {
+                            if self.consume_char('`') {
+                                break make_token!(self, CodeFence);
+                            } else {
+                                break Some(Err(LexerError {
+                                    kind: MarkdownLexerError::UnterminatedCodeFence,
+                                    line: self.iter.line_idx,
+                                    column: self.iter.column_idx,
+                                }));
+                            }
+                        } else {
+                            break make_token!(self, Backtick);
+                        }
                     }
-                    make_token!(self, Text)
+                    // TODO: only treat these a special in column 0? same for headings
+                    '-' => {
+                        if pending() {
+                            break make_token!(self, Text);
+                        }
+                        self.iter.next();
+                        if self.consume_char('-') {
+                            if self.consume_char('-') {
+                                break make_token!(self, HorizontalRule);
+                            } else {
+                                break Some(Err(LexerError {
+                                    kind: MarkdownLexerError::UnterminatedHorizontalRule,
+                                    line: self.iter.line_idx,
+                                    column: self.iter.column_idx,
+                                }));
+                            }
+                        } else {
+                            break make_token!(self, Hyphen);
+                        }
+                    }
+                    _ => {
+                        self.iter.next();
+                        while let Some(&next) = self.iter.peek() {
+                            if matches!(
+                                next,
+                                ' ' | '\t'
+                                    | '\n'
+                                    | '\r'
+                                    | '!'
+                                    | '<'
+                                    | '>'
+                                    | '['
+                                    | ']'
+                                    | '('
+                                    | ')'
+                                    | '#'
+                                    | '`'
+                                    | '-'
+                            ) {
+                                break;
+                            }
+                            self.iter.next();
+                        }
+                        break make_token!(self, Text);
+                    }
                 }
+            } else {
+                let pending = || {
+                    self.iter.line_idx > self.line_start || self.iter.column_idx > self.column_start
+                };
+                if pending() {
+                    break make_token!(self, Text);
+                }
+                break None;
             }
-        } else {
-            None
         }
     }
 }
