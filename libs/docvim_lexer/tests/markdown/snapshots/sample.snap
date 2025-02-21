@@ -17,8 +17,6 @@ fenced codeblocks (leading space syntax not supported)
 
 - Lists.
 
-↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -134,12 +132,3 @@ Token { kind: Hyphen, char_start: 253, char_end: 254, byte_start: 253, byte_end:
 Token { kind: Space, char_start: 254, char_end: 255, byte_start: 254, byte_end: 255, column_start: 2, column_end: 3, line_start: 18, line_end: 18 }:  
 Token { kind: Text, char_start: 255, char_end: 261, byte_start: 255, byte_end: 261, column_start: 3, column_end: 9, line_start: 18, line_end: 18 }: Lists.
 Token { kind: Newline, char_start: 261, char_end: 262, byte_start: 261, byte_end: 262, column_start: 9, column_end: 1, line_start: 18, line_end: 19 }: 
-
-Token { kind: Newline, char_start: 262, char_end: 263, byte_start: 262, byte_end: 263, column_start: 1, column_end: 1, line_start: 19, line_end: 20 }: 
-
-Token { kind: Text, char_start: 263, char_end: 299, byte_start: 263, byte_end: 371, column_start: 1, column_end: 37, line_start: 20, line_end: 20 }: ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-Token { kind: Space, char_start: 299, char_end: 300, byte_start: 371, byte_end: 372, column_start: 37, column_end: 38, line_start: 20, line_end: 20 }:  
-Token { kind: Text, char_start: 300, char_end: 306, byte_start: 372, byte_end: 378, column_start: 38, column_end: 44, line_start: 20, line_end: 20 }: OUTPUT
-Token { kind: Space, char_start: 306, char_end: 307, byte_start: 378, byte_end: 379, column_start: 44, column_end: 45, line_start: 20, line_end: 20 }:  
-Token { kind: Text, char_start: 307, char_end: 343, byte_start: 379, byte_end: 487, column_start: 45, column_end: 81, line_start: 20, line_end: 20 }: ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-Token { kind: Newline, char_start: 343, char_end: 344, byte_start: 487, byte_end: 488, column_start: 81, column_end: 1, line_start: 20, line_end: 21 }: 
