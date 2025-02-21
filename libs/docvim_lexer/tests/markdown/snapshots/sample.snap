@@ -17,7 +17,6 @@ fenced codeblocks (leading space syntax not supported)
 
 - Lists.
 
-
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ OUTPUT ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
 Token { kind: Heading(Heading1), char_start: 0, char_end: 1, byte_start: 0, byte_end: 1, column_start: 1, column_end: 2, line_start: 1, line_end: 1 }: #
@@ -131,4 +130,3 @@ Token { kind: Newline, char_start: 252, char_end: 253, byte_start: 252, byte_end
 Token { kind: Hyphen, char_start: 253, char_end: 254, byte_start: 253, byte_end: 254, column_start: 1, column_end: 2, line_start: 18, line_end: 18 }: -
 Token { kind: Space, char_start: 254, char_end: 255, byte_start: 254, byte_end: 255, column_start: 2, column_end: 3, line_start: 18, line_end: 18 }:  
 Token { kind: Text, char_start: 255, char_end: 261, byte_start: 255, byte_end: 261, column_start: 3, column_end: 9, line_start: 18, line_end: 18 }: Lists.
-Token { kind: Newline, char_start: 261, char_end: 262, byte_start: 261, byte_end: 262, column_start: 9, column_end: 1, line_start: 18, line_end: 19 }: 
