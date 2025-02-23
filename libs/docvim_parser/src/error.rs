@@ -3,52 +3,82 @@ use std::fmt;
 
 use docvim_lexer::error::LexerError;
 use docvim_lexer::lua::LuaLexerError;
+use docvim_lexer::markdown::MarkdownLexerError;
 
 #[derive(Debug)]
-pub struct ParserError {
-    pub kind: ParserErrorKind,
+pub struct ParserError<T> {
+    pub kind: T,
     pub line: usize,
     pub column: usize,
 }
 
-impl fmt::Display for ParserError {
+pub trait ErrorKind {
+    fn to_str(&self) -> &'static str;
+}
+
+impl<T> fmt::Display for ParserError<T>
+where
+    T: ErrorKind,
+{
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(fmt, "{}", self.kind.to_str())
     }
 }
 
-impl Error for ParserError {}
+impl<T> Error for ParserError<T> where
+    T: fmt::Debug + fmt::Display + Send + Sync + 'static + ErrorKind
+{
+}
 
-impl From<LexerError<LuaLexerError>> for ParserError {
+impl From<LexerError<LuaLexerError>> for ParserError<LuaParserErrorKind> {
     fn from(error: LexerError<LuaLexerError>) -> Self {
         let kind = error.kind;
         let line = error.line;
         let column = error.column;
         match kind {
             LuaLexerError::InvalidEscapeSequence => {
-                ParserError { kind: ParserErrorKind::InvalidEscapeSequence, line, column }
+                ParserError { kind: LuaParserErrorKind::InvalidEscapeSequence, line, column }
             }
             LuaLexerError::InvalidNumberLiteral => {
-                ParserError { kind: ParserErrorKind::InvalidNumberLiteral, line, column }
+                ParserError { kind: LuaParserErrorKind::InvalidNumberLiteral, line, column }
             }
             LuaLexerError::InvalidOperator => {
-                ParserError { kind: ParserErrorKind::InvalidOperator, line, column }
+                ParserError { kind: LuaParserErrorKind::InvalidOperator, line, column }
             }
             LuaLexerError::UnterminatedBlockComment => {
-                ParserError { kind: ParserErrorKind::UnterminatedBlockComment, line, column }
+                ParserError { kind: LuaParserErrorKind::UnterminatedBlockComment, line, column }
             }
             LuaLexerError::UnterminatedEscapeSequence => {
-                ParserError { kind: ParserErrorKind::UnterminatedEscapeSequence, line, column }
+                ParserError { kind: LuaParserErrorKind::UnterminatedEscapeSequence, line, column }
             }
             LuaLexerError::UnterminatedStringLiteral => {
-                ParserError { kind: ParserErrorKind::UnterminatedStringLiteral, line, column }
+                ParserError { kind: LuaParserErrorKind::UnterminatedStringLiteral, line, column }
+            }
+        }
+    }
+}
+
+impl From<LexerError<MarkdownLexerError>> for ParserError<MarkdownParserErrorKind> {
+    fn from(error: LexerError<MarkdownLexerError>) -> Self {
+        let kind = error.kind;
+        let line = error.line;
+        let column = error.column;
+        match kind {
+            MarkdownLexerError::InvalidHeading => {
+                ParserError { kind: MarkdownParserErrorKind::UnexpectedToken, line, column }
+            }
+            MarkdownLexerError::UnterminatedCodeFence => {
+                ParserError { kind: MarkdownParserErrorKind::UnexpectedToken, line, column }
+            }
+            MarkdownLexerError::UnterminatedHorizontalRule => {
+                ParserError { kind: MarkdownParserErrorKind::UnexpectedToken, line, column }
             }
         }
     }
 }
 
 #[derive(Debug)]
-pub enum ParserErrorKind {
+pub enum LuaParserErrorKind {
     // Own errors.
     UnexpectedComma,
     UnexpectedEndOfInput,
@@ -68,23 +98,48 @@ pub enum ParserErrorKind {
     Utf8Error,
 }
 
-impl ParserErrorKind {
-    pub fn to_str(&self) -> &'static str {
+#[derive(Debug)]
+pub enum MarkdownParserErrorKind {
+    UnexpectedToken,
+}
+
+impl ErrorKind for LuaParserErrorKind {
+    fn to_str(&self) -> &'static str {
         match *self {
-            ParserErrorKind::ParseIntError => "parse int error",
-            ParserErrorKind::UnexpectedComma => "unexpected comma",
-            ParserErrorKind::UnexpectedEndOfInput => "unexpected end-of-input",
-            ParserErrorKind::UnexpectedFieldSeparator => "unexpected field separator",
-            ParserErrorKind::UnexpectedToken => "unexpected token",
-            ParserErrorKind::Utf8Error => "UTF-8 error",
+            LuaParserErrorKind::ParseIntError => "parse int error",
+            LuaParserErrorKind::UnexpectedComma => "unexpected comma",
+            LuaParserErrorKind::UnexpectedEndOfInput => "unexpected end-of-input",
+            LuaParserErrorKind::UnexpectedFieldSeparator => "unexpected field separator",
+            LuaParserErrorKind::UnexpectedToken => "unexpected token",
+            LuaParserErrorKind::Utf8Error => "UTF-8 error",
 
             // Mirrored from LexerError.
-            ParserErrorKind::InvalidEscapeSequence => "invalid escape sequence",
-            ParserErrorKind::InvalidNumberLiteral => "invalid number literal",
-            ParserErrorKind::InvalidOperator => "invalid operator",
-            ParserErrorKind::UnterminatedBlockComment => "unterminated block comment",
-            ParserErrorKind::UnterminatedEscapeSequence => "unterminated escape sequence",
-            ParserErrorKind::UnterminatedStringLiteral => "unterminated string literal",
+            LuaParserErrorKind::InvalidEscapeSequence => "invalid escape sequence",
+            LuaParserErrorKind::InvalidNumberLiteral => "invalid number literal",
+            LuaParserErrorKind::InvalidOperator => "invalid operator",
+            LuaParserErrorKind::UnterminatedBlockComment => "unterminated block comment",
+            LuaParserErrorKind::UnterminatedEscapeSequence => "unterminated escape sequence",
+            LuaParserErrorKind::UnterminatedStringLiteral => "unterminated string literal",
         }
+    }
+}
+
+impl std::fmt::Display for LuaParserErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_str())
+    }
+}
+
+impl ErrorKind for MarkdownParserErrorKind {
+    fn to_str(&self) -> &'static str {
+        match *self {
+            MarkdownParserErrorKind::UnexpectedToken => "unexpected token",
+        }
+    }
+}
+
+impl std::fmt::Display for MarkdownParserErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_str())
     }
 }

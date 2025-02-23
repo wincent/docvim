@@ -1,6 +1,6 @@
+pub mod error;
 pub mod lua;
-
-mod error;
+pub mod markdown;
 
 #[cfg(test)]
 mod tests {

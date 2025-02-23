@@ -326,7 +326,8 @@ impl<'a> Parser<'a> {
         Self { lexer: Lexer::new(input), comments: vec![] }
     }
 
-    pub fn pretty_error(&self, error: ParserError) -> String {
+    // TODO: figure out how to share this across parsers
+    pub fn pretty_error(&self, error: ParserError<LuaParserErrorKind>) -> String {
         let mut iter = self.lexer.input.chars();
         let mut column = 1;
         let mut line = 1;
@@ -374,7 +375,7 @@ impl<'a> Parser<'a> {
         output
     }
 
-    fn unexpected_end_of_input(&self) -> ParserError {
+    fn unexpected_end_of_input(&self) -> ParserError<LuaParserErrorKind> {
         // Wasteful, but necessary; have to count to the end because there might be no valid
         // token to query via `self.lexer.tokens.last()`.
         let mut iter = self.lexer.input.chars();
@@ -388,16 +389,16 @@ impl<'a> Parser<'a> {
                 column += 1;
             }
         }
-        return ParserError { kind: ParserErrorKind::UnexpectedEndOfInput, line, column };
+        return ParserError { kind: LuaParserErrorKind::UnexpectedEndOfInput, line, column };
     }
 
-    pub fn parse(&mut self) -> Result<Block, ParserError> {
+    pub fn parse(&mut self) -> Result<Block, ParserError<LuaParserErrorKind>> {
         self.parse_block()
         // BUG: if there are pending comments here, need to emit them as trailing comments...
         // see (invalid) test in libs/docvim_parser/tests/snapshots/index_expressions/basic.snap
     }
 
-    fn parse_block(&mut self) -> Result<Block<'a>, ParserError> {
+    fn parse_block(&mut self) -> Result<Block<'a>, ParserError<LuaParserErrorKind>> {
         let mut block = Block(vec![]);
         loop {
             match self.lexer.tokens.peek() {
@@ -511,7 +512,7 @@ impl<'a> Parser<'a> {
                                             allow_comma = false;
                                         } else {
                                             return Err(ParserError {
-                                                kind: ParserErrorKind::UnexpectedComma,
+                                                kind: LuaParserErrorKind::UnexpectedComma,
                                                 line: line_start,
                                                 column: column_start,
                                             });
@@ -524,7 +525,7 @@ impl<'a> Parser<'a> {
                                         ..
                                     })) => {
                                         return Err(ParserError {
-                                            kind: ParserErrorKind::UnexpectedToken,
+                                            kind: LuaParserErrorKind::UnexpectedToken,
                                             line: line_start,
                                             column: column_start,
                                         });
@@ -541,7 +542,7 @@ impl<'a> Parser<'a> {
                                             }
                                             _ => {
                                                 return Err(ParserError {
-                                                    kind: ParserErrorKind::UnexpectedToken,
+                                                    kind: LuaParserErrorKind::UnexpectedToken,
                                                     line: line_start,
                                                     column: column_start,
                                                 })
@@ -558,7 +559,7 @@ impl<'a> Parser<'a> {
                         // TODO: might want to come up with a better error than this
                         _ => {
                             return Err(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
+                                kind: LuaParserErrorKind::UnexpectedToken,
                                 line: token.line_start,
                                 column: token.column_start,
                             })
@@ -638,7 +639,7 @@ impl<'a> Parser<'a> {
                 Some(&Ok(token @ Token::<LuaToken> { .. })) => {
                     // TODO: include token UnexpectedToken error message
                     return Err(ParserError {
-                        kind: ParserErrorKind::UnexpectedToken,
+                        kind: LuaParserErrorKind::UnexpectedToken,
                         line: token.line_start,
                         column: token.column_start,
                     });
@@ -650,7 +651,7 @@ impl<'a> Parser<'a> {
         Ok(block)
     }
 
-    fn parse_do_block(&mut self) -> Result<Statement<'a>, ParserError> {
+    fn parse_do_block(&mut self) -> Result<Statement<'a>, ParserError<LuaParserErrorKind>> {
         let comments = std::mem::take(&mut self.comments);
         let start_token = self.consume(NameToken(KeywordToken(DoToken)))?;
         let block = self.parse_block()?;
@@ -667,13 +668,13 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn parse_name(&mut self) -> Result<Name<'a>, ParserError> {
+    fn parse_name(&mut self) -> Result<Name<'a>, ParserError<LuaParserErrorKind>> {
         match self.lexer.tokens.next() {
             Some(Ok(token @ Token::<LuaToken> { kind: NameToken(IdentifierToken), .. })) => {
                 Ok(Name(&self.lexer.input[token.byte_start..token.byte_end]))
             }
             Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => Err(ParserError {
-                kind: ParserErrorKind::UnexpectedToken,
+                kind: LuaParserErrorKind::UnexpectedToken,
                 line: line_start,
                 column: column_start,
             }),
@@ -684,7 +685,7 @@ impl<'a> Parser<'a> {
 
     /// Returns a list of named parameters, and boolean to indicate whether the list terminates
     /// with vararg syntax ("...").
-    fn parse_parlist(&mut self) -> Result<(Vec<Name<'a>>, bool), ParserError> {
+    fn parse_parlist(&mut self) -> Result<(Vec<Name<'a>>, bool), ParserError<LuaParserErrorKind>> {
         self.consume(PunctuatorToken(LparenToken))?;
         let mut namelist = vec![];
         if self.slurp(PunctuatorToken(RparenToken)) {
@@ -707,7 +708,7 @@ impl<'a> Parser<'a> {
                         expect_name = false;
                     } else {
                         return Err(ParserError {
-                            kind: ParserErrorKind::UnexpectedToken,
+                            kind: LuaParserErrorKind::UnexpectedToken,
                             line: line_start,
                             column: column_start,
                         });
@@ -721,7 +722,7 @@ impl<'a> Parser<'a> {
                 })) => {
                     if expect_name {
                         return Err(ParserError {
-                            kind: ParserErrorKind::UnexpectedComma,
+                            kind: LuaParserErrorKind::UnexpectedComma,
                             line: line_start,
                             column: column_start,
                         });
@@ -738,7 +739,7 @@ impl<'a> Parser<'a> {
                 })) => {
                     if expect_name {
                         return Err(ParserError {
-                            kind: ParserErrorKind::UnexpectedToken,
+                            kind: LuaParserErrorKind::UnexpectedToken,
                             line: line_start,
                             column: column_start,
                         });
@@ -759,7 +760,7 @@ impl<'a> Parser<'a> {
                         return Ok((namelist, true));
                     } else {
                         return Err(ParserError {
-                            kind: ParserErrorKind::UnexpectedToken,
+                            kind: LuaParserErrorKind::UnexpectedToken,
                             line: line_start,
                             column: column_start,
                         });
@@ -767,7 +768,7 @@ impl<'a> Parser<'a> {
                 }
                 Some(&Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                     return Err(ParserError {
-                        kind: ParserErrorKind::UnexpectedToken,
+                        kind: LuaParserErrorKind::UnexpectedToken,
                         line: line_start,
                         column: column_start,
                     });
@@ -778,7 +779,9 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_namelist(&mut self) -> Result<(Vec<Name<'a>>, Location), ParserError> {
+    fn parse_namelist(
+        &mut self,
+    ) -> Result<(Vec<Name<'a>>, Location), ParserError<LuaParserErrorKind>> {
         let mut namelist = vec![];
         let mut expect_name = true;
         let mut line_start = 0;
@@ -810,7 +813,7 @@ impl<'a> Parser<'a> {
                 Some(&Ok(token @ Token::<LuaToken> { kind: PunctuatorToken(CommaToken), .. })) => {
                     if expect_name {
                         return Err(ParserError {
-                            kind: ParserErrorKind::UnexpectedComma,
+                            kind: LuaParserErrorKind::UnexpectedComma,
                             line: token.line_start,
                             column: token.column_start,
                         });
@@ -824,7 +827,7 @@ impl<'a> Parser<'a> {
                 Some(&Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                     if expect_name {
                         return Err(ParserError {
-                            kind: ParserErrorKind::UnexpectedToken,
+                            kind: LuaParserErrorKind::UnexpectedToken,
                             line: line_start,
                             column: column_start,
                         });
@@ -845,7 +848,9 @@ impl<'a> Parser<'a> {
         Ok((namelist, Location { line_start, line_end, column_start, column_end }))
     }
 
-    fn parse_explist(&mut self) -> Result<(Vec<Exp<'a>>, Location), ParserError> {
+    fn parse_explist(
+        &mut self,
+    ) -> Result<(Vec<Exp<'a>>, Location), ParserError<LuaParserErrorKind>> {
         let mut explist = vec![];
         let mut allow_comma = false;
         let mut line_start = 0;
@@ -865,7 +870,7 @@ impl<'a> Parser<'a> {
                         allow_comma = false;
                     } else {
                         return Err(ParserError {
-                            kind: ParserErrorKind::UnexpectedComma,
+                            kind: LuaParserErrorKind::UnexpectedComma,
                             line: line_start,
                             column: column_start,
                         });
@@ -941,7 +946,7 @@ impl<'a> Parser<'a> {
         Ok((explist, Location { line_start, line_end, column_start, column_end }))
     }
 
-    fn parse_for(&mut self) -> Result<Statement<'a>, ParserError> {
+    fn parse_for(&mut self) -> Result<Statement<'a>, ParserError<LuaParserErrorKind>> {
         let comments = std::mem::take(&mut self.comments);
         let start_token = self.consume(NameToken(KeywordToken(ForToken)))?;
         let (mut namelist, _location) = self.parse_namelist()?;
@@ -989,7 +994,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_if(&mut self) -> Result<Statement<'a>, ParserError> {
+    fn parse_if(&mut self) -> Result<Statement<'a>, ParserError<LuaParserErrorKind>> {
         let comments = std::mem::take(&mut self.comments);
         let start_token = self.consume(NameToken(KeywordToken(IfToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
@@ -1022,7 +1027,7 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn parse_repeat(&mut self) -> Result<Statement<'a>, ParserError> {
+    fn parse_repeat(&mut self) -> Result<Statement<'a>, ParserError<LuaParserErrorKind>> {
         let comments = std::mem::take(&mut self.comments);
         let start_token = self.consume(NameToken(KeywordToken(RepeatToken)))?;
         let block = self.parse_block()?;
@@ -1042,7 +1047,7 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn parse_while(&mut self) -> Result<Statement<'a>, ParserError> {
+    fn parse_while(&mut self) -> Result<Statement<'a>, ParserError<LuaParserErrorKind>> {
         let comments = std::mem::take(&mut self.comments);
         let start_token = self.consume(NameToken(KeywordToken(WhileToken)))?;
         let cexp = Box::new(self.parse_exp(0)?);
@@ -1061,7 +1066,7 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn parse_function(&mut self) -> Result<Statement<'a>, ParserError> {
+    fn parse_function(&mut self) -> Result<Statement<'a>, ParserError<LuaParserErrorKind>> {
         let comments = std::mem::take(&mut self.comments);
         let start_token = self.consume(NameToken(KeywordToken(FunctionToken)))?;
         let mut name = vec![self.parse_name()?];
@@ -1085,7 +1090,7 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn parse_local(&mut self) -> Result<Statement<'a>, ParserError> {
+    fn parse_local(&mut self) -> Result<Statement<'a>, ParserError<LuaParserErrorKind>> {
         // Example inputs:
         //
         // local x
@@ -1141,7 +1146,10 @@ impl<'a> Parser<'a> {
     /// bytes. For example, the sequence "\n" is replaced with an actual newline, and so on.
     ///
     /// In contrast, a "raw" string preserves the exact form it had in the original source.
-    fn cook_str(&self, token: Token<LuaToken>) -> Result<ExpKind<'a>, ParserError> {
+    fn cook_str(
+        &self,
+        token: Token<LuaToken>,
+    ) -> Result<ExpKind<'a>, ParserError<LuaParserErrorKind>> {
         let byte_start = token.byte_start + 1;
         let byte_end = token.byte_end - 1;
         let mut line_idx = token.line_start;
@@ -1195,13 +1203,13 @@ impl<'a> Parser<'a> {
                                 }
                                 let number = std::str::from_utf8(&digits)
                                     .map_err(|_err| ParserError {
-                                        kind: ParserErrorKind::Utf8Error,
+                                        kind: LuaParserErrorKind::Utf8Error,
                                         line: line_idx,
                                         column: column_idx,
                                     })?
                                     .parse::<u8>()
                                     .map_err(|_err| ParserError {
-                                        kind: ParserErrorKind::ParseIntError,
+                                        kind: LuaParserErrorKind::ParseIntError,
                                         line: line_idx,
                                         column: column_idx,
                                     })?;
@@ -1209,7 +1217,7 @@ impl<'a> Parser<'a> {
                             }
                             _ => {
                                 return Err(ParserError {
-                                    kind: ParserErrorKind::InvalidEscapeSequence,
+                                    kind: LuaParserErrorKind::InvalidEscapeSequence,
                                     line: line_idx,
                                     column: column_idx,
                                 });
@@ -1240,7 +1248,7 @@ impl<'a> Parser<'a> {
         op: UnOp,
         line_start: usize,
         column_start: usize,
-    ) -> Result<Exp<'a>, ParserError> {
+    ) -> Result<Exp<'a>, ParserError<LuaParserErrorKind>> {
         let comments = std::mem::take(&mut self.comments);
         let bp = unop_binding(op);
         let rhs = self.parse_exp(bp)?;
@@ -1254,7 +1262,7 @@ impl<'a> Parser<'a> {
     }
 
     /// args ::=  `(´ [explist] `)´ | tableconstructor | String
-    fn parse_args(&mut self) -> Result<(Vec<Exp<'a>>, Location), ParserError> {
+    fn parse_args(&mut self) -> Result<(Vec<Exp<'a>>, Location), ParserError<LuaParserErrorKind>> {
         match self.lexer.tokens.peek() {
             Some(&Ok(Token::<LuaToken> {
                 kind: PunctuatorToken(LparenToken),
@@ -1299,7 +1307,7 @@ impl<'a> Parser<'a> {
             // Some(&Ok(Token::<LuaToken> { kind: CommentToken(_) .. })) => {
             // }
             Some(&Ok(Token::<LuaToken> { line_start, column_start, .. })) => Err(ParserError {
-                kind: ParserErrorKind::UnexpectedToken,
+                kind: LuaParserErrorKind::UnexpectedToken,
                 line: line_start,
                 column: column_start,
             }),
@@ -1320,7 +1328,7 @@ impl<'a> Parser<'a> {
     ///           | prefixexp:Name {...} (methodcall)
     ///           | prefixexp:Name (...) (methodcall)
     /// ```
-    fn parse_prefixexp(&mut self) -> Result<Exp<'a>, ParserError> {
+    fn parse_prefixexp(&mut self) -> Result<Exp<'a>, ParserError<LuaParserErrorKind>> {
         let mut pexp = match self.lexer.tokens.next() {
             Some(Ok(Token::<LuaToken> { kind: PunctuatorToken(LparenToken), .. })) => {
                 let lhs = self.parse_exp(0)?;
@@ -1329,7 +1337,7 @@ impl<'a> Parser<'a> {
                     Some(Ok(Token::<LuaToken> { kind: PunctuatorToken(RparenToken), .. })) => lhs,
                     Some(Ok(token)) => {
                         return Err(ParserError {
-                            kind: ParserErrorKind::UnexpectedToken,
+                            kind: LuaParserErrorKind::UnexpectedToken,
                             line: token.line_start,
                             column: token.column_start,
                         })
@@ -1357,7 +1365,7 @@ impl<'a> Parser<'a> {
             }
             Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                 return Err(ParserError {
-                    kind: ParserErrorKind::UnexpectedToken,
+                    kind: LuaParserErrorKind::UnexpectedToken,
                     line: line_start,
                     column: column_start,
                 });
@@ -1379,7 +1387,7 @@ impl<'a> Parser<'a> {
                         })) => &self.lexer.input[byte_start..byte_end],
                         Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                             return Err(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
+                                kind: LuaParserErrorKind::UnexpectedToken,
                                 line: line_start,
                                 column: column_start,
                             });
@@ -1417,7 +1425,7 @@ impl<'a> Parser<'a> {
                         }
                         Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                             return Err(ParserError {
-                                kind: ParserErrorKind::UnexpectedToken,
+                                kind: LuaParserErrorKind::UnexpectedToken,
                                 line: line_start,
                                 column: column_start,
                             });
@@ -1492,7 +1500,7 @@ impl<'a> Parser<'a> {
     }
 
     /// See doc/lua.md for an explanation of `minimum_bp`.
-    fn parse_exp(&mut self, minimum_bp: u8) -> Result<Exp<'a>, ParserError> {
+    fn parse_exp(&mut self, minimum_bp: u8) -> Result<Exp<'a>, ParserError<LuaParserErrorKind>> {
         while let Some(&Ok(Token::<LuaToken> {
             kind: CommentToken(token_kind),
             byte_start,
@@ -1700,7 +1708,7 @@ impl<'a> Parser<'a> {
 
             Some(&Ok(token)) => {
                 return Err(ParserError {
-                    kind: ParserErrorKind::UnexpectedToken,
+                    kind: LuaParserErrorKind::UnexpectedToken,
                     line: token.line_start,
                     column: token.column_start,
                 })
@@ -1776,7 +1784,7 @@ impl<'a> Parser<'a> {
 
     // fieldlist ::= field {fieldsep field} [fieldsep]
     // fieldsep ::= `,´ | `;´
-    fn parse_table_constructor(&mut self) -> Result<Exp<'a>, ParserError> {
+    fn parse_table_constructor(&mut self) -> Result<Exp<'a>, ParserError<LuaParserErrorKind>> {
         let comments = std::mem::take(&mut self.comments);
         match self.lexer.tokens.next() {
             Some(Ok(Token::<LuaToken> {
@@ -1820,7 +1828,7 @@ impl<'a> Parser<'a> {
                                 fieldsep_allowed = false;
                             } else {
                                 return Err(ParserError {
-                                    kind: ParserErrorKind::UnexpectedFieldSeparator,
+                                    kind: LuaParserErrorKind::UnexpectedFieldSeparator,
                                     line: line_start,
                                     column: column_start,
                                 });
@@ -1868,7 +1876,7 @@ impl<'a> Parser<'a> {
             }
             Some(Ok(Token::<LuaToken> { line_start, column_start, .. })) => {
                 return Err(ParserError {
-                    kind: ParserErrorKind::UnexpectedToken,
+                    kind: LuaParserErrorKind::UnexpectedToken,
                     line: line_start,
                     column: column_start,
                 })
@@ -1881,14 +1889,17 @@ impl<'a> Parser<'a> {
     /// Consume the specified Token, returning an Err if not found.
     ///
     /// Contrast with `slurp()`, which will consume a token if it is present, but does not error.
-    fn consume(&mut self, kind: LuaToken) -> Result<Token<LuaToken>, ParserError> {
+    fn consume(
+        &mut self,
+        kind: LuaToken,
+    ) -> Result<Token<LuaToken>, ParserError<LuaParserErrorKind>> {
         match self.lexer.tokens.next() {
             Some(Ok(token @ Token::<LuaToken> { .. })) => {
                 if token.kind == kind {
                     Ok(token)
                 } else {
                     Err(ParserError {
-                        kind: ParserErrorKind::UnexpectedToken,
+                        kind: LuaParserErrorKind::UnexpectedToken,
                         line: token.line_start,
                         column: token.column_start,
                     })
@@ -1933,7 +1944,10 @@ impl<'a> Parser<'a> {
     }
 
     // field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
-    fn parse_table_field(&mut self, index: usize) -> Result<Node<'a, Field<'a>>, ParserError> {
+    fn parse_table_field(
+        &mut self,
+        index: usize,
+    ) -> Result<Node<'a, Field<'a>>, ParserError<LuaParserErrorKind>> {
         let comments = std::mem::take(&mut self.comments);
         let token = self.lexer.tokens.peek();
         match token {
@@ -2041,7 +2055,7 @@ mod tests {
         let result = parser.parse();
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert!(matches!(err.kind, ParserErrorKind::UnexpectedEndOfInput));
+        assert!(matches!(err.kind, LuaParserErrorKind::UnexpectedEndOfInput));
         assert_eq!(err.line, 1);
         assert_eq!(err.column, 15);
     }
