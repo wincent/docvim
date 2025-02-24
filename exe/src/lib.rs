@@ -3,8 +3,8 @@ use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-// TODO[future]: docvim_parser::vimscript::Parser;
-use docvim_parser::lua::Parser;
+use docvim_parser::LuaParser;
+//use docvim_parser::error::ErrorKind;
 
 const VERSION: Option<&'static str> = option_env!("CARGO_PKG_VERSION");
 
@@ -165,7 +165,7 @@ pub fn run(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
             println!("Text:\n{}", contents);
 
-            let mut parser = Parser::new(&contents);
+            let mut parser = LuaParser::new(&contents);
 
             // TODO: pretty print this error
             let ast = parser.parse()?;

@@ -309,12 +309,12 @@ fn unop_binding(op: UnOp) -> u8 {
     }
 }
 
-pub struct Parser<'a> {
+pub struct LuaParser<'a> {
     lexer: Lexer<'a>,
     comments: Vec<Comment<'a>>,
 }
 
-impl<'a> Parser<'a> {
+impl<'a> LuaParser<'a> {
     pub fn new(input: &'a str) -> Self {
         Self { lexer: Lexer::new(input), comments: vec![] }
     }
@@ -2044,7 +2044,7 @@ mod tests {
 
     #[test]
     fn unexpected_end_of_input() {
-        let mut parser = Parser::new("local list = {");
+        let mut parser = LuaParser::new("local list = {");
         let result = parser.parse();
         assert!(result.is_err());
         let err = result.unwrap_err();

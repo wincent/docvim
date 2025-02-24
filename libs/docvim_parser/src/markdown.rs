@@ -40,11 +40,11 @@ pub enum BlockElement {
 //    pub location: Location,
 //}
 
-pub struct Parser<'a> {
+pub struct MarkdownParser<'a> {
     lexer: Lexer<'a>,
 }
 
-impl<'a> Parser<'a> {
+impl<'a> MarkdownParser<'a> {
     pub fn new(input: &'a str) -> Self {
         Self { lexer: Lexer::new(input) }
     }

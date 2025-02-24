@@ -1,8 +1,11 @@
 pub mod error;
-pub mod lua;
-pub mod markdown;
 
+mod markdown;
+mod lua;
 mod types;
+
+pub use lua::LuaParser;
+pub use markdown::MarkdownParser;
 
 #[cfg(test)]
 mod tests {
