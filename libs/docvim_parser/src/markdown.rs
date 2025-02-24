@@ -1,3 +1,5 @@
+use crate::types::Location;
+
 // Lexer token types are imported aliased (all with a "Token" suffix) to avoid collisions with
 // parser node types of the same name.
 use docvim_lexer::markdown::HeadingKind::Heading1 as Heading1Token;
@@ -21,15 +23,6 @@ use docvim_lexer::markdown::MarkdownToken::Star as StarToken;
 use docvim_lexer::markdown::MarkdownToken::Text as TextToken;
 use docvim_lexer::markdown::{Lexer, MarkdownToken};
 use docvim_lexer::token::Token;
-
-// TODO: share this with Lua parser instead of redefining it
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct Location {
-    pub line_start: usize,
-    pub line_end: usize,
-    pub column_start: usize,
-    pub column_end: usize,
-}
 
 pub struct Project(Vec<DocBlock>);
 

@@ -1,4 +1,5 @@
 use crate::error::*;
+use crate::types::Location;
 
 // Lexer token types are imported aliased (all with a "Token" suffix) to avoid collisions with
 // parser node types of the same name.
@@ -88,14 +89,6 @@ pub enum BinOp {
     Plus,
     Slash,
     Star,
-}
-
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct Location {
-    pub line_start: usize,
-    pub line_end: usize,
-    pub column_start: usize,
-    pub column_end: usize,
 }
 
 #[derive(Debug, PartialEq)]
