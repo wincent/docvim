@@ -35,8 +35,8 @@ parseSuccess _        = True
 
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
-  [ testCase "Compile empty unit" $ assert $ parseSuccess (compileUnits [""])
-  , testCase "Compile whitespace-only unit" $ assert $ parseSuccess (compileUnits ["  \n    "])
+  [ testCase "Compile empty unit" $ assertBool "empty unit should parse" $ parseSuccess (compileUnits [""])
+  , testCase "Compile whitespace-only unit" $ assertBool "whitespace-only unit should parse" $ parseSuccess (compileUnits ["  \n    "])
 
   , testCase "Counting all nodes" $
     7 @=? let
@@ -166,8 +166,10 @@ goldenVsStringDiff' name diff' golden run =
     strip out = unlines $ dropWhile (not . isPrefixOf hunkHeader) (lines $ toString out)
     cmp _ actBS = withSystemTempFile template $ \tmpFile tmpHandle -> do
       ByteString.hPut tmpHandle actBS >> hFlush tmpHandle
-      let cmd = diff' golden tmpFile
-      (_, Just sout, _, pid) <- createProcess (proc (head cmd) (tail cmd)) { std_out = CreatePipe }
+      (exe, args) <- case diff' golden tmpFile of
+        (e:as) -> return (e, as)
+        []     -> error "goldenVsStringDiff': empty diff command"
+      (_, Just sout, _, pid) <- createProcess (proc exe args) { std_out = CreatePipe }
       out <- LazyByteString.hGetContents sout
       evaluate . rnf $ out
       r <- waitForProcess pid

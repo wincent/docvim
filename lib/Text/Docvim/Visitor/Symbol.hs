@@ -40,8 +40,7 @@ getSymbols node = if length symbols == Set.size set
     genHeading h                            = maybe [] (\x -> [sanitizeAnchor $ x ++ "-" ++ h]) (getPluginName node)
     duplicates                              = nub $ f (sort symbols)
       where
-        f [] = []
-        f [_] = []
-        f (x:xs) = if x == head xs
-                   then x : f xs
-                   else f xs
+        f (x:xs@(y:_)) = if x == y
+                         then x : f xs
+                         else f xs
+        f _ = []

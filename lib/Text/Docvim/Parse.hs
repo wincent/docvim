@@ -305,9 +305,10 @@ compress = map prioritizeBreakTag . group
     fn Whitespace BreakTag   = True
     fn Whitespace Whitespace = True
     fn _ _                   = False
-    prioritizeBreakTag xs = if hasBreakTag xs
-                            then BreakTag
-                            else head xs
+    prioritizeBreakTag xs
+      | hasBreakTag xs = BreakTag
+    prioritizeBreakTag (x:_) = x
+    prioritizeBreakTag []    = error "prioritizeBreakTag: empty group (unreachable)"
     hasBreakTag = elem BreakTag
 -- similar to "word"... might end up replacing "word" later on...
 -- something more sophisticated here with satisfy?

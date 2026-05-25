@@ -5,6 +5,7 @@ module Text.Docvim.Visitor.Plugin ( getPluginName
                                   ) where
 
 import Control.Applicative
+import Data.Maybe (listToMaybe)
 import Text.Docvim.AST
 import Text.Docvim.Visitor
 
@@ -13,11 +14,8 @@ import Text.Docvim.Visitor
 -- In the event that there are multiple `@plugin` annotations competing to
 -- define the name of plugin, the first encountered one wins.
 getPluginName :: Node -> Maybe String
-getPluginName node = name
+getPluginName node = listToMaybe names
   where
-    name = if null names
-           then Nothing
-           else Just $ head names
     names = walk getName [] node
     getName (PluginAnnotation name' _) = [name']
     getName _                         = []

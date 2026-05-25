@@ -9,7 +9,6 @@ import Control.Lens.Plated
 import Data.Char
 import Data.Data
 import Data.Data.Lens
-import Data.Monoid
 
 data Node
     -- Roots
