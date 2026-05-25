@@ -28,7 +28,7 @@ import Text.Docvim.Visitor.Plugin
 data Operation = Append String
                | Delete Int -- unconditional delete count of Char
                | Slurp String -- delete string if present
-data Metadata = Metadata { pluginName :: Maybe String }
+newtype Metadata = Metadata { pluginName :: Maybe String }
 data Context = Context { lineBreak :: String
                        , partialLine :: String
                        }
@@ -168,7 +168,7 @@ plugin name desc = appendNoWrap $
 
 -- | Append a newline.
 nl :: [Operation] -> Env
-nl os = liftM2 (++) (return os) (append "\n")
+nl os = fmap (os ++) (append "\n")
 
 breaktag :: Env
 breaktag = do
@@ -310,7 +310,7 @@ rightAlign :: Context -> String -> String
 rightAlign context string = align (partialLine context)
   where
     align used = replicate (count used string) ' ' ++ string
-    count used xs = maximum [textwidth - renderedWidth xs - renderedWidth used, 0]
+    count used xs = max (textwidth - renderedWidth xs - renderedWidth used) 0
 
 -- Crude approximation for calculating rendered width, that does so by not
 -- counting the relatively rare |, *, ` and "\n" -- all of which usually get

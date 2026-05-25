@@ -52,4 +52,3 @@ run = do
             writeFile target (markdown project)
          | otherwise -> hPutStrLn stderr ("Unrecognized output format for " ++ target)
     ) targets
-  return ()

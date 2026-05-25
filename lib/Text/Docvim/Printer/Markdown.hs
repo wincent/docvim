@@ -50,7 +50,7 @@ node n = case n of
   Link l                  -> link l
   LinkTargets l           -> return $ linkTargets l
   List ls                 -> nodes ls >>= nl
-  ListItem l              -> fmap ("- " ++) (nodes l) >>= nl
+  ListItem l              -> nodes l >>= nl . ("- " ++)
   MappingAnnotation m     -> mapping m
   MappingsAnnotation      -> h2 "Mappings"
   OptionAnnotation {}     -> option n
@@ -193,7 +193,7 @@ function _ = invalidNode
 image :: Node -> Env
 image (ImageAnnotation source alignment) = do
   return $ open ++ img ++ close
-  where open = "<p" ++ (align alignment) ++ ">\n"
+  where open = "<p" ++ align alignment ++ ">\n"
         align (Just al) = " align=\"" ++ al ++ "\""
         align Nothing = ""
         img = "  <img src=\"" ++ source ++ "\" />\n"

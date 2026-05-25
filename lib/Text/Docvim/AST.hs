@@ -87,10 +87,10 @@ data Node
 --       , so you need to add another `endf`, which will blow up at runtime.
 -- TODO: validate name = CapitalLetter or s:foo or auto#loaded
 
-data ArgumentList = ArgumentList [Argument]
+newtype ArgumentList = ArgumentList [Argument]
   deriving (Data, Eq, Show, Typeable)
 
-data Argument = Argument String
+newtype Argument = Argument String
   deriving (Data, Eq, Show, Typeable)
 
 instance Plated Node

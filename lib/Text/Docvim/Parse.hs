@@ -6,7 +6,6 @@ module Text.Docvim.Parse ( parse
                          , unit
                          ) where
 
-import Control.Applicative hiding ((<|>), many, optional)
 import Data.Char
 import Data.List (groupBy, intercalate)
 import System.Exit
@@ -27,7 +26,7 @@ command :: String -> Parser ()
 command description =   try (string prefix >> remainder rest)
                     <?> prefix ++ rest
   where prefix           = takeWhile (/= '[') description
-        rest             = init (snd (splitAt (1 + length prefix) description))
+        rest             = init (drop (1 + length prefix) description)
         remainder [r]    = optional (char r)
         remainder (r:rs) = optional (char r >> remainder rs)
         remainder []     = error "Unexpected empty remainder"
@@ -74,7 +73,7 @@ lwindow = LwindowStatement <$> (lw *> height <* eos)
   where
     lw     = command "l[window]"
     height = optionMaybe (wsc *> number)
-    number = liftA read (many1 digit)
+    number = fmap read (many1 digit)
 
 lexpr :: Parser Node
 lexpr = LexprStatement
